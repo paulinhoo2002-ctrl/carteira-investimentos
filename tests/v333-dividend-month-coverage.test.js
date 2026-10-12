@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const path = require('node:path');
 const source = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 function runtime() {
-  const context = { Date, console, DividendIntelligence: require('../dividend-intelligence.js'), esc: String, fmt: n => Number(n).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) };
+  const context = { Date, console, DividendIntelligence: require('../legacy/js/dividend-intelligence.js'), esc: String, fmt: n => Number(n).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) };
   vm.createContext(context);
   vm.runInContext(source.slice(source.indexOf('function dividendAnnualMatrixData('), source.indexOf('function dividendAnnualMatrixToggleButton(')), context);
   return context;

@@ -1,6 +1,6 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const R=require('../portfolio-runtime-stores.js');
+const R=require('../legacy/js/portfolio-runtime-stores.js');
 const clock=()=>new Date('2026-09-15T12:00:00-03:00').getTime();
 const snap=(date='2026-09-15',extra={})=>({localDate:date,listedAssetsValue:41323844,fixedIncomeValue:20176595,otherAssetsValue:0,totalPortfolioValue:61500439,listedCoveragePercent:100,fixedIncomeCoveragePercent:80,totalCoveragePercent:93,freshness:'STALE_SNAPSHOT',...extra});
 test('snapshot store creates one daily record and preserves first capture on update',()=>{let s=R.emptySnapshotStore(clock);let a=R.upsertDailySnapshot(s,snap(),clock);assert.equal(a.action,'CREATED');const first=a.snapshot.capturedAt;let same=R.upsertDailySnapshot(a.store,snap(),clock);assert.equal(same.action,'UNCHANGED');let b=R.upsertDailySnapshot(same.store,snap('2026-09-15',{totalCoveragePercent:99,freshness:'RECENT_SNAPSHOT'}),clock);assert.equal(b.action,'UPDATED');assert.equal(b.store.snapshots.length,1);assert.equal(b.snapshot.capturedAt,first);});

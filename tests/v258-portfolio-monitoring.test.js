@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 const fs = require('node:fs');
 const path = require('node:path');
-const Monitoring = require('../portfolio-monitoring.js');
+const Monitoring = require('../legacy/js/portfolio-monitoring.js');
 
 const issue = (overrides = {}) => ({
   id: overrides.id || overrides.key || 'ISSUE-1', key: overrides.key || overrides.id || 'ISSUE-1',
@@ -63,6 +63,6 @@ test('diff and search scale to thousands of findings without quadratic output', 
   assert.equal(Monitoring.filterAlerts(result.alerts, { search: 'ASSET-4999' }).length, 1);
 });
 test('module is pure and UI wiring is read-only by contract', () => {
-  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8'); const source = fs.readFileSync(path.join(__dirname, '..', 'portfolio-monitoring.js'), 'utf8');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8'); const source = fs.readFileSync(path.join(__dirname, '..', 'legacy/js/portfolio-monitoring.js'), 'utf8');
   assert.match(html, /portfolio-monitoring\.js/); assert.match(html, /Alert Center|Monitoramento/); assert.doesNotMatch(source, /setDoc\(|updateDoc\(|addDoc\(|deleteDoc\(|fetch\(|XMLHttpRequest/);
 });

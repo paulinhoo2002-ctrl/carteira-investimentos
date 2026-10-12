@@ -2,24 +2,24 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
-const contextApi = require('../import-center-context.js');
-const events = require('../import-center-events.js');
-const bootstrap = require('../import-center-bootstrap.js');
-const view = require('../import-center-view.js');
-const fileList = require('../import-center-file-list-renderer.js');
-const sourceList = require('../import-center-source-list-renderer.js');
-const preview = require('../import-center-preview-renderer.js');
+const contextApi = require('../legacy/js/import-center-context.js');
+const events = require('../legacy/js/import-center-events.js');
+const bootstrap = require('../legacy/js/import-center-bootstrap.js');
+const view = require('../legacy/js/import-center-view.js');
+const fileList = require('../legacy/js/import-center-file-list-renderer.js');
+const sourceList = require('../legacy/js/import-center-source-list-renderer.js');
+const preview = require('../legacy/js/import-center-preview-renderer.js');
 
 const rootPath = path.join(__dirname, '..');
 const source = fs.readFileSync(path.join(rootPath, 'index.html'), 'utf8');
-const moduleSources = ['import-center-context.js', 'import-center-events.js', 'import-center-bootstrap.js', 'import-center-preview-renderer.js', 'import-center-file-list-renderer.js', 'import-center-source-list-renderer.js', 'import-center-view.js'].map(file => [file, fs.readFileSync(path.join(rootPath, file), 'utf8')]);
+const moduleSources = ['import-center-context.js', 'import-center-events.js', 'import-center-bootstrap.js', 'import-center-preview-renderer.js', 'import-center-file-list-renderer.js', 'import-center-source-list-renderer.js', 'import-center-view.js'].map(file => [file, fs.readFileSync(path.join(rootPath, 'legacy', 'js', file), 'utf8')]);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 const support = value => value === 'FULLY_SUPPORTED' ? 'Suporte completo' : value === 'REVIEW_REQUIRED' ? 'Revisão necessária' : value === 'FIXTURE_REQUIRED' ? 'Fixture necessária' : 'Suporte parcial';
 const context = contextApi.create({ readState: () => ({ files: [], step: 1, result: null, history: [] }), escapeText: esc, getSources: () => [{ label: 'Movimentações B3', hint: 'XLSX', support: 'PARTIAL' }], getSteps: () => ['Arquivos', 'Detecção'] });
 
 test('current-main Import Center keeps explicit context and renderer graph', () => {
-  assert.match(source, /<script src="import-center-core\.js"><\/script>/);
-  assert.match(source, /<script src="import-center-view\.js"><\/script>/);
+  assert.match(source, /<script src="legacy\/js\/import-center-core\.js"><\/script>/);
+  assert.match(source, /<script src="legacy\/js\/import-center-view\.js"><\/script>/);
   assert.match(source, /IMPORT_CENTER_CONTEXT=typeof ImportCenterContext==='undefined' \? null : ImportCenterContext\.create/);
   assert.match(source, /ImportCenterView\.render\(/);
   assert.doesNotMatch(source, /onchange="importCenterFiles/);

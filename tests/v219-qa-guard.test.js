@@ -8,12 +8,12 @@ const test = require('node:test');
 
 const root = path.resolve(__dirname, '..');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const markerSource = fs.readFileSync(path.join(root, 'protected-local-cloud-authority.js'), 'utf8');
-const markerScript = 'protected-local-cloud-authority.js?v=phase4i-authority-2';
+const markerSource = fs.readFileSync(path.join(root, 'legacy/js/protected-local-cloud-authority.js'), 'utf8');
+const markerScript = 'legacy/js/protected-local-cloud-authority.js?v=phase4i-authority-2';
 
 function authorityApi() {
   const sandbox = { TextEncoder, Uint8Array, DataView, Object, JSON, Date, String, Number };
-  vm.runInNewContext(markerSource, sandbox, { filename: 'protected-local-cloud-authority.js' });
+  vm.runInNewContext(markerSource, sandbox, { filename: 'legacy/js/protected-local-cloud-authority.js' });
   return sandbox.ProtectedLocalCloudAuthority;
 }
 

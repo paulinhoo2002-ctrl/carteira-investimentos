@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const Backup = require('../backup-portability.js');
+const Backup = require('../legacy/js/backup-portability.js');
 
 function fixtureState() {
   return {

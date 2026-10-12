@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const Core = require('../import-center-core.js');
+const Core = require('../legacy/js/import-center-core.js');
 
 test('detecta Inter por conteúdo e mantém XP/BTG como fixture-required', () => {
   assert.equal(Core.detectImportFile({ name: 'documento.pdf', text: 'INTER DTVM LTDA. Nota de Corretagem' }).provider, 'INTER');

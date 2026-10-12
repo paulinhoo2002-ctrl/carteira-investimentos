@@ -7,7 +7,7 @@ const test = require('node:test');
 const index = fs.readFileSync('index.html', 'utf8');
 
 test('V215 loads the pure fixed-income trust helper before the app renderer', () => {
-  assert.match(index, /<script src="fixed-income-trust\.js"><\/script>/);
+  assert.match(index, /<script src="legacy\/js\/fixed-income-trust\.js"><\/script>/);
   assert.ok(index.indexOf('fixed-income-trust.js') < index.indexOf('function rendaFixaTab()'));
 });
 
@@ -26,7 +26,7 @@ test('Renda Fixa keeps unavailable current values out of numeric result output',
 });
 
 test('protected financial and modern surfaces remain untouched by V215 source references', () => {
-  const helper = fs.readFileSync('fixed-income-trust.js', 'utf8');
+  const helper = fs.readFileSync('legacy/js/fixed-income-trust.js', 'utf8');
   assert.doesNotMatch(helper, /finance-core|persistence-core|firebase|modern\/src/i);
   assert.doesNotMatch(helper, /localStorage|Firestore|fetch\s*\(/i);
 });

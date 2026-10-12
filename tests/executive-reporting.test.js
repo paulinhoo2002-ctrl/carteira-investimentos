@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict');
 const test=require('node:test');
-const reporting=require('../executive-reporting');
+const reporting=require('../legacy/js/executive-reporting');
 
 const now=new Date('2026-09-19T12:00:00');
 

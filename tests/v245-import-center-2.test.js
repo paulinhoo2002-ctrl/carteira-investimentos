@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const Core = require('../import-center-core.js');
-const PreviewRenderer = require('../import-center-preview-renderer.js');
+const Core = require('../legacy/js/import-center-core.js');
+const PreviewRenderer = require('../legacy/js/import-center-preview-renderer.js');
 const fs = require('node:fs');
 
 const source = (name = 'movimentos.xlsx', extra = {}) => ({ name, headers: ['Movimentação', 'Ticker', 'Quantidade'], ...extra });

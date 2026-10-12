@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict');
 const test=require('node:test');
-const Quality=require('../v210-income-quality.js');
+const Quality=require('../legacy/js/v210-income-quality.js');
 const html=require('node:fs').readFileSync('index.html','utf8');
 
 test('V210 integra qualidade factual e fluxo semântico no produto',()=>{

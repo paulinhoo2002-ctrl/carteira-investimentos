@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const Backup = require('../backup-portability.js');
+const Backup = require('../legacy/js/backup-portability.js');
 const html = fs.readFileSync('index.html', 'utf8');
 
 function state() {

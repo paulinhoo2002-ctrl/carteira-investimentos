@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const CloudSyncState = require('../cloud-sync-state.js');
+const CloudSyncState = require('../legacy/js/cloud-sync-state.js');
 
 test('successful sync with assets becomes connected', () => {
   const state = CloudSyncState.resolve(CloudSyncState.begin(), { exists: true, hasData: true });
@@ -64,4 +64,3 @@ test('delayed authentication does not confirm an empty portfolio', () => {
   assert.equal(CloudSyncState.isDataConfirmed(authPending), false);
   assert.equal(CloudSyncState.displayValue(authPending, 0), '—');
 });
-

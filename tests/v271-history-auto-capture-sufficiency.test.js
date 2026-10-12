@@ -1,8 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const AutoCapture = require('../portfolio-history-auto-capture.js');
+const AutoCapture = require('../legacy/js/portfolio-history-auto-capture.js');
 const PortfolioHistory = require('../portfolio-history-core.js');
-const Sufficiency = require('../portfolio-history-sufficiency.js');
+const Sufficiency = require('../legacy/js/portfolio-history-sufficiency.js');
 
 const DAY_MS = 86400000;
 

@@ -1,6 +1,6 @@
 const test=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs');const path=require('node:path');
-const P=require('../official-document-parser');const M=require('../issuer-mapping');const F=require('../official-document-fetcher');
-const Q=require('../official-document-pipeline');
+const P=require('../legacy/js/official-document-parser');const M=require('../legacy/js/issuer-mapping');const F=require('../legacy/js/official-document-fetcher');
+const Q=require('../legacy/js/official-document-pipeline');
 test('normaliza formatos monetário e datas oficiais em português',()=>{assert.equal(P.money('R$ 0,500000'),0.5);assert.equal(P.money('0.50'),0.5);assert.equal(P.isoDate('14 de setembro de 2026'),'2026-09-14');assert.equal(P.isoDate('14/09/2026'),'2026-09-14');});
 test('extrai dividendo oficial somente com identidade, valor e data',()=>{const r=P.parseOfficialDocument({text:'Aviso aos Acionistas. Dividendo por ação: R$ 0,50. Data-base: 10/09/2026. Pagamento: 20/09/2026.',metadata:{ticker:'ABCD3',documentId:'doc-1',sourceUrl:'https://cvm.gov.br/doc'}});assert.equal(r.ok,true);assert.equal(r.confidence,'EXACT_OFFICIAL_TEXT');assert.equal(r.events[0].eventType,'DIVIDEND');assert.equal(r.events[0].valuePerUnitGross,0.5);assert.equal(r.events[0].paymentDate,'2026-09-20');});
 test('extrai JCP e preserva o texto como evidência',()=>{const r=P.parseOfficialDocument({text:'JCP aprovado. Valor por ação: R$ 0,12. Data de pagamento: 25/09/2026.',metadata:{ticker:'ABCD3',documentId:'doc-2'}});assert.equal(r.events[0].eventType,'JCP');assert.equal(r.events[0].valuePerUnitGross,0.12);assert.match(r.events[0].evidence,/Valor por ação/);});

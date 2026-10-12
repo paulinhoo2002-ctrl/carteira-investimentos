@@ -3,10 +3,10 @@ const fs = require('node:fs');
 const test = require('node:test');
 
 const source = fs.readFileSync('index.html', 'utf8');
-const viewSource = fs.readFileSync('import-center-view.js', 'utf8');
-const rendererSources = ['import-center-preview-renderer.js', 'import-center-file-list-renderer.js', 'import-center-source-list-renderer.js'].map(file => fs.readFileSync(file, 'utf8')).join('\n');
+const viewSource = fs.readFileSync('legacy/js/import-center-view.js', 'utf8');
+const rendererSources = ['legacy/js/import-center-preview-renderer.js', 'legacy/js/import-center-file-list-renderer.js', 'legacy/js/import-center-source-list-renderer.js'].map(file => fs.readFileSync(file, 'utf8')).join('\n');
 const importCenterSource = `${source}\n${viewSource}\n${rendererSources}`;
-const workflow = require('../import-center-workflow.js');
+const workflow = require('../legacy/js/import-center-workflow.js');
 
 test('Import center route is isolated and does not alter frozen screens', () => {
   assert.match(source, /navItem\('importacao','Importar dados'/);

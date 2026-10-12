@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const Center = require('../corporate-events-center');
+const Center = require('../legacy/js/corporate-events-center');
 
 test('Corporate Events Center expõe estado shadow, proveniência e reconciliação', () => {
   const vm = Center.buildViewModel({

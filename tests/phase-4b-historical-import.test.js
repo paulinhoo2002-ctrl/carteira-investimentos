@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const Preview = require('../historical-import-preview.js');
+const Preview = require('../legacy/js/historical-import-preview.js');
 
 test('detects supported B3 and brokerage source formats without guessing', () => {
   assert.equal(Preview.detectSourceFormat({ fileName: 'proventos-2025.xlsx' }), 'B3_DIVIDENDS_XLSX');

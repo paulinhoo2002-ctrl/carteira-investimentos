@@ -50,7 +50,7 @@ function createSandbox(state = {}) {
     RegExp,
     Intl,
     Promise,
-    DividendIntelligence: require('../dividend-intelligence'),
+    DividendIntelligence: require('../legacy/js/dividend-intelligence'),
     S: state,
     TYPE_CHOICES: ['Ação', 'FII', 'ETF', 'BDR', 'Stock', 'Reit', 'Renda Fixa', 'Tesouro Direto', 'Reserva de emergência', 'Fundos de Investimento'],
     TYPE_FORM_CHOICES: ['Ação', 'FII', 'ETF', 'BDR', 'Stock', 'Reit', 'Renda Fixa', 'Tesouro Direto', 'Reserva de emergência', 'Fundos de Investimento'],

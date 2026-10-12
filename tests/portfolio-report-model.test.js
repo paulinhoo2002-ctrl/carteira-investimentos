@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { buildPortfolioReportModel } = require('../portfolio-report-model.js');
+const { buildPortfolioReportModel } = require('../legacy/js/portfolio-report-model.js');
 
 function input(overrides = {}) {
   return {

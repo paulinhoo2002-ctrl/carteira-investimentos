@@ -14,7 +14,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const BackupPortability = require('../../backup-portability.js');
+const BackupPortability = require('../../legacy/js/backup-portability.js');
 
 const DEFAULT_ROOT = 'C:\\Projetos\\_backups\\carteira-investimentos';
 

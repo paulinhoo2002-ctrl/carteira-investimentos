@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const E = require('../corporate-events-shadow');
+const E = require('../legacy/js/corporate-events-shadow');
 
 test('normaliza split com impactos explícitos e provenance', () => {
   const event = E.normalizeEvent({

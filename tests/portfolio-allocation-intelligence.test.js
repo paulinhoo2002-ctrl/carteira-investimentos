@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict');
 const test=require('node:test');
-const allocation=require('../portfolio-allocation-intelligence');
+const allocation=require('../legacy/js/portfolio-allocation-intelligence');
 
 const rows=[
   {id:'a',ticker:'AAA',className:'Ações',sector:'Financeiro',issuer:'Emissor A',value:600,valueStatus:'AVAILABLE'},

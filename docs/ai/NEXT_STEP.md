@@ -1,3 +1,10 @@
+## Current action — LEGACY overnight delivery checkpoint (2026-10-11)
+
+- Current branch: `codex/legacy-overnight-delivery`; last measured HEAD before this checkpoint edit: `ec6bc97` (previous commits `354d583`, `ec6bc97`); initial HEAD: `53d01ddb177cd6ad2fea48be1caea4366051e1b7`.
+- Product code/path organization and governance changes have fresh local validation. `verify:release` passed at the code checkpoint; skills routing 13/13, root hygiene, and diff checks passed after governance edits.
+- Do not publish: this mission authorizes local commits only. Review preserved unclassified leftovers before any future staging. No merge/deploy/real-data operation was performed.
+- Next safe action: human review the local commits and preserved unclassified files; then authorize any separate push/PR work if desired. Firebase hosted/emulator multi-user certification and exact Vercel storage usage remain unverified/unavailable.
+
 ## V1005 — certificação operacional LEGACY (2026-10-11)
 
 - Base verificada: `origin/main` `4cc31ed54000754bda0905aae2e9d06aa75ed6e6`; implementação na worktree isolada `codex/v1005-operational-certification`.
@@ -474,7 +481,7 @@ Precondition: Verify V248 snapshot capture provides dated valuations before inte
 - `BLOCKED_BY_USER_INPUT=Sanitized XP and BTG statement fixtures`
 - `LAST_UPDATED=2026-09-22`
 
-The recommendation comes from `docs/ai/OPEN_WORK.md`; it is readiness only.
+The recommendation comes from `docs/OPEN_WORK.md`; it is readiness only.
 Do not start a new phase without explicit authorization. The historical
 snapshots below are retained as evidence and are not the current boot state.
 
@@ -1175,3 +1182,19 @@ Confirmar CI do novo HEAD da Draft #456 e revisar cadeia #456→#457 atualizada 
   2. Abrir Draft PR para revisão humana.
   3. Aguardar gate humano para revisão do Draft PR e decisão de merge.
   4. Após merge autorizado, preparar release de produção.
+## LEGACY Skills audit — 2026-10-11
+
+- Auditoria somente leitura de `C:\Projetos\skills`: 43 arquivos `SKILL.md`,
+  38 IDs com frontmatter, 3 stubs e duplicações; detalhes e classificação em
+  [`SKILLS_SOURCE_AUDIT.md`](SKILLS_SOURCE_AUDIT.md). Nenhum script de origem
+  executado.
+- `.agents/skills` continua raiz canônica. O destino adjacente solicitado não
+  possui descoberta comprovada e não recebeu cópias. Skills essenciais e rotas
+  usuais já estão no runtime ou na raiz canônica; `caveman-stats` segue rejeitada
+  por hooks ausentes e acesso a log de sessão Claude.
+- Vercel auditado somente leitura para `carteira-investimentos`; configuração e
+  primeira página de deployments visíveis, métrica de armazenamento não exposta
+  pelo CLI.
+- Próximo passo humano: decidir se basta manter a raiz canônica ou se deseja
+  autorizar uma mudança de configuração de runtime para descoberta do caminho
+  adjacente. Não integrar/copy skills antes dessa prova.

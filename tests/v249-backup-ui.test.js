@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const html = fs.readFileSync('index.html', 'utf8');
 
 test('V249 UI loads the portable backup engine before the legacy app bootstrap', () => {
-  assert.equal(html.indexOf('<script src="backup-portability.js"></script>') < html.indexOf('const BACKUP_VER'), true);
+  assert.equal(html.indexOf('<script src="legacy/js/backup-portability.js"></script>') < html.indexOf('const BACKUP_VER'), true);
   assert.match(html, /BackupPortability\.createBackup/);
   assert.match(html, /BackupPortability\.verifyBackup/);
   assert.match(html, /BackupPortability\.previewRestore/);

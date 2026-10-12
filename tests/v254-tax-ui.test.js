@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const html = fs.readFileSync('index.html', 'utf8');
 
 test('V254 carrega o motor fiscal derivado antes da tela de relatórios', () => {
-  assert.match(html, /<script src="tax-cost-basis-intelligence\.js"><\/script>/);
+  assert.match(html, /<script src="legacy\/js\/tax-cost-basis-intelligence\.js"><\/script>/);
   assert.match(html, /function v254FiscalPanel\(\)/);
   assert.match(html, /Inteligência fiscal e custo de aquisição/);
 });

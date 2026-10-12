@@ -3,7 +3,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const Trust = require('../fixed-income-trust.js');
+const Trust = require('../legacy/js/fixed-income-trust.js');
 
 test('classifies manual authority without inventing source metadata', () => {
   const result = Trust.classify({ authority: 'MANUAL_AUTHORITATIVE', source: '' });

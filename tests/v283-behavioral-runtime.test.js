@@ -9,10 +9,10 @@ const path = require('path');
 const vm = require('vm');
 
 // Load the adapter file
-const adapterSource = fs.readFileSync(path.join(__dirname, '..', 'v283-rentability-adapter.js'), 'utf8');
+const adapterSource = fs.readFileSync(path.join(__dirname, '..', 'legacy/js/v283-rentability-adapter.js'), 'utf8');
 const indexHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-const realClassifier = require('../portfolio-cash-flow-classifier.js');
-const realEngine = require('../historical-performance-engine.js');
+const realClassifier = require('../legacy/js/portfolio-cash-flow-classifier.js');
+const realEngine = require('../legacy/js/historical-performance-engine.js');
 
 // Create a realistic browser-like environment
 function createRuntimeContext() {
@@ -372,7 +372,7 @@ test('R10: Legacy rentBenchSeries does NOT execute old synthetic implementation'
 });
 
 test('R10b: Adapter loads after legacy rentability globals are defined', () => {
-  const adapterTag = indexHtml.indexOf('<script src="v283-rentability-adapter.js"></script>');
+  const adapterTag = indexHtml.indexOf('<script src="legacy/js/v283-rentability-adapter.js"></script>');
   const legacyHistory = indexHtml.indexOf('function rentabilityHistory(');
   assert.ok(adapterTag >= 0, 'Rentability adapter script tag exists');
   assert.ok(legacyHistory >= 0, 'Legacy history function exists for compatibility');

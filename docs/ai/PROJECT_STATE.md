@@ -1,3 +1,15 @@
+## LEGACY overnight delivery — checkpoint 2026-10-11
+
+- PROJECT_IDENTITY_GATE=PASS; canonical checkout `C:\Projetos\carteira-investimentos`, origin `paulinhoo2002-ctrl/carteira-investimentos`, local branch `codex/legacy-overnight-delivery`.
+- Local checkpoint HEAD before this state-document commit: `ec6bc97`; initial HEAD `53d01ddb177cd6ad2fea48be1caea4366051e1b7`. No push, merge, or deploy was performed.
+- Two reviewed local commits: `354d583` (legacy module path organization and dependent test/path corrections); `ec6bc97` (document path reconciliation, skills routing, governance, and source inventory).
+- Fresh `npm run verify:release` passed on the code checkpoint, including `npm test`, Modern, builds, `qa:all`, Playwright smoke and V289/V333 visual checks. Focused `npm run test:skills-routing` passed 13/13; root hygiene and `git diff --check` passed after the documentation commit.
+- Playwright smoke passed 390, 430, 768, 1366, 1440, 1536, 1920 widths with no global horizontal overflow or relevant console/page/request errors. Ativos/Dividendos dark/light V289 checks passed; no broad visual redesign was performed.
+- Vercel inspected read-only: production deployment remained at SHA `53d01ddb177cd6ad2fea48be1caea4366051e1b7`; multiple recent previews were observed, including documentation-only branch activity. Exact storage usage was not exposed by the available listing. No remote settings/deployments changed.
+- Remaining Git changes are preserved and unstaged: an unclassified debug artifact, encoding helpers, a worktree cleanup script, a local hook, and five untracked import fixture artifacts under `legacy/js/tests/fixtures/import-center`. These were excluded from commits. Existing `tests/fixtures/import-center` files were preserved; no cleanup performed.
+- Limitations: Firebase Emulator/hosted multi-user QA was not run; Vercel storage metric unavailable; performance was reviewed through test/build output but no full screen-load benchmark was captured. Build warnings about classic script bundling/default export and an occupied Modern WebSocket port remain.
+- `PRODUCTION_READY=false`; `REAL_FINANCIAL_WRITES=0`; `REAL_IMPORT=false`; `REAL_RESTORE=false`; `PRODUCTION=false`; `MERGE=false`.
+
 ## V1005 — certificação operacional (2026-10-11)
 
 - Base `origin/main` `4cc31ed54000754bda0905aae2e9d06aa75ed6e6`; branch isolada `codex/v1005-operational-certification`.

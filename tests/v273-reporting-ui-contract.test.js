@@ -3,10 +3,10 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 
 const html = fs.readFileSync('index.html', 'utf8');
-const aggregator = fs.readFileSync('portfolio-report-readiness.js', 'utf8');
+const aggregator = fs.readFileSync('legacy/js/portfolio-report-readiness.js', 'utf8');
 
 test('V273 readiness is loaded before the report model and stays on the existing Reports route', () => {
-  assert.ok(html.indexOf('<script src="portfolio-report-readiness.js"></script>') < html.indexOf('<script src="portfolio-report-model.js"></script>'));
+  assert.ok(html.indexOf('<script src="legacy/js/portfolio-report-readiness.js"></script>') < html.indexOf('<script src="legacy/js/portfolio-report-model.js"></script>'));
   assert.match(html, /function reportsTab\(\)/);
   assert.match(html, /reports-v273-health/);
   assert.doesNotMatch(html, /go\(['"](?:saude-dos-dados|data-health)['"]\)/);

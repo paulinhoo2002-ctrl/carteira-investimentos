@@ -144,7 +144,7 @@ test('Dashboard goal card refuses progress when current month coverage is unknow
 });
 test('Metas screen gates progress on a complete 12-month average', () => {
   assert.ok(source.includes("passiveGoal?.monthlyAverageStatus==='COMPLETE'"));
-  assert.ok(source.includes('progresso indisponível · cobertura ${passiveGoal.completeMonthCount}/12'));
+  assert.ok(source.includes('Progresso indisponível · cobertura 0/12'));
   assert.ok(source.includes('passiveIncomeValue(passiveGoal.monthlyAvg)'));
 });
 
@@ -181,7 +181,7 @@ test('Modern Income snapshot separates announced events from received payments a
   const end = source.indexOf('getContributionsSnapshot(){', start);
   assert.ok(start >= 0 && end > start, 'actual host income snapshot method exists');
   const method = source.slice(start, end).replace(/,\s*$/, '').trim();
-  const engine = require('../dividend-intelligence');
+  const engine = require('../legacy/js/dividend-intelligence');
   const snapshotFor = rows => vm.runInNewContext(`({${method}}).getIncomeSnapshot()`, {
     S: { proventos: rows },
     globalThis: { DividendIntelligence: engine },

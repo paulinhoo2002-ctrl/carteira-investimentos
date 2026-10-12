@@ -80,7 +80,7 @@ O produto tambem ja consolida padroes importantes de experiencia:
 - cards recolhiveis com comportamento previsivel;
 - Dashboard limpo, com assistente separado em area propria;
 - visao consultiva para Rentabilidade, Metas e Diagnostico;
-- documentacao oficial mantida em `README.md`, `PRODUCT.md`, `DESIGN.md` e `CHANGELOG.md`.
+- documentacao oficial mantida em `README.md`, `docs/PRODUCT.md`, `docs/DESIGN.md` e `CHANGELOG.md`.
 
 ## 6. Roadmap
 

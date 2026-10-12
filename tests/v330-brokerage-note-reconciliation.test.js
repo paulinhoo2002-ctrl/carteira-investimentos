@@ -1,9 +1,9 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const Brokerage = require('../brokerage-professional.js');
-const Pipeline = require('../protected-import-pipeline.js');
-const ImportWorkflow = require('../import-center-workflow.js');
-const ImportPreviewRenderer = require('../import-center-preview-renderer.js');
+const Brokerage = require('../legacy/js/brokerage-professional.js');
+const Pipeline = require('../legacy/js/protected-import-pipeline.js');
+const ImportWorkflow = require('../legacy/js/import-center-workflow.js');
+const ImportPreviewRenderer = require('../legacy/js/import-center-preview-renderer.js');
 const fs = require('node:fs');
 const path = require('node:path');
 const root = path.join(__dirname, '..');
@@ -230,8 +230,8 @@ test('V330 review flow carries preview data to the accessible Import Center rend
 
 test('V330 browser route renders the read-only note preview and keeps the domain model writer-free', () => {
   const app = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-  const model = fs.readFileSync(path.join(root, 'brokerage-professional.js'), 'utf8');
-  assert.match(app, /<script src="brokerage-professional\.js"><\/script>/);
+  const model = fs.readFileSync(path.join(root, 'legacy/js/brokerage-professional.js'), 'utf8');
+  assert.match(app, /<script src="legacy\/js\/brokerage-professional\.js"><\/script>/);
   assert.match(app, /parsed\.v330Preview=BrokerageProfessional\.buildNotePreview/);
   assert.match(app, /BrokerageProfessional\.renderNotePreview\(state\.v330Preview,esc\)/);
   for (const forbidden of [/localStorage/, /sessionStorage/, /Firestore/, /Firebase/, /addDoc/, /updateDoc/, /setDoc/, /\.save\s*\(/]) assert.equal(forbidden.test(model), false);

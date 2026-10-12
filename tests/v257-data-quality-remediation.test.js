@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 const fs = require('node:fs');
 const path = require('node:path');
-const DQ = require('../data-quality-remediation.js');
+const DQ = require('../legacy/js/data-quality-remediation.js');
 
 test('model exposes explicit remediation states and never writes', () => {
   assert.deepEqual(DQ.STATES, ['OPEN', 'NEEDS_REVIEW', 'BLOCKED_BY_MISSING_DATA', 'RESOLVABLE', 'INFORMATIONAL', 'RESOLVED']);
@@ -52,7 +52,7 @@ test('root causes group across domains and navigation remains safe', () => {
 
 test('legacy UI loads remediation module and renders its contract', () => {
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-  const moduleSource = fs.readFileSync(path.join(__dirname, '..', 'data-quality-remediation.js'), 'utf8');
+  const moduleSource = fs.readFileSync(path.join(__dirname, '..', 'legacy/js/data-quality-remediation.js'), 'utf8');
   assert.match(html, /data-quality-remediation\.js/);
   assert.match(html, /Centro de remediação/);
   assert.match(html, /NEEDS_REVIEW/);

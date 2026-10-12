@@ -9,6 +9,11 @@ routing is owned by `docs/ai/SKILLS_ROUTING.md`; mandatory behavior is owned by
 
 **⚠️ NOTE**: The `.agents/skills` directory is **partially tracked** by Git (see `.gitignore`). 17 approved project-local skills are versioned. Heavy skills (browser-harness-main, impeccable, archify-main) and meta/backup skills are excluded and must be re-synced from `C:/Projetos/skills/` or upstream sources. See `docs/ai/PROJECT_CONTINUITY_POLICY.md` for continuity requirements.
 
+Read-only source inventory and current compatibility findings (2026-10-11):
+[`SKILLS_SOURCE_AUDIT.md`](SKILLS_SOURCE_AUDIT.md). No unapproved source
+scripts were executed; the adjacent `.agents` path is not a canonical runtime
+discovery root.
+
 ---
 
 ## VENDORED SKILLS (Core - Tracked)
@@ -211,7 +216,7 @@ routing is owned by `docs/ai/SKILLS_ROUTING.md`; mandatory behavior is owned by
 - **Purpose**: Production-grade frontend interface design, audit, polish. 20+ sub-commands (craft, shape, audit, polish, bolder, quieter, etc.).
 - **Recommended use**: Final quality pass before shipping, UX design review, technical quality checks, visual polish when authorized.
 - **Avoid when**: VISUAL_PHASE=DEFERRED. Early exploration. Financial logic review.
-- **Dependencies**: caveman, using-superpowers, project context (PRODUCT.md/DESIGN.md)
+- **Dependencies**: caveman, using-superpowers, project context (docs/PRODUCT.md and docs/DESIGN.md)
 - **Side effects**: Runs context/palette scripts; may generate design artifacts.
 - **Risk level**: LOW
 - **Routing priority**: Final polish for UI_VISUAL / CODE_REVIEW

@@ -3,7 +3,7 @@
 const assert = require('node:assert/strict');
 const { webcrypto } = require('node:crypto');
 const { test } = require('node:test');
-const Backup = require('../backup-portability.js');
+const Backup = require('../legacy/js/backup-portability.js');
 
 const passphrase = 'synthetic-only passphrase 2026';
 const payload = {

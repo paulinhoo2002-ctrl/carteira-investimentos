@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const html = fs.readFileSync('index.html', 'utf8');
 
 test('V256 carrega o modelo read-only de inteligência do detalhe', () => {
-  assert.match(html, /<script src="asset-detail-intelligence\.js"><\/script>/);
+  assert.match(html, /<script src="legacy\/js\/asset-detail-intelligence\.js"><\/script>/);
   assert.match(html, /AssetDetailIntelligence\?\.buildAssetDetailIntelligence/);
   assert.match(html, /data-asset-intelligence="true"/);
 });
@@ -17,6 +17,6 @@ test('V256 expõe estados fiscais e de cobertura sem escrever ou transformar aus
   assert.match(block, /Custo-base/);
   assert.match(block, /Resultado realizado/);
   assert.match(block, /Revisão necessária/);
-  assert.match(block, /===null\?'—'/);
+  assert.match(block, /===null\?'—':/);
   assert.doesNotMatch(block, /onclick|submit|persist|save/i);
 });

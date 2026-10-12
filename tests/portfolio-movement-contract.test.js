@@ -9,7 +9,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const contract = require('../portfolio-movement-contract.js');
+const contract = require('../legacy/js/portfolio-movement-contract.js');
 
 const {
   MOVEMENT_ERROR_CODES,

@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const Reconstruction = require('../historical-reconstruction-hardening.js');
+const Reconstruction = require('../legacy/js/historical-reconstruction-hardening.js');
 
 test('V259 replays weighted average, partial sell and rebuy without writes', () => {
   const result = Reconstruction.buildHistoricalReconstructionCompleteness({
