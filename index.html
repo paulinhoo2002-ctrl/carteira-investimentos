@@ -6074,7 +6074,6 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     .side-brand-icon{width:32px;height:32px;border-radius:var(--pd-radius-sm);background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:16px;flex:none;box-shadow:0 2px 10px rgba(99,102,241,.35)}
     .side-brand-name{font-size:13px;font-weight:900;color:var(--text);letter-spacing:-.01em;line-height:1.1}
     .side-brand-sub{font-size:10px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:5px}
-    .side-avatar{width:20px;height:20px;border-radius:999px;background:rgba(52,211,153,.16);color:var(--pd-green);font-size:8.5px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(52,211,153,.35)}
     .tabs-desktop .tab{width:100%;text-align:left;border-bottom:0;border-radius:var(--pd-radius-sm);padding:9px 11px;font-size:12.5px;min-height:40px;color:var(--muted)}
     .tabs-desktop .tab:hover{background:rgba(148,163,184,.08);color:var(--text)}
     .tabs-desktop .tab.on{background:rgba(79,70,229,.15);box-shadow:inset 3px 0 0 var(--primary);color:#dbe4ff;font-weight:800}
@@ -28980,7 +28979,7 @@ function desktopTabs(){
   return `<nav class="tabs tabs-desktop" aria-label="Navegacion principal de la carteira">
     <div class="side-brand">
       <div class="side-brand-icon" aria-hidden="true">📈</div>
-      <div class="side-brand-text"><div class="side-brand-name">Carteira</div><div class="side-brand-sub"><span class="side-avatar" aria-hidden="true">PS</span>Paulo Sérgio</div></div>
+      <div class="side-brand-text"><div class="side-brand-name">Carteira</div><div class="side-brand-sub"><span class="side-avatar" aria-hidden="true">PS</span><span class="side-brand-user-name">Paulo Sérgio</span></div></div>
     </div>
     <button class="portfolio-search-trigger" type="button" onclick="portfolioSearchOpen()" aria-label="Buscar na carteira" title="Buscar na carteira (Ctrl+K)"><span aria-hidden="true">⌕</span><span>Buscar na carteira</span><kbd>Ctrl K</kbd></button>
     <div class="nav-section-title">CARTEIRA</div>
@@ -38536,6 +38535,8 @@ html[data-theme="light"] .premium-dividends-3 .div-premium-tab{color:#4b5d70}
 html[data-theme="light"] .premium-dividends-3 .div-type-badge.rendimento{color:#137333}
 html[data-theme="light"] .premium-dividends-3 .div-type-badge.outro{color:#475569}
 .assets-premium-shell .ag-k{font-size:12px;white-space:normal;overflow:visible;text-overflow:clip}
+.side-brand-sub{display:flex;align-items:center;gap:5px}
+.side-avatar{flex:0 0 20px;width:20px;height:20px;border-radius:999px;background:rgba(52,211,153,.16);color:var(--pd-green);font-size:8.5px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(52,211,153,.35)}
 </style>
 <script>
 window.addEventListener('v262:diagnostics-ready',()=>{

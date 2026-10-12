@@ -20,3 +20,9 @@ test('dashboard exposes safe drilldowns for the primary analysis tasks', () => {
   assert.match(dashBlock, /onclick="go\('\$\{route\}'\)"/);
   assert.doesNotMatch(dashBlock, /save\(|persist|confirm/i);
 });
+
+test('desktop profile keeps avatar and name as separate flex items', () => {
+  assert.match(source, /<div class="side-brand-sub"><span class="side-avatar" aria-hidden="true">PS<\/span><span class="side-brand-user-name">/);
+  assert.match(source, /\.side-brand-sub\{display:flex;align-items:center;gap:5px\}/);
+  assert.match(source, /\.side-avatar\{flex:0 0 20px;width:20px;height:20px;border-radius:999px/);
+});
