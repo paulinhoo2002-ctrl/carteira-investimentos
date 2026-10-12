@@ -83,6 +83,12 @@
       let right;
       if (key === 'value') { left = finite(a.current); right = finite(b.current); }
       else if (key === 'maturity') { left = Date.parse(text(a.due) || '') || Number.POSITIVE_INFINITY; right = Date.parse(text(b.due) || '') || Number.POSITIVE_INFINITY; }
+      else if (key === 'issuer') {
+        left = text(a.issuer).toLocaleLowerCase('pt-BR');
+        right = text(b.issuer).toLocaleLowerCase('pt-BR');
+        if (!left && right) return 1;
+        if (!right && left) return -1;
+      }
       else { left = text(a[key] || a.ticker).toLocaleLowerCase('pt-BR'); right = text(b[key] || b.ticker).toLocaleLowerCase('pt-BR'); }
       if (left === null && right !== null) return 1;
       if (right === null && left !== null) return -1;
