@@ -7519,6 +7519,8 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 .assets-premium-shell .assets-premium-controls{display:flex;align-items:center;gap:8px;position:relative;margin:0 0 10px;min-width:0}
 .assets-premium-shell .assets-premium-controls .assets-premium-search{flex:1 1 320px;min-width:0}
 .assets-premium-shell .assets-premium-controls .assets-premium-filters{flex:0 0 auto}
+.assets-premium-shell .assets-premium-sort{display:flex;align-items:center;gap:6px;flex:0 0 auto;color:var(--muted);font-size:11px}
+.assets-premium-shell .assets-premium-sort select{min-height:44px;max-width:190px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--text);font:inherit}
 .assets-premium-shell .assets-premium-controls .assets-premium-filter-panel{top:calc(100% + 6px)}
 .assets-premium-shell .assets-premium-kpis{margin-bottom:8px}
 .assets-premium-shell .assets-page-actions{justify-content:flex-end;margin:8px 0 10px}
@@ -7567,10 +7569,12 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 }
 @media(max-width:767px){
   .assets-premium-shell .assets-premium-title{font-size:19px}
-  .assets-premium-shell .assets-premium-controls{flex-wrap:nowrap;gap:7px;margin-bottom:8px}
+  .assets-premium-shell .assets-premium-controls{flex-wrap:wrap;gap:7px;margin-bottom:8px}
   .assets-premium-shell .assets-premium-controls:has(.assets-review-filter){flex-wrap:wrap}
   .assets-premium-shell .assets-premium-controls .assets-premium-search{flex:1 1 auto;flex-basis:0;order:1}
   .assets-premium-shell .assets-premium-controls .assets-premium-filters{order:2}
+  .assets-premium-shell .assets-premium-controls .assets-premium-sort{flex:1 1 100%;order:3}
+  .assets-premium-shell .assets-premium-sort select{flex:1;max-width:none}
   .assets-premium-shell .assets-premium-controls .assets-review-filter{flex:1 1 100%;order:3;margin-top:0}
   .assets-premium-shell .assets-premium-controls .assets-premium-filter-panel{left:0;right:auto;top:calc(100% + 5px)}
   .assets-premium-shell .assets-premium-controls .assets-premium-filter-panel{max-height:160px;overflow-y:auto}
@@ -25467,9 +25471,22 @@ function toggleAssetGroup(type, evOrOpen){
   setActiveAssetGroup(type, open);
   render();
 }
+const ASSET_SORT_MODES=Object.freeze({
+  'ticker-asc':Object.freeze({field:'ticker',dir:'asc'}),
+  'result-desc':Object.freeze({field:'result',dir:'desc'}),
+  'result-asc':Object.freeze({field:'result',dir:'asc'}),
+  'rentability-desc':Object.freeze({field:'rentability',dir:'desc'}),
+  'rentability-asc':Object.freeze({field:'rentability',dir:'asc'})
+});
 function getAssetSortConfig(type){
+  if(Object.hasOwn(ASSET_SORT_MODES,S.assetsSortMode)) return ASSET_SORT_MODES[S.assetsSortMode];
   const sort=S.assetSort || (S.assetSort={});
   return sort[type] || {field:'ticker', dir:'asc'};
+}
+function setAssetsSortMode(value){
+  if(!Object.hasOwn(ASSET_SORT_MODES,value)) return;
+  S.assetsSortMode=value;
+  render();
 }
 function toggleAssetSort(type, field){
   const sort=S.assetSort || (S.assetSort={});
@@ -25498,6 +25515,7 @@ function assetSortableHeader(type, field, label){
 function sortAssetsByGroup(type, items, portfolioTotal=0){
   const cfg=getAssetSortConfig(type);
   const dirFactor=cfg.dir==='desc' ? -1 : 1;
+  const resultRows=cfg.field==='result' ? new Map(assetAnalysisRows().map(row=>[row.ticker,row])) : null;
   return [...items].sort((a,b)=>{
     if(cfg.field==='rentability'){
       const ar=assetRentabPct(a);
@@ -25538,7 +25556,6 @@ function sortAssetsByGroup(type, items, portfolioTotal=0){
       return (ac-bc) * dirFactor;
     }
     if(cfg.field==='result'){
-      const resultRows=new Map(assetAnalysisRows().map(row=>[row.ticker,row]));
       const ar=resultRows.get(String(a?.ticker||'').trim().toUpperCase());
       const br=resultRows.get(String(b?.ticker||'').trim().toUpperCase());
       const av=ar?.pct!=null && Number.isFinite(ar.profit) ? ar.profit : null;
@@ -32070,6 +32087,13 @@ function ativos(){
   const assetControls = `<div class="assets-premium-controls">
     <div class="assets-premium-search"><input type="search" class="assets-premium-search-input" placeholder="Buscar ativo..." aria-label="Buscar ativo por ticker ou nome" id="assets-premium-search" autocomplete="off" value="${esc(S.assetsSearch || '')}" oninput="onAssetsSearchInput(this.value)"></div>
     <div class="assets-premium-filters"><button type="button" class="assets-premium-filter-btn" onclick="toggleAssetsFilterPanel()" aria-controls="assets-filter-panel" aria-expanded="${S.assetsFilterPanelOpen ? 'true' : 'false'}">Filtros <span class="filter-count" id="assets-filter-count">${activeAssetFilterCount}</span></button></div>
+    <label class="assets-premium-sort"><span>Ordenar</span><select aria-label="Ordenar posições de ativos" onchange="setAssetsSortMode(this.value)">
+      <option value="ticker-asc" ${S.assetsSortMode === 'ticker-asc' || !S.assetsSortMode ? 'selected' : ''}>Ticker · A–Z</option>
+      <option value="result-desc" ${S.assetsSortMode === 'result-desc' ? 'selected' : ''}>Resultado · maior</option>
+      <option value="result-asc" ${S.assetsSortMode === 'result-asc' ? 'selected' : ''}>Resultado · menor</option>
+      <option value="rentability-desc" ${S.assetsSortMode === 'rentability-desc' ? 'selected' : ''}>Rentabilidade · maior</option>
+      <option value="rentability-asc" ${S.assetsSortMode === 'rentability-asc' ? 'selected' : ''}>Rentabilidade · menor</option>
+    </select></label>
     <div class="assets-premium-filter-panel" id="assets-filter-panel" style="display:${S.assetsFilterPanelOpen ? 'block' : 'none'}">
       <div class="assets-filter-heading">Tipo de ativo</div>
       <label><input type="checkbox" ${classFilterSet.size === 0 ? 'checked' : ''} onchange="applyAssetsFilter()"> Todos os tipos</label>
@@ -32100,7 +32124,7 @@ function ativos(){
 
     const icon = ativosCategoryIcon(type);
     const typeAssets = assets;
-    const typeDisplayAssets = filteredAssets;
+    const typeDisplayAssets = sortAssetsByGroup(type, filteredAssets, portfolioTotal || 0);
 
     // Category metrics
     const typeHasCompleteCurrentValues = typeAssets.every(a => getAssetMetrics(a).displayCurrentValue != null);

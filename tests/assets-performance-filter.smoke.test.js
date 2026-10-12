@@ -1,8 +1,8 @@
 const assert = require('node:assert/strict');
-const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
+const { startLocalHttpServer } = require('./local-http-server');
 
 function browserPath() {
   return [
@@ -14,14 +14,7 @@ function browserPath() {
 }
 
 async function startServer(root) {
-  const server = http.createServer((req, res) => {
-    const pathname = decodeURIComponent(new URL(req.url || '/', 'http://127.0.0.1').pathname);
-    const file = path.join(root, pathname === '/' ? 'index.html' : pathname);
-    if (!file.startsWith(root) || !fs.existsSync(file)) { res.writeHead(404); return res.end(); }
-    res.end(fs.readFileSync(file));
-  });
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  return { server, url: `http://127.0.0.1:${server.address().port}/index.html?testMode=1` };
+  return startLocalHttpServer(root);
 }
 
 test('filtro de performance preserva estados oficiais e combina filtros', async () => {
@@ -92,6 +85,78 @@ test('filtro de performance preserva estados oficiais e combina filtros', async 
     assert.deepEqual(result.dyAsc, ['zero-dy', 'negative', 'neutral', 'positive', 'bad-dy', 'incomplete']);
     assert.equal(result.countBeforeClear, 2);
     assert.deepEqual(result.cleared, { search: '', classes: [], sector: 'all', performance: 'all' });
+  } finally {
+    await browser.close();
+    harness.server.close();
+  }
+});
+
+test('ordenacao de ativos controla tabela e cards sem promover resultado desconhecido', async () => {
+  const executable = browserPath();
+  assert.ok(executable, 'Chrome/Edge nao encontrado');
+  const { chromium } = await import('playwright-core');
+  const harness = await startServer(path.join(__dirname, '..'));
+  const browser = await chromium.launch({ executablePath: executable, headless: true });
+  const page = await browser.newPage({ viewport: { width: 1366, height: 768 } });
+  const firebaseRequests = [];
+  const consoleErrors = [];
+  const pageErrors = [];
+  page.on('request', request => {
+    if (/firebaseio\.com|firestore\.googleapis\.com|identitytoolkit\.googleapis\.com|securetoken\.googleapis\.com|firebaseinstallations\.googleapis\.com/i.test(request.url())) firebaseRequests.push(request.url());
+  });
+  page.on('console', message => { if (message.type() === 'error') consoleErrors.push(message.text()); });
+  page.on('pageerror', error => pageErrors.push(error.message));
+  await page.addInitScript(() => {
+    window.__qaStorageWrites = [];
+    const originalSetItem = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (key, value) {
+      window.__qaStorageWrites.push(String(key));
+      return originalSetItem.call(this, key, value);
+    };
+  });
+  try {
+    await page.goto(`${harness.url}&testReadOnly=1`, { waitUntil: 'networkidle' });
+    await page.waitForFunction(() => window.__LOCAL_TEST_READ_ONLY__ === true);
+    await page.evaluate(() => {
+      S.assets = [
+        { id: 'alpha', ticker: 'ALFA', name: 'Alfa', type: 'FII', qty: 1, avg_price: 100, current_price: 110 },
+        { id: 'beta', ticker: 'BETA', name: 'Beta', type: 'FII', qty: 1, avg_price: 100, current_price: 150 },
+        { id: 'unknown', ticker: 'SEMBASE', name: 'Sem base', type: 'FII', qty: 1, avg_price: 0, current_price: 80 },
+      ];
+      S.assetsSearch = '';
+      S.assetsFilterClasses = [];
+      S.assetsSectorFilter = 'all';
+      S.assetsClassFilter = 'all';
+      S.assetsPerformanceFilter = 'all';
+      S.assetReviewFilter = null;
+      S.assetSort = {};
+      S.assetsInnerTab = 'patrimonio';
+      go('ativos');
+    });
+    const fixtureBefore = await page.evaluate(() => JSON.stringify(S.assets));
+    const storageWritesBefore = await page.evaluate(() => window.__qaStorageWrites.length);
+    const sort = page.getByRole('combobox', { name: 'Ordenar posições de ativos' });
+    await sort.selectOption('result-desc');
+    const desktopOrder = await page.locator('.ag-table tbody tr').evaluateAll(rows => rows.map(row => row.dataset.id));
+    assert.deepEqual(desktopOrder, ['beta', 'alpha', 'unknown']);
+    await sort.selectOption('rentability-asc');
+    const rentabilityOrder = await page.locator('.ag-table tbody tr').evaluateAll(rows => rows.map(row => row.dataset.id));
+    assert.deepEqual(rentabilityOrder, ['alpha', 'beta', 'unknown']);
+    await sort.selectOption('result-desc');
+    for (const width of [360, 390, 430, 768, 1366, 1440, 1536, 1920]) {
+      await page.setViewportSize({ width, height: width <= 430 ? 844 : 900 });
+      assert.equal(await sort.isVisible(), true, `seletor inacessível em ${width}px`);
+      assert.equal(await page.locator('html').evaluate(node => node.scrollWidth <= innerWidth), true, `overflow horizontal global em ${width}px`);
+      if (width <= 430) {
+        const mobileOrder = await page.locator('.asset-mobile-cards > details').evaluateAll(cards => cards.map(card => card.dataset.id));
+        assert.deepEqual(mobileOrder, desktopOrder, `ordem móvel divergiu em ${width}px`);
+      }
+    }
+    assert.equal(await page.evaluate(() => JSON.stringify(S.assets)), fixtureBefore, 'ordenação alterou a fixture financeira');
+    assert.equal(await page.evaluate(() => window.__qaStorageWrites.length), storageWritesBefore, 'ordenação gravou no armazenamento local');
+    assert.deepEqual(firebaseRequests, []);
+    assert.deepEqual(consoleErrors, []);
+    assert.deepEqual(pageErrors, []);
   } finally {
     await browser.close();
     harness.server.close();
