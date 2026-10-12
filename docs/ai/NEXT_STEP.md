@@ -1,3 +1,11 @@
+## 2026-10-12 — LEGACY_AUTONOMOUS_PRODUCT_EVOLUTION
+
+- Branch de evolução local: `codex/legacy-dashboard-profile-spacing`, base `main` em `53d01ddb177cd6ad2fea48be1caea4366051e1b7`; HEAD do código antes deste checkpoint `4b1b5c1762a1842b7674d9a4ad8fcced807f53b1`.
+- Commits locais: `d6d3d8c` corrige separação avatar/nome no perfil desktop; `4b1b5c1` alinha o teste da rota Patrimônio ao contrato atual. Worktree limpa; sem push/PR/Preview novo.
+- Validação local sintética: `npm test`, Modern 823/823, `qa:all`, `verify:release`, V289 18/18 e testes focados passaram. Dashboard e Renda Fixa verificados em 390×844; Renda Fixa sem overflow e controles principais com 44 px.
+- PR #494 continua OPEN e mergeable no SHA `9e8568631d7f78985253f5f65f3b7b7e6ed9ed5c`, CI/Preview verdes. Rotas autenticadas não verificadas: `BLOCKED_AUTHENTICATED_PREVIEW`; não tentar novo login. Main está ligada ao ambiente Vercel Production; merge não autorizado.
+- `NEXT_ACTION=continuar QA local sintético nas áreas prioritárias e implementar somente defeitos concretos; validação autenticada da #494 depende de sessão já autorizada.`
+- Sem escrita financeira real, importação, restauração, merge ou produção.
 ## V1005 — certificação operacional LEGACY (2026-10-11)
 
 - Base verificada: `origin/main` `4cc31ed54000754bda0905aae2e9d06aa75ed6e6`; implementação na worktree isolada `codex/v1005-operational-certification`.
