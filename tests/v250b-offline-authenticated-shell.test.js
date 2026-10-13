@@ -91,7 +91,7 @@ test('V250D delegates reconnect persistence to Firebase LOCAL authority', () => 
 
 test('V250B service worker ships the offline session helper in the versioned shell', () => {
   assert.match(sw, /'\.\/v250-offline-session\.js'/);
-  assert.match(sw, /const SW_VERSION = 'v250\.7'/);
+  assert.match(sw, /const SW_VERSION = 'v250\.8'/);
 });
 
 test('V250B source contains no credential persistence primitive', () => {

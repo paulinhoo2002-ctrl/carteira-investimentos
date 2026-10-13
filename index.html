@@ -38,7 +38,7 @@
   window.__AUTHORITATIVE_LOCAL_RECOVERY_BOOT__=authoritativeLocalRecovery;
   window.__APP_BUILD_ID__='phase4i-runtime-v2';
   window.__EXPECTED_AUTHORITY_RUNTIME_VERSION__='local-cloud-authority-v2';
-  window.__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v250.7';
+  window.__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v250.8';
   window.__AUTHORITATIVE_LOCAL_STATUS_BRIDGE__='http://127.0.0.1:9245/status';
   if(testMode || emulatorRequested){
     document.documentElement.dataset.theme='dark';
@@ -78,6 +78,7 @@
 <script src="legacy/js/ui/presentation.js"></script>
 <script src="legacy/js/ui/charts.js"></script>
 <script src="legacy/js/ui/portfolio-search.js"></script>
+<script src="legacy/js/screens/dashboard-executive-kpis.js"></script>
 <script src="legacy/js/screens/settings.js"></script>
 <script>
 (()=>{if(window.__LOCAL_TEST_MODE__) return;
@@ -20616,26 +20617,6 @@ function dashboardSourceRoute(source){
   return '';
 }
 
-function dashboardHomeSummaryPanel(data){
-  const p=data?.portfolio||cx();
-  const totalCurrent=Number(p.tC)||0;
-  const totalApplied=Number(p.tI)||0;
-  const totalResult=Number(p.tG)||0;
-  const totalPct=Number(p.tGP)||0;
-  return `<div class="premium-panel dashboard-home-summary">
-    <div class="premium-panel-head">
-      <div><div class="premium-panel-title">Resumo patrimonial</div><div class="premium-panel-sub">Patrimônio, capital aplicado, resultado e rentabilidade.</div></div>
-      <div class="premium-panel-badge">Visão rápida</div>
-    </div>
-    <div class="premium-metrics">
-      ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',fmt(totalCurrent),totalCurrent>0?'Valor estimado da carteira':'Cadastre ativos para começar','#a78bfa','rgba(129,140,248,.16)')}
-      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Total investido',fmt(totalApplied),totalApplied>0?'Capital informado na carteira':'Sem aportes registrados','#60a5fa','rgba(96,165,250,.14)')}
-      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado geral',fmt(totalResult),totalCurrent>0?'Diferença entre aplicado e atual':'Sem base suficiente',totalResult>=0?'#34d399':'#f87171',totalResult>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)')}
-      ${dashboardMetricCard(dashboardMetricIcon('percent'),'Rentabilidade',totalApplied>0?fmtP(totalPct):'—',totalApplied>0?'Cálculo sobre o capital aplicado':'Sem capital informado',totalPct>=0?'#60a5fa':'#f87171',totalPct>=0?'rgba(96,165,250,.14)':'rgba(248,113,113,.14)')}
-    </div>
-    ${(()=>{const snap=patrimonySnapshot(Number(S.dashPeriod)||12);const vals=snap.months.map(m=>m.cumulative);if(!vals.some(v=>v>0))return `<div class="dash-evolution"><div class="dash-evolution-head"><div><div class="premium-panel-title">Evolução do patrimônio</div><div class="premium-panel-sub">Acompanhe a curva após registrar seus primeiros aportes.</div></div><span class="premium-panel-badge premium-financial-badge">Patrimônio atual ${fmt(p.tC)}</span></div><div class="premium-empty">Registre movimentações na aba Aportes para acompanhar a evolução mensal.</div></div>`;return `<div class="dash-evolution"><div class="dash-evolution-head"><div><div class="premium-panel-title">Evolução do patrimônio</div><div class="premium-panel-sub">Aportes líquidos acumulados · janela de ${snap.count} meses.</div></div><span class="premium-panel-badge premium-financial-badge">Patrimônio atual ${fmt(p.tC)}</span></div>${lineChart([{values:vals,color:'#34d399',fill:'rgba(52,211,153,.16)',width:2.4}],snap.months.map(m=>m.label))}</div>`;})()}
-  </div>`;
-}
 function dashboardPassiveIncomePanel(data){
   const income=data?.income||passiveIncomeGoalStats();
   const target=Number(income.target)||0;
@@ -22522,39 +22503,6 @@ function dashboardCurrentValueAvailability(){
   if((S.assets||[]).some(asset=>!isRendaFixaAsset(asset) && globalThis.PortfolioDataTrust?.freshness?.(asset).status==='STALE'))
     return {state:'STALE',note:'Cotações desatualizadas; confirme a data da fonte'};
   return {state:'AVAILABLE',note:'Valores atuais informados'};
-}
-function executiveKPIs(data){
-  const p=data?.portfolio||cx();
-  const totalCurrent=Number(p.tC)||0;
-  const totalApplied=Number(p.tI)||0;
-  const amountValid=typeof p.tG==='number' && Number.isFinite(p.tG);
-  const percentValid=typeof p.tGP==='number' && Number.isFinite(p.tGP) && totalApplied>0;
-  const availability=dashboardCurrentValueAvailability();
-  const currentMonthKey=passiveIncomeMonthKey(new Date());
-  const recent=data?.recent?.month===currentMonthKey?data.recent:passiveIncomeMonthSummary(currentMonthKey);
-  const monthReceived=recent.total;
-  // cx() supplies both values from the same applied-capital base. Validate the
-  // relationship before pairing; this does not calculate a replacement return.
-  const sameBasis=amountValid && percentValid && Math.abs((p.tG/totalApplied)*100-p.tGP)<0.02;
-  const resultAvailable=!['UNKNOWN','PARTIAL','NO_DATA'].includes(availability.state);
-  const amount=resultAvailable&&amountValid?fmt(p.tG):'';
-  const percent=resultAvailable&&percentValid&&!S.hideValues?fmtP(p.tGP):'';
-  const resultValue=sameBasis&&amount&&percent?`${amount} · ${percent}`:(amount||percent||'—');
-  const resultNote=!resultAvailable?'Base parcial ou indisponível':sameBasis?'Variação atual sobre capital aplicado':'Medidas sem base comum; não pareadas';
-  const resultTone=p.tG>=0?'#34d399':'#f87171';
-  const resultGlow=p.tG>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)';
-  const patrimonyValue=['UNKNOWN','NO_DATA'].includes(availability.state)?'—':fmt(totalCurrent);
-  const investedContext=totalApplied>0?`Investido ${fmt(totalApplied)}`:'Sem capital aplicado';
-  const patrimonyNote=availability.state==='AVAILABLE'&&totalCurrent===0?'Valor conhecido: zero':availability.note;
-  const incomeAvailable=(S.proventos||[]).length>0 || (S.rfEvents||[]).length>0;
-
-  return `
-    <div class="dashboard-executive-kpis">
-      ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',patrimonyValue,`${investedContext} · ${patrimonyNote} · Data-base financeira não informada`,'#a78bfa','rgba(129,140,248,.16)')}
-      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado',resultValue,resultNote,resultTone,resultGlow)}
-      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida','#10b981','rgba(16,185,129,.14)')}
-    </div>
-  `;
 }
 function dashboardEvolutionPanel(data){
   const snapshot=patrimonySnapshot(Number(S.dashPeriod)||12);

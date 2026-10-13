@@ -9,7 +9,7 @@ const { startLocalHttpServer } = require('./local-http-server');
 const root = path.join(__dirname, '..');
 const chrome = process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 
-test('settings screen loads the extracted renderer in the synthetic read-only browser', async () => {
+test('settings and dashboard load extracted renderers in the synthetic read-only browser', async () => {
   const harness = await startLocalHttpServer(root);
   let browser;
   try {
@@ -30,6 +30,11 @@ test('settings screen loads the extracted renderer in the synthetic read-only br
       const ids = [...document.querySelectorAll('[id]')].map(element => element.id);
       return ids.filter((id, index) => ids.indexOf(id) !== index);
     }), []);
+
+    await page.evaluate(() => { S.tab = 'dashboard'; render(); });
+    assert.match(await page.locator('#root').innerText(), /Visão consolidada/);
+    assert.match(await page.locator('#root').innerText(), /PATRIMÔNIO ATUAL/);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
     assert.deepEqual(errors, []);
 
     await page.setViewportSize({ width: 1366, height: 768 });

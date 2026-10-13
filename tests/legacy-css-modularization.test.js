@@ -45,6 +45,9 @@ test('legacy CSS is extracted into ordered external modules and pre-cached offli
   assert.ok(sw.includes("'./legacy/js/ui/portfolio-search.js'"), 'Service worker must pre-cache the search renderer');
   assert.ok(html.includes('<script src="legacy/js/screens/settings.js"></script>'), 'Settings screen must load before application callers');
   assert.ok(sw.includes("'./legacy/js/screens/settings.js'"), 'Service worker must pre-cache the settings screen');
+  assert.ok(html.includes('<script src="legacy/js/screens/dashboard-executive-kpis.js"></script>'), 'Dashboard KPI renderer must load before application callers');
+  assert.ok(sw.includes("'./legacy/js/screens/dashboard-executive-kpis.js'"), 'Service worker must pre-cache the dashboard KPI renderer');
+  assert.doesNotMatch(html, /function executiveKPIs\(data\)/, 'Dashboard KPI renderer must not remain inline');
   assert.doesNotMatch(html, /function settingsTab\(\)/, 'Settings renderer must not remain inline');
 });
 
