@@ -13,7 +13,7 @@ const CHROME = process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Ap
 const QUERY = '?qaAuthEmulator=1&qaFirestoreEmulator=1&protectedReadOnlyQa=1';
 const DATA_HOSTS = /(?:firestore\.googleapis\.com|identitytoolkit\.googleapis\.com|firebasestorage\.googleapis\.com|securetoken\.googleapis\.com|firebaseinstallations\.googleapis\.com|(?:^|\.)firebaseio\.com)(?::\d+)?(?:\/|$)/i;
 const DATA_REQUEST_URL = /^https?:\/\/[^/]*(?:firestore\.googleapis\.com|identitytoolkit\.googleapis\.com|firebasestorage\.googleapis\.com|securetoken\.googleapis\.com|firebaseinstallations\.googleapis\.com|firebaseio\.com)(?::\d+)?(?:\/|$)/i;
-const ROUTES = ['dashboard', 'ativos', 'dividendos', 'renda-fixa', 'confiabilidade'];
+const ROUTES = ['dashboard', 'patrimonio', 'ativos', 'dividendos', 'renda-fixa', 'metas', 'settings', 'confiabilidade'];
 const VIEWPORTS = [{ width: 390, height: 844 }, { width: 1366, height: 768 }];
 
 let harness;
@@ -80,8 +80,10 @@ async function newPage({ query = QUERY, hostname = '127.0.0.1', viewport = VIEWP
       return originalSet.call(this, key, value);
     };
   });
-  const base = harness.url.replace('127.0.0.1', hostname).replace('?testMode=1', query);
-  await page.goto(base, { waitUntil: 'domcontentloaded' });
+  const base = new URL(harness.url);
+  base.hostname = hostname;
+  base.search = query;
+  await page.goto(base.toString(), { waitUntil: 'domcontentloaded' });
   return { context, page, requests, blockedProductionRequests, pageErrors, consoleErrors, httpErrors, get financialWrites() { return financialWrites; }, get taxWrites() { return taxWrites; }, get importWrites() { return importWrites; } };
 }
 
@@ -104,7 +106,7 @@ function firebaseDataRequests(app) {
 }
 
 before(async () => {
-  harness = await startLocalHttpServer(path.join(__dirname, '..'));
+  harness = await startLocalHttpServer(path.join(__dirname, '..'), 0, { syntheticQa: false });
   browser = await chromium.launch({ executablePath: CHROME, headless: true, args: ['--host-resolver-rules=MAP qa-non-loopback.invalid 127.0.0.1'] });
   await seedAccessDocument();
 });
@@ -117,7 +119,7 @@ after(async () => {
   }
 });
 
-test('V311: real Firebase Auth + Firestore emulator session renders protected routes read-only', async () => {
+test('V311 production-parity read-only: raw production HTML boots with emulator auth and renders core routes', async () => {
   const app = await newPage();
   try {
     await waitForFirebase(app);
@@ -131,6 +133,13 @@ test('V311: real Firebase Auth + Firestore emulator session renders protected ro
 
     const identity = await app.page.evaluate(() => ({ authenticated: !!FB.user, email: FB.user?.email || '', allowed: FB.access.allowed }));
     assert.deepEqual(identity, { authenticated: true, email: EMAIL, allowed: true });
+    const boot = await app.page.evaluate(() => ({
+      localTestMode: window.__LOCAL_TEST_MODE__ === true,
+      protectedReadOnly: window.__PROTECTED_READ_ONLY_QA_BOOT__ === true,
+      emulatorMode: window.__LOCAL_AUTH_EMULATOR_MODE__ === true,
+      cloudLoaded: FB.cloudLoaded === true,
+    }));
+    assert.deepEqual(boot, { localTestMode: false, protectedReadOnly: true, emulatorMode: true, cloudLoaded: true });
     assert.ok(app.requests.some(({ url }) => url.startsWith('http://127.0.0.1:9099/')));
     assert.ok(app.requests.some(({ url }) => url.startsWith('http://127.0.0.1:8080/')));
     const emulatorNotice = app.page.locator('.firebase-emulator-warning');
@@ -140,16 +149,27 @@ test('V311: real Firebase Auth + Firestore emulator session renders protected ro
     for (const viewport of VIEWPORTS) {
       await app.page.setViewportSize(viewport);
       for (const route of ROUTES) {
-        if (viewport.width === 390 && route === 'ativos') await app.page.locator('#investBottomNav > button').nth(1).click();
-        else if (viewport.width === 390 && route === 'dividendos') await app.page.locator('#investBottomNav > button').nth(2).click();
-        else if (viewport.width === 390 && route === 'renda-fixa') await app.page.locator('#investBottomNav > button').nth(3).click();
-        else if (viewport.width === 390 && route === 'confiabilidade') {
-          await app.page.locator('#investBottomNav > button').nth(4).click();
-          await app.page.locator('#investMenuDrawer button').filter({ hasText: 'Confiabilidade' }).click();
+        if (viewport.width === 390) {
+          const primaryLabels = { dashboard: 'Resumo', ativos: 'Ativos', dividendos: 'Dividendos', 'renda-fixa': 'Renda Fixa' };
+          if (primaryLabels[route]) {
+            await app.page.locator('#investBottomNav').getByRole('button', { name: primaryLabels[route] }).click();
+          } else {
+            const menuLabels = { patrimonio: 'Patrimônio', metas: 'Metas', settings: 'Configurações', confiabilidade: 'Confiabilidade' };
+            await app.page.locator('#investBottomNav').getByRole('button', { name: 'Abrir navegação complementar' }).click();
+            await app.page.locator('#investMenuDrawer').getByRole('button', { name: new RegExp(menuLabels[route]) }).click();
+          }
         } else await app.page.evaluate(route => go(route), route);
         await app.page.waitForFunction(route => S.tab === route, route);
         const state = await app.page.evaluate(() => ({
           authenticated: !!FB.user && FB.access.allowed,
+          localTestMode: window.__LOCAL_TEST_MODE__ === true,
+          protectedReadOnly: window.__PROTECTED_READ_ONLY_QA_BOOT__ === true,
+          renderedRoute: S.tab,
+          routeTextLength: document.querySelector('#root .wrap')?.innerText.trim().length || 0,
+          duplicateIds: (() => {
+            const ids = [...document.querySelectorAll('[id]')].map(element => element.id).filter(Boolean);
+            return ids.filter((id, index) => ids.indexOf(id) !== index);
+          })(),
           gateVisible: document.body.innerText.includes('Entre com Google para continuar'),
           documentWidth: document.documentElement.scrollWidth,
           bodyWidth: document.body.scrollWidth,
@@ -187,6 +207,11 @@ test('V311: real Firebase Auth + Firestore emulator session renders protected ro
           })(),
         }));
         assert.equal(state.authenticated, true, `${route} at ${viewport.width}: auth lost`);
+        assert.equal(state.localTestMode, false, `${route} at ${viewport.width}: must use normal production bootstrap`);
+        assert.equal(state.protectedReadOnly, true, `${route} at ${viewport.width}: read-only QA guard missing`);
+        assert.equal(state.renderedRoute, route, `${route} at ${viewport.width}: route not selected`);
+        assert.ok(state.routeTextLength > 0, `${route} at ${viewport.width}: route rendered empty content`);
+        assert.deepEqual(state.duplicateIds, [], `${route} at ${viewport.width}: duplicate DOM IDs`);
         assert.equal(state.gateVisible, false, `${route} at ${viewport.width}: login gate returned`);
         assert.ok(state.documentWidth <= state.viewportWidth, `${route} at ${viewport.width}: document overflow`);
         assert.ok(state.bodyWidth <= state.viewportWidth, `${route} at ${viewport.width}: body overflow`);
