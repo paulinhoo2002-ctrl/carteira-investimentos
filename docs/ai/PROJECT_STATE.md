@@ -1,4 +1,10 @@
-## MEGA 14 — checkpoint atual (2026-10-12)
+## MEGA 14C — estado atual (2026-10-12)
+
+- Branch codex/legacy-product-mega-12 na worktree isolada v012-mega-12-lifetime-redesign; conteúdo funcional commitado em cd5ab47 e 86f2ff9. Extração de busca/helpers de apresentação, atualização app-shell/SW v250.6, testes sintéticos de renderer/proveniência e ajuste pontual de legibilidade.
+- verify:release PASS no delta final, V289 18/18, V324 17/17, Modern 823/823; capturas V330 sintéticas 25/25. Não se afirma PPR: teste Auth/Firestore bloqueado antes de iniciar os testes por Netty/WEPoll loopback com Java 21.
+- Finance Core, persistence-core, Firebase de produção, dados reais, credenciais e demais worktrees inalterados. Push/PR/merge/deploy não executados. Limitações e retomada em NEXT_STEP.md.
+
+## MEGA 14B — checkpoint histórico (supersedido por MEGA 14C)
 
 - Retomada MEGA14B: adicionada cobertura V311 de bootstrap raw sem `testMode`, oito rotas e IDs únicos; navegação equivalente validada em QA sintético. `npm run verify:release` exit 0 (Legacy, Modern, `qa:all`, V289 18/18, V324 17/17); viewport extra 360 px passou. Production-parity autenticado segue BLOCKED: Firestore Emulator 1.22.0 falha na criação do selector loopback WEPoll com Java 26 e 21; não houve acesso hospedado. Próxima ação: `npm run test:auth-emulator` em host/runtime compatível.
 - Worktree LEGACY confirmada: `C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`, início em `a36cf75120254293d496a769fe659d24838d5c78`, checkout limpo antes desta missão; origin e Git common-dir corretos. Checkout canônico e demais worktrees preservados.

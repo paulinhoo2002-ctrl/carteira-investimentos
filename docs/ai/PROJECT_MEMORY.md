@@ -1,4 +1,10 @@
-## MEGA 14 — modularização JS de apresentação e QA (2026-10-12)
+## MEGA 14C — conclusão local (2026-10-12)
+
+- Na worktree isolada da MEGA 12 foram extraídos o renderer de busca global e helpers de tooltip/formatação para módulos UI já carregados; app shell/build atualizados e Service Worker versionado como v250.6. Testes executam os renderers reais e contrato sintético de custódia/proveniência, preservando null/UNKNOWN.
+- CSS funcional selecionado ficou mais legível; V330 gerou 25 screenshots sintéticas. Métricas de delta: JS inline -3.276 bytes/36 linhas; !important -5; declarações font-size <12px -6; media queries sem alteração. Commits locais cd5ab47, 86f2ff9.
+- verify:release PASS (Modern 823/823, V289 18/18, V324 17/17); teste focado final 24/24. V311/PPR continua BLOCKED_ENVIRONMENT: Emulator falha ao criar loopback Netty/WEPoll com Java 21 antes dos testes; hosted Firebase não acessado. Consultar checkpoint MEGA14C e NEXT_STEP antes de nova ação.
+
+## MEGA 14B — histórico da modularização inicial (2026-10-12)
 
 - Retomada MEGA14B: V311 foi estendido para exercitar o bootstrap HTML normal sem `testMode`, oito rotas e navegação mobile. `npm run verify:release` passou; o Emulator QA não executa neste host: Firestore Emulator 1.22.0 falha ao abrir selector loopback WEPoll com Java 26 e 21. Retomar com `npm run test:auth-emulator` em runtime compatível; PPR não certificado.
 - Na worktree isolada `v012-mega-12-lifetime-redesign`, foram movidos `dataQualityTab`, `renderDataQualityIssueCard`, `renderDataQualityPriorityCard`, `passiveIncomeMetricCard` e `passiveIncomeProgressCard` para `legacy/js/ui/presentation.js`, já carregado antes do app inline. Os renderers apenas consomem dados preparados; regras de cálculo ficaram no inline/core. Uma redefinição legada de `renderAuditAlertCard` permaneceu inline por depender de ordem de declaração.

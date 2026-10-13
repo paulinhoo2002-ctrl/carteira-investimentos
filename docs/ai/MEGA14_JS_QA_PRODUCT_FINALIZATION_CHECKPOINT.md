@@ -2,6 +2,16 @@
 
 Data: 2026-10-12
 
+## MEGA 14C — conclusão local (2026-10-12)
+
+- Identidade revalidada na worktree LEGACY C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign, branch codex/legacy-product-mega-12, HEAD de entrada e2c26d06b2ed3aebbe08518236a4791f971cd280; origin e Git common-dir corretos. Demais worktrees preservadas.
+- Extraído renderPortfolioSearch para legacy/js/ui/portfolio-search.js; helpers de tooltip do gráfico de dividendos movidos para legacy/js/ui/charts.js; formatGoalMonths movido para legacy/js/ui/presentation.js e corrigido plural 2 meses. O shell offline e o build incluem o novo módulo, com cache SW v250.6. Adicionado contrato sintético de proveniência/custódia/cobertura; valores desconhecidos continuam null.
+- Métricas calculadas contra HEAD de entrada: JS inline 1.751.705→1.748.429 bytes e 28.915→28.879 linhas. CSS versionado: !important 932→927; media queries 212→212; declarações estáticas font-size <12px 1.033→1.027. V330 produziu 25 capturas sintéticas (5 telas, 390 escuro/claro, 1366 escuro/claro, 1920 escuro) em .qa-state/v330-daily-use-mega14c-after/; QA smoke reportou sem overflow/erros nas larguras cobertas.
+- npm run verify:release terminou exit 0 no conteúdo funcional final: Legacy, Modern 823/823, qa:all, V289 18/18 e V324 17/17. Após a última alteração de formatação do teste, cinco arquivos focados passaram 24/24. git diff --check e root hygiene passaram. O teste V311 de autenticação não executou: Firebase Emulator 1.22.0 falha antes dos testes ao criar loopback Netty/WEPoll com Java 21; Java 17 não é aceito pelo Firebase CLI. Sem WSL/Docker disponíveis. Estado: BLOCKED_ENVIRONMENT; nenhum Firebase hospedado foi acessado.
+- Avisos não bloqueantes do Modern permanecem: script clássico fora do bundle, import default sem export default, MODULE_TYPELESS_PACKAGE_JSON e colisão eventual da porta fixa 24678 durante teste paralelo; após o término não havia listeners nas portas examinadas. Sem revisão independente ou QA autenticada.
+- Commits locais: cd5ab47d9077caa0feeff84c25a5f9b009abdb01 (extração/helpers e testes sintéticos) e 86f2ff96adcf69a592dc558f80d2a46649dce18c (legibilidade CSS e V330). Sem push/PR/merge/deploy. Finance Core, persistência, regras Firebase, produção e dados reais não foram alterados. A próxima missão financeira depende de validação PPR/V311 em ambiente compatível; comando: npm run test:auth-emulator.
+
+
 ## Identidade
 
 - Repositório: `paulinhoo2002-ctrl/carteira-investimentos`.
