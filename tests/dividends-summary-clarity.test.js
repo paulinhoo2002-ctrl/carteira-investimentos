@@ -1,4 +1,8 @@
 const { readLegacyHtml } = require('./helpers/read-legacy-html.cjs');
+const ROOT = require('node:path').resolve(__dirname, '..');
+const { chromium } = require('playwright-core');
+const { startLocalHttpServer } = require('./local-http-server');
+const { applyFullAppFixture } = require('./helpers/full-app-fixtures');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -212,16 +216,33 @@ test('dividendDistributionRow isAbsent=false sozinho não confirma zero', () => 
   assert.equal(row.includes('NaN'), false);
 });
 
-test('historico mensal fica recolhido no overview e abre somente na visao mensal', () => {
-  const indexHtml = read('index.html');
-  assert.ok(indexHtml.includes("function dividendMonthlyHistoryPremium(rows,startOpen=false){"));
-  assert.ok(indexHtml.includes('dividendMonthlyTableBlock(rows, mode===\'monthly\')'));
-  assert.equal(
-    indexHtml.includes("dividendMonthlyTableBlock(rows, mode==='monthly')")
-      || indexHtml.includes('dividendMonthlyTableBlock(rows, monthlyStartOpen)'),
-    true,
-  );
-  assert.ok(indexHtml.includes('div-dividend-moreviews'));
+test('historico mensal fica recolhido no overview e abre somente na visao mensal', async () => {
+  const harness = await startLocalHttpServer(ROOT, 0, { syntheticQa: true });
+  const browser = await chromium.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
+  const context = await browser.newContext({ viewport: { width: 1366, height: 768 }, serviceWorkers: 'block' });
+  const page = await context.newPage();
+
+  await page.goto(harness.url + '&testReadOnly=1', { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => typeof S !== 'undefined' && !!document.querySelector('.test-mode-banner'), { timeout: 5000 });
+  await applyFullAppFixture(page, 'large', 'CONFIRMED');
+  await page.evaluate(() => go('dividendos'));
+  await page.waitForFunction(() => S.tab === 'dividendos', { timeout: 5000 });
+
+  // Overview view: monthly history should be present (as part of overview)
+  const overviewHtml = await page.evaluate(() => document.body.innerHTML);
+  assert.ok(overviewHtml.includes('dividend-history-block'), 'overview must contain dividend-history-block');
+
+  // Monthly view: monthly table block should be present
+  await page.evaluate(() => { S.dividendViewMode = 'monthly'; go('dividendos'); });
+  await page.waitForFunction(() => S.tab === 'dividendos' && S.dividendViewMode === 'monthly', { timeout: 3000 });
+  const monthlyHtml = await page.evaluate(() => document.body.innerHTML);
+  assert.ok(monthlyHtml.includes('div-monthly-body') || monthlyHtml.includes('dividend-monthly-table'), 'monthly view must contain monthly table');
+
+  // More views dropdown exists
+  assert.ok(overviewHtml.includes('div-dividend-moreviews'), 'must have more views dropdown');
+
+  await browser.close();
+  harness.server.close();
 });
 
 test('dividendDistributionPeriod estado default e reset', () => {

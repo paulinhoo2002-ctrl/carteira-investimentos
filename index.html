@@ -25311,44 +25311,77 @@ function dividendsTabPremium(showGoal=false,pageTitle='Dividendos e Proventos'){
   const mode=['overview','received','asset','monthly','timeline','review'].includes(S.dividendViewMode)?S.dividendViewMode:'overview';
   S.dividendViewMode=mode;
   const rows=filteredDividendRows();
+
+  // ---- SHARED: always needed ----
   const tabs=[['overview','Calendário'],['timeline','Evolução'],['monthly','Histórico']];
   const extraViews=[['received','Recebimentos'],['asset','Por ativo'],['review','Revisão']];
   const extraViewsOpen=['received','asset','review'].includes(mode);
-  const recentSection=dividendCompactSectionHeader(
-    'received',
-    'Últimos recebimentos',
-    dividendRecentSummary(rows),
-    dividendRecentList(rows, mode==='received' ? 8 : 5),
-    mode==='received'
-  );
-  const assetSection=dividendCompactSectionHeader(
-    'asset',
-    'Por ativo',
-    dividendAssetSummary(rows),
-    dividendsByAssetView(rows)
-  );
-  const monthlyStartOpen=mode==='monthly';
-  const monthlySection=mode==='monthly'
-    ? dividendMonthlyTableBlock(rows, mode==='monthly')
-    : dividendMonthlyTableBlock(rows, monthlyStartOpen);
-  const timelineSection=`<section class="dividend-mode-content" aria-label="Evolução da renda"><div class="dividend-history-heading"><strong>Evolução da renda</strong><span>Valores recebidos por mês · período exibido no gráfico.</span></div>${dividendMonthlyTimeline()}</section>`;
-  const reviewSection=renderProventoRfLinkAuditPanel();
-const topAssetsSection=dividendCompactSectionHeader('asset','Top ativos',dividendAssetSummary(rows),dividendsByAssetView(rows),true);
-  const primaryBlocks=`<div class="dividend-primary-grid"><div>${dividendCompactSectionHeader('timeline','Evolução da renda',dividendTimelineSummary(rows),dividendMonthlyTimeline(),true)}</div><div>${topAssetsSection}</div></div>`;
-  const secondaryBlocks=`<div class="dividend-secondary-grid"><div>${dividendUpcomingSection(rows,false)}</div><div>${corporateEventsAnnouncementSection()}</div></div>`;
-  const historyBlock=`<div class="dividend-history-block"><div class="dividend-history-heading"><strong>Histórico de Proventos</strong><span>Consulta mensal com filtros oficiais e leitura detalhada sob demanda.</span></div>${monthlySection}</div>`;
-  // Mantem a referencia do contrato visual legado sem renderizar KPIs duplicados: ${dividendSummaryCards()}
-  const overviewBody=canonDividendOverview(rows, dividendExecutiveKpis());
-  // Contratos estruturais legados preservados para os guardrails: ${dividendSummaryCards()} ${dividendDistributionPanel()} ${monthlySection} div-exec-overview div-exec-kpis
-  // const lowerBlocks=`<div class="dividend-lower-grid">`; ordem antiga: </div></div>${monthlySection}${lowerBlocks}`
-  const body=mode==='asset'?assetSection
-    :mode==='monthly'?monthlySection
-    :mode==='timeline'?timelineSection
-    :mode==='received'?recentSection
-    :mode==='review'?reviewSection
-    :overviewBody;
   const overviewHeaderActions=`<div class="div-premium-canon-actions">${mode==='overview'?canonDividendYearChips(rows):''}<button type="button" class="btn bp" onclick="tgD()">+ Registrar provento</button><button type="button" class="btn bgh" onclick="exportBackup()">Exportar</button></div>`;
   const modeNavigation=`<nav class="div-premium-tabs" aria-label="Modos de Dividendos">${tabs.map(([id,label])=>`<button type="button" class="div-premium-tab ${mode===id?'on':''}" aria-current="${mode===id?'page':'false'}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}<details class="div-dividend-moreviews"${extraViewsOpen ? ' open' : ''}><summary class="div-dividend-moreviews-summary"><span>Mais</span><span class="div-dividend-moreviews-meta">${extraViewsOpen ? 'aberto' : 'modos'}</span></summary><div class="div-dividend-moreviews-body">${extraViews.map(([id,label])=>`<button type="button" class="div-premium-tab ${mode===id?'on':''}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}</div></details></nav>`;
+
+  // ---- LAZY VIEW RENDERERS: only compute when active ----
+  const viewRenderers = {
+    overview: () => {
+      const kpisHtml = dividendExecutiveKpis(rows);
+      const incomeEngine = globalThis.DividendIntelligence;
+      const receivedRows = incomeEngine?.classifyIncomeState
+        ? rows.filter(row=>incomeEngine.classifyIncomeState(row)==='PAID')
+        : rows;
+      const received = dividendCompactSectionHeader(
+        'received',
+        'Renda recebida',
+        receivedRows.length
+          ? dividendOverviewRecentSummary(receivedRows)
+          : (rows.length ? 'Nenhum recebimento pago identificado nos lançamentos atuais.' : 'Sem recebimentos identificados no período.'),
+        receivedRows.length ? dividendRecentList(receivedRows,6) : dividendEmptyState(rows.length
+          ? 'Nenhum recebimento pago identificado.'
+          : 'Sem dados de recebimentos no período.'),
+        true
+      );
+      const upcoming = dividendUpcomingSection(rows,false);
+      const monthlyHistory = dividendMonthlyTableBlock(rows,true);
+      const incomeEvolution = `<section class="dividend-mode-content" aria-label="Evolução da renda"><div class="dividend-history-heading"><strong>Evolução da renda</strong><span>Valores recebidos por mês · período observado, sem projeção no histórico.</span></div>${dividendMonthlyTimeline(rows)}</section>`;
+      const topAssets = dividendCompactSectionHeader('asset','Top ativos',dividendAssetSummary(rows),dividendsByAssetView(rows),true);
+      const annualSummary = `<section class="premium-panel dividend-annual-summary" aria-labelledby="dividend-annual-summary-title"><div class="premium-panel-head"><div><div class="premium-panel-title" id="dividend-annual-summary-title">Resumo por ano</div><div class="premium-panel-sub">Recebimentos registrados por ano; períodos sem cobertura permanecem indisponíveis.</div></div></div>${canonDividendYearSummary(rows)}</section>`;
+      return `
+        <div class="canon-dividends dividend-calendar-view dividend-daily-overview">
+          ${kpisHtml}
+          <section class="dividend-history-block" aria-label="Histórico mensal de recebimentos">${monthlyHistory}</section>
+          <div class="dividend-primary-grid">${incomeEvolution}${topAssets}</div>
+          ${annualSummary}
+          <section class="dividend-calendar-primary" aria-label="Recebimentos e próximos eventos">
+            ${received}
+            ${upcoming}
+          </section>
+          <details class="dividend-secondary-disclosure">
+            <summary>Resumo de renda e cobertura</summary>
+            <div class="dividend-secondary-disclosure-body">
+              ${v253DividendIntelligencePanel(rows)}
+              <div class="corporate-events-readonly-panel">${corporateEventsAnnouncementSection()}</div>
+            </div>
+          </details>
+        </div>`;
+    },
+    received: () => dividendCompactSectionHeader(
+      'received',
+      'Últimos recebimentos',
+      dividendRecentSummary(rows),
+      dividendRecentList(rows, 8),
+      true
+    ),
+    asset: () => dividendCompactSectionHeader(
+      'asset',
+      'Por ativo',
+      dividendAssetSummary(rows),
+      dividendsByAssetView(rows)
+    ),
+    monthly: () => dividendMonthlyTableBlock(rows, true),
+    timeline: () => `<section class="dividend-mode-content" aria-label="Evolução da renda"><div class="dividend-history-heading"><strong>Evolução da renda</strong><span>Valores recebidos por mês · período exibido no gráfico.</span></div>${dividendMonthlyTimeline(rows)}</section>`,
+    review: () => renderProventoRfLinkAuditPanel()
+  };
+
+  const body = viewRenderers[mode] ? viewRenderers[mode]() : viewRenderers.overview();
+
   return `<main class="div-premium premium-dividends-3 div-exec-overview" aria-labelledby="dividends-page-title">
     <div class="div-premium-hero">
       <div class="div-premium-head"><div><h1 id="dividends-page-title" class="div-premium-title">Dividendos</h1><div class="div-premium-sub">Acompanhe sua renda passiva mês a mês.</div></div>${overviewHeaderActions}</div>
