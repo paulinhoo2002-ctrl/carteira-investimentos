@@ -48,6 +48,9 @@ test('legacy CSS is extracted into ordered external modules and pre-cached offli
   assert.ok(html.includes('<script src="legacy/js/screens/dashboard-executive-kpis.js"></script>'), 'Dashboard KPI renderer must load before application callers');
   assert.ok(sw.includes("'./legacy/js/screens/dashboard-executive-kpis.js'"), 'Service worker must pre-cache the dashboard KPI renderer');
   assert.doesNotMatch(html, /function executiveKPIs\(data\)/, 'Dashboard KPI renderer must not remain inline');
+  assert.ok(html.includes('<script src="legacy/js/screens/dashboard-allocation.js"></script>'), 'Dashboard allocation renderer must load before application callers');
+  assert.ok(sw.includes("'./legacy/js/screens/dashboard-allocation.js'"), 'Service worker must pre-cache the dashboard allocation renderer');
+  assert.doesNotMatch(html, /function dashboardV3AllocationPanel\(\)/, 'Dashboard allocation renderer must not remain inline');
   assert.doesNotMatch(html, /function settingsTab\(\)/, 'Settings renderer must not remain inline');
 });
 

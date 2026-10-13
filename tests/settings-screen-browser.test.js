@@ -34,6 +34,11 @@ test('settings and dashboard load extracted renderers in the synthetic read-only
     await page.evaluate(() => { S.tab = 'dashboard'; render(); });
     assert.match(await page.locator('#root').innerText(), /Visão consolidada/);
     assert.match(await page.locator('#root').innerText(), /PATRIMÔNIO ATUAL/);
+    assert.match(await page.locator('#root').innerText(), /Alocação/);
+    assert.deepEqual(await page.evaluate(() => {
+      const ids = [...document.querySelectorAll('[id]')].map(element => element.id);
+      return ids.filter((id, index) => ids.indexOf(id) !== index);
+    }), []);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
     assert.deepEqual(errors, []);
 
