@@ -194,3 +194,153 @@ function dividendMonthlyHistoryYearCard(year, compact=false, expanded=false){
     </div>
   </article>`;
 }
+
+
+function renderDataQualityIssueCard(issue){
+  const action=typeof dataQualityResolveAction==='function'
+    ? dataQualityResolveAction(issue)
+    : (()=>{
+      const route=issue.route || dataQualityRouteForEntity(issue.entityType, issue.category);
+      return route ? {level:3, route, label:issue.actionLabel||dataQualityActionLabel(route)} : {level:4, route:'', label:''};
+    })();
+  const actionHtml=action.level===4 ? `<div class="data-quality-action-level muted">Informativo</div>` : `<div class="data-quality-action"><span class="data-quality-action-level">${dataQualityActionLevelLabel(action.level)}</span><button class="btn bgh" aria-label="${esc(action.label)}: ${esc(issue.entityLabel)}" onclick="dataQualityRunAction(${esc(JSON.stringify(issue))})">${esc(action.label)}</button></div>`;
+  return `<article class="data-quality-issue ${esc(issue.severity)}">
+    <div class="data-quality-issue-top">
+      <span class="data-quality-severity ${esc(issue.severity)}">${esc(dataQualitySeverityLabel(issue.severity))}</span>
+      <span class="data-quality-category">${esc(issue.category)}</span>
+    </div>
+    <div class="data-quality-entity">${esc(issue.entityType)} · ${esc(issue.entityLabel)}</div>
+    <div class="data-quality-identity">Identificacao: ${esc(issue.identitySummary || issue.entityLabel)}</div>
+    <div class="data-quality-field">${esc(issue.field)}</div>
+    <div class="data-quality-problem">${esc(issue.message)}</div>
+    <div class="data-quality-recommendation">${esc(issue.recommendation)}</div>
+    ${actionHtml}
+  </article>`;
+}
+function renderDataQualityPriorityCard(issue){
+  const action=typeof dataQualityResolveAction==='function'
+    ? dataQualityResolveAction(issue)
+    : {level:4,label:''};
+  const actionHtml=action.level===4 ? `<div class="data-quality-action-level muted">Informativo</div>` : `<div class="data-quality-action"><span class="data-quality-action-level">${dataQualityActionLevelLabel(action.level)}</span><button class="btn bgh" aria-label="${esc(action.label)}: ${esc(issue.entityLabel)}" onclick="dataQualityRunAction(${esc(JSON.stringify(issue))})">${esc(action.label)}</button></div>`;
+  return `<article class="data-quality-issue ${esc(issue.severity)}">
+    <div class="data-quality-issue-top"><span class="data-quality-severity ${esc(issue.severity)}">${esc(dataQualitySeverityLabel(issue.severity))}</span><span class="data-quality-category">${esc(issue.category)}</span></div>
+    <div class="data-quality-entity"><span class="data-quality-entity-type">${esc(issue.entityType)}</span><span class="data-quality-entity-label" title="${esc(issue.entityLabel)}">${esc(issue.entityLabel)}</span></div>
+    <div class="data-quality-identity">Identificacao: ${esc(issue.identitySummary || issue.entityLabel)}</div>
+    <div class="data-quality-problem">${esc(issue.message)}</div>
+    ${actionHtml}
+  </article>`;
+}
+function passiveIncomeMetricCard({tone='muted', kicker='', value='—', sub=''}){
+  return `<div class="passive-goal-card ${tone}">
+    <div class="passive-goal-kicker">${esc(kicker)}</div>
+    <div class="passive-goal-value">${value}</div>
+    <div class="passive-goal-sub">${sub}</div>
+  </div>`;
+}
+function passiveIncomeProgressCard({tone='muted', kicker='', value='—', sub='', percent=0, barColor='#60a5fa'}){
+  const width=Math.max(0, Math.min(100, Number(percent)||0)).toFixed(1);
+  return `<div class="passive-goal-card ${tone}" style="min-height:88px">
+    <div class="passive-goal-kicker">${esc(kicker)}</div>
+    <div class="passive-goal-value">${value}</div>
+    <div class="passive-goal-sub">${sub}</div>
+    <div class="dbt" style="height:6px;margin-top:7px"><div class="dbf" style="width:${width}%;background:${barColor}"></div></div>
+  </div>`;
+}
+
+function dataQualityTab(){
+  const snapshot=dataQualitySnapshot();
+  const remediationModel=v257QualityModel(snapshot);
+  const monitoringModel=v258MonitoringModel(remediationModel);
+  const severity=String(S.dataQualitySeverity || S.dataAuditSeverity || 'all');
+  const category=String(S.dataQualityCategory || S.dataAuditArea || 'all');
+  const entityType=String(S.dataQualityEntityType || 'all');
+  const filtered=snapshot.issues.filter(issue=>
+    (severity==='all' || issue.severity===severity) &&
+    (category==='all' || issue.category===category) &&
+    (entityType==='all' || issue.entityType===entityType)
+  );
+  const healthy=snapshot.summary.criticalRecords===0 && snapshot.summary.warningRecords===0 && snapshot.summary.infoRecords===0;
+  const severityChips=[['all','Todos'],['critical','Criticos'],['warning','Atencao'],['info','Info']]
+    .map(([value,label])=>`<button class="data-quality-chip ${severity===value?'on':''}" onclick="setDataQualitySeverity('${value}')">${esc(label)}</button>`).join('');
+  const categoryChips=[['all','Todas'],...DATA_QUALITY_CATEGORIES.map(value=>[value,value])]
+    .map(([value,label])=>`<button class="data-quality-chip ${category===value?'on':''}" onclick="setDataQualityCategory(${JSON.stringify(value)})">${esc(label)}</button>`).join('');
+  const typeChips=[['all','Todos'],...DATA_QUALITY_ENTITY_TYPES.map(value=>[value,value])]
+    .map(([value,label])=>`<button class="data-quality-chip ${entityType===value?'on':''}" onclick="setDataQualityEntityType(${JSON.stringify(value)})">${esc(label)}</button>`).join('');
+  const activeFilterCount=[severity!=='all',category!=='all',entityType!=='all'].filter(Boolean).length;
+  const runAt=S.dataQualityRunAt instanceof Date ? S.dataQualityRunAt : (S.dataAuditRunAt instanceof Date ? S.dataAuditRunAt : new Date());
+  const integrityTone=snapshot.score>=90?'ok':snapshot.score>=70?'warning':'critical';
+  const reviewableAssets=assetReviewQualityData(snapshot);
+  const reviewAssetsAction=reviewableAssets.ids.length
+    ? `<button class="btn bgh" onclick="openIncompleteAssetsReview()">Revisar ${reviewableAssets.ids.length} ativo${reviewableAssets.ids.length===1?'':'s'} com pendências</button>`
+    : '';
+  const priorityIssues=dataQualityPriorityIssues(filtered,5);
+  const prioritySet=new Set(priorityIssues);
+  const remainingIssues=filtered.filter(issue=>!prioritySet.has(issue));
+  const mobilePriorityView=typeof window!=='undefined' && window.matchMedia('(max-width: 640px)').matches;
+  const visiblePriorityIssues=mobilePriorityView && !S.dataQualityPriorityExpanded ? priorityIssues.slice(0,3) : priorityIssues;
+  const hiddenPriorityCount=Math.max(0,priorityIssues.length-visiblePriorityIssues.length);
+  const priorityToggle=mobilePriorityView && priorityIssues.length>3
+    ? `<button type="button" class="data-quality-priority-more" onclick="toggleDataQualityPriorities()">${hiddenPriorityCount ? `Ver mais ${hiddenPriorityCount}` : 'Ver menos'}</button>`
+    : '';
+  const summaryCards=[
+    ['Registros analisados', snapshot.summary.totalRecords, 'dados inspecionados'],
+    ['Sem problemas', snapshot.summary.validRecords, 'registros sem achados relevantes'],
+    ['Atencao', snapshot.summary.warningRecords, 'registros com observacoes'],
+    ['Criticos', snapshot.summary.criticalRecords, 'registros que exigem revisao urgente'],
+    ['Integridade', `${snapshot.score}%`, 'indice de registros validos']
+  ].map(([label,value,sub],index)=>`<div class="data-quality-card ${index===2?'warning':index===3?'critical':index===4?integrityTone:'ok'}"><div class="data-quality-card-label wave-b-heading">${waveBIcon(index===2||index===3?'attention':index===1?'readonly':'analysis')}<span>${esc(label)}</span></div><div class="data-quality-card-value">${esc(String(value))}</div><div class="data-quality-card-sub">${esc(sub)}</div></div>`).join('');
+  const healthyState=healthy
+    ? `<div class="data-quality-empty-health"><div><div class="data-quality-empty-title">Dados consistentes</div><div class="data-quality-empty-note">Nenhum problema relevante foi encontrado nos registros analisados.</div></div></div>`
+    : '';
+  const emptyState=filtered.length
+    ? `<section class="data-quality-priority" aria-labelledby="data-quality-priority-title">
+        <div class="data-quality-priority-head"><div><div class="data-quality-priority-title" id="data-quality-priority-title">O que merece atenção</div><div class="data-quality-priority-sub">Críticos primeiro, seguidos pelos achados que pedem conferência.</div></div><span class="data-quality-area-pill">${priorityIssues.length} prioritário${priorityIssues.length===1?'':'s'}</span></div>
+        <div class="data-quality-priority-list">${visiblePriorityIssues.map(renderDataQualityPriorityCard).join('')}</div>
+        ${priorityToggle}
+      </section>${remainingIssues.length ? `<details class="data-quality-full-queue"><summary>Ver todas as pendências <span>${remainingIssues.length} restante${remainingIssues.length===1?'':'s'}</span></summary><div class="data-quality-full-queue-body">${remainingIssues.map(renderDataQualityIssueCard).join('')}</div></details>` : ''}`
+    : healthy
+      ? healthyState
+      : `<div class="data-quality-empty">Nenhum problema encontrado para os filtros selecionados.</div><div style="margin-top:8px"><button class="btn bgh" onclick="setDataQualitySeverity('all');setDataQualityCategory('all');setDataQualityEntityType('all')">Limpar filtros</button></div>`;
+  return `<div class="data-quality-shell data-audit-shell">
+    <section class="data-quality-hero">
+      <div class="data-quality-head">
+        <div>
+          <div class="data-quality-title wave-b-heading">${waveBIcon('readonly')}<span>Auditoria</span></div>
+          <div class="data-quality-sub">Rastreabilidade e integridade dos dados da carteira. Revise registros que podem comprometer relatórios e calculos. Nenhuma correcao e feita automaticamente.</div>
+        </div>
+        <div class="data-quality-actions">
+          <button class="btn bgh" onclick="rerunDataQuality()">Reexecutar auditoria</button>
+          ${reviewAssetsAction}
+        </div>
+      </div>
+      <div class="data-quality-summary">
+        ${summaryCards}
+      </div>
+    </section>
+    ${v257DataQualityCenter(remediationModel)}
+    ${v258MonitoringCenter(monitoringModel,remediationModel)}
+    ${dataQualityRfReconciliationSection()}
+    <div class="data-quality-filters">
+      <div class="data-quality-filter-main">
+        <div class="data-quality-filter-group"><span class="data-quality-filter-label">Severidade</span>${severityChips}</div>
+        <span class="data-quality-filter-count">${activeFilterCount ? `${activeFilterCount} filtro${activeFilterCount===1?'':'s'} ativo${activeFilterCount===1?'':'s'}` : 'Filtros principais'}</span>
+        ${activeFilterCount ? '<button class="data-quality-chip" onclick="clearDataQualityFilters()">Limpar</button>' : ''}
+      </div>
+      <details class="data-quality-more-filters">
+        <summary>Mais filtros</summary>
+        <div class="data-quality-more-filters-body">
+          <div class="data-quality-filter-group"><span class="data-quality-filter-label">Categoria</span>${categoryChips}</div>
+          <div class="data-quality-filter-group"><span class="data-quality-filter-label">Tipo de registro</span>${typeChips}</div>
+        </div>
+      </details>
+    </div>
+    <div class="data-quality-areas">
+      ${snapshot.affected.length ? snapshot.affected.map(([name,count])=>`<span class="data-quality-area-pill">${esc(name)} · ${count}</span>`).join('') : '<span class="data-quality-area-pill">Nenhum problema encontrado</span>'}
+      <span class="data-quality-area-pill">Executada às ${runAt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span>
+      <span class="data-quality-area-pill">${filtered.length} exibido${filtered.length===1?'':'s'}</span>
+    </div>
+    <div class="data-quality-list">
+      ${emptyState}
+    </div>
+  </div>`;
+}

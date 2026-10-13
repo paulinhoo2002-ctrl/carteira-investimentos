@@ -5,6 +5,7 @@ const test = require('node:test');
 const vm = require('node:vm');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const presentation = fs.readFileSync(path.join(__dirname, '..', 'legacy/js/ui/presentation.js'), 'utf8');
 
 function loadCompatibilityAliases() {
   const start = source.indexOf('function dataAuditSeverityLabel(severity){ return dataQualitySeverityLabel(severity); }');
@@ -19,13 +20,15 @@ function loadCompatibilityAliases() {
     dataQualityTab: () => '<section data-quality>ok</section>',
     dataQualityRouteForEntity: () => 'auditoria',
     dataQualityActionLabel: () => 'Abrir',
+    dataQualityActionLevelLabel: () => 'Informativo',
+    dataQualityResolveAction: () => ({ level: 4 }),
     esc: (value) => String(value ?? ''),
     setDataQualitySeverity: (value) => `severity:${value}`,
     setDataQualityCategory: (value) => `category:${value}`,
     rerunDataQuality: () => 'rerun',
-    renderDataQualityIssueCard: (value) => `card:${value}`,
   };
   context.window = context;
+  vm.runInNewContext(presentation, context, { timeout: 1000 });
   vm.runInNewContext(source.slice(start, end), context, { timeout: 1000 });
   context.dataQualityTab = () => '<section data-quality>ok</section>';
   return context;

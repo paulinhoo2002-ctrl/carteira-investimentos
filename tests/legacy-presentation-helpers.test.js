@@ -35,7 +35,7 @@ test('presentation helpers load before app code and leave their definitions outs
   const helperScript = html.indexOf('<script src="legacy/js/ui/presentation.js"></script>');
   const applicationScript = html.indexOf('<script>\nconst QUOTE_REFRESH_INTERVAL');
   assert.ok(helperScript >= 0 && helperScript < applicationScript);
-  assert.doesNotMatch(html, /function (?:toast|dashboardMetricIcon|waveBIcon|dashboardInlineAction|dashboardConsultiveCard|dashboardMetricCard|dashboardRadarCard|assetSummaryCard|assetRankingRowHtml|dividendMonthlyHistoryYearMonthRow|dividendMonthlyHistoryYearCard)\s*\(/);
+  assert.doesNotMatch(html, /function (?:toast|dashboardMetricIcon|waveBIcon|dashboardInlineAction|dashboardConsultiveCard|dashboardMetricCard|dashboardRadarCard|assetSummaryCard|assetRankingRowHtml|dividendMonthlyHistoryYearMonthRow|dividendMonthlyHistoryYearCard|passiveIncomeMetricCard|passiveIncomeProgressCard|renderDataQualityIssueCard|renderDataQualityPriorityCard)\s*\(/);
 });
 
 test('dashboard icons preserve accessible-hidden SVG mappings and readonly shield', () => {
@@ -91,4 +91,42 @@ test('annual dividend presentation keeps unknown coverage separate from confirme
   const completeZero = context.dividendMonthlyHistoryYearCard({ year: 2025, average: 0, total: 0, validCount: 12, bestMonth: null, months: [{ label: 'Jan', valueText: 'R$ 0,00', kind: 'complete-zero' }] }, false);
   assert.match(completeZero, /Média R\$ 0\.00 · Total recebido R\$ 0\.00 · Cobertura confirmada: 12\/12 meses/);
   assert.match(completeZero, /R\$ 0,00/);
+});
+
+test('real data-quality card renderers preserve labels, action semantics, and escaped text', () => {
+  const { context } = loadPresentationHarness();
+  context.dataQualitySeverityLabel = value => value === 'warning' ? 'Atenção' : 'Crítico';
+  context.dataQualityActionLevelLabel = level => 'Nível ' + level;
+  context.dataQualityResolveAction = issue => ({ level: issue.actionLevel, label: 'Abrir ' + issue.category });
+  context.dataQualityRunAction = () => {};
+  const issue = {
+    severity: 'warning', category: 'Dividendos', entityType: 'Provento', entityLabel: 'DIV & <TEST>',
+    identitySummary: 'origem sintética', field: 'amount', message: '<script>not real</script>',
+    recommendation: 'Revisar fixture', actionLevel: 2,
+  };
+  const standard = context.renderDataQualityIssueCard(issue);
+  const priority = context.renderDataQualityPriorityCard(issue);
+  assert.match(standard, /data-quality-issue warning/);
+  assert.match(standard, /Atenção/);
+  assert.match(standard, /Nível 2/);
+  assert.match(standard, /DIV &amp; &lt;TEST&gt;/);
+  assert.match(standard, /&lt;script&gt;not real&lt;\/script&gt;/);
+  assert.doesNotMatch(standard, /<script>/);
+  assert.match(priority, /data-quality-entity-label/);
+  assert.match(priority, /Abrir Dividendos/);
+});
+
+test('passive-income cards render caller-provided unknown and confirmed-zero states without calculating finance', () => {
+  const { context } = loadPresentationHarness();
+  const unknown = context.passiveIncomeMetricCard({ kicker: 'Média certificada', value: 'Indisponível', sub: 'Cobertura insuficiente' });
+  const confirmedZero = context.passiveIncomeMetricCard({ kicker: 'Recebido', value: 'R$ 0,00', sub: 'Zero confirmado' });
+  const progress = context.passiveIncomeProgressCard({ kicker: 'Progresso', value: 'Indisponível', sub: 'Sem média certificada', percent: 0 });
+
+  assert.match(unknown, /Média certificada/);
+  assert.match(unknown, /Indisponível/);
+  assert.match(unknown, /Cobertura insuficiente/);
+  assert.match(confirmedZero, /R\$ 0,00/);
+  assert.match(confirmedZero, /Zero confirmado/);
+  assert.match(progress, /width:0\.0%/);
+  assert.match(progress, /Sem média certificada/);
 });

@@ -20,6 +20,7 @@ test('fase 208 documentada com governanca e sem persistencia de auditoria', () =
   const roadmap = readUtf8WithoutBom('docs/project-phases-roadmap.md');
   const doc = readUtf8WithoutBom('docs/phase-208-data-quality.md');
   const indexHtml = fs.readFileSync(path.join(repoRoot, 'index.html')).toString('utf8');
+  const presentation = fs.readFileSync(path.join(repoRoot, 'legacy/js/ui/presentation.js')).toString('utf8');
 
   assert.match(roadmap, /- fase atual: nenhuma;/);
   assert.match(roadmap, /- nome: nenhuma;/);
@@ -54,18 +55,19 @@ test('fase 208 documentada com governanca e sem persistencia de auditoria', () =
   assert.match(doc, /nenhum schema novo/i);
 
   assert.match(indexHtml, /function dataQualitySnapshot\(\)/);
-  assert.match(indexHtml, /function dataQualityTab\(\)/);
-  assert.match(indexHtml, /function renderDataQualityIssueCard\(issue\)/);
+  assert.match(indexHtml, /legacy\/js\/ui\/presentation\.js/);
+  assert.match(presentation, /function renderDataQualityIssueCard\(issue\)/);
+  assert.match(presentation, /function dataQualityTab\(\)/);
   assert.match(indexHtml, /function dataAuditTab\(\)/);
   assert.equal(indexHtml.includes('dataQualitySnapshot(){'), true);
-  assert.equal(indexHtml.includes('dataQualityTab(){'), true);
+  assert.equal(indexHtml.includes('dataQualityTab(){'), false);
 });
 
 test('auditoria de qualidade evita grid desktop no breakpoint tablet', () => {
-  const indexHtml = fs.readFileSync(path.join(repoRoot, 'index.html')).toString('utf8');
+  const styles = fs.readFileSync(path.join(repoRoot, 'legacy/css/dividends-compact.css')).toString('utf8');
 
-  assert.match(indexHtml, /@media\(min-width:641px\) and \(max-width:900px\)/);
-  assert.match(indexHtml, /\.data-quality-issue\{[^}]*grid-template-columns:1fr 1fr[^}]*min-width:0/);
-  assert.match(indexHtml, /\.data-quality-issue>div:nth-child\(6\)[^}]*grid-column:1\/-1/);
-  assert.match(indexHtml, /\.data-quality-action \.btn\{[^}]*width:100%[^}]*white-space:normal/);
+  assert.match(styles, /@media\(min-width:641px\) and \(max-width:900px\)/);
+  assert.match(styles, /\.data-quality-issue\{[^}]*grid-template-columns:1fr 1fr[^}]*min-width:0/);
+  assert.match(styles, /\.data-quality-issue>div:nth-child\(6\)[^}]*grid-column:1\/-1/);
+  assert.match(styles, /\.data-quality-action \.btn\{[^}]*width:100%[^}]*white-space:normal/);
 });

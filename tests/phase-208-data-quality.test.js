@@ -19,6 +19,7 @@ class FixedDate extends NativeDate {
 
 const repoRoot = path.join(__dirname, '..');
 const indexHtml = fs.readFileSync(path.join(repoRoot, 'index.html'), 'utf8');
+const presentationSource = fs.readFileSync(path.join(repoRoot, 'legacy/js/ui/presentation.js'), 'utf8');
 
 function extractBetween(text, startMarker, endMarker) {
   const start = text.indexOf(startMarker);
@@ -230,6 +231,7 @@ function createSandbox(state = {}) {
 function loadRuntime(state) {
   const sandbox = createSandbox(state);
   const context = vm.createContext(sandbox);
+  vm.runInContext(presentationSource, context, { timeout: 1000 });
   const blocks = [
     extractBetween(indexHtml, 'function isRendaFixaAsset(a){', 'function dataQualitySnapshot(){'),
     extractBetween(indexHtml, 'function dataQualitySnapshot(){', 'function dashboardPassiveIncomePanel(data){'),
