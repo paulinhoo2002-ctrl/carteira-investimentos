@@ -39,7 +39,7 @@ function settingsTab(){
           </div>` : `
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">${esc(userName||'Sem conta')}</div><div class="premium-settings-row-desc">${FB.user?esc(userEmail):'Faça login para sincronizar na nuvem'}</div></div>
-            ${FB.user ? `<span class="premium-settings-badge ok">Conectado</span>` : `<button class="btn bp" onclick="signInGoogle()" style="font-size:11px;min-height:34px;padding:0 10px">Entrar Google</button>`}
+            ${FB.user ? `<span class="premium-settings-badge ok">Conectado</span>` : `<button class="btn bp" onclick="signInGoogle()" style="padding:0 10px">Entrar Google</button>`}
           </div>
           ${FB.user ? `
           <div class="premium-settings-row">
@@ -48,11 +48,11 @@ function settingsTab(){
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Sincronizar agora</div><div class="premium-settings-row-desc">Enviar dados locais para a nuvem</div></div>
-            <button class="btn bgh" onclick="uploadLocalToCloud(true)" aria-busy="${FB.syncInFlight?'true':'false'}" ${FB.syncInFlight?'disabled':''} style="font-size:11px;min-height:34px;padding:0 10px">${FB.syncInFlight?'⏳ Sincronizando...':'☁️ Enviar'}</button>
+            <button class="btn bgh" onclick="uploadLocalToCloud(true)" aria-busy="${FB.syncInFlight?'true':'false'}" ${FB.syncInFlight?'disabled':''} style="padding:0 10px">${FB.syncInFlight?'⏳ Sincronizando...':'☁️ Enviar'}</button>
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Sair da conta</div><div class="premium-settings-row-desc">Desconectar do Google</div></div>
-            <button class="btn bgh" onclick="signOutGoogle()" style="font-size:11px;min-height:34px;padding:0 10px">Sair</button>
+            <button class="btn bgh" onclick="signOutGoogle()" style="padding:0 10px">Sair</button>
           </div>` : ''}
           `}
           <div class="premium-settings-wallet-card">
@@ -80,7 +80,7 @@ function settingsTab(){
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Resetar carteira ativa</div><div class="premium-settings-row-desc">Apagar todo o histórico, ativos e proventos desta carteira. Outras carteiras não são afetadas.</div></div>
-            <button class="btn bgh" onclick="resetPortfolio(event)" aria-busy="${RESET_IN_FLIGHT?'true':'false'}" ${RESET_IN_FLIGHT?'disabled':''} style="font-size:11px;min-height:34px;padding:0 10px;border-color:rgba(248,113,113,.25);color:#fca5a5">${RESET_IN_FLIGHT?'⏳ Resetando...':'🧹 Reset'}</button>
+            <button class="btn bgh" onclick="resetPortfolio(event)" aria-busy="${RESET_IN_FLIGHT?'true':'false'}" ${RESET_IN_FLIGHT?'disabled':''} style="padding:0 10px;border-color:rgba(248,113,113,.25);color:#fca5a5">${RESET_IN_FLIGHT?'⏳ Resetando...':'🧹 Reset'}</button>
           </div>
         </div>
       </div>
@@ -93,7 +93,7 @@ function settingsTab(){
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Tema</div><div class="premium-settings-row-desc">${esc(themeLabel)}</div></div>
-            <button class="btn bgh ds-button ds-button--ghost" onclick="toggleTheme()" style="font-size:11px;min-height:34px;padding:0 10px">${esc(themeIcon)} Alternar</button>
+            <button class="btn bgh ds-button ds-button--ghost" onclick="toggleTheme()" style="padding:0 10px">${esc(themeIcon)} Alternar</button>
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">${S.hideValues?'Mostrar valores':'Ocultar valores'}</div><div class="premium-settings-row-desc">${S.hideValues?'Valores ocultos na carteira':'Valores visíveis normalmente'}</div></div>
@@ -109,7 +109,7 @@ function settingsTab(){
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Restaurar dados de teste</div><div class="premium-settings-row-desc">Reinicializa a fixture em memória com dados determinísticos.</div></div>
-            ${isLocalTestReadOnlyMode()?'<span role="status">Bloqueado no modo somente leitura.</span>':'<button class="btn bgh ds-button ds-button--secondary" onclick="restoreLocalTestData()" style="font-size:11px;min-height:34px;padding:0 10px">🧪 Restaurar</button>'}
+            ${isLocalTestReadOnlyMode()?'<span role="status">Bloqueado no modo somente leitura.</span>':'<button class="btn bgh ds-button ds-button--secondary" onclick="restoreLocalTestData()" style="padding:0 10px">🧪 Restaurar</button>'}
           </div>
         </div>` : ''}
 
@@ -120,19 +120,19 @@ function settingsTab(){
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Exportar backup</div><div class="premium-settings-row-desc">Gera uma cópia restaurável em JSON; não é um relatório analítico.</div></div>
-            <button class="btn bgh" onclick="exportBackup()" style="font-size:11px;min-height:34px;padding:0 10px">📤 Exportar</button>
+            <button class="btn bgh" onclick="exportBackup()" style="padding:0 10px">📤 Exportar</button>
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Importar backup</div><div class="premium-settings-row-desc">Selecione um arquivo JSON e revise antes de restaurar.</div></div>
-            <button class="btn bgh" onclick="openBackupCenter()" style="font-size:11px;min-height:34px;padding:0 10px">📥 Importar</button>
+            <button class="btn bgh" onclick="openBackupCenter()" style="padding:0 10px">📥 Importar</button>
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Centro de backup</div><div class="premium-settings-row-desc">Visualizar resumo e gerenciar importação/exportação.</div></div>
-            <button class="btn bgh" onclick="openBackupCenter()" style="font-size:11px;min-height:34px;padding:0 10px">Abrir</button>
+            <button class="btn bgh" onclick="openBackupCenter()" style="padding:0 10px">Abrir</button>
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Aportes e retiradas externas</div><div class="premium-settings-row-desc">Fluxos para medir performance, separados de compras e vendas.</div></div>
-            <button class="btn bgh" onclick="openExternalFlow()" style="font-size:11px;min-height:34px;padding:0 10px">Registrar</button>
+            <button class="btn bgh" onclick="openExternalFlow()" style="padding:0 10px">Registrar</button>
           </div>
         </div>
 
@@ -144,7 +144,7 @@ function settingsTab(){
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Controle de acesso</div><div class="premium-settings-row-desc">Defina quem entra e quem mantém a carteira sincronizada.</div></div>
-            <button class="btn bgh" onclick="openAccessSettings()" style="font-size:11px;min-height:34px;padding:0 10px">Configurar</button>
+            <button class="btn bgh" onclick="openAccessSettings()" style="padding:0 10px">Configurar</button>
           </div>
         </div>` : ''}
 
@@ -158,11 +158,11 @@ function settingsTab(){
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">PWA</div><div class="premium-settings-row-desc">${pwaInstalled?'App instalado no dispositivo':'Instale como aplicativo para acesso rápido'}</div></div>
-            ${pwaInstalled ? `<span class="premium-settings-badge ds-badge ds-badge--positive ok">Instalado</span>` : (PWA.prompt ? `<button class="btn bgh ds-button ds-button--ghost" onclick="installPWA()" style="font-size:11px;min-height:34px;padding:0 10px">📲 Instalar</button>` : `<span class="premium-settings-badge ds-badge ds-badge--info off">Indisponível</span>`)}
+            ${pwaInstalled ? `<span class="premium-settings-badge ds-badge ds-badge--positive ok">Instalado</span>` : (PWA.prompt ? `<button class="btn bgh ds-button ds-button--ghost" onclick="installPWA()" style="padding:0 10px">📲 Instalar</button>` : `<span class="premium-settings-badge ds-badge ds-badge--info off">Indisponível</span>`)}
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Atualizações</div><div class="premium-settings-row-desc">Verificar se há uma versão mais recente.</div></div>
-            <button class="btn bgh ds-button ds-button--ghost" onclick="checkForAppUpdate({manual:true})" style="font-size:11px;min-height:34px;padding:0 10px">🔄 Verificar</button>
+            <button class="btn bgh ds-button ds-button--ghost" onclick="checkForAppUpdate({manual:true})" style="padding:0 10px">🔄 Verificar</button>
           </div>
         </div>
       </div>

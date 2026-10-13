@@ -40,6 +40,12 @@ test('settings and dashboard load extracted renderers in the synthetic read-only
         });
       });
       assert.ok(contrast.length>0 && contrast.every(ratio=>ratio>=4.5),theme+' settings text must contrast against both gradient stops');
+      const reading=await page.evaluate(()=>({
+        microtext:[...document.querySelectorAll('.premium-settings-page *')].filter(element=>element.childElementCount===0 && element.textContent.trim() && element.getBoundingClientRect().height>0 && parseFloat(getComputedStyle(element).fontSize)<12).length,
+        smallButtons:[...document.querySelectorAll('.premium-settings-page button')].filter(element=>element.getBoundingClientRect().height>0 && element.getBoundingClientRect().height<44).length,
+      }));
+      assert.equal(reading.microtext,0,theme+' settings must not use functional microtext');
+      assert.equal(reading.smallButtons,0,theme+' settings buttons must preserve touch targets');
     }
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
     assert.deepEqual(await page.evaluate(() => {
