@@ -4,9 +4,7 @@ const path = require('node:path');
 const test = require('node:test');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-const rendererStart = source.indexOf('function rendaFixaTab()');
-const rendererEnd = source.indexOf('\nfunction dashLegacy', rendererStart);
-const renderer = source.slice(rendererStart, rendererEnd);
+const renderer = fs.readFileSync(path.join(__dirname, '..', 'legacy/js/screens/fixed-income.js'), 'utf8');
 
 test('Renda Fixa adopts visual primitives without replacing official sources', () => {
   assert.match(source, /function rfIntelligenceSnapshot\(\)/);

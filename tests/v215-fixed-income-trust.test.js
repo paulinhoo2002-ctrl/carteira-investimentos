@@ -4,11 +4,12 @@ const fs = require('node:fs');
 const assert = require('node:assert/strict');
 const test = require('node:test');
 
-const index = fs.readFileSync('index.html', 'utf8');
+const bootstrap = fs.readFileSync('index.html', 'utf8');
+const index = bootstrap + '\n' + fs.readFileSync('legacy/js/screens/fixed-income.js', 'utf8');
 
 test('V215 loads the pure fixed-income trust helper before the app renderer', () => {
   assert.match(index, /<script src="fixed-income-trust\.js"><\/script>/);
-  assert.ok(index.indexOf('fixed-income-trust.js') < index.indexOf('function rendaFixaTab()'));
+  assert.ok(bootstrap.indexOf('fixed-income-trust.js') < bootstrap.indexOf('legacy/js/screens/fixed-income.js'));
 });
 
 test('Renda Fixa exposes accessible trust controls without adding write handlers', () => {

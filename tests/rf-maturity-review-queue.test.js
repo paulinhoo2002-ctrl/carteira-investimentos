@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 
 const source = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const start = source.indexOf('function rfMaturityReviewGroups(data){');
-const end = source.indexOf('function rendaFixaTab(){', start);
+const end = source.indexOf('function dashLegacy(', start);
 assert.ok(start >= 0 && end > start, 'review queue helper must remain discoverable');
 const helper = `${source.slice(start, end)}; globalThis.rfMaturityReviewGroups=rfMaturityReviewGroups;`;
 const evaluate = new Function(`${helper}\nreturn globalThis.rfMaturityReviewGroups;`);

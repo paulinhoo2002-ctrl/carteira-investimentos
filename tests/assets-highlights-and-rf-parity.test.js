@@ -170,9 +170,9 @@ function loadPrincipalFns(ctx){
   `, ctx);
   const dashboardHighlights = extractFunctionBlock(INDEX_HTML, 'function dashboardHighlightsRows(kind=\'high\', classFilter=\'all\'){', 'function dashboardHighlightsRowHtml(');
   vm.runInNewContext(dashboardHighlights, ctx);
-  const rfSnapshot = extractFunctionBlock(INDEX_HTML, 'function rfIntelligenceSnapshot(){', 'function rendaFixaTab()');
+  const rfSnapshot = extractFunctionBlock(INDEX_HTML, 'function rfIntelligenceSnapshot(){', 'function dashLegacy(');
   vm.runInNewContext(rfSnapshot, ctx);
-  const rendaFixaTab = extractFunctionBlock(INDEX_HTML, 'function rendaFixaTab(){', 'function dashLegacy(');
+  const rendaFixaTab = fs.readFileSync(path.join(__dirname, '..', 'legacy/js/screens/fixed-income.js'), 'utf8');
   vm.runInNewContext(rendaFixaTab, ctx);
   const dashboardMetricCard = 'function dashboardMetricCard(icon,label,value,sub,tone="muted",bg="rgba(0,0,0,0)"){return `<div class="dash-metric ${tone}"><div class="dash-metric-icon">${icon}</div><div class="dash-metric-body"><div class="dash-metric-label">${esc(label)}</div><div class="dash-metric-value">${value}</div><div class="dash-metric-sub">${esc(sub)}</div></div></div>`;}';
   vm.runInNewContext(dashboardMetricCard, ctx);

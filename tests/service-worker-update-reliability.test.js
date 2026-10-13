@@ -6,6 +6,8 @@ const test = require('node:test');
 
 const root = path.join(__dirname, '..');
 const swSource = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
+const currentVersion = swSource.match(/SW_VERSION = '([^']+)'/)[1];
+const currentCacheName = `carteira-investimentos-${currentVersion}`;
 const indexSource = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const vercelSource = JSON.parse(fs.readFileSync(path.join(root, 'vercel.json'), 'utf8'));
 
@@ -21,8 +23,8 @@ function resolveBrowser() {
 }
 
 test('service worker owns a versioned cache and never clears app data', () => {
-  assert.match(swSource, /SW_VERSION = 'v250\.9'/);
-  assert.match(indexSource, /__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v250\.9'/);
+  assert.match(swSource, /SW_VERSION = 'v250\.10'/);
+  assert.match(indexSource, /__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v250\.10'/);
   assert.match(swSource, /startsWith\(CACHE_PREFIX\)/);
   assert.doesNotMatch(swSource, /localStorage\.clear\s*\(/);
   assert.doesNotMatch(swSource, /indexedDB\.deleteDatabase\s*\(/);
@@ -56,7 +58,7 @@ test('old release to new release clears only the old app cache', { skip: !resolv
   const executablePath = resolveBrowser();
   assert.ok(executablePath, 'navegador resolvido obrigatorio quando o teste executa');
   let release = 'A';
-  const oldWorker = swSource.replace("SW_VERSION = 'v250.9'", "SW_VERSION = 'v17'") + '\n// release A';
+  const oldWorker = swSource.replace(`SW_VERSION = '${currentVersion}'`, "SW_VERSION = 'v17'") + '\n// release A';
   const newWorker = swSource + '\n// release B';
   const server = http.createServer((req, res) => {
     const url = new URL(req.url || '/', 'http://127.0.0.1');
@@ -84,12 +86,12 @@ test('old release to new release clears only the old app cache', { skip: !resolv
 
     release = 'B';
     await page.evaluate(async () => { const reg = await navigator.serviceWorker.getRegistration(); await reg.update(); });
-    await page.evaluate(async () => {
+    await page.evaluate(async currentCacheName => {
       const deadline = Date.now() + 15000;
       while (Date.now() < deadline) {
         const reg = await navigator.serviceWorker.getRegistration();
         const keys = await caches.keys();
-        if (keys.includes('carteira-investimentos-v250.9') && !keys.includes('carteira-investimentos-v17')) return;
+        if (keys.includes(currentCacheName) && !keys.includes('carteira-investimentos-v17')) return;
         if (reg?.waiting) {
           reg.waiting.postMessage({ type: 'SKIP_WAITING' });
           return;
@@ -97,13 +99,13 @@ test('old release to new release clears only the old app cache', { skip: !resolv
         await new Promise(resolve => setTimeout(resolve, 50));
       }
       throw new Error('service worker waiting/activation timeout');
-    });
-    await page.waitForFunction(() => caches.keys().then(keys => (
-      keys.includes('carteira-investimentos-v250.9') && !keys.includes('carteira-investimentos-v17')
-    )));
+    }, currentCacheName);
+    await page.waitForFunction(currentCacheName => caches.keys().then(keys => (
+      keys.includes(currentCacheName) && !keys.includes('carteira-investimentos-v17')
+    )), currentCacheName);
     await page.reload({ waitUntil: 'networkidle' });
     assert.equal(await page.evaluate(() => document.body.dataset.release), 'B');
-    assert.deepEqual(await page.evaluate(() => caches.keys()), ['carteira-investimentos-v250.9']);
+    assert.deepEqual(await page.evaluate(() => caches.keys()), [currentCacheName]);
   } finally {
     if (context) await context.close().catch(() => {});
     if (browser) await browser.close().catch(() => {});

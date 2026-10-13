@@ -50,9 +50,9 @@ test('legacy bridge ignores non-IPCA fixed-income positions', async () => {
 
 test('legacy fixed-income screen mounts the read-only diagnostic without changing authority', () => {
   const html = fs.readFileSync(htmlPath, 'utf8');
-  const route = html.slice(html.indexOf('function rendaFixaTab(){'), html.indexOf('\nfunction dashLegacy', html.indexOf('function rendaFixaTab(){')));
+  const route = fs.readFileSync(path.join(__dirname, '..', 'legacy/js/screens/fixed-income.js'), 'utf8');
 
-  assert.match(html, /import\('\/modern\/dist\/assets\/v262-legacy-diagnostics\.js'\)/);
+  assert.match(route, /import\('\/modern\/dist\/assets\/v262-legacy-diagnostics\.js'\)/);
   assert.match(route, /V262FixedIncomeDiagnostics/);
   assert.match(route, /UNSUPPORTED/);
   assert.match(route, /valor manual continua sendo a autoridade/);
