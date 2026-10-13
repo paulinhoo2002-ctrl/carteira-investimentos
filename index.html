@@ -22040,13 +22040,24 @@ function dashboardAllocationIntelligencePanel(){
   </section>`;
 }
 function dash(){
-  const analysisRows=assetAnalysisRows();
-  const data=dashboardSnapshot(analysisRows);
-  data.insights=portfolioInsightsSnapshot({...data,rf:rfIntelligenceSnapshot(),quality:dataQualitySnapshot()});
+  // ---- CRITICAL DATA: only what's needed for first useful screen ----
+  const criticalData = dashboardCriticalData();
+  const portfolio = criticalData.portfolio;
+  const recent = criticalData.recent;
+  const availability = criticalData.availability;
+  const evolutionData = criticalData.evolutionData;
+  const allocationData = criticalData.allocationData;
+
   const hoje=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
   const periodOpts=[3,6,12,24];
   const dashMeta=new Date().toLocaleString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-  return `
+
+  // Increment dashboard render generation for deferred cleanup
+  S._dashRenderGen = (Number(S._dashRenderGen) || 0) + 1;
+  const thisGen = S._dashRenderGen;
+
+  // ---- CRITICAL RENDER: shell + KPIs + evolution + allocation ----
+  const criticalHtml = `
     <div class="premium-dashboard canon-dashboard">
       <div class="dashboard-page-heading canon-dash-head">
         <div>
@@ -22055,19 +22066,64 @@ function dash(){
         </div>
         <div class="dashboard-page-heading-meta canon-dash-meta">
           ${periodOpts.map(period=>`<button type="button" class="dash-chip ${Number(S.dashPeriod)===period?'on':''}" onclick="setDashPeriod(${period})" aria-label="Mostrar evolução de ${period} meses" aria-pressed="${Number(S.dashPeriod)===period?'true':'false'}">${period}M</button>`).join('')}
-          <span class="canon-last-update">Últ. ${dashMeta} · ${data.analysis.length} ativos</span>
+          <span class="canon-last-update">Últ. ${dashMeta} · ${portfolio.analysis?.length || 0} ativos</span>
         </div>
       </div>
-      ${executiveKPIs(data)}
+      ${executiveKPIs({portfolio, recent, availability})}
       <div class="dashboard-analytical-primary canon-dash-row-b">
-        ${dashboardEvolutionPanel(data)}
-        ${dashboardV3AllocationPanel()}
+        ${dashboardEvolutionPanel(evolutionData)}
+        ${dashboardV3AllocationPanel(allocationData)}
       </div>
-      ${dashboardV3PriorityPanel(data)}
-      ${dashboardHomeHighsLowsPanel()}
-      ${dashboardQuickActions()}
+      <div id="dashboard-deferred-sections" data-dash-gen="${thisGen}"></div>
     </div>
   `;
+
+  // ---- DEFERRED RENDER: secondary panels after critical content ----
+  const defer = () => renderDashboardDeferred(criticalData, thisGen);
+  if (typeof requestIdleCallback !== 'undefined') {
+    requestIdleCallback(defer);
+  } else {
+    setTimeout(defer, 0);
+  }
+
+  return criticalHtml;
+}
+
+function dashboardCriticalData(){
+  // Minimal computation for critical-first render
+  const portfolio = cx();
+  const currentMonthKey = passiveIncomeMonthKey(new Date());
+  const recent = passiveIncomeMonthSummary(currentMonthKey);
+  const availability = dashboardCurrentValueAvailability();
+  const evolutionData = patrimonySnapshot(Number(S.dashPeriod) || 12);
+  const allocationData = portfolioAllocationSnapshot();
+  
+  return { portfolio, recent, availability, evolutionData, allocationData };
+}
+
+function renderDashboardDeferred(criticalData, expectedGen){
+  // Only render if dashboard is still the active tab and generation matches
+  if (S.tab !== 'dashboard' || Number(S._dashRenderGen) !== expectedGen) return;
+  
+  // Compute heavy data for secondary panels
+  const analysisRows = assetAnalysisRows();
+  const snapshot = dashboardSnapshot(analysisRows);
+  const rfIntel = rfIntelligenceSnapshot();
+  const quality = dataQualitySnapshot();
+  const fullData = {...snapshot, rf: rfIntel, quality};
+  fullData.insights = portfolioInsightsSnapshot(fullData);
+  
+  // Render deferred sections
+  const deferredHtml = `
+    ${dashboardV3PriorityPanel(fullData)}
+    ${dashboardHomeHighsLowsPanel()}
+    ${dashboardQuickActions()}
+  `;
+  
+  const container = document.querySelector('#dashboard-deferred-sections[data-dash-gen="' + expectedGen + '"]');
+  if (container) {
+    container.innerHTML = deferredHtml;
+  }
 }
 
 function dashboardOpenAllocationClass(className){
