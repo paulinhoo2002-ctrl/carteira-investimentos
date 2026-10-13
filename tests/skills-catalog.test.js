@@ -24,6 +24,16 @@ const entry = (id, folder, required = false) => ({
   description: 'fixture skill',
   sourcePath: `${folder}/SKILL.md`,
   sourceSha256: 'fixture-hash',
+  instructionPath: `${folder}/SKILL.md`,
+  purpose: 'fixture purpose',
+  compatibility: { hermes: 'supported', codex: 'supported' },
+  dependencies: 'none',
+  antiTriggers: 'none',
+  securityRisk: 'low',
+  applicability: 'conditional',
+  metadataQuality: 'REVIEWED',
+  routingDisposition: 'TRACKED_REPOSITORY_SNAPSHOT',
+  duplication: { functionalOverlap: 'none' },
   repositorySnapshot: { required, path: required ? `.agents/skills/${folder}/SKILL.md` : null }
 });
 const routes = { routes: { ui: { required: ['alpha'], optional: { browser: 'runtime-tool' } } }, runtimeAliases: {} };
@@ -71,4 +81,23 @@ test('strict source scan detects an uncataloged nested skill file', (t) => {
     strictSource: true
   });
   assert.ok(result.errors.includes(`UNCATALOGED_RECURSIVE_SKILL_FILE:${path.join('vendor', 'new-skill', 'skill.md').toLowerCase()}`));
+});
+
+
+test('catalog gate rejects duplicate recursive paths, incomplete metadata, and excluded skills in routes', (t) => {
+  const skillsRoot = fixture(t, { alpha: 'alpha', excluded: 'excluded' });
+  const alpha = { ...entry('alpha', 'alpha'), instructionPath: 'alpha/SKILL.md', purpose: 'alpha', compatibility: { hermes: 'supported', codex: 'supported' }, dependencies: 'none', antiTriggers: 'none', securityRisk: 'low', duplication: { functionalOverlap: 'none' }, applicability: 'conditional', routingDisposition: 'TRACKED_REPOSITORY_SNAPSHOT', metadataQuality: 'REVIEWED' };
+  const excluded = { ...entry('excluded', 'excluded'), routingDisposition: 'REJECTED_CROSS_PROJECT_SCOPE' };
+  const result = validateInventory({ skillsRoot, catalog: { skills: [alpha, excluded], runtimeOnlySkills: [], recursiveCandidates: [{ path: 'alpha/SKILL.md', sha256: 'a' }, { path: 'alpha/SKILL.md', sha256: 'a' }] }, routes: { routes: { ui: { required: ['excluded'] } }, runtimeAliases: {} } });
+  assert.ok(result.errors.includes('DUPLICATE_RECURSIVE_CANDIDATE_PATH:alpha/SKILL.md'));
+  assert.ok(result.errors.includes('ROUTED_CROSS_PROJECT_EXCLUDED_SKILL:excluded'));
+});
+
+test('catalog gate checks required metadata shape and route structure', (t) => {
+  const skillsRoot = fixture(t, { alpha: 'alpha' });
+  const incomplete = { ...entry('alpha', 'alpha'), compatibility: { hermes: 'supported' }, duplication: {} };
+  const result = validateInventory({ skillsRoot, catalog: { skills: [incomplete], runtimeOnlySkills: [] }, routes: { routes: { ui: { required: 'alpha' } }, runtimeAliases: {} } });
+  assert.ok(result.errors.includes('INCOMPLETE_SKILL_METADATA:alpha:compatibility.codex'));
+  assert.ok(result.errors.includes('INCOMPLETE_SKILL_METADATA:alpha:duplication.functionalOverlap'));
+  assert.ok(result.errors.includes('INVALID_ROUTE_SHAPE:ui:required'));
 });

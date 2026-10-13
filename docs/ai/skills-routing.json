@@ -26,7 +26,7 @@
   "routes": {
     "financial": { "required": ["doubt-driven-development"], "optional": { "officialSource": "source-driven-development" } },
     "firebase": { "required": ["firebase-security-rules-auditor"], "optional": { "financialBoundary": "doubt-driven-development" } },
-    "ui": { "required": ["interface-design"], "optional": { "accessibility": "web-quality-audit" } },
+    "ui": { "required": ["interface-design"], "optional": { "accessibility": "web-quality-audit", "designSystem": "design-system" } },
     "browser": { "alternatives": [["browser-harness", "playwright"]], "optional": { "domDiagnostics": "browser-testing-with-devtools" } },
     "backup": { "required": ["doubt-driven-development"], "optional": { "independentDiffReview": "caveman-review" } },
     "security": { "required": ["firebase-security-rules-auditor"], "optional": { "officialSource": "source-driven-development" } },
@@ -35,5 +35,78 @@
     "skillDiscovery": { "required": ["find-skills"], "optional": {} }
   },
   "maxSpecialistSkills": 2,
-  "authorization": "NEVER_GRANTED_BY_SELECTION"
+  "authorization": "NEVER_GRANTED_BY_SELECTION",
+  "missionContext": {
+    "dimensions": {
+      "risk": [
+        "standard",
+        "elevated",
+        "protected-financial",
+        "security-sensitive"
+      ],
+      "domain": [
+        "visual",
+        "financial",
+        "browser",
+        "documentation"
+      ],
+      "phase": [
+        "discovery",
+        "implementation",
+        "validation",
+        "review",
+        "release"
+      ]
+    },
+    "rules": [
+      {
+        "when": {
+          "risk": "protected-financial"
+        },
+        "skills": [
+          "doubt-driven-development"
+        ]
+      },
+      {
+        "when": {
+          "risk": "security-sensitive"
+        },
+        "skills": [
+          "firebase-security-rules-auditor"
+        ]
+      },
+      {
+        "when": {
+          "domain": "visual"
+        },
+        "skills": [
+          "design-system"
+        ]
+      },
+      {
+        "when": {
+          "domain": "browser"
+        },
+        "skills": [
+          "browser-testing-with-devtools"
+        ]
+      },
+      {
+        "when": {
+          "phase": "validation"
+        },
+        "skills": [
+          "verification-before-completion"
+        ]
+      },
+      {
+        "when": {
+          "phase": "review"
+        },
+        "skills": [
+          "caveman-review"
+        ]
+      }
+    ]
+  }
 }

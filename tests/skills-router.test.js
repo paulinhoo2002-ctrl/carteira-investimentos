@@ -2,7 +2,9 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { selectSkills } = require('../scripts/qa/select-skills');
+const { execFileSync, spawnSync } = require('node:child_process');
+const path = require('node:path');
+const { selectSkills, selectMissionSkills } = require('../scripts/qa/select-skills');
 
 const inventory = [
   'doubt-driven-development', 'source-driven-development',
@@ -80,4 +82,41 @@ test('selects a namespaced browser harness from the active runtime inventory', (
   const result = selectSkills('browser', ['browser-harness:browser-harness']);
   assert.deepEqual(result.selectedSkills, ['browser-harness:browser-harness']);
   assert.deepEqual(result.missingRequiredSkills, []);
+});
+
+
+test('mission context selects only relevant available skills in deterministic order', () => {
+  const result = selectMissionSkills({ task: 'ui', risk: 'standard', domain: 'visual', phase: 'implementation' }, [...inventory, 'design-system']);
+  assert.deepEqual(result.selectedSkills, ['interface-design', 'design-system']);
+  assert.deepEqual(result.missionContext, { risk: 'standard', domain: 'visual', phase: 'implementation' });
+  assert.equal(result.authorization, 'NEVER_GRANTED_BY_SELECTION');
+});
+
+test('mission context reports unavailable contextual skills and defers overflow', () => {
+  const missing = selectMissionSkills({ task: 'ui', domain: 'visual' }, inventory);
+  assert.deepEqual(missing.missingContextualSkills, ['design-system']);
+  const full = selectMissionSkills({ task: 'release', phase: 'review' }, [...inventory, 'caveman-commit'], ['gitCloseout']);
+  assert.equal(full.selectedSkills.length, 2);
+  assert.deepEqual(full.deferredByLimit, ['caveman-review']);
+});
+
+test('mission context rejects unknown dimensions and values', () => {
+  assert.throws(() => selectMissionSkills({ task: 'ui', urgency: 'now' }, inventory), /Unknown mission context dimension/);
+  assert.throws(() => selectMissionSkills({ task: 'ui', domain: 'unknown' }, inventory), /Unknown domain context/);
+});
+
+
+test('CLI accepts validated risk, domain, and phase context', () => {
+  const output = execFileSync(process.execPath, [path.resolve(__dirname, '../scripts/qa/select-skills.js'), 'ui', '--available=interface-design,design-system', '--domain=visual', '--phase=implementation'], { encoding: 'utf8' });
+  const result = JSON.parse(output);
+  assert.deepEqual(result.selectedSkills, ['interface-design', 'design-system']);
+  assert.deepEqual(result.missionContext, { domain: 'visual', phase: 'implementation' });
+});
+
+
+test('CLI reports invalid mission context without a stack trace', () => {
+  const result = spawnSync(process.execPath, [path.resolve(__dirname, '../scripts/qa/select-skills.js'), 'ui', '--domain=unknown'], { encoding: 'utf8' });
+  assert.equal(result.status, 2);
+  assert.match(result.stderr, /Unknown domain context: unknown/);
+  assert.doesNotMatch(result.stderr, /\n    at /);
 });
