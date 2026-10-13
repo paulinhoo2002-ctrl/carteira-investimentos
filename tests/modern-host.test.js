@@ -462,7 +462,7 @@ test('host experimental strict wiring fails with explicit error', async () => {
   const viteServer = await createServer({
     configFile: path.join(__dirname, '..', 'modern', 'vite.config.ts'),
     logLevel: 'error',
-    server: { middlewareMode: true },
+    server: { middlewareMode: true, hmr: false, ws: false },
   });
 
   try {

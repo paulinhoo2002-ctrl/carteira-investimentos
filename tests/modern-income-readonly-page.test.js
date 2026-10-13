@@ -409,7 +409,7 @@ test('pagina readonly renderiza resumo, lista e estado vazio sem botao em modo e
   const viteServer = await createServer({
     configFile: path.join(__dirname, '..', 'modern', 'vite.config.ts'),
     logLevel: 'error',
-    server: { middlewareMode: true },
+    server: { middlewareMode: true, hmr: false, ws: false },
   });
 
   try {
@@ -443,7 +443,7 @@ test('evolução mensal expõe contexto de leitura e diferencia desconhecido, pa
   const viteServer = await createServer({
     configFile: path.join(__dirname, '..', 'modern', 'vite.config.ts'),
     logLevel: 'error',
-    server: { middlewareMode: true },
+    server: { middlewareMode: true, hmr: false, ws: false },
   });
 
   try {
@@ -484,7 +484,7 @@ test('sparkline em SVG usa coordenadas numéricas válidas no viewBox', async ()
   const viteServer = await createServer({
     configFile: path.join(__dirname, '..', 'modern', 'vite.config.ts'),
     logLevel: 'error',
-    server: { middlewareMode: true },
+    server: { middlewareMode: true, hmr: false, ws: false },
   });
 
   try {
@@ -511,7 +511,7 @@ test('pagina readonly usa controller real quando presente e preserva ultimo snap
   const viteServer = await createServer({
     configFile: path.join(__dirname, '..', 'modern', 'vite.config.ts'),
     logLevel: 'error',
-    server: { middlewareMode: true },
+    server: { middlewareMode: true, hmr: false, ws: false },
   });
 
   try {

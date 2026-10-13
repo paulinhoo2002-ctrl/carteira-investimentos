@@ -54,7 +54,7 @@ test('Select oficial carrega contrato acessivel e native', async () => {
   const viteServer = await createServer({
     configFile: path.join(__dirname, '..', 'modern', 'vite.config.ts'),
     logLevel: 'error',
-    server: { middlewareMode: true },
+    server: { middlewareMode: true, hmr: false, ws: false },
   });
 
   try {
@@ -113,7 +113,7 @@ test('AssetsReadonlyPage usa Select no fluxo piloto', async () => {
   const viteServer = await createServer({
     configFile: path.join(__dirname, '..', 'modern', 'vite.config.ts'),
     logLevel: 'error',
-    server: { middlewareMode: true },
+    server: { middlewareMode: true, hmr: false, ws: false },
   });
 
   try {

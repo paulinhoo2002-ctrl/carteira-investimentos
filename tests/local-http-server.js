@@ -42,7 +42,10 @@ async function startLocalHttpServer(root, port = 0, { syntheticQa = true } = {})
         res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
         return res.end(JSON.stringify({ source: 'synthetic-qa-empty', requested, count: 0, results: [] }));
       }
-      const filePath = path.resolve(documentRoot, pathname === '/' ? 'index.html' : `.${pathname}`);
+      const servedPath = syntheticQa && pathname.startsWith('/modern/dist/')
+        ? pathname.replace('/modern/dist/', '/.qa-state/modern-build/')
+        : pathname;
+      const filePath = path.resolve(documentRoot, servedPath === '/' ? 'index.html' : `.${servedPath}`);
       const relativePath = path.relative(documentRoot, filePath);
       if (relativePath === '..' || relativePath.startsWith(`..${path.sep}`) || path.isAbsolute(relativePath)) {
         res.writeHead(403);

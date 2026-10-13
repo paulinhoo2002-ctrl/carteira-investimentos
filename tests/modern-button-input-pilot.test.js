@@ -64,7 +64,7 @@ test('Button carrega contrato pequeno e previsivel', async () => {
   const viteServer = await createServer({
     configFile: path.join(__dirname, '..', 'modern', 'vite.config.ts'),
     logLevel: 'error',
-    server: { middlewareMode: true },
+    server: { middlewareMode: true, hmr: false, ws: false },
   });
 
   try {
@@ -106,7 +106,7 @@ test('Input carrega label, helper e erro com contrato acessivel', async () => {
   const viteServer = await createServer({
     configFile: path.join(__dirname, '..', 'modern', 'vite.config.ts'),
     logLevel: 'error',
-    server: { middlewareMode: true },
+    server: { middlewareMode: true, hmr: false, ws: false },
   });
 
   try {
@@ -156,7 +156,7 @@ test('AssetsReadonlyPage usa Button e Input no fluxo piloto', async () => {
   const viteServer = await createServer({
     configFile: path.join(__dirname, '..', 'modern', 'vite.config.ts'),
     logLevel: 'error',
-    server: { middlewareMode: true },
+    server: { middlewareMode: true, hmr: false, ws: false },
   });
 
   try {

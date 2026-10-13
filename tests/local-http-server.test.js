@@ -7,6 +7,31 @@ const test = require('node:test');
 
 const { startLocalHttpServer, isUnsafeChromePort } = require('./local-http-server');
 
+test('synthetic QA serves isolated modern output while ordinary serving preserves canonical dist', async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'qa-modern-root-'));
+  const harnesses = [];
+  try {
+    for (const [dir, value] of [['modern/dist', 'canonical'], ['.qa-state/modern-build', 'isolated']]) {
+      await fs.mkdir(path.join(root, dir), { recursive: true });
+      await fs.writeFile(path.join(root, dir, 'probe.js'), value);
+    }
+    for (const syntheticQa of [true, false]) {
+      const harness = await startLocalHttpServer(root, 0, { syntheticQa });
+      harnesses.push(harness);
+      const response = await fetch(new URL('/modern/dist/probe.js', harness.url));
+      assert.equal(response.status, 200);
+      assert.equal(await response.text(), syntheticQa ? 'isolated' : 'canonical');
+    }
+    assert.equal(await fs.readFile(path.join(root, 'modern/dist/probe.js'), 'utf8'), 'canonical');
+  } finally {
+    for (const { server } of harnesses) {
+      server.closeAllConnections?.();
+      await new Promise(resolve => server.close(resolve));
+    }
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});
+
 // Windows starts its ephemeral port range at 1024, so listen(0) can hand the
 // shared QA harness a port Chromium refuses to navigate to (net::ERR_UNSAFE_PORT),
 // breaking every browser test through no fault of the product code.

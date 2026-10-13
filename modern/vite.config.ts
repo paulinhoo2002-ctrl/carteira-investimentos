@@ -6,12 +6,13 @@ import { fileURLToPath } from 'node:url';
 
 const rootDir = dirname(fileURLToPath(import.meta.url));
 const readonlyReportPageContractSource = resolve(rootDir, '..', 'readonly-report-page-contract.js');
-const readonlyReportPageContractDist = resolve(rootDir, 'dist', 'readonly-report-page-contract.js');
 
 function copyReadonlyReportPageContract() {
   return {
     name: 'copy-readonly-report-page-contract',
-    writeBundle(_outputOptions, bundle) {
+    writeBundle(outputOptions, bundle) {
+      const outputDir = resolve(outputOptions.dir);
+      const readonlyReportPageContractDist = resolve(outputDir, 'readonly-report-page-contract.js');
       if (!existsSync(readonlyReportPageContractSource)) {
         throw new Error('Missing readonly report page contract source file.');
       }
@@ -26,7 +27,7 @@ function copyReadonlyReportPageContract() {
         throw new Error('Missing modern host stylesheet asset.');
       }
 
-      writeFileSync(resolve(rootDir, 'dist', 'active-wallet-host.css'), modernStyles.source);
+      writeFileSync(resolve(outputDir, 'active-wallet-host.css'), modernStyles.source);
     },
   };
 }

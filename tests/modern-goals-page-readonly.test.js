@@ -19,7 +19,7 @@ function getViteServer() {
     viteServerPromise = createServer({
       configFile: path.join(__dirname, '..', 'modern', 'vite.config.ts'),
       logLevel: 'error',
-      server: { middlewareMode: true },
+      server: { middlewareMode: true, hmr: false, ws: false },
     });
   }
   return viteServerPromise;
