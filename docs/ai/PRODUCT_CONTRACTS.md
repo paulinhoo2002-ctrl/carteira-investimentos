@@ -6,6 +6,7 @@
 - Exact source-row repeats collapse only by SHA-256 + row identity, or source ID + row identity when a hash is unavailable. Equivalent position observations collapse only for the same custodian, account, as-of, asset, currency and amount kind. Conflicting values require review; separate custodians are never deduplicated against each other.
 - Totals are scoped to one as-of date, currency and amount kind. Mixed dates/units, missing identity, conflicts, unknown custodian/source or incomplete coverage suppress a complete total. `ZERO_CONFIRMED` requires complete coverage and an explicit zero amount; partial subtotals remain separate from totals.
 - This is an isolated `READ_ONLY_DRY_RUN` foundation tested only with synthetic records. It is not a source parser, production integration, transaction deduplicator or authorization to import, persist, restore or reconcile real user data. Movement identity continues to use the existing governed import pipeline.
+- `reconcilePositionTargets()` compares caller-supplied targets in exact integer cents and only within custodian/class/as-of/currency/amount-kind scope; it has no embedded financial targets or tolerance. Any compatible unknown-custodian row blocks named-custodian matching, and every scope participating in a conflicting source-row identity remains review-blocking. This API is still synthetic-only and does not certify real-source coverage.
 
 ## V333 — cobertura mensal de Dividendos (decisão humana aprovada, 2026-10-08)
 

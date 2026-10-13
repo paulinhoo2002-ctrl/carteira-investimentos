@@ -2,7 +2,7 @@
 
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { reconcilePositionSnapshots } = require('../multi-custodian-reconciliation-dry-run.js');
+const { reconcilePositionSnapshots, reconcilePositionTargets } = require('../multi-custodian-reconciliation-dry-run.js');
 
 const row = (overrides = {}) => ({
   recordType: 'POSITION',
@@ -162,4 +162,131 @@ test('does not mutate input records', () => {
   const before = structuredClone(input);
   reconcilePositionSnapshots(input);
   assert.deepEqual(input, before);
+});
+
+test('compares exact synthetic target in cents using custodian, class and as-of scope', () => {
+  const snapshot = reconcilePositionSnapshots([
+    row({ assetId: 'SYNTH_RV_1', assetClass: 'RV', amountCents: 12000 }),
+    row({ assetId: 'SYNTH_RF_1', assetClass: 'RF', amountCents: 8000, sourceId: 'SYNTH_RF', sourceRecordId: 'RF_1', sourceSha256: 'b'.repeat(64) }),
+    row({ custodian: 'OUTRO', account: 'SYNTH_ACCOUNT_B', assetId: 'SYNTH_OTHER', assetClass: 'OUTRO', amountCents: 5000, sourceId: 'SYNTH_OTHER', sourceRecordId: 'OTHER_1', sourceSha256: 'c'.repeat(64) }),
+  ]);
+  const result = reconcilePositionTargets(snapshot, [
+    { targetId: 'INTER_RV_SYNTH', custodian: 'INTER', assetClass: 'RV', asOf: '2026-10-10', currency: 'BRL', amountKind: 'CURRENT_NET', targetCents: 12000 },
+    { targetId: 'INTER_TOTAL_SYNTH', custodian: 'INTER', asOf: '2026-10-10', currency: 'BRL', amountKind: 'CURRENT_NET', targetCents: 20000 },
+    { targetId: 'GLOBAL_SYNTH', custodian: 'GLOBAL', asOf: '2026-10-10', currency: 'BRL', amountKind: 'CURRENT_NET', targetCents: 25000 },
+  ]);
+
+  assert.equal(result.mode, 'READ_ONLY_DRY_RUN');
+  assert.equal(result.mutationCount, 0);
+  assert.deepEqual(result.rows.map(item => [item.targetId, item.derivedCents, item.deltaCents, item.status]), [
+    ['INTER_RV_SYNTH', 12000, 0, 'MATCH'],
+    ['INTER_TOTAL_SYNTH', 20000, 0, 'MATCH'],
+    ['GLOBAL_SYNTH', 25000, 0, 'MATCH'],
+  ]);
+});
+
+test('reports exact cent mismatch and never applies a tolerance', () => {
+  const snapshot = reconcilePositionSnapshots([row({ amountCents: 12000 })]);
+  const result = reconcilePositionTargets(snapshot, [
+    { targetId: 'CENT_DIFF', custodian: 'INTER', asOf: '2026-10-10', currency: 'BRL', amountKind: 'CURRENT_NET', targetCents: 12001 },
+  ]);
+
+  assert.equal(result.rows[0].status, 'MISMATCH');
+  assert.equal(result.rows[0].deltaCents, -1);
+});
+
+test('keeps partial, unknown, and amount-kind-mismatched targets non-matching', () => {
+  const snapshot = reconcilePositionSnapshots([
+    row({ assetId: 'SYNTH_PARTIAL', coverage: 'PARTIAL', amountCents: 4000 }),
+    row({ assetId: 'SYNTH_UNKNOWN', assetClass: 'RF', coverage: 'UNKNOWN', amountCents: null, sourceId: 'SYNTH_UNKNOWN', sourceRecordId: 'UNKNOWN_1', sourceSha256: 'b'.repeat(64) }),
+    row({ custodian: 'OUTRO', account: 'SYNTH_ACCOUNT_B', assetId: 'SYNTH_GROSS', amountKind: 'CURRENT_GROSS', amountCents: 10000, sourceId: 'SYNTH_GROSS', sourceRecordId: 'GROSS_1', sourceSha256: 'c'.repeat(64) }),
+  ]);
+  const result = reconcilePositionTargets(snapshot, [
+    { targetId: 'PARTIAL', custodian: 'INTER', assetClass: 'RV', asOf: '2026-10-10', currency: 'BRL', amountKind: 'CURRENT_NET', targetCents: 4000 },
+    { targetId: 'UNKNOWN', custodian: 'INTER', assetClass: 'RF', asOf: '2026-10-10', currency: 'BRL', amountKind: 'CURRENT_NET', targetCents: 0 },
+    { targetId: 'NET_NOT_GROSS', custodian: 'OUTRO', asOf: '2026-10-10', currency: 'BRL', amountKind: 'CURRENT_NET', targetCents: 10000 },
+  ]);
+
+  assert.deepEqual(result.rows.map(item => item.status), ['PARTIAL', 'UNKNOWN', 'UNKNOWN']);
+  assert.equal(result.rows[0].deltaCents, null);
+});
+
+test('reports as-of mismatch when only a different snapshot date exists', () => {
+  const snapshot = reconcilePositionSnapshots([row({ asOf: '2026-10-09' })]);
+  const result = reconcilePositionTargets(snapshot, [
+    { targetId: 'DATE_MISMATCH', custodian: 'INTER', asOf: '2026-10-10', currency: 'BRL', amountKind: 'CURRENT_NET', targetCents: 12000 },
+  ]);
+
+  assert.equal(result.rows[0].status, 'AS_OF_MISMATCH');
+  assert.deepEqual(result.rows[0].availableAsOf, ['2026-10-09']);
+  assert.equal(result.rows[0].deltaCents, null);
+});
+
+test('surfaces conflicting duplicate identity as duplicate risk instead of match', () => {
+  const snapshot = reconcilePositionSnapshots([row(), row({ amountCents: 13000 })]);
+  const result = reconcilePositionTargets(snapshot, [
+    { targetId: 'DUPLICATE_CONFLICT', custodian: 'INTER', asOf: '2026-10-10', currency: 'BRL', amountKind: 'CURRENT_NET', targetCents: 12000 },
+  ]);
+
+  assert.equal(result.rows[0].status, 'DUPLICATE_RISK');
+  assert.equal(result.rows[0].deltaCents, null);
+});
+
+test('unknown custodian evidence blocks a named custodian match in the same comparable scope', () => {
+  const snapshot = reconcilePositionSnapshots([
+    row({ amountCents: 12000 }),
+    row({ custodian: 'UNKNOWN', account: 'SYNTH_UNKNOWN_ACCOUNT', sourceId: 'SYNTH_UNKNOWN_CUSTODIAN', sourceRecordId: 'UNKNOWN_CUSTODIAN_ROW', sourceSha256: 'b'.repeat(64), assetId: 'SYNTH_RV_2', amountCents: 3000 }),
+  ]);
+  const result = reconcilePositionTargets(snapshot, [
+    { targetId: 'INTER_RV_WITH_UNSCOPED_ROW', custodian: 'INTER', assetClass: 'RV', asOf: '2026-10-10', currency: 'BRL', amountKind: 'CURRENT_NET', targetCents: 12000 },
+  ]);
+
+  assert.equal(result.rows[0].status, 'UNKNOWN');
+  assert.equal(result.rows[0].reason, 'UNKNOWN_CUSTODIAN_SCOPE');
+  assert.equal(result.rows[0].derivedCents, null);
+  assert.equal(result.rows[0].deltaCents, null);
+});
+
+test('unknown asset class cannot be silently included in a class-scoped target', () => {
+  const snapshot = { positions: [{ ...row(), assetClass: null, amountCents: 12000, status: 'COMPLETE', sourceIds: ['SYNTH_SOURCE_A'] }] };
+  const result = reconcilePositionTargets(snapshot, [
+    { targetId: 'INTER_RV_UNKNOWN_CLASS', custodian: 'INTER', assetClass: 'RV', asOf: '2026-10-10', currency: 'BRL', amountKind: 'CURRENT_NET', targetCents: 15000 },
+  ]);
+
+  assert.equal(result.rows[0].status, 'UNKNOWN');
+  assert.equal(result.rows[0].reason, 'UNKNOWN_ASSET_CLASS_SCOPE');
+  assert.equal(result.rows[0].derivedCents, null);
+  assert.equal(result.rows[0].deltaCents, null);
+});
+
+test('source identity conflicts remain visible in every conflicting scope', () => {
+  const first = row({ sourceRecordId: 'COLLIDING_ROW', assetId: 'SYNTH_FIRST', amountCents: 12000 });
+  const collision = row({ sourceRecordId: 'COLLIDING_ROW', assetId: 'SYNTH_SECOND', custodian: 'OUTRO', account: 'SYNTH_ACCOUNT_B', amountCents: 5000 });
+  const snapshot = reconcilePositionSnapshots([first, collision]);
+  const result = reconcilePositionTargets(snapshot, [
+    { targetId: 'OTHER_CONFLICT_SCOPE', custodian: 'OUTRO', assetClass: 'RV', asOf: '2026-10-10', currency: 'BRL', amountKind: 'CURRENT_NET', targetCents: 5000 },
+  ]);
+
+  assert.equal(snapshot.conflicts.length, 1);
+  assert.equal(snapshot.conflicts[0].sourceScopes.length, 2);
+  assert.equal(snapshot.positions.filter(position => position.status === 'CONFLICT').length, 2);
+  assert.equal(result.rows[0].status, 'DUPLICATE_RISK');
+  assert.equal(result.rows[0].derivedCents, null);
+  assert.equal(result.rows[0].deltaCents, null);
+});
+
+test('requires explicit zero evidence and fails closed when any source row is invalid', () => {
+  const zero = reconcilePositionSnapshots([row({ amountCents: 0 })]);
+  const confirmedZero = reconcilePositionTargets(zero, [
+    { targetId: 'ZERO_SYNTH', custodian: 'INTER', asOf: '2026-10-10', currency: 'BRL', amountKind: 'CURRENT_NET', targetCents: 0 },
+  ]);
+  assert.equal(confirmedZero.rows[0].status, 'ZERO_CONFIRMED');
+
+  const withInvalid = reconcilePositionSnapshots([row(), row({ assetId: '', sourceId: 'BAD_SOURCE', sourceRecordId: 'BAD_ROW', sourceSha256: 'b'.repeat(64) })]);
+  const blocked = reconcilePositionTargets(withInvalid, [
+    { targetId: 'MUST_NOT_MATCH', custodian: 'INTER', asOf: '2026-10-10', currency: 'BRL', amountKind: 'CURRENT_NET', targetCents: 12000 },
+  ]);
+  assert.equal(blocked.rows[0].status, 'UNKNOWN');
+  assert.equal(blocked.rows[0].reason, 'INVALID_SOURCE_RECORDS_PRESENT');
+  assert.equal(blocked.rows[0].deltaCents, null);
 });

@@ -126,19 +126,31 @@
     });
 
     const bySourceRow = new Map();
-    const sourceConflicts = new Map();
     let exactSourceDuplicates = 0;
     for (const record of validRows) {
       const key = sourceRowKey(record);
-      const prior = bySourceRow.get(key);
-      if (!prior) bySourceRow.set(key, record);
-      else if (sourceRowValue(prior) === sourceRowValue(record)) exactSourceDuplicates += 1;
-      else sourceConflicts.set(key, prior);
+      if (!bySourceRow.has(key)) bySourceRow.set(key, new Map());
+      const variants = bySourceRow.get(key);
+      const value = sourceRowValue(record);
+      if (variants.has(value)) exactSourceDuplicates += 1;
+      else variants.set(value, record);
     }
 
     const conflicts = [];
-    for (const [key, record] of sourceConflicts) {
-      conflicts.push({ state: 'SOURCE_ROW_CONFLICT', sourceId: record.sourceId, sourceRecordId: record.sourceRecordId });
+    const conflictedRows = [];
+    for (const [key, variants] of bySourceRow) {
+      if (variants.size < 2) {
+        bySourceRow.set(key, [...variants.values()][0]);
+        continue;
+      }
+      const rows = [...variants.values()];
+      conflictedRows.push(...rows);
+      conflicts.push({
+        state: 'SOURCE_ROW_CONFLICT',
+        sourceId: rows[0].sourceId,
+        sourceRecordId: rows[0].sourceRecordId,
+        sourceScopes: rows.map(record => ({ custodian: record.custodian, account: record.account, asOf: record.asOf, assetId: record.assetId, assetClass: record.assetClass, currency: record.currency, amountKind: record.amountKind })),
+      });
       bySourceRow.delete(key);
     }
 
@@ -159,9 +171,8 @@
       positions.push(position);
     }
 
-    for (const conflict of conflicts.filter(item => item.state === 'SOURCE_ROW_CONFLICT')) {
-      const sample = validRows.find(item => item.sourceId === conflict.sourceId && item.sourceRecordId === conflict.sourceRecordId);
-      if (sample) positions.push({ ...positionFrom([sample], true), status: 'CONFLICT', amountCents: null, coverage: 'UNKNOWN' });
+    for (const record of conflictedRows) {
+      positions.push({ ...positionFrom([record], true), status: 'CONFLICT', amountCents: null, coverage: 'UNKNOWN' });
     }
 
     const dates = [...new Set(positions.map(item => item.asOf))].sort();
@@ -214,5 +225,84 @@
     };
   }
 
-  return { validateRecord, reconcilePositionSnapshots };
+  function reconcilePositionTargets(reconciliation = {}, targets = []) {
+    const positions = Array.isArray(reconciliation.positions) ? reconciliation.positions : [];
+    const invalidRecords = Array.isArray(reconciliation.invalidRecords) ? reconciliation.invalidRecords : [];
+    const conflicts = Array.isArray(reconciliation.conflicts) ? reconciliation.conflicts : [];
+    const rows = (Array.isArray(targets) ? targets : []).map(target => {
+      const invalid = !target || typeof target !== 'object' || !text(target.targetId)
+        || !['INTER', 'OUTRO', 'GLOBAL'].includes(target.custodian)
+        || !validDate(target.asOf) || !text(target.currency) || !text(target.amountKind)
+        || (target.assetClass !== undefined && !text(target.assetClass))
+        || !Number.isSafeInteger(target.targetCents) || target.targetCents < 0;
+      if (invalid) return { targetId: text(target?.targetId) || null, status: 'INVALID_TARGET', derivedCents: null, deltaCents: null, reason: 'TARGET_FIELDS_INVALID' };
+
+      const inScope = positions.filter(position => position.currency === target.currency
+        && position.amountKind === target.amountKind
+        && (target.custodian === 'GLOBAL' || position.custodian === target.custodian)
+        && (target.assetClass === undefined || position.assetClass === target.assetClass || position.assetClass === null));
+      const matching = inScope.filter(position => position.asOf === target.asOf);
+      let knownSubtotalCents = 0;
+      let hasKnownAmount = false;
+      for (const position of matching) {
+        if (!Number.isSafeInteger(position.amountCents)) continue;
+        knownSubtotalCents += position.amountCents;
+        hasKnownAmount = true;
+        if (!Number.isSafeInteger(knownSubtotalCents)) return { targetId: target.targetId, status: 'UNKNOWN', reason: 'AMOUNT_OVERFLOW', derivedCents: null, deltaCents: null };
+      }
+      const base = {
+        targetId: target.targetId,
+        custodian: target.custodian,
+        assetClass: target.assetClass ?? null,
+        asOf: target.asOf,
+        currency: target.currency,
+        amountKind: target.amountKind,
+        targetCents: target.targetCents,
+        sourceIds: [...new Set(matching.flatMap(position => position.sourceIds || []))].sort(),
+        knownSubtotalCents: hasKnownAmount ? knownSubtotalCents : null,
+        derivedCents: null,
+        deltaCents: null,
+        availableAsOf: [...new Set(inScope.map(position => position.asOf))].sort(),
+      };
+
+      if (invalidRecords.length) return { ...base, status: 'UNKNOWN', reason: 'INVALID_SOURCE_RECORDS_PRESENT' };
+      if (!matching.length) return { ...base, status: inScope.length ? 'AS_OF_MISMATCH' : 'UNKNOWN', reason: inScope.length ? 'NO_POSITION_AT_TARGET_AS_OF' : 'NO_POSITION_EVIDENCE' };
+
+      if (target.custodian !== 'GLOBAL' && positions.some(position => position.custodian === 'UNKNOWN'
+        && position.asOf === target.asOf && position.currency === target.currency && position.amountKind === target.amountKind
+        && (target.assetClass === undefined || position.assetClass === target.assetClass || position.assetClass === null))) {
+        return { ...base, status: 'UNKNOWN', reason: 'UNKNOWN_CUSTODIAN_SCOPE' };
+      }
+      if (target.assetClass !== undefined && matching.some(position => position.assetClass === null)) {
+        return { ...base, status: 'UNKNOWN', reason: 'UNKNOWN_ASSET_CLASS_SCOPE' };
+      }
+
+      const matchingConflicts = conflicts.filter(conflict => {
+        if (conflict.state === 'SOURCE_ROW_CONFLICT') return (conflict.sourceScopes || []).some(scope => scope.asOf === target.asOf
+          && scope.currency === target.currency && scope.amountKind === target.amountKind
+          && (target.custodian === 'GLOBAL' || scope.custodian === target.custodian)
+          && (target.assetClass === undefined || scope.assetClass === target.assetClass));
+        return conflict.asOf === target.asOf && conflict.amountKind === target.amountKind
+          && (target.custodian === 'GLOBAL' || conflict.custodian === target.custodian)
+          && (target.assetClass === undefined || matching.some(position => position.assetId === conflict.assetId && position.assetClass === target.assetClass));
+      });
+      if (matchingConflicts.length || matching.some(position => position.status === 'CONFLICT')) {
+        return { ...base, status: 'DUPLICATE_RISK', reason: 'CONFLICTING_SOURCE_IDENTITY', conflictCount: matchingConflicts.length || 1 };
+      }
+      if (target.custodian === 'GLOBAL' && matching.some(position => position.custodian === 'UNKNOWN')) {
+        return { ...base, status: 'UNKNOWN', reason: 'CUSTODIAN_IDENTITY_UNKNOWN' };
+      }
+      if (matching.some(position => !['COMPLETE', 'ZERO_CONFIRMED'].includes(position.status) || position.amountCents === null)) {
+        const unknown = matching.some(position => !['COMPLETE', 'ZERO_CONFIRMED', 'PARTIAL'].includes(position.status) || position.amountCents === null);
+        return { ...base, status: unknown ? 'UNKNOWN' : 'PARTIAL', reason: unknown ? 'POSITION_VALUE_OR_COVERAGE_UNKNOWN' : 'POSITION_COVERAGE_PARTIAL' };
+      }
+
+      const derivedCents = knownSubtotalCents;
+      const deltaCents = derivedCents - target.targetCents;
+      return { ...base, knownSubtotalCents: derivedCents, derivedCents, deltaCents, status: deltaCents === 0 ? derivedCents === 0 ? 'ZERO_CONFIRMED' : 'MATCH' : 'MISMATCH', reason: deltaCents === 0 ? 'EXACT_CENT_MATCH' : 'EXACT_CENT_DELTA' };
+    });
+    return { mode: 'READ_ONLY_DRY_RUN', mutationCount: 0, status: rows.length > 0 && rows.every(row => ['MATCH', 'ZERO_CONFIRMED'].includes(row.status)) ? 'MATCH' : 'REVIEW_REQUIRED', rows };
+  }
+
+  return { validateRecord, reconcilePositionSnapshots, reconcilePositionTargets };
 });

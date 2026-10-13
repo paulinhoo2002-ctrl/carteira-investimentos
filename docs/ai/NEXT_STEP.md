@@ -1,3 +1,10 @@
+# MEGA 15 — continuação factual (2026-10-13)
+
+1. Worktree `C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`, início `fd883fe8938c3ab5b9aa9ac99cf0dbb099a22e28`. Nesta continuação, o dry-run multi-custodiante passou a comparar targets caller-supplied em centavos exatos e a falhar fechado para custodiante desconhecido e colisões de identidade em todos os escopos. Teste focado: 21/21; testes de histórico/importação junto: 53/53.
+2. Fontes reais: SOURCE_ACCESS_GAP. Os seis nomes listados na missão não foram encontrados na worktree LEGACY, anexos Codex, Downloads ou Documents por busca de nome exato. Nenhum conteúdo foi aberto, hasheado ou parseado. O inventário de lacuna está somente em `.qa-state/mega15/source-access-gap.json` (ignorado, local); não há manifesto financeiro, reconciliação real nem cobertura histórica derivada.
+3. `docs/ai/PRODUCT_CONTRACTS.md` registra a semântica do comparador sintético. UNKNOWN, PARTIAL e conflito de origem nunca podem produzir MATCH. Nenhum target financeiro real foi embutido. Finance Core, persistência, Firebase e dados reais não foram alterados.
+4. Próxima ação: disponibilizar os documentos nomeados em pasta autorizada do projeto LEGACY e executar parser somente leitura, gerar manifesto minimizado local, classificar as-of/coverage/proveniência e comparar cada componente separadamente. Permanecem proibidos import, writes, Firebase hospedado, push, PR, merge e deploy. Auth Emulator permanece bloqueado ambientalmente e não impede o fluxo sintético.
+
 # MEGA 14E — próximo passo (2026-10-13)
 
 1. Worktree LEGACY: C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign; branch codex/legacy-product-mega-12. Commits funcionais locais: ff1d331 (renderer executivo do Dashboard), 8517a88 (dry-run sintético multi-custodiante) e f8e8869 (renderer de alocação do Dashboard).
