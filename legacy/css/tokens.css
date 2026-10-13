@@ -202,6 +202,9 @@ button{cursor:pointer;font-family:inherit}
 html[data-theme="light"] .edit-lock-banner{
   background:linear-gradient(180deg,rgba(245,158,11,.12),rgba(245,158,11,.07))
 }
+.test-mode-banner-title{font-size:12px;font-weight:900;color:var(--warning);letter-spacing:.14em;text-transform:uppercase}
+.test-mode-banner-text,.test-mode-readonly-status{font-size:12px;line-height:1.45;color:var(--text)}
+.test-mode-banner button{min-height:44px;font-size:12px}
 .edit-lock-banner-main{min-width:0;display:flex;flex-direction:column;gap:4px}
 .edit-lock-banner-title{font-size:12px;font-weight:900;color:#fde68a;letter-spacing:.02em}
 html[data-theme="light"] .edit-lock-banner-title{color:#9a6700}

@@ -33,10 +33,36 @@ test('strict read-only synthetic browser rejects programmatic writes and cloud h
     await page.waitForFunction(() => window.__LOCAL_TEST_MODE__ === true && window.__LOCAL_TEST_READ_ONLY__ === true);
 
     assert.match(await page.locator('.test-mode-banner').innerText(), /TESTE LOCAL · SOMENTE LEITURA/);
+    const bannerReadability = async (theme) => page.evaluate((theme) => {
+      document.documentElement.setAttribute('data-theme', theme);
+      const title = document.querySelector('.test-mode-banner-title');
+      const text = document.querySelector('.test-mode-banner-text');
+      const button = document.querySelector('.test-mode-banner button');
+      const token = document.createElement('span');
+      token.style.color = 'var(--warning)';
+      document.body.append(token);
+      const expectedWarning = getComputedStyle(token).color;
+      token.remove();
+      return { titleSize: parseFloat(getComputedStyle(title).fontSize), titleColor: getComputedStyle(title).color, expectedWarning, textSize: parseFloat(getComputedStyle(text).fontSize), textVisible: getComputedStyle(text).display !== 'none', buttonHeight: button?.getBoundingClientRect().height ?? null, readOnlyStatusVisible: !!document.querySelector('.test-mode-readonly-status') && getComputedStyle(document.querySelector('.test-mode-readonly-status')).display !== 'none' };
+    }, theme);
+    for (const theme of ['dark', 'light']) {
+      const reading = await bannerReadability(theme);
+      assert.ok(reading.titleSize >= 12, theme + ' banner title must be readable');
+      assert.equal(reading.titleColor, reading.expectedWarning, theme + ' banner must use the semantic warning token');
+      assert.ok(reading.textSize >= 12, theme + ' isolation explanation must be readable');
+      assert.equal(reading.textVisible, true, theme + ' isolation explanation must remain visible on mobile');
+      if (reading.buttonHeight !== null) assert.ok(reading.buttonHeight >= 44, theme + ' action must meet the touch target minimum');
+      else assert.equal(reading.readOnlyStatusVisible, true, theme + ' read-only state must explain why actions are unavailable');
+    }
     assert.equal(await page.evaluate(() => typeof renderPortfolioSearch), 'function');
     await page.evaluate(() => { S.portfolioSearchOpen = true; S.portfolioSearchQuery = ''; renderPortfolioSearch(); });
     assert.equal(await page.getByRole('dialog', { name: 'Buscar na carteira' }).count(), 1);
     assert.match(await page.locator('.test-mode-readonly-status').innerText(), /Necessita revisão antes da confirmação/);
+    const interactiveSyntheticPage = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    await interactiveSyntheticPage.goto(harness.url, { waitUntil: 'domcontentloaded' });
+    await interactiveSyntheticPage.waitForFunction(() => window.__LOCAL_TEST_MODE__ === true);
+    assert.ok(await interactiveSyntheticPage.locator('.test-mode-banner button').evaluate((button) => button.getBoundingClientRect().height >= 44));
+    await interactiveSyntheticPage.close();
     const encryptedRoundTrip = await page.evaluate(async () => {
       const sample = { marker: 'BROWSER_SYNTHETIC_BACKUP', assets: [{ id: 'synthetic-asset-1', quantity: 2 }] };
       const encrypted = await BackupPortability.encryptBackup(sample, 'synthetic browser passphrase 2026');

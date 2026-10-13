@@ -20050,8 +20050,8 @@ function app(){
   ${isLocalTestMode()?`
   <div class="test-mode-banner" style="margin:10px 0 2px;padding:10px 12px;border:1px solid rgba(251,191,36,.28);border-radius:14px;background:linear-gradient(180deg,rgba(251,191,36,.14),rgba(251,191,36,.08));display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)">
     <div style="min-width:0">
-      <div class="test-mode-banner-title" style="font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#fde68a">TESTE LOCAL${isLocalTestReadOnlyMode()?' · SOMENTE LEITURA':''}</div>
-      <div class="test-mode-banner-text" role="status" style="font-size:12px;line-height:1.45;color:#e5edf8">Dados sintéticos em memória. Sem Firebase, sincronização, importação/exportação ou persistência financeira.</div>
+      <div class="test-mode-banner-title" style="font-weight:900;letter-spacing:.14em;text-transform:uppercase">TESTE LOCAL${isLocalTestReadOnlyMode()?' · SOMENTE LEITURA':''}</div>
+      <div class="test-mode-banner-text" role="status">Dados sintéticos em memória. Sem Firebase, sincronização, importação/exportação ou persistência financeira.</div>
     </div>
     ${isLocalTestReadOnlyMode()?'<span class="test-mode-readonly-status" role="status">Necessita revisão antes da confirmação; ações bloqueadas.</span>':'<button class="btn bgh" onclick="restoreLocalTestData()" style="min-height:44px;padding:0 12px;border-radius:10px;font-size:12px;font-weight:800;flex-shrink:0">Restaurar dados de teste</button>'}
   </div>`:''}

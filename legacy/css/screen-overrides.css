@@ -581,7 +581,7 @@
 .assets-premium-shell .assets-premium-controls{display:flex;align-items:center;gap:8px;position:relative;margin:0 0 10px;min-width:0}
 .assets-premium-shell .assets-premium-controls .assets-premium-search{flex:1 1 320px;min-width:0}
 .assets-premium-shell .assets-premium-controls .assets-premium-filters{flex:0 0 auto}
-.assets-premium-shell .assets-premium-sort{display:flex;align-items:center;gap:6px;flex:0 0 auto;color:var(--muted);font-size:11px}
+.assets-premium-shell .assets-premium-sort{display:flex;align-items:center;gap:6px;flex:0 0 auto;color:var(--text);font-size:12px}
 .assets-premium-shell .assets-premium-sort select{min-height:44px;max-width:190px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--text);font:inherit}
 .assets-premium-shell .assets-premium-controls .assets-premium-filter-panel{top:calc(100% + 6px)}
 .assets-premium-shell .assets-premium-kpis{margin-bottom:8px}
