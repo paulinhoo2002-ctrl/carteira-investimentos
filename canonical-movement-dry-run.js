@@ -133,7 +133,7 @@ function canonicalizeSources(sources = []) {
   }
   const auditRecords = rows.map(({ _serial, ...row }) => row);
   const canonicalRecords = auditRecords.filter(row => row.sourceRole === 'PRIMARY' && row.includedInCanonical);
-  const unresolved = unresolvedDuplicateRows + supportingUnmatched + auditRecords.filter(row => row.duplicateState === 'CONFLICTING_DUPLICATE').length;
+  const unresolved = unresolvedDuplicateRows + supportingAmbiguousMappings + supportingUnmatched + auditRecords.filter(row => row.duplicateState === 'CONFLICTING_DUPLICATE').length;
   return {
     mode: 'READ_ONLY_DRY_RUN', writeEnabled: false, mutationCount: 0,
     canonicalStatus: unresolved ? 'NOT_CERTIFIED' : 'REVIEWABLE',

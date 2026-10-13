@@ -62,6 +62,19 @@ test('duplicate rows with the same stable event id link once without discarding 
   assert.equal(result.auditRecords[1].reasonCode, 'SAME_STABLE_EVENT_ID');
 });
 
+test('ambiguous supporting mappings prevent a reviewable canonical status', () => {
+  const result = Engine.canonicalizeSources([
+    {sourceId:'P',role:'PRIMARY',rows:[
+      {rawRecordId:'p1',eventId:'event-1',rowFingerprint:'a'.repeat(64)},
+      {rawRecordId:'p2',eventId:'event-1',rowFingerprint:'a'.repeat(64)},
+    ]},
+    {sourceId:'S',role:'SUPPORTING',rows:[{rawRecordId:'s1',rowFingerprint:'a'.repeat(64)}]},
+  ]);
+  assert.equal(result.summary.exactDuplicates,1);
+  assert.equal(result.summary.supportingAmbiguousMappings,1);
+  assert.equal(result.canonicalStatus,'NOT_CERTIFIED');
+});
+
 test('transfer pairing requires explicit direction, same asset and quantity, amount and bounded date window', () => {
   const result = Engine.pairTransfers([
     { rawRecordId:'out', kind:'TRANSFER_OUT', date:'2026-02-02', assetKey:'asset-x', quantity:'2', amountCents:20000, custodian:'A' },
