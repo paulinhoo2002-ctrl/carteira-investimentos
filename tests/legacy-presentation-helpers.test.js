@@ -32,11 +32,13 @@ function loadPresentationHarness() {
 }
 
 test('presentation helpers load before app code and leave their definitions outside index.html', () => {
-  const helperScript = html.indexOf('<script src="legacy/js/ui/presentation.js"></script>');
-  const applicationScript = html.indexOf('<script>\nconst QUOTE_REFRESH_INTERVAL');
+  // Normalize line endings for reliable indexOf checks
+  const normalizedHtml = html.replace(/\r\n/g, '\n');
+  const helperScript = normalizedHtml.indexOf('<script src="legacy/js/ui/presentation.js"></script>');
+  const applicationScript = normalizedHtml.indexOf('<script>\nconst QUOTE_REFRESH_INTERVAL');
   assert.ok(helperScript >= 0 && helperScript < applicationScript);
-  assert.doesNotMatch(html, /function (?:toast|dashboardMetricIcon|waveBIcon|dashboardInlineAction|dashboardConsultiveCard|dashboardMetricCard|dashboardRadarCard|assetSummaryCard|assetRankingRowHtml|dividendMonthlyHistoryYearMonthRow|dividendMonthlyHistoryYearCard|passiveIncomeMetricCard|passiveIncomeProgressCard|renderDataQualityIssueCard|renderDataQualityPriorityCard)\s*\(/);
-  assert.doesNotMatch(html, /function formatGoalMonths\s*\(/);
+  assert.doesNotMatch(normalizedHtml, /function (?:toast|dashboardMetricIcon|waveBIcon|dashboardInlineAction|dashboardConsultiveCard|dashboardMetricCard|dashboardRadarCard|assetSummaryCard|assetRankingRowHtml|dividendMonthlyHistoryYearMonthRow|dividendMonthlyHistoryYearCard|passiveIncomeMetricCard|passiveIncomeProgressCard|renderDataQualityIssueCard|renderDataQualityPriorityCard)\s*\(/);
+  assert.doesNotMatch(normalizedHtml, /function formatGoalMonths\s*\(/);
 });
 
 test('goal month labels distinguish confirmed zero from missing estimate', () => {

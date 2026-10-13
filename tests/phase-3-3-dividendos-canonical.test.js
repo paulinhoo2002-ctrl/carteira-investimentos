@@ -50,7 +50,9 @@ test('Dividendos usa tres colunas nos tablets e rotulos legiveis', () => {
 
 test('Top Ativos renders the result percentage with one sign only', () => {
   const source = read('index.html');
-  const resultLine = source.split(/\r?\n/).find(line => line.includes('asset.pct===null'));
+  const patrimonioSource = read('legacy/js/screens/patrimonio.js');
+  const combinedSource = source + '\n' + patrimonioSource;
+  const resultLine = combinedSource.split(/\r?\n/).find(line => line.includes('asset.pct===null'));
   assert.ok(resultLine, 'Top Ativos percentage row exists');
   assert.match(resultLine, /fmtP\(asset\.pct\)/);
   assert.doesNotMatch(resultLine, /asset\.result>=0/);

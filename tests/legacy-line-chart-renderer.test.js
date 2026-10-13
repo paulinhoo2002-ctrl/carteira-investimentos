@@ -74,11 +74,13 @@ test('real dividend chart tooltip shows accessible text and respects pinned focu
 });
 
 test('chart module loads before app callers and participates in build and offline shell', () => {
-  const moduleTag = html.indexOf('<script src="legacy/js/ui/charts.js"></script>');
-  const settingsModuleTag = html.indexOf('<script src="legacy/js/screens/settings.js"></script>');
-  const dashboardModuleTag = html.indexOf('<script src="legacy/js/screens/dashboard-executive-kpis.js"></script>');
-  const allocationModuleTag = html.indexOf('<script src="legacy/js/screens/dashboard-allocation.js"></script>');
-  const appTag = html.indexOf('<script>\n(()=>{if(window.__LOCAL_TEST_MODE__) return;');
+  // Normalize line endings for reliable indexOf checks
+  const normalizedHtml = html.replace(/\r\n/g, '\n');
+  const moduleTag = normalizedHtml.indexOf('<script src="legacy/js/ui/charts.js"></script>');
+  const settingsModuleTag = normalizedHtml.indexOf('<script src="legacy/js/screens/settings.js"></script>');
+  const dashboardModuleTag = normalizedHtml.indexOf('<script src="legacy/js/screens/dashboard-executive-kpis.js"></script>');
+  const allocationModuleTag = normalizedHtml.indexOf('<script src="legacy/js/screens/dashboard-allocation.js"></script>');
+  const appTag = normalizedHtml.indexOf('<script>\n(()=>{if(window.__LOCAL_TEST_MODE__) return;');
   assert.ok(moduleTag >= 0 && moduleTag < appTag, 'chart globals must load before application callers');
   assert.ok(settingsModuleTag >= 0 && settingsModuleTag < appTag, 'settings renderer must load before application callers');
   assert.ok(dashboardModuleTag >= 0 && dashboardModuleTag < appTag, 'dashboard KPI renderer must load before application callers');
