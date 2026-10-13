@@ -1,6 +1,6 @@
 ## MEGA 13 — próximo passo atual (2026-10-12)
 
-1. Commits locais da MEGA 13 foram criados na worktree `C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`; HEAD final `ce683e4c6fa402b0c15a5cd2d1983489af5aae04`.
+1. Commits locais da MEGA 13 foram criados na worktree `C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`; HEAD do pacote funcional `ce683e4c6fa402b0c15a5cd2d1983489af5aae04`; um commit documental posterior registrou a continuidade.
 2. Validação concluída: `npm test`, Modern 823/823, `qa:all`, `verify:release`, V289 18/18, V324 17/17, UTF-8, `git diff --check` e root hygiene passaram.
 3. Commits locais temáticos concluídos: renderer/cache/apresentação, legibilidade mobile, harness sintético e continuidade. Nenhum arquivo de domínio financeiro, persistência, Firebase ou lockfile foi alterado.
 4. Worktree limpa e commits revisados. Push/PR/merge/deploy não estão autorizados; próxima ação é revisão humana e autorização de publicação se desejada.
