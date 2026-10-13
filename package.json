@@ -26,7 +26,7 @@
     "qa:smoke": "node scripts/qa/run-smoke-with-lifecycle.js",
     "test:skills-routing": "node --test tests/governance-skills-policy.test.js tests/skills-router.test.js",
     "test:qa-harness": "npm run test:skills-routing && node --test tests/local-http-server.test.js",
-    "test:local-synthetic": "node --test tests/local-http-server.test.js tests/e2e-auth-mode.test.js tests/local-synthetic-qa-runtime.test.js",
+    "test:local-synthetic": "node --test tests/local-http-server.test.js tests/e2e-auth-mode.test.js tests/local-synthetic-qa-runtime.test.js tests/canonical-movement-dry-run.test.js",
     "test:local-synthetic:browser": "node --test tests/local-synthetic-qa.browser.test.js",
     "test:qa-lifecycle": "node --test tests/qa-lifecycle.test.js",
     "test:backup-recovery": "node --test tests/backup-recovery-hardening.test.js",
