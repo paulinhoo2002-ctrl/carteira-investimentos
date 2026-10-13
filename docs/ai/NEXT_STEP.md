@@ -1,4 +1,10 @@
-# MEGA 15D — current checkpoint (2026-10-13)
+# MEGA 16 — próximo passo atual (2026-10-13)
+
+1. Worktree `C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`, HEAD `a93290b93a11c63e9dd2eed0a53f33371db83163`. Commits locais: `121a1f8`, `c1badbd`, `a93290b`.
+2. Antes de qualquer publicação futura, corrigir ou decidir conscientemente o limite de altura do cartão Ativos em 360 px (139,6 px observado vs. 120 px esperado), preservando legibilidade e dados. Reexecutar smoke focado após a correção.
+3. Validação disponível: Legacy via `npm.cmd --ignore-scripts test`, Modern 823/823, V289 16/16, V215 7/7, login 11/11, Dividendos smoke 390/768/1366/1920, root hygiene e diff-check PASS. Não foram executados `qa:all` nem `verify:release` pois reconstruiriam `modern/dist` protegido; não certificar Auth Emulator/PPR.
+4. Sem push, PR, merge, deploy ou alterações financeiras. Finance Core, persistência, Firebase e worktrees externas preservados. Próxima ação: revisar e melhorar o cartão de Ativos mobile sem reduzir legibilidade; depois repetir o gate focal. Manter limitações de Auth e release documentadas.
+## MEGA 15D — histórico (supersedido por MEGA 16)
 
 1. Worktree LEGACY: `C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign`; branch `codex/legacy-product-mega-12`; commits `872b2b9` (canonical movement pipeline), `240c1ed` (year/source previews and conservative historical quantity derivation), and `edc125c` (ambiguous support mappings block certification).
 2. `canonical-movement-dry-run.js` now exposes source/year summaries and an observed/derived/unknown position result. Historical quantity derivation requires a complete snapshot, attested coverage for every interval month, and resolved position-changing events; this is a tested utility and is not connected to persistence or the UI. The read-only import preview still leaves new-record and financial-delta fields unknown without an application-state baseline.

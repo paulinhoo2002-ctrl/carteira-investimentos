@@ -1,3 +1,9 @@
+## MEGA 16 — login privado e correções visuais (2026-10-13)
+
+- Na worktree isolada `v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`, commits locais `121a1f8`, `c1badbd`, `a93290b`; HEAD final `a93290b93a11c63e9dd2eed0a53f33371db83163`.
+- Login real recebeu redesign responsivo e estados de feedback, mantendo barreira de acesso e fluxo Google/Firebase existente. Testes exercitam renderer/handler reais; QA visual foi sintético, sem autenticação hospedada.
+- Renda Fixa corrigida em 1536 px; smoke de Dividendos corrigido para usar o helper trusted existente. Modern 823/823, V289 16/16, V215 7/7, `npm.cmd --ignore-scripts test`, testes focados, root hygiene e diff-check passaram. `qa:all`/`verify:release` não rodaram porque reconstruiriam `modern/dist` protegido.
+- Pendente: Ativos mobile em 360 px mede 139,6 px para limite de 120 px. Auth Emulator/PPR segue não certificado. Finance Core, persistência, Firebase e dados reais intocados; sem publicação remota.
 ## MEGA 14E — fundação visual e dry-run sintético (2026-10-13)
 
 - Extraído o renderer executivo real do Dashboard para legacy/js/screens/dashboard-executive-kpis.js; valores ausentes e parciais não viram zero/total, zero explícito continua confirmado. Extraído também o renderer real de alocação para legacy/js/screens/dashboard-allocation.js. Service Worker v250.9 inclui os módulos. Commits funcionais ff1d331 e f8e8869.
