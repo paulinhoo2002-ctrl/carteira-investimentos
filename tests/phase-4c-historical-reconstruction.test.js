@@ -15,6 +15,21 @@ test('classifies custody, lending, subscription, corporate, income and trade eve
   assert.equal(Reconstruction.classifyMovement({ Movimento: 'Sem catálogo' }).confidence, 'UNKNOWN');
 });
 
+test('redemption is review-only and never classified as a verified sale', () => {
+  const event = Reconstruction.normalizeMovement({
+    movement: 'Resgate antecipado', ticker: 'SYNTH1', quantity: '2', value: '100,00', date: '2026-10-01',
+  });
+  assert.equal(Reconstruction.classifyMovement({ movement: 'Resgate de rendimento' }).classification, 'REDEMPTION_CANDIDATE');
+  assert.equal(event.classification, 'REDEMPTION_CANDIDATE');
+  assert.equal(event.confidence, 'REVIEW_REQUIRED');
+  assert.equal(event.positionImpact, 0);
+  assert.equal(event.positionEffect, 'UNKNOWN');
+  const result = Reconstruction.expectedPositionFromVerifiedHistory([event]);
+  assert.deepEqual(result.positions, []);
+  assert.equal(result.excluded[0].classification, 'REDEMPTION_CANDIDATE');
+  assert.equal(result.writeEnabled, false);
+});
+
 test('expected position uses only verified buy/sell and excludes custody uncertainty', () => {
   const result = Reconstruction.expectedPositionFromVerifiedHistory([
     { date: '2019-01-01', ticker: 'ABCD3', qty: 10, movement: 'Compra' },

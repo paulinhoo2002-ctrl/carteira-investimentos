@@ -33,10 +33,11 @@
     if(/direito.*subscr|subscricao.*direito/.test(text)) return {classification:'SUBSCRIPTION_RIGHT',confidence:'REVIEW_REQUIRED',positionImpact:0,domain:'CORPORATE_EVENT_HISTORY'};
     if(/subscricao|exercicio/.test(text)) return {classification:'SUBSCRIPTION_EXECUTION',confidence:'REVIEW_REQUIRED',positionImpact:0,domain:'CORPORATE_EVENT_HISTORY'};
     if(/bonificacao|desdobro|grupamento|cisao|fusa|incorpor/.test(text)) return {classification:'CORPORATE_EVENT',confidence:'REVIEW_REQUIRED',positionImpact:0,domain:'CORPORATE_EVENT_HISTORY'};
+    if(/resgate/.test(text)) return {classification:'REDEMPTION_CANDIDATE',confidence:'REVIEW_REQUIRED',positionImpact:0,positionEffect:'UNKNOWN',incomeEffect:'EXCLUDE',domain:'TRANSACTION_HISTORY'};
     if(/jcp/.test(text)) return {classification:'JCP',confidence:'EXACT_SUPPORTED',positionImpact:0,positionEffect:'NONE',incomeEffect:'INCLUDE',domain:'INCOME_HISTORY'};
     if(/dividend|rendimento|provento/.test(text)) return {classification:'INCOME',confidence:'EXACT_SUPPORTED',positionImpact:0,positionEffect:'NONE',incomeEffect:'INCLUDE',domain:'INCOME_HISTORY'};
     if(/compra|buy/.test(text)) return {classification:'BUY',confidence:'HIGH_CONFIDENCE',positionImpact:1,positionEffect:'INCREASE',incomeEffect:'EXCLUDE',domain:'TRANSACTION_HISTORY'};
-    if(/venda|sell|resgate/.test(text)) return {classification:'SELL',confidence:'HIGH_CONFIDENCE',positionImpact:-1,positionEffect:'DECREASE',incomeEffect:'EXCLUDE',domain:'TRANSACTION_HISTORY'};
+    if(/venda|sell/.test(text)) return {classification:'SELL',confidence:'HIGH_CONFIDENCE',positionImpact:-1,positionEffect:'DECREASE',incomeEffect:'EXCLUDE',domain:'TRANSACTION_HISTORY'};
     if(/ajuste|saldo/.test(text)) return {classification:'CUSTODY_ADJUSTMENT',confidence:'REVIEW_REQUIRED',positionImpact:0,domain:'CUSTODY_HISTORY'};
     return {classification:'UNKNOWN',confidence:'UNKNOWN',positionImpact:0,positionEffect:'UNKNOWN',incomeEffect:'UNKNOWN',domain:'IMPORT_AUDIT'};
   }
