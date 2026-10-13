@@ -16374,16 +16374,17 @@ function setRentBench(bench){
     render();
   }
 
-  function applyAssetsFilter(){
+  function applyAssetsFilter(changed){
     const checkboxes = document.querySelectorAll('#assets-filter-panel input[type="checkbox"]');
     const selected = [];
     let allChecked = true;
     checkboxes.forEach(cb => {
+      if(!cb.hasAttribute('value')) return;
       if(cb.value && cb.checked) selected.push(cb.value);
       if(cb.value && !cb.checked) allChecked = false;
     });
     // "Todas as classes" checkbox has no value, it's just a master toggle
-    if(allChecked && selected.length > 0){
+    if((changed && !changed.hasAttribute('value') && changed.checked) || (allChecked && selected.length > 0)){
       S.assetsFilterClasses = [];
     }else{
       S.assetsFilterClasses = selected;

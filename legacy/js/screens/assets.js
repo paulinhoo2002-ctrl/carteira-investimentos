@@ -1,4 +1,5 @@
 function ativos(){
+  const mobileAssetCards=typeof window!=='undefined' && window.matchMedia('(max-width:640px)').matches;
   const innerTab = ['analise','desempenho','renda-fixa'].includes(String(S.assetsInnerTab||'patrimonio')) ? String(S.assetsInnerTab) : 'patrimonio';
   const ativosCategoryIcon = type => ({
     'Ação': '📈',
@@ -65,6 +66,7 @@ function ativos(){
 
   // Filter assets for display (search + class + performance filters)
   const displayAssets = filterAssetsForDisplay(S.assets);
+  const displayAssetSet = new Set(displayAssets);
   const canonicalAnalysisByTicker = new Map(assetAnalysisRows().map(row => [row.ticker, row]));
   const assetFiltersActive = !!S.assetsSearch || !!S.assetsFilterClasses?.length
     || (S.assetsSectorFilter && S.assetsSectorFilter !== 'all')
@@ -87,13 +89,13 @@ function ativos(){
     </select></label>
     <div class="assets-premium-filter-panel" id="assets-filter-panel" style="display:${S.assetsFilterPanelOpen ? 'block' : 'none'}">
       <div class="assets-filter-heading">Tipo de ativo</div>
-      <label><input type="checkbox" ${classFilterSet.size === 0 ? 'checked' : ''} onchange="applyAssetsFilter()"> Todos os tipos</label>
-      <label><input type="checkbox" value="Ação" ${classFilterSet.has('Ação') ? 'checked' : ''} onchange="applyAssetsFilter()"> Ações</label>
-      <label><input type="checkbox" value="FII" ${classFilterSet.has('FII') ? 'checked' : ''} onchange="applyAssetsFilter()"> FIIs</label>
-      <label><input type="checkbox" value="ETF" ${classFilterSet.has('ETF') ? 'checked' : ''} onchange="applyAssetsFilter()"> ETFs</label>
-      <label><input type="checkbox" value="Renda Fixa" ${classFilterSet.has('Renda Fixa') ? 'checked' : ''} onchange="applyAssetsFilter()"> Renda Fixa</label>
-      <label><input type="checkbox" value="BDR" ${classFilterSet.has('BDR') ? 'checked' : ''} onchange="applyAssetsFilter()"> BDRs</label>
-      <label><input type="checkbox" value="Crypto" ${classFilterSet.has('Crypto') ? 'checked' : ''} onchange="applyAssetsFilter()"> Crypto</label>
+      <label><input type="checkbox" ${classFilterSet.size === 0 ? 'checked' : ''} onchange="applyAssetsFilter(this)"> Todos os tipos</label>
+      <label><input type="checkbox" value="Ação" ${classFilterSet.has('Ação') ? 'checked' : ''} onchange="applyAssetsFilter(this)"> Ações</label>
+      <label><input type="checkbox" value="FII" ${classFilterSet.has('FII') ? 'checked' : ''} onchange="applyAssetsFilter(this)"> FIIs</label>
+      <label><input type="checkbox" value="ETF" ${classFilterSet.has('ETF') ? 'checked' : ''} onchange="applyAssetsFilter(this)"> ETFs</label>
+      <label><input type="checkbox" value="Renda Fixa" ${classFilterSet.has('Renda Fixa') ? 'checked' : ''} onchange="applyAssetsFilter(this)"> Renda Fixa</label>
+      <label><input type="checkbox" value="BDR" ${classFilterSet.has('BDR') ? 'checked' : ''} onchange="applyAssetsFilter(this)"> BDRs</label>
+      <label><input type="checkbox" value="Crypto" ${classFilterSet.has('Crypto') ? 'checked' : ''} onchange="applyAssetsFilter(this)"> Crypto</label>
       <label class="assets-performance-filter"><span>Setor</span><select aria-label="Filtrar por setor" onchange="setAssetsSectorFilter(this.value)"><option value="all" ${S.assetsSectorFilter === 'all' ? 'selected' : ''}>Todos</option>${sectorOptions.map(sector => `<option value="${esc(sector)}" ${S.assetsSectorFilter === sector ? 'selected' : ''}>${esc(sector)}</option>`).join('')}</select></label>
       <label class="assets-performance-filter"><span>Classe</span><select aria-label="Filtrar por classe" onchange="setAssetsClassFilter(this.value)"><option value="all" ${S.assetsClassFilter === 'all' ? 'selected' : ''}>Todas</option>${assetClassOptions.map(value => `<option value="${esc(value)}" ${S.assetsClassFilter === value ? 'selected' : ''}>${esc(value)}</option>`).join('')}</select></label>
       <label class="assets-performance-filter"><span>Performance</span><select aria-label="Filtrar por performance" onchange="setAssetsPerformanceFilter(this.value)"><option value="all" ${S.assetsPerformanceFilter === 'all' ? 'selected' : ''}>Todos</option><option value="positive" ${S.assetsPerformanceFilter === 'positive' ? 'selected' : ''}>Positivos</option><option value="negative" ${S.assetsPerformanceFilter === 'negative' ? 'selected' : ''}>Negativos</option><option value="neutral" ${S.assetsPerformanceFilter === 'neutral' ? 'selected' : ''}>Neutros</option></select></label>
@@ -110,7 +112,7 @@ function ativos(){
   // Build accordion categories using details/summary for test compatibility
   const accordionHtml = groupNames.map(type => {
     const assets = grouped.get(type) || [];
-    const filteredAssets = assets.filter(a => displayAssets.includes(a));
+    const filteredAssets = assets.filter(a => displayAssetSet.has(a));
     if (filteredAssets.length === 0 && !assetFiltersActive) return '';
 
     const icon = ativosCategoryIcon(type);
@@ -135,7 +137,7 @@ function ativos(){
     const resultPrefix = typeResult != null && typeResult >= 0 ? '+' : '';
 
     // Build table rows
-    const rowsHtml = typeDisplayAssets.map(a => {
+    const rowsHtml = mobileAssetCards ? '' : typeDisplayAssets.map(a => {
       const m = getAssetMetrics(a);
       const currentValue = m.currentValue;
       const displayCurrentValue = m.displayCurrentValue;
@@ -215,7 +217,7 @@ function ativos(){
     }).join('');
 
     // Build mobile cards for test compatibility (V84)
-    const mobileCardsHtml = typeDisplayAssets.map(a => {
+    const mobileCardsHtml = !mobileAssetCards ? '' : typeDisplayAssets.map(a => {
       const m = getAssetMetrics(a);
       const currentValue = m.currentValue;
       const displayCurrentValue = m.displayCurrentValue;
@@ -327,7 +329,7 @@ function ativos(){
       <span class="acc-toggle" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
     `;
 
-    const tableHtml = `
+    const tableHtml = mobileAssetCards ? '' : `
       <div class="assets-table-wrap" tabindex="0" role="region" aria-label="Tabela de ativos · ${esc(type)} · use as setas para rolar" onkeydown="if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();this.scrollBy({left:(event.key==='ArrowRight'?1:-1)*80})}" onwheel="if(event.deltaX||event.shiftKey){event.preventDefault();this.scrollBy({left:event.deltaX||event.deltaY})}">
         <div class="mu" style="padding:8px 12px">Role para os lados para ver todos os campos e ações.</div>
         <table class="assets-table ${type === 'Renda Fixa' ? 'rf-table' : 'ag-table'}">
@@ -399,4 +401,11 @@ function ativos(){
     ${panelHtml}
     ${modals}
   </section>`;
+}
+
+// Match the CSS breakpoint once; resizing within a layout never triggers a render.
+if(typeof window!=='undefined' && window.matchMedia){
+  window.matchMedia('(max-width:640px)').addEventListener('change',()=>{
+    if(typeof S!=='undefined' && ['ativos','ranking','desempenho'].includes(S.tab) && !assetDetailId) render();
+  });
 }
