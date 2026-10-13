@@ -1,9 +1,9 @@
 # Próximo passo — MEGA 17 (2026-10-13)
 
-1. Worktree autorizada C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign, branch codex/legacy-product-mega-12, HEAD inicial 80025b177a9115b7e4afd95426ae27e8a4df9d78.
+1. Worktree autorizada C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign, branch codex/legacy-product-mega-12; commits locais MEGA17: 80025b1 (correção de Ativos mobile) e 69b268f (catálogo e governança).
 2. Gates focados executados: smoke Ativos 3/3; testes Skills/router/governança 17/17; inventário padrão (17 descobertos, 38 catalogados) PASS; inventário estrito da origem (40 Skills diretas e 43 candidatos recursivos) PASS; diff-check PASS.
-3. Revisar o diff completo, adicionar apenas os caminhos listados da MEGA17 e revisar `git diff --cached`; então criar commit local pequeno. Root hygiene e diff-check já passaram. Não fazer push, PR, merge ou deploy.
-4. Limitações: 9 hashes da origem de Skills divergem do snapshot versionado e foram apenas sinalizados; 6 capturas foram revisadas individualmente, 21 PNGs não; protótipos HTML não executados; QA autenticado/hospedado não certificado.
+3. Os dois grupos locais foram revisados e commitados. Próximo passo: revisão humana da entrega e decisão de publicação; esta missão não fez push, PR, merge ou deploy.
+4. Limitações: 9 hashes da origem de Skills divergem do snapshot versionado e foram apenas sinalizados; 6 capturas foram revisadas individualmente, 21 PNGs não; protótipos HTML não executados; QA autenticado/hospedado não certificado. Não houve push, PR, merge ou deploy.
 
 ---
 

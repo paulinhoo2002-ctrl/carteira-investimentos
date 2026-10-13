@@ -4,7 +4,7 @@
 - `tests/assets-performance-filter.smoke.test.js` reproduziu 139,56 px antes e passou após reduzir gaps/padding e impedir quebra de labels/valores no resumo; detalhes completos continuam acessíveis no cartão expandido.
 - Catálogo físico versionado: 43 arquivos `SKILL.md` recursivos, 38 IDs válidos únicos e 17 snapshots versionados; cinco arquivos classificados como duplicata, backup ou documentos internos sem metadados. Quatro Skills descrevem Carteira 2.0 e estão bloqueadas para roteamento LEGACY. 9 hashes de origem diferem do snapshot versionado e foram sinalizados, não sincronizados.
 - Adicionado `SKILL_DISCOVERY_GATE`, verificador de drift, testes do catálogo e índice de Skills. `test:skills-routing` 17/17 e comparação estrita da origem PASS. Referências visuais inventariadas sem copiar imagens/valores: 38 artefatos (27 PNG, 11 HTML), 6 capturas revisadas individualmente; HTML não executado e itens restantes não revisados.
-- Finance Core, persistência, Firebase, dados reais, PRs e worktrees externas não foram alterados. Sem push, PR, merge ou deploy. Smoke focal, gate de Skills, comparação estrita, `git diff --check` e root hygiene passaram; próximo: revisão do staged explícito e commit local de governança.
+- Commit local de governança `69b268f`; Finance Core, persistência, Firebase, dados reais, PRs e worktrees externas não foram alterados. Sem push, PR, merge ou deploy. Smoke focal, gate de Skills, comparação estrita, `git diff --check` e root hygiene passaram. Próximo: revisão humana antes de qualquer publicação.
 
 ## MEGA 16 — checkpoint local (2026-10-13)
 
