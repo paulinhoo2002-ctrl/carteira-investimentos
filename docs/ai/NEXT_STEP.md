@@ -1,4 +1,11 @@
-## MEGA 12 — próximo passo atual (2026-10-12)
+## MEGA 13 — próximo passo atual (2026-10-12)
+
+1. Revisar os commits locais planejados na worktree `C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`, iniciada em HEAD `65d0cf541338dbb937dc81cdfdff4177228b4a49`.
+2. Validação concluída: `npm test`, Modern 823/823, `qa:all`, `verify:release`, V289 18/18, V324 17/17, UTF-8, `git diff --check` e root hygiene passaram.
+3. Alterações locais ainda não commitadas: renderer de gráficos extraído, ícones SVG de movimentação, seis ajustes pontuais de microtexto, harness de backup sintético e testes/cache/docs correlatos. Nenhum arquivo de domínio financeiro, persistência, Firebase ou lockfile foi alterado.
+4. Criar commits locais temáticos com paths explícitos, revisar o estado final e preservar o trabalho no local. Push/PR/merge/deploy não estão autorizados.
+
+## MEGA 12 — próximo passo anterior à MEGA 13 (2026-10-12)
 
 1. Na worktree `C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`, revisar o diff da extração CSS final, correções de harness e legibilidade/QA de Renda Fixa.
 2. Preservar os checkpoints MEGA 12 históricos abaixo; a alegação antiga de dependências ausentes foi supersedida: `npm ci` foi autorizado e executado nesta worktree. A última execução de `npm run verify:release` terminou exit 0, incluindo Modern 823/823, `qa:all` 12/12, V289 18/18, V324 17/17 e backup sintético.

@@ -1,4 +1,13 @@
-## MEGA 12 — estado atual após instalação e certificação local (2026-10-12)
+## MEGA 13 — evolução de apresentação e QA (2026-10-12)
+
+- Na worktree autorizada `v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`, foi extraído o renderer de gráficos de linha e tooltip para `legacy/js/ui/charts.js`. O renderer continua consumindo séries preparadas, preserva lacunas e zero confirmado, fornece nome/descrição acessíveis e respeita ocultação de valores. Script adicionado ao app shell, build e cache offline v250.5.
+- Ícones funcionais de compra/venda/provento/renda fixa/outro passaram de emoji para SVG local com rótulo textual preservado. Seis regras de texto funcional em notas, backup e prévia de movimento passaram para 12 px; contagem estática <=11px caiu 797→791. Não houve refatoração global de tokens, media queries ou `!important`.
+- O teste de dry-run de backup passou a usar um diretório sintético temporário próprio e remover apenas essa raiz criada pelo teste. A rejeição de destinos fora da raiz continua coberta; política e script operacional não foram afrouxados. Nenhum ZIP foi produzido.
+- Evidência no estado implementado: `npm test`, Modern 823/823, `qa:all`, `verify:release`, V289 18/18, V324 17/17, focused renderer/SW/backup, UTF-8, `git diff --check` e root hygiene PASS. Smoke e browser visual usaram fixtures sintéticas; nenhum hosted Firebase ou dados financeiros reais.
+- `index.html`: 1.778.114→1.770.022 bytes; JS inline 1.772.048→1.763.909 bytes. Warnings de bundling do Modern permanecem sem falha. Finance Core, persistência, Firebase e package lock inalterados; sem push, PR, merge ou deploy.
+- Próximo passo seguro: revisar e criar commits locais pequenos por renderer/cache, ícones/tipografia e harness sintético; conferir novamente o HEAD final.
+
+## MEGA 12 — estado anterior após instalação e certificação local (2026-10-12)
 
 - Worktree `C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`, HEAD inicial `58fc6ae96535202ede7359d66200b9b4db8aa30c`. `npm ci` autorizado nesta worktree passou (94 pacotes, zero vulnerabilidades); scripts nativos omitidos pela política não foram contornados e manifests/lockfile permaneceram sem delta versionado.
 - A extração da camada de apresentação removeu os 5 blocos de CSS de tela restantes do HTML para `legacy/css/final-overrides.css`: 27 segmentos em 13 módulos, testes de reconstrução/ordem, app shell e SW `v250.4` atualizados. `index.html` reduziu ~56 KB/~711 linhas neste lote; CSS inline de tela agora zero. JS inline (~1,77 MB) permanece pendente, sem tentativa de reescrita ampla.
