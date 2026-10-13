@@ -5,6 +5,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const indexHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const responsiveCss = fs.readFileSync(path.join(__dirname, '..', 'legacy/css/responsive-layout.css'), 'utf8');
 
 function extractFunctionSource(name, nextMarker) {
   const start = indexHtml.indexOf(`function ${name}(`);
@@ -519,6 +520,6 @@ test('fechar o modal limpa o erro pendente', () => {
 // ---------------------------------------------------------------------------
 
 test('CSS do banner de erro e do campo inválido estão presentes', () => {
-  assert.match(indexHtml, /\.quick-movement-error\{[^}]+\}/);
-  assert.match(indexHtml, /\.quick-movement-modal \.fg input\[aria-invalid="true"\],\.quick-movement-modal \.fg select\[aria-invalid="true"\]\{border-color:var\(--danger\)\}/);
+  assert.match(responsiveCss, /\.quick-movement-error\{[^}]+\}/);
+  assert.match(responsiveCss, /\.quick-movement-modal \.fg input\[aria-invalid="true"\],\.quick-movement-modal \.fg select\[aria-invalid="true"\]\{border-color:var\(--danger\)\}/);
 });
