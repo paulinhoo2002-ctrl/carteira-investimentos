@@ -50,5 +50,12 @@ test('physical skill inventory has one versioned catalog and an executable drift
   assert.match(index, /skills-catalog\.json/);
   assert.equal(catalog.skills.length, 38);
   assert.equal(catalog.recursiveCandidates.length, 43);
+  assert.equal(catalog.schemaVersion, 2);
+  for (const skill of catalog.skills) {
+    assert.ok(skill.instructionPath);
+    assert.ok(skill.purpose);
+    assert.ok(skill.compatibility.hermes && skill.compatibility.codex);
+    assert.ok(skill.dependencies && skill.securityRisk && skill.duplication && skill.applicability);
+  }
   assert.match(read('package.json'), /"verify:skills"/);
 });

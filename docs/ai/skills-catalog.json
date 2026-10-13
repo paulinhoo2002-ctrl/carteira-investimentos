@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "inventoryDate": "2026-10-13",
   "sourceRoot": "C:/Projetos/carteira-investimentos/.agents/skills (read-only host source)",
   "count": {
@@ -30,9 +30,24 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "ARCHITECTURE",
-      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED"
+      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED",
+      "purpose": "Create polished, validated architecture, workflow, sequence, data-flow, and lifecycle/state diagrams as explorable standalone HTML with inline SVG, dark/light themes, optional trace motion, and PNG/JPEG/WebP/SVG/WebM export. Accept plain-language requirements or pasted Mermaid flowchart, sequenceDiagram, and stateDiagram input; inspect repository evidence when the diagram must reflect real code. Use when the user asks to visualize system architecture, infrastructure, cloud/security/network topology, technical workflows, API call sequences, request lifecycles, data pipelines, ETL/ELT, data lineage, state machines, or to convert/beautify Mermaid.",
+      "instructionPath": "archify/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [
+          {
+            "path": "archify-main/archify-main/archify/SKILL.md",
+            "relation": "DUPLICATE_CONTENT_IDENTICAL"
+          }
+        ],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "banner-design",
@@ -49,9 +64,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "UI_UX",
-      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED"
+      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED",
+      "purpose": "Design banners for social media, ads, website heroes, creative assets, and print. Multiple art direction options with AI-generated visuals. Actions: design, create, generate banner. Platforms: Facebook, Twitter/X, LinkedIn, YouTube, Instagram, Google Display, website hero, print. Styles: minimalist, gradient, bold typography, photo-based, illustrated, geometric, retro, glassmorphism, 3D, neon, duotone, editorial, collage. Uses ui-ux-pro-max, frontend-design, ai-artist, ai-multimodal skills.",
+      "instructionPath": "banner-design/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "brand",
@@ -68,9 +93,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "UI_UX",
-      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED"
+      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED",
+      "purpose": "Brand voice, visual identity, messaging frameworks, asset management, brand consistency. Activate for branded content, tone of voice, marketing assets, brand compliance, style guides.",
+      "instructionPath": "brand/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "browser-harness",
@@ -87,9 +122,24 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "BROWSER_QA",
-      "sourceSnapshotRelation": "SOURCE_ONLY"
+      "sourceSnapshotRelation": "SOURCE_ONLY",
+      "purpose": "Always use browser-harness for any web interaction: automation, scraping, testing, or site/app work.",
+      "instructionPath": "browser-harness/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [
+          {
+            "path": "browser-harness-main/SKILL.md",
+            "relation": "DUPLICATE_ID_NONCANONICAL_COPY"
+          }
+        ],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "browser-testing-with-devtools",
@@ -106,9 +156,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "BROWSER_QA",
-      "sourceSnapshotRelation": "MATCH"
+      "sourceSnapshotRelation": "MATCH",
+      "purpose": "Tests in real browsers via Chrome DevTools MCP. Use when building or debugging anything that runs in a browser. Use when you need to inspect the DOM, capture console errors, analyze network requests, profile performance, or verify visual output with real runtime data. Requires the chrome-devtools MCP server to be configured.",
+      "instructionPath": "browser-testing-with-devtools/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "carteira-auditoria-real",
@@ -125,9 +185,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "NOT_APPLICABLE_TO_LEGACY; explicitly scoped to Carteira 2.0",
       "category": "CROSS_PROJECT",
-      "sourceSnapshotRelation": "SOURCE_ONLY"
+      "sourceSnapshotRelation": "SOURCE_ONLY",
+      "purpose": "Auditar fatos reais do repositório, Git, filesystem, navegador, IndexedDB e backups da Carteira 2.0. Use quando houver contradições, paths duvidosos ou suspeita de saída inventada. Não implemente mudanças antes de fechar os fatos.",
+      "instructionPath": "carteira-auditoria-real/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "carteira-checkpoint-git",
@@ -144,9 +214,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "NOT_APPLICABLE_TO_LEGACY; explicitly scoped to Carteira 2.0",
       "category": "CROSS_PROJECT",
-      "sourceSnapshotRelation": "SOURCE_ONLY"
+      "sourceSnapshotRelation": "SOURCE_ONLY",
+      "purpose": "Criar e validar checkpoints Git seguros da Carteira 2.0. Use quando o usuário pedir checkpoint, commit, consolidar ou fechar uma fase. Não fazer push ou deploy sem autorização explícita.",
+      "instructionPath": "carteira-checkpoint-git/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "carteira-finance-core-review",
@@ -163,9 +243,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "NOT_APPLICABLE_TO_LEGACY; explicitly scoped to Carteira 2.0",
       "category": "CROSS_PROJECT",
-      "sourceSnapshotRelation": "SOURCE_ONLY"
+      "sourceSnapshotRelation": "SOURCE_ONLY",
+      "purpose": "Validar regras financeiras e consistência contábil da Carteira 2.0: patrimônio, caixa, BUY/SELL, preço médio, proventos, renda fixa, histórico, realized/unrealized e reconciliação. Não altere dados reais para fazer números fecharem.",
+      "instructionPath": "carteira-finance-core-review/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "carteira-migracao-segura",
@@ -182,9 +272,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "NOT_APPLICABLE_TO_LEGACY; explicitly scoped to Carteira 2.0",
       "category": "CROSS_PROJECT",
-      "sourceSnapshotRelation": "SOURCE_ONLY"
+      "sourceSnapshotRelation": "SOURCE_ONLY",
+      "purpose": "Conduzir preview, dry-run, plano, importação e rollback do legado para a Carteira 2.0 com guardas rígidas. Use para backups, reconciliação, transaction, IndexedDB, primeira importação real e rollback. Nunca executar escrita real sem autorização humana explícita.",
+      "instructionPath": "carteira-migracao-segura/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "cavecrew",
@@ -201,9 +301,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "PROCESS",
-      "sourceSnapshotRelation": "MATCH"
+      "sourceSnapshotRelation": "MATCH",
+      "purpose": "Decision guide for delegating to caveman-style subagents. Tells the main thread WHEN to spawn `cavecrew-investigator` (locate code), `cavecrew-builder` (1-2 file edit), or `cavecrew-reviewer` (diff review) instead of doing the work inline or using vanilla `Explore`. Subagent output is caveman-compressed so the tool-result injected back into main context is ~60% smaller — main context lasts longer across long sessions. Trigger: \"delegate to subagent\", \"use cavecrew\", \"spawn investigator/builder/reviewer\", \"save context\", \"compressed agent output\".",
+      "instructionPath": "cavecrew/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "caveman",
@@ -220,9 +330,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "PROCESS",
-      "sourceSnapshotRelation": "MATCH"
+      "sourceSnapshotRelation": "MATCH",
+      "purpose": "Ultra-compressed communication mode. Cuts token usage ~75% by speaking like caveman while keeping full technical accuracy. Supports intensity levels: lite, full (default), ultra, wenyan-lite, wenyan-full, wenyan-ultra. Use when user says \"caveman mode\", \"talk like caveman\", \"use caveman\", \"less tokens\", \"be brief\", or invokes /caveman. Also auto-triggers when token efficiency is requested.",
+      "instructionPath": "caveman/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "caveman-commit",
@@ -239,9 +359,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "PROCESS",
-      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED"
+      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED",
+      "purpose": "Ultra-compressed commit message generator. Cuts noise from commit messages while preserving intent and reasoning. Conventional Commits format. Subject ≤50 chars, body only when \"why\" isn't obvious. Use when user says \"write a commit\", \"commit message\", \"generate commit\", \"/commit\", or invokes /caveman-commit. Auto-triggers when staging changes.",
+      "instructionPath": "caveman-commit/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "caveman-compress",
@@ -258,9 +388,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "PROCESS",
-      "sourceSnapshotRelation": "MATCH"
+      "sourceSnapshotRelation": "MATCH",
+      "purpose": "Compress natural language memory files (CLAUDE.md, todos, preferences) into caveman format to save input tokens. Preserves all technical substance, code, URLs, and structure. Compressed version overwrites the original file. Human-readable backup saved as FILE.original.md. Trigger: /caveman-compress FILEPATH or \"compress memory file\"",
+      "instructionPath": "caveman-compress/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "caveman-help",
@@ -277,9 +417,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "PROCESS",
-      "sourceSnapshotRelation": "SOURCE_ONLY"
+      "sourceSnapshotRelation": "SOURCE_ONLY",
+      "purpose": "Quick-reference card for all caveman modes, skills, and commands. One-shot display, not a persistent mode. Trigger: /caveman-help, \"caveman help\", \"what caveman commands\", \"how do I use caveman\".",
+      "instructionPath": "caveman-help/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "caveman-review",
@@ -296,9 +446,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "PROCESS",
-      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED"
+      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED",
+      "purpose": "Ultra-compressed code review comments. Cuts noise from PR feedback while preserving the actionable signal. Each comment is one line: location, problem, fix. Use when user says \"review this PR\", \"code review\", \"review the diff\", \"/review\", or invokes /caveman-review. Auto-triggers when reviewing pull requests.",
+      "instructionPath": "caveman-review/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "caveman-stats",
@@ -315,9 +475,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "PROCESS",
-      "sourceSnapshotRelation": "SOURCE_ONLY"
+      "sourceSnapshotRelation": "SOURCE_ONLY",
+      "purpose": "Show real token usage and estimated savings for the current session. Reads directly from the Claude Code session log — no AI estimation. Triggers on /caveman-stats. Output is injected by the mode-tracker hook; the model itself does not compute the numbers.",
+      "instructionPath": "caveman-stats/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "deep-research",
@@ -334,9 +504,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "RESEARCH",
-      "sourceSnapshotRelation": "SOURCE_ONLY"
+      "sourceSnapshotRelation": "SOURCE_ONLY",
+      "purpose": "Autonomous multi-step deep research engine implementing an iterative Think → Search → Extract → Synthesize → Stop loop. The LLM drives every decision: what to search, what's relevant, what's missing, and when to stop. Produces a cited, magazine-quality report with inline citations, category- specific formatting, and research stats. Trigger when the user asks for \"deep research\", \"research report on\", \"comprehensive analysis of\", \"look into X in depth\", \"write a report on X\", or any question needing multi-source synthesis beyond a single search. For entity vetting/dossiers use entity-research; for news digests use news-monitoring; for source-grounded Q&A use notebooklm-mode.",
+      "instructionPath": "deep-research/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "design",
@@ -353,9 +533,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "UI_UX",
-      "sourceSnapshotRelation": "SOURCE_ONLY"
+      "sourceSnapshotRelation": "SOURCE_ONLY",
+      "purpose": "Comprehensive design skill: brand identity, design tokens, UI styling, logo generation (55 styles, Gemini AI), corporate identity program (50 deliverables, CIP mockups), HTML presentations (Chart.js), banner design (22 styles, social/ads/web/print), icon design (15 styles, SVG, Gemini 3.1 Pro), social photos (HTML→screenshot, multi-platform). Actions: design logo, create CIP, generate mockups, build slides, design banner, generate icon, create social photos, social media images, brand identity, design system. Platforms: Facebook, Twitter, LinkedIn, YouTube, Instagram, Pinterest, TikTok, Threads, Google Ads.",
+      "instructionPath": "design/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "design-system",
@@ -372,9 +562,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "UI_UX",
-      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED"
+      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED",
+      "purpose": "Token architecture, component specifications, and slide generation. Three-layer tokens (primitive→semantic→component), CSS variables, spacing/typography scales, component specs, strategic slide creation. Use for design tokens, systematic design, brand-compliant presentations.",
+      "instructionPath": "design-system/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "doubt-driven-development",
@@ -391,9 +591,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "ENGINEERING",
-      "sourceSnapshotRelation": "MATCH"
+      "sourceSnapshotRelation": "MATCH",
+      "purpose": "Subjects every non-trivial decision to a fresh-context adversarial review before it stands. Use when correctness matters more than speed, when working in unfamiliar code, when stakes are high (production, security-sensitive logic, irreversible operations), or any time a confident output would be cheaper to verify now than to debug later.",
+      "instructionPath": "doubt-driven-development/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "fact-checker",
@@ -410,9 +620,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "RESEARCH",
-      "sourceSnapshotRelation": "SOURCE_ONLY"
+      "sourceSnapshotRelation": "SOURCE_ONLY",
+      "purpose": "Targeted claim verification pipeline. Given a factual assertion, search multiple independent sources, cross-check for agreement or contradiction, rate confidence (verified / likely true / disputed / unverified / outdated), and produce a cited verification report.",
+      "instructionPath": "fact-checker/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "frontend-design",
@@ -429,9 +649,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "UI_UX",
-      "sourceSnapshotRelation": "MATCH"
+      "sourceSnapshotRelation": "MATCH",
+      "purpose": "Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults.",
+      "instructionPath": "frontend-design/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "impeccable",
@@ -448,9 +678,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "UI_UX",
-      "sourceSnapshotRelation": "SOURCE_ONLY"
+      "sourceSnapshotRelation": "SOURCE_ONLY",
+      "purpose": "Use when the user wants to design, redesign, shape, critique, audit, polish, clarify, distill, harden, optimize, adapt, animate, colorize, extract, or otherwise improve a frontend interface. Covers websites, landing pages, dashboards, product UI, app shells, components, forms, settings, onboarding, and empty states. Handles UX review, visual hierarchy, information architecture, cognitive load, accessibility, performance, responsive behavior, theming, anti-patterns, typography, fonts, spacing, layout, alignment, color, motion, micro-interactions, UX copy, error states, edge cases, i18n, and reusable design systems or tokens. Also use for bland designs that need to become bolder or more delightful, loud designs that should become quieter, live browser iteration on UI elements, or ambitious visual effects that should feel technically extraordinary. Not for backend-only or non-UI tasks.",
+      "instructionPath": "impeccable/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "interface-design",
@@ -467,9 +707,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "UI_UX",
-      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED"
+      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED",
+      "purpose": "Use when designing, reviewing, or refining user interfaces, interaction flows, visual hierarchy, accessibility, responsive layouts, or product screens. Apply to web apps, dashboards, tools, forms, and design-system aligned implementation work.",
+      "instructionPath": "interface-design/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "interview-me",
@@ -486,9 +736,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "ENGINEERING",
-      "sourceSnapshotRelation": "MATCH"
+      "sourceSnapshotRelation": "MATCH",
+      "purpose": "Extracts what the user actually wants instead of what they think they should want. Achieves this through one-question-at-a-time interview until ~95% confidence about the underlying intent. Use when an ask is underspecified (\"build me X\" without \"for whom\" or \"why now\"), when the user explicitly invokes (\"interview me\", \"grill me\", \"are we sure?\", \"stress-test my thinking\"), or when you catch yourself silently filling in ambiguous requirements before any plan, spec, or code exists.",
+      "instructionPath": "interview-me/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "mantis-architecture",
@@ -505,9 +765,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "ARCHITECTURE",
-      "sourceSnapshotRelation": "SOURCE_ONLY"
+      "sourceSnapshotRelation": "SOURCE_ONLY",
+      "purpose": "Synthesizes raw learnings and codebase analysis into an interlinked Markdown Knowledge Base (KB). Use at the beginning of a loop to build or update architecture.md, entities, and vulnerabilities. Don't use for generating threat models or formulating execution plans.",
+      "instructionPath": "mantis-architecture/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "mantis-critic",
@@ -524,9 +794,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "ARCHITECTURE",
-      "sourceSnapshotRelation": "SOURCE_ONLY"
+      "sourceSnapshotRelation": "SOURCE_ONLY",
+      "purpose": "Assesses the production viability of findings, filtering out debug-only features and assertion traps. Use when findings have been validated and you need to confirm they are triggerable in production release builds (with assertions disabled). Don't use for writing reproduction scripts or patches.",
+      "instructionPath": "mantis-critic/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "mantis-report",
@@ -543,9 +823,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "ARCHITECTURE",
-      "sourceSnapshotRelation": "SOURCE_ONLY"
+      "sourceSnapshotRelation": "SOURCE_ONLY",
+      "purpose": "Generates a human-readable security review packet compiled from confirmed findings and exploit chains. Use at the end of a review cycle to produce stakeholder-facing documentation. Don't use for auditing code or verifying patches directly.",
+      "instructionPath": "mantis-report/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "mantis-review",
@@ -562,9 +852,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "ARCHITECTURE",
-      "sourceSnapshotRelation": "SOURCE_ONLY"
+      "sourceSnapshotRelation": "SOURCE_ONLY",
+      "purpose": "Independently reviews findings and filters out false positives. Use when consolidated findings need validation against the actual source code. Don't use for reproducing crashes or patching code.",
+      "instructionPath": "mantis-review/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "mantis-structural-index",
@@ -581,9 +881,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "ARCHITECTURE",
-      "sourceSnapshotRelation": "SOURCE_ONLY"
+      "sourceSnapshotRelation": "SOURCE_ONLY",
+      "purpose": "Builds a content-addressed semantic-unit index from source code for structural context. Use when a pinned or live codebase is available and structural cross-reference data would improve research quality. Don't use for findings analysis, patching, or reporting.",
+      "instructionPath": "mantis-structural-index/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "mantis-threat-model",
@@ -600,9 +910,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "ARCHITECTURE",
-      "sourceSnapshotRelation": "SOURCE_ONLY"
+      "sourceSnapshotRelation": "SOURCE_ONLY",
+      "purpose": "Synthesizes trust boundaries, attack surfaces, and attacker profiles into a living threat model. Use as Stage B of the Knowledge Base generation process, reading architecture and entity definitions from the KB. Don't use for analyzing source code or extracting raw learnings from JSONL files.",
+      "instructionPath": "mantis-threat-model/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "planning-with-files",
@@ -619,9 +939,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "ENGINEERING",
-      "sourceSnapshotRelation": "SOURCE_ONLY"
+      "sourceSnapshotRelation": "SOURCE_ONLY",
+      "purpose": "Planejamento persistente por missão para trabalhos longos, adaptado ao padrão Carteira 2.0.",
+      "instructionPath": "planning-with-files/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "playwright",
@@ -638,9 +968,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "BROWSER_QA",
-      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED"
+      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED",
+      "purpose": "Use when the task requires automating a real browser from the terminal (navigation, form filling, snapshots, screenshots, data extraction, UI-flow debugging) via `playwright-cli` or the bundled wrapper script.",
+      "instructionPath": "playwright/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "slides",
@@ -657,9 +997,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "ENGINEERING",
-      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED"
+      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED",
+      "purpose": "Create strategic HTML presentations with Chart.js, design tokens, responsive layouts, copywriting formulas, and contextual slide strategies.",
+      "instructionPath": "slides/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "source-driven-development",
@@ -676,9 +1026,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "ENGINEERING",
-      "sourceSnapshotRelation": "MATCH"
+      "sourceSnapshotRelation": "MATCH",
+      "purpose": "Grounds every implementation decision in official documentation. Use when you want authoritative, source-cited code free from outdated patterns. Use when building with any framework or library where correctness matters.",
+      "instructionPath": "source-driven-development/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "source-tracker",
@@ -695,9 +1055,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "RESEARCH",
-      "sourceSnapshotRelation": "SOURCE_ONLY"
+      "sourceSnapshotRelation": "SOURCE_ONLY",
+      "purpose": "Persistent citation database for multi-session research. Add URLs as they're cited, dedup variants, tag by topic, check link health, and export bibliographies in Markdown/BibTeX/CSV/JSON.",
+      "instructionPath": "source-tracker/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "ui-styling",
@@ -714,9 +1084,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "UI_UX",
-      "sourceSnapshotRelation": "SOURCE_ONLY"
+      "sourceSnapshotRelation": "SOURCE_ONLY",
+      "purpose": "Create beautiful, accessible user interfaces with shadcn/ui components (built on Radix UI + Tailwind), Tailwind CSS utility-first styling, and canvas-based visual designs. Use when building user interfaces, implementing design systems, creating responsive layouts, adding accessible components (dialogs, dropdowns, forms, tables), customizing themes and colors, implementing dark mode, generating visual designs and posters, or establishing consistent styling patterns across applications.",
+      "instructionPath": "ui-styling/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     },
     {
       "id": "ui-ux-pro-max",
@@ -733,9 +1113,19 @@
       "dependencies": "NOT_AUDITED",
       "antiTriggers": "NOT_AUDITED",
       "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
-      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "applicability": "CONDITIONAL; confirm task fit and runtime dependencies before use",
       "category": "UI_UX",
-      "sourceSnapshotRelation": "SOURCE_ONLY"
+      "sourceSnapshotRelation": "SOURCE_ONLY",
+      "purpose": "UI/UX design intelligence with searchable database",
+      "instructionPath": "ui-ux-pro-max/SKILL.md",
+      "compatibility": {
+        "hermes": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session",
+        "codex": "MARKDOWN_FORMAT_SUPPORTED; runtime and referenced tools must be rediscovered per session"
+      },
+      "duplication": {
+        "candidates": [],
+        "functionalOverlap": "NOT_AUDITED_FROM_FULL_SKILL_TEXT"
+      }
     }
   ],
   "runtimeOnlySkills": [
