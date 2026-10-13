@@ -316,6 +316,8 @@ let FB = {
   readOnlyOfflineSnapshotReady:false, readOnlyOfflineSnapshotScope:'', readOnlyOfflineSnapshotSignature:'',
   access:{loaded:false,loading:true,allowed:false,reason:'',cfg:null,lastDeniedAt:null}
 };
+let authGateLoginPending = false;
+let authGateLoginError = '';
 let firebaseAuthPersistenceReady = Promise.resolve();
 
 const V250_RECONNECT_RELOAD_KEY = 'civ5_v250_reconnect_reload_v1';
@@ -3242,14 +3244,25 @@ async function signInGoogle(){
     toast('🧪 Modo de teste local: entrada com Google desativada.');
     return;
   }
-  if(!FB.ready){ alert('Firebase não carregou. Verifique a internet.'); return; }
+  if(authGateLoginPending) return;
+  if(!FB.ready){ authGateLoginError='A autenticação não está disponível no momento. Tente novamente em instantes.'; render(); return; }
+  authGateLoginError='';
+  authGateLoginPending=true;
+  render();
   try{
     const provider=new firebase.auth.GoogleAuthProvider();
     await firebaseAuthPersistenceReady;
     await FB.auth.signInWithPopup(provider);
   }catch(e){
     debugWarn(e);
-    alert('Não foi possível entrar com Google. Confirme se o domínio está autorizado no Firebase.');
+    authGateLoginError=e?.code==='auth/popup-closed-by-user' || e?.code==='auth/cancelled-popup-request'
+      ? 'Entrada cancelada. Se quiser, tente novamente.'
+      : e?.code==='auth/network-request-failed'
+        ? 'Não foi possível conectar. Verifique sua conexão e tente novamente.'
+        : 'Não foi possível concluir a entrada. Tente novamente com a conta autorizada.';
+  }finally{
+    authGateLoginPending=false;
+    render();
   }
 }
 async function signOutGoogle(){
@@ -3321,42 +3334,56 @@ function authBox(){
 }
 function accessGateBox(){
   const loading = !FB.authResolved || FB.access.loading;
-  const reason = FB.access.reason || 'Faça login com um e-mail aprovado para acessar a carteira.';
-  const stateLabel = loading ? 'Verificando acesso' : (FB.user ? 'Acesso em validação' : 'Acesso restrito');
-  const title = loading ? 'Verificando acesso...' : (FB.user ? 'Seu e-mail não está autorizado' : 'Entre com Google para continuar');
-  const chip = FB.user ? `<span class="note-pill" style="background:#111827;color:#c7d2fe;border-color:rgba(99,102,241,.22)">${esc(FB.user.email || '')}</span>` : '';
+  const busy = loading || authGateLoginPending;
+  const state = busy ? (authGateLoginPending ? 'signing-in' : FB.user ? 'validating' : 'checking') : (FB.user && !FB.access.allowed ? 'unauthorized' : authGateLoginError || FB.access.reason ? 'error' : 'idle');
+  const stateLabel = state === 'checking' ? 'SESSÃO PRIVADA' : state === 'validating' || state === 'signing-in' ? 'VALIDANDO ACESSO' : state === 'unauthorized' ? 'ACESSO RESTRITO' : state === 'error' ? 'VERIFICAÇÃO NECESSÁRIA' : 'ÁREA PRIVADA';
+  const title = state === 'checking' ? 'Verificando sua sessão' : state === 'validating' ? 'Validando sua conta' : state === 'signing-in' ? 'Conectando sua conta' : state === 'unauthorized' ? 'Esta conta não tem acesso' : state === 'error' ? authGateLoginError ? 'Não foi possível entrar' : 'Não foi possível validar o acesso' : 'Bem-vindo de volta';
+  const description = state === 'checking'
+    ? 'Estamos verificando se já existe uma sessão autorizada.'
+    : state === 'validating'
+      ? 'A permissão da conta está sendo confirmada antes de exibir qualquer informação.'
+      : state === 'signing-in'
+        ? 'Aguarde enquanto a entrada segura é concluída.'
+      : state === 'unauthorized'
+        ? 'Entre com a conta Google autorizada pelo titular para continuar.'
+        : state === 'error'
+          ? esc(authGateLoginError || 'Não foi possível validar o acesso. Verifique sua conexão e tente novamente.')
+        : 'Acesse sua carteira de investimentos com segurança.';
+  const chip = FB.user ? `<span class="auth-gate-account">${esc(FB.user.email || '')}</span>` : '';
   return `
-    <div style="min-height:calc(100vh - 86px);display:grid;place-items:center;padding:14px 16px 20px">
-      <div style="width:min(460px,100%);background:linear-gradient(180deg,#0d1320 0%,#0a1020 100%);border:1px solid #1d2940;border-radius:20px;box-shadow:0 16px 42px rgba(0,0,0,.36);overflow:hidden;position:relative">
-        <div style="height:3px;background:linear-gradient(90deg,#7c8dff 0%,#6ee7b7 100%);box-shadow:0 0 24px rgba(124,141,255,.18)"></div>
-        <div style="padding:20px 22px 12px">
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-            <div style="width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#2f3b70,#4040c0 54%,#6ee7b7);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 28px rgba(79,70,229,.28);flex-shrink:0;font-size:16px">📈</div>
-            <div>
-              <div class="cl" style="font-size:9px;margin-bottom:4px;letter-spacing:.16em">${stateLabel}</div>
-              <div style="font-size:22px;line-height:1.05;font-weight:900;letter-spacing:-.05em;color:#f5f8ff;max-width:360px">${title}</div>
-            </div>
+    <main class="auth-gate-page" data-auth-state="${state}" aria-labelledby="auth-gate-title" aria-busy="${busy ? 'true' : 'false'}">
+      <section class="auth-gate-card" aria-describedby="auth-gate-description">
+        <div class="auth-gate-art" aria-hidden="true">
+          <svg viewBox="0 0 520 170" preserveAspectRatio="xMidYMid slice" focusable="false">
+            <path d="M-12 126C48 124 48 83 104 83s58 48 112 48 62-68 117-68 63 49 113 49 54-35 86-35" />
+            <path d="M-12 145C44 145 53 105 106 105s59 45 111 45 63-67 116-67 67 46 114 46 52-30 85-30" />
+            <circle cx="216" cy="131" r="4" /><circle cx="333" cy="63" r="4" /><circle cx="446" cy="112" r="4" />
+          </svg>
+        </div>
+        <div class="auth-gate-content">
+          <div class="auth-gate-brand">
+            <span class="auth-gate-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M4 18.5V8.8l8-4.3 8 4.3v9.7M8 13.2h8M8 16.5h8M7 8.1l5 2.7 5-2.7" /></svg></span>
+            <span>CARTEIRA DE <strong>INVESTIMENTOS</strong></span>
           </div>
-          <div style="font-size:12px;line-height:1.55;color:#8ea0bb;max-width:360px">
-            Acesso aprovado para contas autorizadas.<br>
-            A carteira sincroniza automaticamente na nuvem.
-          </div>
-          ${FB.user ? `<div style="margin-top:14px">${chip}</div>` : ''}
-          <div style="margin-top:18px">
-            <button class="btn bp" onclick="signInGoogle()" style="width:100%;min-height:48px;border-radius:14px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 12px 28px rgba(79,70,229,.34)">
-              <span style="font-size:18px;font-weight:900;line-height:1;background:linear-gradient(90deg,#4285f4 0 25%,#34a853 25% 50%,#fbbc05 50% 75%,#ea4335 75% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">G</span>
-              <span>Entrar com Google</span>
+          <div class="auth-gate-eyebrow" role="status" aria-live="polite"><span class="auth-gate-status-dot" aria-hidden="true"></span>${stateLabel}</div>
+          <h1 id="auth-gate-title">${title}</h1>
+          <p class="auth-gate-tagline">Seu patrimônio em um só lugar</p>
+          <p id="auth-gate-description" class="auth-gate-description" ${state === 'error' ? 'role="alert" aria-live="assertive"' : ''}>${description}</p>
+          ${chip ? `<div class="auth-gate-account-wrap">Conta detectada ${chip}</div>` : ''}
+          <div class="auth-gate-actions">
+            <button class="btn bp auth-gate-google" onclick="signInGoogle()" ${busy ? 'disabled aria-disabled="true"' : ''} aria-describedby="auth-gate-description">
+              <span class="auth-gate-google-mark" aria-hidden="true">G</span>
+              <span>${authGateLoginPending ? 'Entrando...' : loading ? 'Verificando sessão' : state === 'error' ? 'Tentar novamente' : FB.user ? 'Usar outra conta Google' : 'Continuar com Google'}</span>
+              ${busy ? '<span class="auth-gate-spinner" aria-hidden="true"></span>' : ''}
             </button>
-            ${FB.user ? `<button class="btn bgh" onclick="signOutGoogle()" style="width:100%;margin-top:7px;min-height:38px;border-radius:12px">Sair</button>` : ''}
+            ${FB.user ? `<button class="btn bgh auth-gate-signout" onclick="signOutGoogle()">Sair desta conta</button>` : ''}
           </div>
+          <p class="auth-gate-privacy"><span aria-hidden="true"><svg viewBox="0 0 20 20" focusable="false"><rect x="4" y="9" width="12" height="9" rx="2"/><path d="M6.5 9V6a3.5 3.5 0 0 1 7 0v3"/></svg></span>Acesso exclusivo ao proprietário.</p>
         </div>
-        <div style="border-top:1px solid #182234;padding:9px 22px 10px;display:flex;align-items:center;gap:8px;color:#53627a;font-size:9px;line-height:1.25">
-          <span style="font-size:14px">🔒</span>
-          <span>Seus dados ficam na sua conta Google. Nenhuma senha é armazenada.</span>
-        </div>
-      </div>
-    </div>
-    <div style="text-align:center;color:#324157;font-size:9px;letter-spacing:.12em;padding:0 18px 10px">CARTEIRA DE INVESTIMENTOS · Dados seguros e privados</div>
+        <footer class="auth-gate-footer">Seus dados só aparecem após a validação do acesso.</footer>
+      </section>
+      <p class="auth-gate-caption">CARTEIRA DE INVESTIMENTOS <span aria-hidden="true">·</span> PRIVACIDADE EM PRIMEIRO LUGAR</p>
+    </main>
   `;
 }
 function shouldShowAccessGate(){

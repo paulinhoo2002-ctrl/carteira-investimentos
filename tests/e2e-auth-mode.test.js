@@ -44,6 +44,6 @@ test('local mode blocks real-data backup and import actions', () => {
 });
 
 test('capture harness must reject the authentication gate', () => {
-  assert.match(source, /Entre com Google para continuar/);
+  assert.match(source, /Continuar com Google/);
   assert.match(source, /shouldShowAccessGate\(\)/);
 });
