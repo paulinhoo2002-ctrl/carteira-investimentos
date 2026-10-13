@@ -1,3 +1,12 @@
+## MEGA 14E — estado atual (2026-10-13)
+
+- Na worktree autorizada da LEGACY, branch codex/legacy-product-mega-12, foram criados os commits funcionais ff1d331 (renderer executivo real do Dashboard e preservação de valores ausentes), 8517a88 (modelo sintético de dry-run multi-custodiante) e f8e8869 (renderer real de alocação do Dashboard). HEAD funcional antes do checkpoint documental: f8e8869fa76dbd1769c9d8cc95b0f23749696c91.
+- O Dashboard preserva ausência como indisponível, parcialidade sem total completo, zero explícito e estado desconhecido sem tom financeiro conclusivo. Os dois renderers foram extraídos sem mover cálculos; Service Worker v250.9 inclui os módulos. O modelo sintético não lê arquivos nem grava estado.
+- Inline JS: 1,734,847 bytes/28,638 linhas → 1,725,919 bytes/28,555 linhas (−8,928 bytes/−83 linhas).
+- `npm run verify:release` terminou com exit 0, incluindo `npm test`, Modern 823/823, `qa:all` e V289 18/18. Build e testes focados 29/29 passaram; smoke sintético cobriu sete larguras sem overflow nem erros relevantes. V324 está incluído na suite Legacy. Capturas V330 sintéticas foram revisadas. UTF-8, `git diff --check` e root hygiene passaram.
+- Auth Emulator/V311 continua BLOCKED_ENVIRONMENT pelo Netty/WEPoll loopback previamente reproduzido; não repetido sem evidência técnica nova. QA sintético usou `testMode=1&testReadOnly=1`; production-like/authenticated PPR não certificado. Nenhuma fonte financeira real foi disponibilizada nesta worktree, então não houve manifesto real, comparação de targets nem histórico 2019–2026. Warnings do build Modern permanecem não bloqueantes.
+- Finance Core, persistence-core, Firebase hospedado, lockfile, dados reais e demais worktrees permaneceram inalterados. Sem push, PR, merge, deploy, import ou escrita financeira. Próxima ação: obter fontes explicitamente autorizadas e runtime local compatível para análise READ-ONLY/DRY-RUN; não iniciar escrita real.
+
 ## MEGA 14D — estado atual (2026-10-12)
 
 - Branch `codex/legacy-product-mega-12` na worktree isolada `v012-mega-12-lifetime-redesign`; commit funcional local `44502ea` extraiu Settings para `legacy/js/screens/settings.js`, atualizou app shell/build e Service Worker v250.7.

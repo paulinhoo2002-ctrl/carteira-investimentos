@@ -1,3 +1,10 @@
+## MEGA 14E — fundação visual e dry-run sintético (2026-10-13)
+
+- Extraído o renderer executivo real do Dashboard para legacy/js/screens/dashboard-executive-kpis.js; valores ausentes e parciais não viram zero/total, zero explícito continua confirmado. Extraído também o renderer real de alocação para legacy/js/screens/dashboard-allocation.js. Service Worker v250.9 inclui os módulos. Commits funcionais ff1d331 e f8e8869.
+- O módulo multi-custodiante `multi-custodian-reconciliation-dry-run.js` opera somente sobre snapshots sintéticos em memória, sem leitura de arquivos ou escrita do estado da aplicação. Commit 8517a88; 12 testes cobrem deduplicação segura, conflito, datas/unidades, cobertura parcial/desconhecida e zero confirmado.
+- Inline JS: 1,734,847 bytes/28,638 linhas → 1,725,919 bytes/28,555 linhas (−8,928 bytes/−83 linhas). `npm run verify:release` exit 0, Modern 823/823, `qa:all`, V289 18/18, V324 no `npm test`, build e focused tests 29/29. Smoke em sete viewports sem overflow/erro relevante; UTF-8, diff e root hygiene PASS.
+- V311/PPR permanece BLOCKED_ENVIRONMENT pelo Netty/WEPoll; Firebase hospedado não foi acessado. Não houve QA de production parity, pois o browser usou harness sintético/read-only. Nenhuma fonte financeira real foi fornecida nesta worktree: sem manifesto, comparação de targets ou reconstrução 2019–2026. Warnings Modern/Vite não bloqueantes continuam. Finance Core, persistência, Firebase, lockfile, dados reais e demais worktrees permaneceram intocados; sem push/PR/merge/deploy.
+
 ## MEGA 14D — conclusão local (2026-10-12)
 
 - Branch `codex/legacy-product-mega-12`, worktree `v012-mega-12-lifetime-redesign`; commit funcional `44502ea` extraiu o renderer real de Configurações para `legacy/js/screens/settings.js`. `index.html` removeu 170 linhas de função e carrega o módulo antes dos callers.

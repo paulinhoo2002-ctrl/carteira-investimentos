@@ -1,3 +1,13 @@
+# MEGA 14E — próximo passo (2026-10-13)
+
+1. Worktree LEGACY: C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign; branch codex/legacy-product-mega-12. Commits funcionais locais: ff1d331 (renderer executivo do Dashboard), 8517a88 (dry-run sintético multi-custodiante) e f8e8869 (renderer de alocação do Dashboard).
+2. Inline JavaScript medido em scripts inline: 1,734,847 bytes / 28,638 linhas → 1,725,919 bytes / 28,555 linhas; redução de 8,928 bytes / 83 linhas. Service Worker v250.9 inclui ambos os novos módulos do Dashboard.
+3. Validação final: verify:release PASS (npm test, Modern 823, qa:all e V289 18/18 incluídos); build PASS; smoke em 390/430/768/1366/1440/1536/1920 sem overflow ou erros relevantes; V324 coberto por npm test. Testes focados 29/29, screenshot sintético revisado, UTF-8, git diff --check e root hygiene PASS.
+4. Limitações: Auth Emulator/V311 permanece BLOCKED_ENVIRONMENT por Netty/WEPoll loopback previamente reproduzido. Browser QA foi sintético com testMode/read-only; produção-paridade e PPR autenticado não certificados. Nenhuma fonte financeira real foi fornecida na worktree; manifesto, reconciliação e deltas 2019–2026 não executados. Avisos de bundling Modern e MODULE_TYPELESS_PACKAGE_JSON permanecem não bloqueantes.
+5. Próxima ação: disponibilizar fontes financeiras explicitamente autorizadas e ambiente local compatível com Auth Emulator para análise READ-ONLY/DRY-RUN. Não importar nem persistir. Push, PR, merge e deploy continuam não autorizados.
+
+---
+
 # MEGA 14D — próximo passo atual (2026-10-12)
 
 1. Branch `codex/legacy-product-mega-12`, worktree `C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign`; commit funcional desta missão: `44502ea` (renderer Configurações e cache v250.7).
