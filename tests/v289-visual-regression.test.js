@@ -667,12 +667,12 @@ test('Ativos tabela rola por teclado sem ampliar a pagina e preserva cards mobil
     await applyV289VisualFixture(runtime.page, 'baseline');
     await setThemeAndRoute(runtime.page, 'dark', 'ativos');
     const mobile = await runtime.page.evaluate(() => ({
-      tableVisible: getComputedStyle(document.querySelector('.assets-table-wrap')).display !== 'none',
+      desktopTables: document.querySelectorAll('.assets-table-wrap').length,
       cards: document.querySelectorAll('.asset-mobile-cards > *').length,
       pageWidth: document.documentElement.scrollWidth,
       viewportWidth: innerWidth,
     }));
-    assert.equal(mobile.tableVisible, false);
+    assert.equal(mobile.desktopTables, 0, 'mobile must not mount an invisible desktop table');
     assert.ok(mobile.cards > 0, 'mobile must retain asset cards');
     assert.ok(mobile.pageWidth <= mobile.viewportWidth, 'mobile page must not scroll horizontally');
     await assertSyntheticReadOnlyRuntime(runtime);
