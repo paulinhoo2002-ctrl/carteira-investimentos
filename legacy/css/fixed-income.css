@@ -75,7 +75,7 @@
       .premium-rf-review-empty{padding:8px 0 2px;color:var(--muted);font-size:10px;line-height:1.35}
       .premium-rf-ipca-diagnostics .premium-income-row{grid-template-columns:minmax(0,1fr) minmax(0,auto)}
       .premium-rf-ipca-diagnostics .premium-row-value{min-width:0;text-align:right;white-space:normal}
-      @media(max-width:1499px){.premium-rf-position-row,.premium-rf-maturity-row{flex-wrap:wrap}.premium-rf-row-main{flex:1 1 220px}.premium-rf-row-value{flex:1 1 220px}.premium-rf-row-actions{flex:1 1 100%;justify-content:flex-end;flex-wrap:wrap;gap:6px}}
+      @media(max-width:1599px){.premium-rf-position-row,.premium-rf-maturity-row{flex-wrap:wrap}.premium-rf-row-main{flex:1 1 220px}.premium-rf-row-value{flex:1 1 220px}.premium-rf-row-actions{flex:1 1 100%;justify-content:flex-end;flex-wrap:wrap;gap:6px}}
       @media(max-width:1199px){.premium-rf-grid{grid-template-columns:1fr}.premium-rf-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.premium-rf-review-groups{grid-template-columns:repeat(2,minmax(0,1fr))}.premium-rf-review-group:nth-child(3){border-left:0;border-top:1px solid var(--border)}.premium-rf-review-group:nth-child(4){border-top:1px solid var(--border)}}
       @media(max-width:767px){
         .premium-rf-page{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
