@@ -1,8 +1,7 @@
 const { chromium } = require('playwright-core');
 const path = require('path');
-const http = require('node:http');
+const { startLocalHttpServer } = require('./local-http-server');
 const fs = require('node:fs');
-const fsp = require('node:fs/promises');
 const assert = require('node:assert/strict');
 
 function resolveBrowser() {
@@ -16,29 +15,7 @@ function resolveBrowser() {
 }
 
 async function startServer(rootDir) {
-  const server = http.createServer(async (req, res) => {
-    try {
-      const pathname = decodeURIComponent(new URL(req.url || '/', 'http://127.0.0.1').pathname);
-      const relative = pathname === '/' ? '/index.html' : pathname;
-      const filePath = path.normalize(path.join(rootDir, relative));
-      if (!filePath.startsWith(rootDir)) { res.writeHead(403); res.end(''); return; }
-      const content = await fsp.readFile(filePath);
-      const mime = {
-        '.html': 'text/html; charset=utf-8',
-        '.js': 'text/javascript; charset=utf-8',
-        '.css': 'text/css; charset=utf-8',
-        '.json': 'application/json; charset=utf-8',
-        '.svg': 'image/svg+xml',
-      };
-      res.writeHead(200, { 'Content-Type': mime[path.extname(filePath).toLowerCase()] || 'text/plain' });
-      res.end(content);
-    } catch (e) {
-      res.writeHead(e.code === 'ENOENT' ? 404 : 500);
-      res.end('');
-    }
-  });
-  await new Promise(r => server.listen(0, '127.0.0.1', r));
-  return { server, url: `http://127.0.0.1:${server.address().port}/index.html?testMode=1` };
+  return startLocalHttpServer(rootDir);
 }
 
 (async () => {
@@ -67,7 +44,7 @@ async function startServer(rootDir) {
 
     // KPI label check (overview)
     const labels = await page.$$eval('.dividend-executive-kpi-label', els => els.map(e => e.textContent.trim()));
-    assert.ok(labels.includes('Recebido'), 'KPI label "Recebido" not found');
+    assert.ok(labels.some(label => label.startsWith('Recebido')), 'KPI de recebimentos realizados não encontrado');
 
     // Open the "Recebimentos" tab, where the premium filter toolbar renders
     await page.evaluate(() => setDividendViewMode('received'));
