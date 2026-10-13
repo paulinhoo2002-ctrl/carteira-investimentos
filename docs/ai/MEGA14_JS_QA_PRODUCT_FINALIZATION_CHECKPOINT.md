@@ -1,8 +1,18 @@
 # MEGA 14 — JS QA e finalização de produto
 
+## MEGA 14D — conclusão local (2026-10-12)
+
+- Branch `codex/legacy-product-mega-12`, worktree `v012-mega-12-lifetime-redesign`; commit funcional `44502ea` extraiu o renderer real de Configurações para `legacy/js/screens/settings.js`. `index.html` removeu 170 linhas de função e carrega o módulo antes dos callers.
+- Medição consistente por blocos `<script>` inline sem atributo `src`: 1.748.899 bytes / 28.808 linhas → 1.734.847 bytes / 28.638 linhas (−14.052 bytes / −170 linhas). Service Worker atualizado para v250.7 e novo módulo entrou no app shell/build.
+- Testes do renderer real em VM e smoke Playwright sintético somente leitura passaram; Settings foi validado a 390 e 1366 px, sem erro de console, overflow ou IDs duplicados. O renderer extraído foi comparado byte a byte à função anterior. Nenhum cálculo foi movido.
+- Gates executados: `npm test` PASS; Modern 823/823; `qa:all` PASS; `verify:release` PASS; V289 18/18; V324/backup dentro de `npm test`; teste focado final 18/18; UTF-8, `git diff --check`, `node --check` e build estático PASS. QA smoke cobriu 390/430/768/1366/1440/1536/1920 sem overflow/erros. SW update cycle passou sem cachebust.
+- V311/Auth Emulator não foi repetido por causa raiz ambiental já confirmada em MEGA14C: Firestore Emulator 1.22.0 falha no selector loopback Netty/WEPoll com Java 21; Java 17 foi rejeitado pelo Firebase CLI. PRODUCTION_PARITY autenticado e navegação das oito rotas com Auth/Firestore continuam BLOCKED_ENVIRONMENT; nenhum Firebase hospedado foi acessado.
+- Warnings Modern/Vite permanecem: classic script em host HTML, import default ausente e MODULE_TYPELESS_PACKAGE_JSON. Builds/testes passaram; Modern não foi alterado por esta missão. Não foi feita comparação dedicada de screenshots before/after, pois a extração preserva a saída e não altera estilo.
+- Finance Core, persistence-core, Firebase production, package-lock, dados reais e outras worktrees permaneceram inalterados. Sem push, PR, merge ou deploy. Próximo gate para MEGA15: executar V311 autenticado em runtime local compatível; manter qualquer reconciliação real bloqueada até esse resultado.
+
 Data: 2026-10-12
 
-## MEGA 14C — conclusão local (2026-10-12)
+## MEGA 14C — histórico supersedido por MEGA 14D (2026-10-12)
 
 - Identidade revalidada na worktree LEGACY C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign, branch codex/legacy-product-mega-12, HEAD de entrada e2c26d06b2ed3aebbe08518236a4791f971cd280; origin e Git common-dir corretos. Demais worktrees preservadas.
 - Extraído renderPortfolioSearch para legacy/js/ui/portfolio-search.js; helpers de tooltip do gráfico de dividendos movidos para legacy/js/ui/charts.js; formatGoalMonths movido para legacy/js/ui/presentation.js e corrigido plural 2 meses. O shell offline e o build incluem o novo módulo, com cache SW v250.6. Adicionado contrato sintético de proveniência/custódia/cobertura; valores desconhecidos continuam null.

@@ -1,12 +1,11 @@
-# MEGA 14C — próximo passo atual (2026-10-12)
+# MEGA 14D — próximo passo atual (2026-10-12)
 
-1. Branch codex/legacy-product-mega-12, worktree C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign; commits funcionais locais: cd5ab47d9077caa0feeff84c25a5f9b009abdb01 e 86f2ff96adcf69a592dc558f80d2a46649dce18c. Continuidade em MEGA14_JS_QA_PRODUCT_FINALIZATION_CHECKPOINT.md.
-2. npm run verify:release passou no conteúdo final (Legacy, Modern 823/823, QA geral, V289 18/18, V324 17/17); renderer/proveniência focados 24/24; 25 screenshots sintéticas; diff-check e root hygiene passaram.
-3. PRODUCTION_PARITY_READONLY_MODE=BLOCKED_ENVIRONMENT: Firestore Emulator 1.22.0 falha no loopback Netty/WEPoll com Java 21 antes dos testes. Sem WSL/Docker; nenhuma chamada hospedada ou dado real. Também não houve comparação autenticada no browser nem revisão independente.
-4. Próximo comando em host com runtime/loopback compatível: npm run test:auth-emulator. Até V311/PPR autenticado passar, não iniciar reconciliação financeira real; sem push, PR, merge ou deploy nesta missão.
+1. Branch `codex/legacy-product-mega-12`, worktree `C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign`; commit funcional desta missão: `44502ea` (renderer Configurações e cache v250.7).
+2. `npm test`, Modern 823/823, `qa:all`, `verify:release`, V289 18/18, V324 incluído na suite Legacy, browser smoke e verificações UTF-8/diff/higiene passaram.
+3. Auth Emulator/PPR permanece BLOCKED_ENVIRONMENT por falha Netty/WEPoll de loopback previamente reproduzida; não repetir até surgir runtime/configuração suportada diferente. Firebase hospedado e dados reais não foram acessados.
+4. Próximo passo: executar `npm run test:auth-emulator` em host/runtime local compatível. Só iniciar MEGA15 sob READ-ONLY/DRY-RUN depois do gate autenticado V311. Sem push, PR, merge ou deploy nesta missão.
 
-
-## MEGA 14 — estado anterior (supersedido por MEGA 14C)
+## MEGA 14 — estado anterior (supersedido por MEGA 14D)
 
 1. Revisar a extração do renderer real de Data Quality e dos cards compartilhados para `legacy/js/ui/presentation.js` na worktree `v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`. Commit funcional `ab5405839d87ff1b5bd7a8076d5145541d032d2e`; este checkpoint registra a continuidade documental.
 2. `npm run verify:release` passou no delta funcional final: Legacy, Modern 823/823, `qa:all`, V289 18/18, V324 17/17; smoke em 390/430/768/1366/1440/1536/1920 sem overflow ou erros. Testes focados do renderer 35/35; UTF-8 7/7, `git diff --check` e root hygiene passaram.
