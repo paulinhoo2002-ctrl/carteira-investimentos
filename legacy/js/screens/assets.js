@@ -79,7 +79,7 @@ function ativos(){
   const assetClassOptions = [...new Set(S.assets.map(a => String(a?.assetClass || a?.class || a?.category || a?.type || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
   const assetControls = `<div class="assets-premium-controls">
     <div class="assets-premium-search"><input type="search" class="assets-premium-search-input" placeholder="Buscar ativo..." aria-label="Buscar ativo por ticker ou nome" id="assets-premium-search" autocomplete="off" value="${esc(S.assetsSearch || '')}" oninput="onAssetsSearchInput(this.value)"></div>
-    <div class="assets-premium-filters"><button type="button" class="assets-premium-filter-btn" onclick="toggleAssetsFilterPanel()" aria-controls="assets-filter-panel" aria-expanded="${S.assetsFilterPanelOpen ? 'true' : 'false'}">Filtros <span class="filter-count" id="assets-filter-count">${activeAssetFilterCount}</span></button></div>
+    <div class="assets-premium-filters"><button type="button" class="assets-premium-filter-btn" id="assets-filter-toggle" onclick="toggleAssetsFilterPanel()" aria-controls="assets-filter-panel" aria-expanded="${S.assetsFilterPanelOpen ? 'true' : 'false'}">Filtros <span class="filter-count" id="assets-filter-count">${activeAssetFilterCount}</span></button></div>
     <label class="assets-premium-sort"><span>Ordenar</span><select aria-label="Ordenar posições de ativos" onchange="setAssetsSortMode(this.value)">
       <option value="ticker-asc" ${S.assetsSortMode === 'ticker-asc' || !S.assetsSortMode ? 'selected' : ''}>Ticker · A–Z</option>
       <option value="result-desc" ${S.assetsSortMode === 'result-desc' ? 'selected' : ''}>Resultado · maior</option>
@@ -87,15 +87,15 @@ function ativos(){
       <option value="rentability-desc" ${S.assetsSortMode === 'rentability-desc' ? 'selected' : ''}>Rentabilidade · maior</option>
       <option value="rentability-asc" ${S.assetsSortMode === 'rentability-asc' ? 'selected' : ''}>Rentabilidade · menor</option>
     </select></label>
-    <div class="assets-premium-filter-panel" id="assets-filter-panel" style="display:${S.assetsFilterPanelOpen ? 'block' : 'none'}">
+    <div class="assets-premium-filter-panel" id="assets-filter-panel" onkeydown="if(event.key==='Escape'){event.preventDefault();toggleAssetsFilterPanel()}" style="display:${S.assetsFilterPanelOpen ? 'block' : 'none'}">
       <div class="assets-filter-heading">Tipo de ativo</div>
-      <label><input type="checkbox" ${classFilterSet.size === 0 ? 'checked' : ''} onchange="applyAssetsFilter(this)"> Todos os tipos</label>
-      <label><input type="checkbox" value="Ação" ${classFilterSet.has('Ação') ? 'checked' : ''} onchange="applyAssetsFilter(this)"> Ações</label>
-      <label><input type="checkbox" value="FII" ${classFilterSet.has('FII') ? 'checked' : ''} onchange="applyAssetsFilter(this)"> FIIs</label>
-      <label><input type="checkbox" value="ETF" ${classFilterSet.has('ETF') ? 'checked' : ''} onchange="applyAssetsFilter(this)"> ETFs</label>
-      <label><input type="checkbox" value="Renda Fixa" ${classFilterSet.has('Renda Fixa') ? 'checked' : ''} onchange="applyAssetsFilter(this)"> Renda Fixa</label>
-      <label><input type="checkbox" value="BDR" ${classFilterSet.has('BDR') ? 'checked' : ''} onchange="applyAssetsFilter(this)"> BDRs</label>
-      <label><input type="checkbox" value="Crypto" ${classFilterSet.has('Crypto') ? 'checked' : ''} onchange="applyAssetsFilter(this)"> Crypto</label>
+      <label><input type="checkbox" id="assets-filter-all" ${classFilterSet.size === 0 ? 'checked' : ''} onchange="applyAssetsFilter(this)"> Todos os tipos</label>
+      <label><input type="checkbox" id="assets-filter-acao" value="Ação" ${classFilterSet.has('Ação') ? 'checked' : ''} onchange="applyAssetsFilter(this)"> Ações</label>
+      <label><input type="checkbox" id="assets-filter-fii" value="FII" ${classFilterSet.has('FII') ? 'checked' : ''} onchange="applyAssetsFilter(this)"> FIIs</label>
+      <label><input type="checkbox" id="assets-filter-etf" value="ETF" ${classFilterSet.has('ETF') ? 'checked' : ''} onchange="applyAssetsFilter(this)"> ETFs</label>
+      <label><input type="checkbox" id="assets-filter-rf" value="Renda Fixa" ${classFilterSet.has('Renda Fixa') ? 'checked' : ''} onchange="applyAssetsFilter(this)"> Renda Fixa</label>
+      <label><input type="checkbox" id="assets-filter-bdr" value="BDR" ${classFilterSet.has('BDR') ? 'checked' : ''} onchange="applyAssetsFilter(this)"> BDRs</label>
+      <label><input type="checkbox" id="assets-filter-crypto" value="Crypto" ${classFilterSet.has('Crypto') ? 'checked' : ''} onchange="applyAssetsFilter(this)"> Crypto</label>
       <label class="assets-performance-filter"><span>Setor</span><select aria-label="Filtrar por setor" onchange="setAssetsSectorFilter(this.value)"><option value="all" ${S.assetsSectorFilter === 'all' ? 'selected' : ''}>Todos</option>${sectorOptions.map(sector => `<option value="${esc(sector)}" ${S.assetsSectorFilter === sector ? 'selected' : ''}>${esc(sector)}</option>`).join('')}</select></label>
       <label class="assets-performance-filter"><span>Classe</span><select aria-label="Filtrar por classe" onchange="setAssetsClassFilter(this.value)"><option value="all" ${S.assetsClassFilter === 'all' ? 'selected' : ''}>Todas</option>${assetClassOptions.map(value => `<option value="${esc(value)}" ${S.assetsClassFilter === value ? 'selected' : ''}>${esc(value)}</option>`).join('')}</select></label>
       <label class="assets-performance-filter"><span>Performance</span><select aria-label="Filtrar por performance" onchange="setAssetsPerformanceFilter(this.value)"><option value="all" ${S.assetsPerformanceFilter === 'all' ? 'selected' : ''}>Todos</option><option value="positive" ${S.assetsPerformanceFilter === 'positive' ? 'selected' : ''}>Positivos</option><option value="negative" ${S.assetsPerformanceFilter === 'negative' ? 'selected' : ''}>Negativos</option><option value="neutral" ${S.assetsPerformanceFilter === 'neutral' ? 'selected' : ''}>Neutros</option></select></label>

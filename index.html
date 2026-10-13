@@ -16372,9 +16372,11 @@ function setRentBench(bench){
   function toggleAssetsFilterPanel(){
     S.assetsFilterPanelOpen = !S.assetsFilterPanelOpen;
     render();
+    document.getElementById('assets-filter-toggle')?.focus({preventScroll:true});
   }
 
   function applyAssetsFilter(changed){
+    const focusId=document.activeElement===changed ? changed?.id : null;
     const checkboxes = document.querySelectorAll('#assets-filter-panel input[type="checkbox"]');
     const selected = [];
     let allChecked = true;
@@ -16399,6 +16401,7 @@ function setRentBench(bench){
       S.assetsFilterPanelOpen = false;
     }
     render();
+    if(focusId) document.getElementById(S.assetsFilterPanelOpen?focusId:'assets-filter-toggle')?.focus({preventScroll:true});
   }
 
   function setAssetsPerformanceFilter(value){
