@@ -36,7 +36,7 @@ async function startLocalHttpServer(root, port = 0, { syntheticQa = true } = {})
     try {
       const requestUrl = new URL(req.url || '/', 'http://127.0.0.1');
       const pathname = decodeURIComponent(requestUrl.pathname);
-      if (/\/(?:\.git|\.qa-state|local-imports|backups|backups-seguros|_backups-seguros|\.env[^/]*)(?:\/|$)/i.test(pathname.replaceAll('\\','/'))) {
+      if (/(?:^|\/)\.|\/(?:local-imports|backups|backups-seguros|_backups-seguros)(?:\/|$)/i.test(pathname.replaceAll('\\','/'))) {
         res.writeHead(403);
         return res.end();
       }

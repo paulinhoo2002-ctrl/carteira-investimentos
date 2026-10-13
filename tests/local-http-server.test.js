@@ -21,7 +21,7 @@ test('synthetic QA serves isolated modern output while ordinary serving preserve
       const response = await fetch(new URL('/modern/dist/probe.js', harness.url));
       assert.equal(response.status, 200);
       assert.equal(await response.text(), syntheticQa ? 'isolated' : 'canonical');
-      for (const privatePath of ['/.qa-state/private-source.csv','/.git/config','/.env.local','/backups/fixture.json']) {
+      for (const privatePath of ['/.qa-state/private-source.csv','/.git/config','/.env.local','/.npmrc','/.codex/config.toml','/.aws/config','/backups/fixture.json']) {
         assert.equal((await fetch(new URL(privatePath,harness.url))).status,403,'private paths must not be served');
       }
       if(syntheticQa){
