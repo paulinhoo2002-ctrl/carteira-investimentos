@@ -355,3 +355,7 @@ function formatGoalMonths(months){
   if(m) parts.push(`${m} ${m===1?'mês':'meses'}`);
   return parts.length?parts.join(' e '):'menos de 1 mês';
 }
+function renderDeferredScreenState(name,label){
+  const failed=document.querySelector(`script[data-ui-screen="${name}"]`)?.dataset.failed==='true';
+  return `<section class="premium-empty" role="${failed?'alert':'status'}" aria-busy="${!failed}"><h2>${failed?'Não foi possível abrir':'Carregando'} ${label}</h2><p>${failed?'O módulo da tela não carregou. Seus dados não foram alterados.':'A navegação continua disponível enquanto a tela carrega.'}</p>${failed?'<button type="button" class="btn bgh" onclick="location.reload()">Tentar novamente</button>':''}</section>`;
+}

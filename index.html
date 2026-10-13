@@ -152,8 +152,8 @@ document.write([
 <script src="import-center-view.js"></script>
 <script src="import-center-events.js"></script>
 <script src="import-center-bootstrap.js"></script>
-<script src="legacy/js/screens/assets.js"></script>
-<script src="legacy/js/screens/fixed-income.js"></script>
+<script defer data-ui-screen="assets" src="legacy/js/screens/assets.js" onload="if(typeof render==='function' && ['ativos','ranking','desempenho'].includes(S.tab))render()" onerror="this.dataset.failed='true';if(typeof render==='function')render()"></script>
+<script defer data-ui-screen="fixed-income" src="legacy/js/screens/fixed-income.js" onload="if(typeof render==='function' && S.tab==='renda-fixa')render()" onerror="this.dataset.failed='true';if(typeof render==='function')render()"></script>
 <script>
 const QUOTE_REFRESH_INTERVAL = 5 * 60 * 1000;
 const QI = QUOTE_REFRESH_INTERVAL / 1000;
@@ -20097,6 +20097,8 @@ function content(){
     if(detail) return assetDetailPage(detail);
     assetDetailId=null;
   }
+  if(['ativos','ranking','desempenho'].includes(S.tab) && typeof ativos!=='function') return renderDeferredScreenState('assets','Ativos');
+  if(S.tab==='renda-fixa' && typeof rendaFixaTab!=='function') return renderDeferredScreenState('fixed-income','Renda Fixa');
   if(S.tab==='dashboard') return dash();
   if(S.tab==='patrimonio') return patrimonioTab();
   if(S.tab==='ativos')    return ativos();
