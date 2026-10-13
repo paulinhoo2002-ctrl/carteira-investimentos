@@ -344,3 +344,14 @@ function dataQualityTab(){
     </div>
   </div>`;
 }
+
+function formatGoalMonths(months){
+  if(months===0) return 'agora';
+  if(months===null||months===undefined) return 'sem estimativa';
+  const y=Math.floor(months/12);
+  const m=months%12;
+  const parts=[];
+  if(y) parts.push(`${y} ano${y>1?'s':''}`);
+  if(m) parts.push(`${m} ${m===1?'mês':'meses'}`);
+  return parts.length?parts.join(' e '):'menos de 1 mês';
+}

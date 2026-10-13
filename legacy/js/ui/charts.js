@@ -124,3 +124,20 @@ const pointsMarkup=values.map((v,i)=>{
     ${xLabels}
   </svg>`;
 }
+
+function showDividendChartTooltip(point){
+  const wrap=point?.closest?.('.dividend-chart-wrap');
+  const tooltip=wrap?.querySelector?.('.dividend-chart-tooltip');
+  if(!tooltip) return;
+  tooltip.textContent=point.dataset.tooltip||point.getAttribute('aria-label')||'';
+  tooltip.hidden=false;
+  const pointRect=point.getBoundingClientRect();
+  const wrapRect=wrap.getBoundingClientRect();
+  const maxLeft=Math.max(6,wrapRect.width-tooltip.offsetWidth-6);
+  tooltip.style.left=`${Math.min(maxLeft,Math.max(6,pointRect.left-wrapRect.left+pointRect.width/2-tooltip.offsetWidth/2))}px`;
+  tooltip.style.top=`${Math.max(6,pointRect.top-wrapRect.top-tooltip.offsetHeight-8)}px`;
+}
+function hideDividendChartTooltip(point){
+  const tooltip=point?.closest?.('.dividend-chart-wrap')?.querySelector?.('.dividend-chart-tooltip');
+  if(tooltip && document.activeElement!==point && point?.dataset?.tooltipPinned!=='true') tooltip.hidden=true;
+}

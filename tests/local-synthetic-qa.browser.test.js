@@ -33,7 +33,11 @@ test('strict read-only synthetic browser rejects programmatic writes and cloud h
     await page.waitForFunction(() => window.__LOCAL_TEST_MODE__ === true && window.__LOCAL_TEST_READ_ONLY__ === true);
 
     assert.match(await page.locator('.test-mode-banner').innerText(), /TESTE LOCAL · SOMENTE LEITURA/);
-    assert.match(await page.locator('.test-mode-readonly-status').innerText(), /Necessita revisão antes da confirmação/);    const encryptedRoundTrip = await page.evaluate(async () => {
+    assert.equal(await page.evaluate(() => typeof renderPortfolioSearch), 'function');
+    await page.evaluate(() => { S.portfolioSearchOpen = true; S.portfolioSearchQuery = ''; renderPortfolioSearch(); });
+    assert.equal(await page.getByRole('dialog', { name: 'Buscar na carteira' }).count(), 1);
+    assert.match(await page.locator('.test-mode-readonly-status').innerText(), /Necessita revisão antes da confirmação/);
+    const encryptedRoundTrip = await page.evaluate(async () => {
       const sample = { marker: 'BROWSER_SYNTHETIC_BACKUP', assets: [{ id: 'synthetic-asset-1', quantity: 2 }] };
       const encrypted = await BackupPortability.encryptBackup(sample, 'synthetic browser passphrase 2026');
       return {

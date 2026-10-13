@@ -5,6 +5,7 @@ const test = require('node:test');
 const vm = require('node:vm');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const rendererPath = path.join(__dirname, '..', 'legacy', 'js', 'ui', 'portfolio-search.js');
 const start = source.indexOf('const PORTFOLIO_SEARCH_GROUPS=');
 const end = source.indexOf('function clA(){', start);
 assert.notEqual(start, -1);
@@ -35,6 +36,22 @@ function loadSearch() {
   };
   return vm.runInNewContext(`${source.slice(start, end)}
     ({ portfolioSearchBuildEntries, portfolioSearchResults, portfolioSearchScore });`, context);
+}
+
+function loadPortfolioSearchRenderer(query, results = []) {
+  const root = { attributes: {}, replaceChildren() { this.cleared = true; }, setAttribute(name, value) { this.attributes[name] = value; } };
+  const input = { focus() { this.focused = true; } };
+  const context = {
+    S: { portfolioSearchOpen: true, portfolioSearchQuery: query },
+    document: { getElementById(id) { return id === 'portfolio-search-root' ? root : id === 'portfolio-search-input' ? input : null; } },
+    portfolioSearchResults(value) { assert.equal(value, query); return results; },
+    portfolioSearchGroupMarkup() { return '<article>synthetic result</article>'; },
+    portfolioSearchText(value) { return String(value).trim().length > 0; },
+    esc(value) { return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); },
+    requestAnimationFrame(callback) { callback(); },
+  };
+  vm.runInNewContext(fs.readFileSync(rendererPath, 'utf8'), context, { filename: rendererPath });
+  return { context, root, input };
 }
 
 test('busca global preserva identidades distintas e agrupa entidades oficiais', () => {
@@ -69,4 +86,24 @@ test('busca permanece somente navegacional e nao abre editores', () => {
   assert.doesNotMatch(searchSource, /portfolioSearchOpenEntry[\s\S]*edA\(/);
   assert.doesNotMatch(searchSource, /portfolioSearchOpenEntry[\s\S]*edP\(/);
   assert.doesNotMatch(searchSource, /portfolioSearchOpenEntry[\s\S]*editDividendReceipt\(/);
+});
+
+test('renderer real da busca preserva escaping, estados vazios e acessibilidade', () => {
+  const { context, root, input } = loadPortfolioSearchRenderer('<synthetic>');
+  context.renderPortfolioSearch();
+  assert.equal(root.className, 'portfolio-search-root open');
+  assert.equal(root.attributes['aria-hidden'], 'false');
+  assert.match(root.innerHTML, /role="dialog" aria-modal="true" aria-labelledby="portfolio-search-title"/);
+  assert.match(root.innerHTML, /id="portfolio-search-input"[^>]*aria-label="Buscar na carteira"/);
+  assert.match(root.innerHTML, /value="&lt;synthetic&gt;"/);
+  assert.match(root.innerHTML, /Nenhum resultado encontrado\./);
+  assert.equal(input.focused, true);
+});
+
+test('renderer real da busca limpa o container quando fechado', () => {
+  const { context, root } = loadPortfolioSearchRenderer('');
+  context.S.portfolioSearchOpen = false;
+  context.renderPortfolioSearch();
+  assert.equal(root.attributes['aria-hidden'], 'true');
+  assert.equal(root.cleared, true);
 });

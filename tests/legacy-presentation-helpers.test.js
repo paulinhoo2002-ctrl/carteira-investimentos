@@ -36,6 +36,15 @@ test('presentation helpers load before app code and leave their definitions outs
   const applicationScript = html.indexOf('<script>\nconst QUOTE_REFRESH_INTERVAL');
   assert.ok(helperScript >= 0 && helperScript < applicationScript);
   assert.doesNotMatch(html, /function (?:toast|dashboardMetricIcon|waveBIcon|dashboardInlineAction|dashboardConsultiveCard|dashboardMetricCard|dashboardRadarCard|assetSummaryCard|assetRankingRowHtml|dividendMonthlyHistoryYearMonthRow|dividendMonthlyHistoryYearCard|passiveIncomeMetricCard|passiveIncomeProgressCard|renderDataQualityIssueCard|renderDataQualityPriorityCard)\s*\(/);
+  assert.doesNotMatch(html, /function formatGoalMonths\s*\(/);
+});
+
+test('goal month labels distinguish confirmed zero from missing estimate', () => {
+  const { context } = loadPresentationHarness();
+  assert.equal(context.formatGoalMonths(0), 'agora');
+  assert.equal(context.formatGoalMonths(null), 'sem estimativa');
+  assert.equal(context.formatGoalMonths(undefined), 'sem estimativa');
+  assert.equal(context.formatGoalMonths(14), '1 ano e 2 meses');
 });
 
 test('dashboard icons preserve accessible-hidden SVG mappings and readonly shield', () => {

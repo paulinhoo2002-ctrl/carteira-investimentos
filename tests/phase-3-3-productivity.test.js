@@ -1,8 +1,9 @@
-import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import test from 'node:test';
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const test = require('node:test');
 
-const source = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
 test('Phase 3.3 search exposes safe transaction to asset navigation', () => {
   assert.match(source, /function portfolioSearchAssetForMovement\(move\)/);
