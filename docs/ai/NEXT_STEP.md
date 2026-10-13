@@ -1,3 +1,11 @@
+# MEGA 18 — fechamento local (2026-10-13)
+
+1. Worktree `C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`; commits locais `ead3700` (roteamento contextual e gates), `399e812` (referências visuais/Skills) e `9669be1` (legibilidade e acessibilidade do QA sintético). Sem push, PR, merge ou deploy.
+2. Inventário estrito da origem PASS (40 Skills diretas, 38 catalogadas) e roteamento/gates 25/25. Divergências foram avaliadas individualmente; nenhuma Skill foi sincronizada. 27/27 PNGs foram revisados. Os 11 HTMLs só foram renderizados em contexto isolado, com rede externa e service workers bloqueados; interação não foi certificada.
+3. QA visual encontrou e corrigiu microtexto/explicação ocultos no banner de teste em celular, alvo de toque baixo e contraste insuficiente no rótulo de ordenação de Ativos. V289 16/16, smoke responsivo em 390/430/768/1366/1440/1536/1920, teste sintético de navegador 1/1 e matriz Legacy executada com `npm.cmd --ignore-scripts run test` (exit 0). `test:modern` 823/823; `git diff --check` e root hygiene PASS.
+4. **Limitação de execução:** `npm test` acionou o `pretest` que reconstrói `modern/dist` protegido; o diretório, ignorado e fora do índice Git, foi regravado. O conteúdo anterior não foi capturado e não foi limpo/restaurado. Não repetir build nesta worktree. `qa:all`/`verify:release` não foram executados pelo mesmo efeito; Auth/PPR não certificados. Avisos Vite/classic-script/default-export e `MODULE_TYPELESS_PACKAGE_JSON` permanecem não bloqueantes; a colisão transitória da porta 24678 não deixou listener ao final.
+5. O catálogo conserva placeholders de auditoria de dependências/sobreposição/segurança; a revisão das Skills não os substitui. Nenhum dado financeiro real foi lido/escrito nesta fase; Finance Core, persistência, Firebase, demais worktrees e PRs ficaram intocados. Próximo passo: revisão da entrega e autorização separada antes de qualquer publicação.
+
 # Próximo passo — MEGA 17 (2026-10-13)
 
 1. Worktree autorizada C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign, branch codex/legacy-product-mega-12; commits locais MEGA17: 80025b1 (correção de Ativos mobile) e 69b268f (catálogo e governança).
