@@ -1,0 +1,79 @@
+{
+  "snapshot": {
+    "as_of": "2026-10-05",
+    "source": "official_inter_statement_2026_10_05",
+    "custodian": "INTER",
+    "status": "OBSERVED_POSITION",
+    "positions": {
+      "RV": {
+        "value": 422189.40,
+        "currency": "BRL",
+        "status": "OBSERVED"
+      },
+      "RF": {
+        "value_net": 107767.48,
+        "components": {
+          "CDB_liquido": 92898.75,
+          "LIG_liquido": 14868.73
+        },
+        "currency": "BRL",
+        "status": "DERIVED_FROM_OFFICIAL_COMPONENTS"
+      },
+      "TOTAL": {
+        "value": 529956.88,
+        "currency": "BRL",
+        "status": "DERIVED_FROM_OFFICIAL_COMPONENTS",
+        "note": "RV + RF_NET. Document does not provide consolidated total."
+      }
+    }
+  },
+  "snapshot_10_10": {
+    "as_of": "2026-10-10",
+    "source": "reconciliation_anchor_2026_10_10",
+    "custodian": "INTER",
+    "status": "OBSERVED_POSITION",
+    "positions": {
+      "RV": {
+        "value": 361023.63,
+        "currency": "BRL",
+        "status": "OBSERVED"
+      },
+      "RF": {
+        "value_net": 208293.20,
+        "currency": "BRL",
+        "status": "OBSERVED"
+      },
+      "TOTAL": {
+        "value": 569316.83,
+        "currency": "BRL",
+        "status": "OBSERVED"
+      }
+    }
+  },
+  "other_custodian": {
+    "as_of": "2026-10-10",
+    "identity": "UNKNOWN",
+    "summary": 132858.82,
+    "detail": 132858.81,
+    "difference": 0.01,
+    "note": "Identity unknown. Difference of R$0.01 not hidden."
+  },
+  "global_derived_10_10": {
+    "value": 702175.65,
+    "composition": "INTER_TOTAL_10_10 (569316.83) + OTHER_CUSTODIAN_SUMMARY (132858.82)",
+    "status": "DERIVED"
+  },
+  "bridge_05_10_to_10_10": {
+    "period": "2026-10-05 to 2026-10-10",
+    "inter_rv_change": -61165.77,
+    "inter_rf_change": 100525.72,
+    "inter_total_change": 39359.95,
+    "analysis": {
+      "rv_decrease": "Market price movement and/or sales",
+      "rf_increase": "New applications and/or interest accrual",
+      "note": "Cannot infer aportes solely from equity change. Requires movement coverage."
+    },
+    "movement_coverage": "UNKNOWN",
+    "unknown_gaps": true
+  }
+}
