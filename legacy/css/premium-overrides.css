@@ -96,6 +96,13 @@ summary:focus-visible,
   --v83-text:#f4f7fb;
   --v83-muted:#91a0b5;
 }
+.shell .premium-settings-page{
+  --v83-surface:var(--surface);
+  --v83-surface-elevated:var(--panel);
+  --v83-border:var(--border);
+  --v83-text:var(--text);
+  --v83-muted:var(--muted);
+}
 .shell .side-brand-name,.shell .premium-panel-title,.shell .analysis-card-title{color:var(--v83-text)}
 .shell .side-brand-sub,.shell .premium-panel-sub,.shell .analysis-card-meta{color:var(--v83-muted)}
 .shell .premium-metric,.shell .premium-panel,.shell .analysis-card,.shell .dashboard-evolution-card,.shell .dashboard-home-composition{

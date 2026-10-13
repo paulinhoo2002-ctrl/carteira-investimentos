@@ -4,7 +4,7 @@
 .premium-settings-header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:2px 2px 0}
 .premium-settings-kicker{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800}
 .premium-settings-title{margin:3px 0 0;font-size:22px;line-height:1.1;color:var(--text);font-weight:900;letter-spacing:-.025em}
-.premium-settings-subtitle{margin-top:5px;color:var(--muted);font-size:12px;line-height:1.45}
+.premium-settings-subtitle{margin:5px 0 0;color:var(--muted);font-size:12px;line-height:1.45}
 .premium-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
 .premium-settings-section{border:1px solid var(--border);border-radius:16px;background:var(--panel);overflow:hidden}
 .premium-settings-section-head{display:flex;align-items:center;gap:10px;padding:14px 15px 11px;border-bottom:1px solid var(--border)}
@@ -511,7 +511,7 @@
 .portfolio-search-result-action{color:#7dd3fc;font-size:11px;white-space:nowrap}
 .portfolio-search-trigger{display:flex;align-items:center;gap:8px;width:100%;min-height:42px;margin:4px 0 10px;padding:8px 10px;border:1px solid rgba(148,163,184,.16);border-radius:10px;background:rgba(148,163,184,.05);color:#bdc9d9;text-align:left;cursor:pointer;font:inherit;font-size:12px}
 .portfolio-search-trigger:hover,.portfolio-search-trigger:focus-visible{background:rgba(56,189,248,.1);border-color:rgba(125,211,252,.4);color:#f8fafc;outline:2px solid rgba(125,211,252,.48);outline-offset:2px}
-.portfolio-search-trigger kbd{margin-left:auto;color:#71829a;font-size:10px;border:1px solid rgba(148,163,184,.2);border-radius:5px;padding:2px 5px}
+.portfolio-search-trigger kbd{margin-left:auto;color:var(--text);font-size:12px;border:1px solid rgba(148,163,184,.2);border-radius:5px;padding:2px 5px}
 .portfolio-search-mobile-trigger{width:100%;min-height:46px;margin:0 0 12px;padding:11px 13px;border:1px solid rgba(148,163,184,.18);border-radius:12px;background:rgba(148,163,184,.06);color:#e2e8f0;text-align:left;font:inherit;cursor:pointer}
 .portfolio-search-mobile-trigger:focus-visible{outline:2px solid #7dd3fc;outline-offset:2px}
 .analysis-context-links{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 12px}

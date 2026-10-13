@@ -655,6 +655,7 @@ input::placeholder{color:var(--muted)}select option{background:var(--panel-2)}
 .patrimonio-top-asset-list{display:flex;flex-direction:column;gap:8px}
 .patrimonio-top-asset{border:1px solid var(--border);border-radius:10px;background:var(--surface-2);padding:10px 12px;display:grid;grid-template-columns:auto minmax(140px,1fr) minmax(80px,1fr) minmax(100px,1fr) auto;gap:8px;align-items:center}
 .patrimonio-top-asset-rank{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;background:rgba(99,102,241,.14);border:1px solid rgba(99,102,241,.18);color:#c7d2fe;font-size:10px;font-weight:900}
+html[data-theme="light"] .patrimonio-top-asset-rank{color:var(--text)}
 .patrimonio-top-asset-info{min-width:0}
 .patrimonio-top-asset-ticker{font-size:12px;font-weight:850;color:var(--text);white-space:normal;overflow:visible;text-overflow:clip;word-break:break-word}
 .patrimonio-top-asset-name{font-size:8px;color:var(--muted);margin-top:2px;white-space:normal;overflow:visible;text-overflow:clip;word-break:break-word}

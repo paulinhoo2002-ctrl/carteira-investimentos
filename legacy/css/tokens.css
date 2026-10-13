@@ -95,7 +95,7 @@ html[data-theme="light"]{
   --primary:#4057d6;
   --success:#137333;
   --danger:#c62828;
-  --warning:#9a6700;
+  --warning:#854d0e;
   --positive:var(--success);
   --negative:var(--danger);
   --info:#2f6fd1;

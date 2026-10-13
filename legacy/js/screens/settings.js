@@ -21,8 +21,8 @@ function settingsTab(){
     <div class="premium-settings-header">
       <div>
         <div class="premium-settings-kicker">CONFIGURAÇÕES</div>
-        <h2 class="premium-settings-title">Preferências e administração</h2>
-        <h1 class="premium-settings-subtitle">Preferências, dados e administração da carteira.</h1>
+        <h1 class="premium-settings-title">Preferências e administração</h1>
+        <p class="premium-settings-subtitle">Preferências, dados e administração da carteira.</p>
       </div>
     </div>
     <div class="premium-settings-grid">
