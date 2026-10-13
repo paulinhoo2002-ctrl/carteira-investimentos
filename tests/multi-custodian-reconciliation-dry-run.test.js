@@ -303,3 +303,39 @@ test('requires explicit zero evidence and fails closed when any source row is in
   assert.equal(blocked.rows[0].reason, 'INVALID_SOURCE_RECORDS_PRESENT');
   assert.equal(blocked.rows[0].deltaCents, null);
 });
+
+
+test('reports a one-cent summary/detail variance without promoting it to a match', () => {
+  const { reconcileSummaryDetail } = require('../multi-custodian-reconciliation-dry-run.js');
+  const result = reconcileSummaryDetail({
+    summaryCents: 13285882, detailCents: 13285881,
+    summaryAsOf: '2026-10-10', detailAsOf: '2026-10-10',
+    summaryCoverage: 'COMPLETE', detailCoverage: 'COMPLETE',
+    summarySourceId: 'SYNTH_SUMMARY', detailSourceId: 'SYNTH_DETAIL',
+    summaryCurrency: 'BRL', detailCurrency: 'BRL',
+    summaryAmountKind: 'CURRENT_NET', detailAmountKind: 'CURRENT_NET',
+  });
+  assert.equal(result.mode, 'READ_ONLY_DRY_RUN');
+  assert.equal(result.mutationCount, 0);
+  assert.equal(result.status, 'DETAIL_VARIANCE');
+  assert.equal(result.deltaCents, -1);
+  assert.deepEqual(result.reasonCodes, ['DETAIL_VARIANCE_CENT']);
+});
+
+test('summary/detail reconciliation blocks unknown values, partial coverage, and different scopes', () => {
+  const { reconcileSummaryDetail } = require('../multi-custodian-reconciliation-dry-run.js');
+  const base = {
+    summaryCents: 100, detailCents: 100,
+    summaryAsOf: '2026-10-10', detailAsOf: '2026-10-10',
+    summaryCoverage: 'COMPLETE', detailCoverage: 'COMPLETE',
+    summarySourceId: 'SYNTH_SUMMARY', detailSourceId: 'SYNTH_DETAIL',
+    summaryCurrency: 'BRL', detailCurrency: 'BRL',
+    summaryAmountKind: 'CURRENT_NET', detailAmountKind: 'CURRENT_NET',
+  };
+  assert.equal(reconcileSummaryDetail({ ...base, detailCents: null }).status, 'UNKNOWN');
+  assert.equal(reconcileSummaryDetail({ ...base, detailCoverage: 'PARTIAL' }).status, 'PARTIAL');
+  assert.equal(reconcileSummaryDetail({ ...base, detailAsOf: '2026-10-11' }).status, 'AS_OF_MISMATCH');
+  assert.equal(reconcileSummaryDetail({ ...base, detailCurrency: 'USD' }).status, 'UNKNOWN');
+  assert.deepEqual(reconcileSummaryDetail({ ...base, detailSourceId: '' }).reasonCodes, ['MISSING_SOURCE']);
+  assert.equal(reconcileSummaryDetail(base).status, 'MATCH_EXACT');
+});

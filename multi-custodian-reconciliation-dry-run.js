@@ -303,5 +303,43 @@
     return { mode: 'READ_ONLY_DRY_RUN', mutationCount: 0, status: rows.length > 0 && rows.every(row => ['MATCH', 'ZERO_CONFIRMED'].includes(row.status)) ? 'MATCH' : 'REVIEW_REQUIRED', rows };
   }
 
-  return { validateRecord, reconcilePositionSnapshots, reconcilePositionTargets };
+  function reconcileSummaryDetail(input = {}) {
+    const summaryCents = input.summaryCents;
+    const detailCents = input.detailCents;
+    const base = {
+      mode: 'READ_ONLY_DRY_RUN', mutationCount: 0,
+      summarySourceId: text(input.summarySourceId) || null,
+      detailSourceId: text(input.detailSourceId) || null,
+      summaryAsOf: input.summaryAsOf || null,
+      detailAsOf: input.detailAsOf || null,
+      currency: text(input.summaryCurrency) || null,
+      amountKind: text(input.summaryAmountKind) || null,
+      summaryCents: Number.isSafeInteger(summaryCents) && summaryCents >= 0 ? summaryCents : null,
+      detailCents: Number.isSafeInteger(detailCents) && detailCents >= 0 ? detailCents : null,
+      deltaCents: null, status: 'UNKNOWN', reasonCodes: [],
+    };
+    if (!base.summarySourceId || !base.detailSourceId) return { ...base, reasonCodes: ['MISSING_SOURCE'] };
+    if (base.summaryCents === null || base.detailCents === null) return { ...base, reasonCodes: ['UNKNOWN_VALUE'] };
+    if (!validDate(input.summaryAsOf) || !validDate(input.detailAsOf)) return { ...base, reasonCodes: ['AS_OF_UNKNOWN'] };
+    if (input.summaryAsOf !== input.detailAsOf) return { ...base, status: 'AS_OF_MISMATCH', reasonCodes: ['AS_OF_MISMATCH'] };
+    if (!base.currency || !base.amountKind || input.summaryCurrency !== input.detailCurrency || input.summaryAmountKind !== input.detailAmountKind) {
+      return { ...base, reasonCodes: ['SCOPE_MISMATCH'] };
+    }
+    if (!COVERAGES.has(input.summaryCoverage) || !COVERAGES.has(input.detailCoverage)
+      || input.summaryCoverage === 'UNKNOWN' || input.detailCoverage === 'UNKNOWN') {
+      return { ...base, reasonCodes: ['COVERAGE_UNKNOWN'] };
+    }
+    if (input.summaryCoverage === 'PARTIAL' || input.detailCoverage === 'PARTIAL') {
+      return { ...base, status: 'PARTIAL', reasonCodes: ['PARTIAL_COVERAGE'] };
+    }
+    const deltaCents = base.detailCents - base.summaryCents;
+    if (deltaCents === 0) return { ...base, deltaCents, status: base.summaryCents === 0 ? 'ZERO_CONFIRMED' : 'MATCH_EXACT', reasonCodes: [base.summaryCents === 0 ? 'CONFIRMED_ZERO' : 'EXACT_MATCH'] };
+    return {
+      ...base, deltaCents,
+      status: Math.abs(deltaCents) === 1 ? 'DETAIL_VARIANCE' : 'MISMATCH',
+      reasonCodes: [Math.abs(deltaCents) === 1 ? 'DETAIL_VARIANCE_CENT' : 'SOURCE_CONFLICT'],
+    };
+  }
+
+  return { validateRecord, reconcilePositionSnapshots, reconcilePositionTargets, reconcileSummaryDetail };
 });
