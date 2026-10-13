@@ -259,6 +259,19 @@ test('unknown asset class cannot be silently included in a class-scoped target',
   assert.equal(result.rows[0].deltaCents, null);
 });
 
+test('class disagreement in the same position is duplicate risk, not a class match', () => {
+  const snapshot = reconcilePositionSnapshots([
+    row({ amountCents: 12000 }),
+    row({ assetClass: 'FII', sourceId: 'SYNTH_CONFLICTING_CLASS', sourceRecordId: 'CLASS_ROW', sourceSha256: 'b'.repeat(64), amountCents: 12000 }),
+  ]);
+  const result = reconcilePositionTargets(snapshot, [
+    { targetId: 'RV_WITH_CLASS_CONFLICT', custodian: 'INTER', assetClass: 'RV', asOf: '2026-10-10', currency: 'BRL', amountKind: 'CURRENT_NET', targetCents: 12000 },
+  ]);
+
+  assert.equal(result.rows[0].status, 'DUPLICATE_RISK');
+  assert.equal(result.rows[0].deltaCents, null);
+});
+
 test('source identity conflicts remain visible in every conflicting scope', () => {
   const first = row({ sourceRecordId: 'COLLIDING_ROW', assetId: 'SYNTH_FIRST', amountCents: 12000 });
   const collision = row({ sourceRecordId: 'COLLIDING_ROW', assetId: 'SYNTH_SECOND', custodian: 'OUTRO', account: 'SYNTH_ACCOUNT_B', amountCents: 5000 });

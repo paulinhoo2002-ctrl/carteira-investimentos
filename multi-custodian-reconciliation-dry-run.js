@@ -166,7 +166,7 @@
     for (const recordsForPosition of positionGroups.values()) {
       const position = positionFrom(recordsForPosition);
       if (position.status === 'CONFLICT') {
-        conflicts.push({ state: 'POSITION_VALUE_CONFLICT', custodian: position.custodian, account: position.account, asOf: position.asOf, assetId: position.assetId, amountKind: position.amountKind });
+        conflicts.push({ state: 'POSITION_VALUE_CONFLICT', custodian: position.custodian, account: position.account, asOf: position.asOf, assetId: position.assetId, assetClass: position.assetClass, currency: position.currency, amountKind: position.amountKind });
       } else if (recordsForPosition.length > 1) positionDuplicatesCollapsed += recordsForPosition.length - 1;
       positions.push(position);
     }
@@ -273,21 +273,20 @@
         && (target.assetClass === undefined || position.assetClass === target.assetClass || position.assetClass === null))) {
         return { ...base, status: 'UNKNOWN', reason: 'UNKNOWN_CUSTODIAN_SCOPE' };
       }
-      if (target.assetClass !== undefined && matching.some(position => position.assetClass === null)) {
-        return { ...base, status: 'UNKNOWN', reason: 'UNKNOWN_ASSET_CLASS_SCOPE' };
-      }
-
       const matchingConflicts = conflicts.filter(conflict => {
         if (conflict.state === 'SOURCE_ROW_CONFLICT') return (conflict.sourceScopes || []).some(scope => scope.asOf === target.asOf
           && scope.currency === target.currency && scope.amountKind === target.amountKind
           && (target.custodian === 'GLOBAL' || scope.custodian === target.custodian)
           && (target.assetClass === undefined || scope.assetClass === target.assetClass));
-        return conflict.asOf === target.asOf && conflict.amountKind === target.amountKind
+        return conflict.asOf === target.asOf && conflict.currency === target.currency && conflict.amountKind === target.amountKind
           && (target.custodian === 'GLOBAL' || conflict.custodian === target.custodian)
-          && (target.assetClass === undefined || matching.some(position => position.assetId === conflict.assetId && position.assetClass === target.assetClass));
+          && (target.assetClass === undefined || conflict.assetClass === target.assetClass || conflict.assetClass === null);
       });
       if (matchingConflicts.length || matching.some(position => position.status === 'CONFLICT')) {
         return { ...base, status: 'DUPLICATE_RISK', reason: 'CONFLICTING_SOURCE_IDENTITY', conflictCount: matchingConflicts.length || 1 };
+      }
+      if (target.assetClass !== undefined && matching.some(position => position.assetClass === null)) {
+        return { ...base, status: 'UNKNOWN', reason: 'UNKNOWN_ASSET_CLASS_SCOPE' };
       }
       if (target.custodian === 'GLOBAL' && matching.some(position => position.custodian === 'UNKNOWN')) {
         return { ...base, status: 'UNKNOWN', reason: 'CUSTODIAN_IDENTITY_UNKNOWN' };
