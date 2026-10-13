@@ -1,3 +1,10 @@
+# MEGA 14B — próximo passo atual (2026-10-12)
+
+1. Worktree `v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`, base `abc058a59c1809e7d67f07c4260968fd62721a2c`. O teste V311 foi ampliado para raw production HTML, oito rotas, navegação mobile/desktop, unicidade de IDs e leitura protegida; selectors de navegação passaram smoke sintético 8/8 e `node --check`.
+2. `npm run verify:release` exit 0: `npm test`, Modern, `qa:all`, V289 18/18 e V324 17/17. QA smoke sem overflow/erros em 390–1920 px; smoke sintético adicional em 360 px passou 8/8 rotas. SW browser lifecycle passou; sem alterações visuais nesta retomada.
+3. PPR autenticado continua bloqueado: Firestore Emulator v1.22.0 encerra antes dos testes ao criar selector loopback (`SocketException: Invalid argument: connect` via WEPoll), reproduzido com Java 26.0.2.1 e Java 21.0.12; log `firestore-debug.log` fica vazio. Não alterar regras/configuração nem contornar. Nenhum Firebase hospedado foi acessado.
+4. Próximo comando exato, em ambiente cujo Java/loopback permita iniciar o Emulator: `npm run test:auth-emulator`. Só certificar `PRODUCTION_PARITY_READONLY_MODE` após essa suíte executar e passar. Push, PR, merge e deploy não autorizados.
+
 ## MEGA 14 — próximo passo atual (2026-10-12)
 
 1. Revisar a extração do renderer real de Data Quality e dos cards compartilhados para `legacy/js/ui/presentation.js` na worktree `v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`. Commit funcional `ab5405839d87ff1b5bd7a8076d5145541d032d2e`; este checkpoint registra a continuidade documental.
