@@ -1,5 +1,12 @@
 # Product Contracts
 
+## V14E multi-custodian position dry-run (2026-10-12)
+
+- `multi-custodian-reconciliation-dry-run.js` accepts only explicit position observations with stable source/row identity, custodian/account, asset identity, currency, amount kind, as-of date, coverage and provenance. Amounts are integer minor units; this module does not parse files or read/write app state.
+- Exact source-row repeats collapse only by SHA-256 + row identity, or source ID + row identity when a hash is unavailable. Equivalent position observations collapse only for the same custodian, account, as-of, asset, currency and amount kind. Conflicting values require review; separate custodians are never deduplicated against each other.
+- Totals are scoped to one as-of date, currency and amount kind. Mixed dates/units, missing identity, conflicts, unknown custodian/source or incomplete coverage suppress a complete total. `ZERO_CONFIRMED` requires complete coverage and an explicit zero amount; partial subtotals remain separate from totals.
+- This is an isolated `READ_ONLY_DRY_RUN` foundation tested only with synthetic records. It is not a source parser, production integration, transaction deduplicator or authorization to import, persist, restore or reconcile real user data. Movement identity continues to use the existing governed import pipeline.
+
 ## V333 — cobertura mensal de Dividendos (decisão humana aprovada, 2026-10-08)
 
 - `NO_RECORDS != ZERO_RECEIVED`. Estados mensais: `COMPLETE`, `PARTIAL`, `UNKNOWN`, `FUTURE`.
