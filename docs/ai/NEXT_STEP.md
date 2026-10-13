@@ -1,4 +1,11 @@
-## MEGA 13 — próximo passo atual (2026-10-12)
+## MEGA 14 — próximo passo atual (2026-10-12)
+
+1. Revisar a extração do renderer real de Data Quality e dos cards compartilhados para `legacy/js/ui/presentation.js` na worktree `v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`. Commit funcional `ab5405839d87ff1b5bd7a8076d5145541d032d2e`; este checkpoint registra a continuidade documental.
+2. `npm run verify:release` passou no delta funcional final: Legacy, Modern 823/823, `qa:all`, V289 18/18, V324 17/17; smoke em 390/430/768/1366/1440/1536/1920 sem overflow ou erros. Testes focados do renderer 35/35; UTF-8 7/7, `git diff --check` e root hygiene passaram.
+3. `index.html` caiu 11.733 bytes e 147 linhas neste delta; JS inline passou de 1.763.909 para 1.752.176 bytes. Nenhuma mudança em Finance Core, persistência, Firebase ou Service Worker. Warnings preexistentes do build Modern continuam; QA autenticado/prod-parity e screenshots de comparação before/after não foram executados.
+4. Próxima ação: revisão humana da branch local e decisão de publicação. Esta missão não autoriza push, PR, merge ou deploy. Checkpoint: [`MEGA14_JS_QA_PRODUCT_FINALIZATION_CHECKPOINT.md`](MEGA14_JS_QA_PRODUCT_FINALIZATION_CHECKPOINT.md).
+
+## MEGA 13 — histórico (2026-10-12)
 
 1. Commits locais da MEGA 13 foram criados na worktree `C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`; HEAD do pacote funcional `ce683e4c6fa402b0c15a5cd2d1983489af5aae04`; um commit documental posterior registrou a continuidade.
 2. Validação concluída: `npm test`, Modern 823/823, `qa:all`, `verify:release`, V289 18/18, V324 17/17, UTF-8, `git diff --check` e root hygiene passaram.

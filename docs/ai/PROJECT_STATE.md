@@ -1,4 +1,13 @@
-## MEGA 13 — checkpoint atual (2026-10-12)
+## MEGA 14 — checkpoint atual (2026-10-12)
+
+- Worktree LEGACY confirmada: `C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`, início em `a36cf75120254293d496a769fe659d24838d5c78`, checkout limpo antes desta missão; origin e Git common-dir corretos. Checkout canônico e demais worktrees preservados.
+- Extraídos para o módulo de apresentação pré-carregado dois renderers reais de achados, os dois cards compartilhados de renda passiva e a tela de Auditoria/Qualidade (97 linhas). Nenhuma fórmula/projeção foi movida; consumidores continuam usando os nomes globais existentes. O teste da tela executa o renderer real com fixtures sintéticas.
+- `index.html`: 1.770.022→1.758.289 bytes; 29.111→28.964 linhas; JS inline 1.763.909→1.752.176 bytes (redução de 11.733 bytes/147 linhas). O CSS e service worker não mudaram.
+- `npm run verify:release` passou no estado funcional final: `npm test`, Modern 823/823, `qa:all`, V289 18/18 e V324 17/17. QA smoke: 390, 430, 768, 1366, 1440, 1536 e 1920 sem overflow, erro de console, page error ou falha relevante de rede. V289 executou a rota responsiva/temas, Axe, reduced motion e unicidade de IDs; V330 gerou capturas com dados sintéticos. Focados renderer/compatibilidade 35/35; UTF-8 7/7, `git diff --check` e root hygiene PASS.
+- O build Modern continua exibindo dois warnings preexistentes de bundling e aviso de detecção de módulo Node; o build/teste concluiu. Não foi feita QA autenticada/production-parity nem comparação visual before/after. Não houve `npm ci`, dado real, Firebase remoto, backup real, escrita financeira, push, PR, merge ou deploy. Finance Core, persistência, Firebase e SW inalterados.
+- Commit funcional local: `ab5405839d87ff1b5bd7a8076d5145541d032d2e` (`MEGA14 extract presentation renderers`). O checkpoint documental detalhado está em [`MEGA14_JS_QA_PRODUCT_FINALIZATION_CHECKPOINT.md`](MEGA14_JS_QA_PRODUCT_FINALIZATION_CHECKPOINT.md); seu commit é informado no relatório final.
+
+## MEGA 13 — histórico (2026-10-12)
 
 - Worktree isolada `v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`, HEAD inicial desta missão `65d0cf541338dbb937dc81cdfdff4177228b4a49`; checkout começou limpo. Checkout canônico e demais worktrees não foram modificados.
 - Extraído o renderer SVG de linha (gráfico e tooltips) para `legacy/js/ui/charts.js`, atualizado o shell offline para SW `v250.5` e adicionadas regressões do código em uso. Ícones de movimentação usam SVG local. Seis declarações funcionais de até 11 px foram ajustadas para 12 px.

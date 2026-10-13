@@ -1,4 +1,12 @@
-## MEGA 13 — evolução de apresentação e QA (2026-10-12)
+## MEGA 14 — modularização JS de apresentação e QA (2026-10-12)
+
+- Na worktree isolada `v012-mega-12-lifetime-redesign`, foram movidos `dataQualityTab`, `renderDataQualityIssueCard`, `renderDataQualityPriorityCard`, `passiveIncomeMetricCard` e `passiveIncomeProgressCard` para `legacy/js/ui/presentation.js`, já carregado antes do app inline. Os renderers apenas consomem dados preparados; regras de cálculo ficaram no inline/core. Uma redefinição legada de `renderAuditAlertCard` permaneceu inline por depender de ordem de declaração.
+- Testes foram atualizados para carregar o módulo real em VM; o CSS guard da Auditoria agora lê o módulo CSS que é fonte atual. O foco passou 35/35; `npm run verify:release` passou Legacy, Modern 823/823, QA, V289 18/18 e V324 17/17. Browser smoke cobriu sete larguras sem overflow/erros; Axe/IDs/reduced motion passaram no V289.
+- `index.html` reduziu 11.733 bytes/147 linhas no delta; JS inline 1.763.909→1.752.176 bytes. Warnings de bundling Modern e module-type Node permanecem sem bloquear build/test. Production-parity autenticado não foi testado; as capturas foram apenas synthetic.
+- Nenhum core financeiro, persistência, Firebase, SW, lockfile, dados reais, PR ou worktree externa foi alterado. Sem push, PR, merge ou deploy. Ver [`MEGA14_JS_QA_PRODUCT_FINALIZATION_CHECKPOINT.md`](MEGA14_JS_QA_PRODUCT_FINALIZATION_CHECKPOINT.md).
+- Commit funcional local: `ab5405839d87ff1b5bd7a8076d5145541d032d2e`. Checkpoint documental separado nesta atualização; publicação não autorizada.
+
+## MEGA 13 — histórico (2026-10-12)
 
 - Na worktree autorizada `v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`, foi extraído o renderer de gráficos de linha e tooltip para `legacy/js/ui/charts.js`. O renderer continua consumindo séries preparadas, preserva lacunas e zero confirmado, fornece nome/descrição acessíveis e respeita ocultação de valores. Script adicionado ao app shell, build e cache offline v250.5.
 - Ícones funcionais de compra/venda/provento/renda fixa/outro passaram de emoji para SVG local com rótulo textual preservado. Seis regras de texto funcional em notas, backup e prévia de movimento passaram para 12 px; contagem estática <=11px caiu 797→791. Não houve refatoração global de tokens, media queries ou `!important`.
