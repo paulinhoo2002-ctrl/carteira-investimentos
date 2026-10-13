@@ -5,7 +5,7 @@
 - O teste de dry-run de backup passou a usar um diretório sintético temporário próprio e remover apenas essa raiz criada pelo teste. A rejeição de destinos fora da raiz continua coberta; política e script operacional não foram afrouxados. Nenhum ZIP foi produzido.
 - Evidência no estado implementado: `npm test`, Modern 823/823, `qa:all`, `verify:release`, V289 18/18, V324 17/17, focused renderer/SW/backup, UTF-8, `git diff --check` e root hygiene PASS. Smoke e browser visual usaram fixtures sintéticas; nenhum hosted Firebase ou dados financeiros reais.
 - `index.html`: 1.778.114→1.770.022 bytes; JS inline 1.772.048→1.763.909 bytes. Warnings de bundling do Modern permanecem sem falha. Finance Core, persistência, Firebase e package lock inalterados; sem push, PR, merge ou deploy.
-- Próximo passo seguro: revisar e criar commits locais pequenos por renderer/cache, ícones/tipografia e harness sintético; conferir novamente o HEAD final.
+- Commits locais criados: `81e93ea` renderer/cache/apresentação, `754b5c6` legibilidade mobile, `28ed800` harness sintético e `ce683e4` checkpoint. HEAD final `ce683e4c6fa402b0c15a5cd2d1983489af5aae04`; próxima ação segura: revisão humana. Push/PR não autorizados.
 
 ## MEGA 12 — estado anterior após instalação e certificação local (2026-10-12)
 

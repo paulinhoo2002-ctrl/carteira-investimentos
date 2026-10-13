@@ -34,8 +34,8 @@
 - Modularização adicional do JavaScript inline não foi feita nesta etapa; os fluxos de domínio, estado e Finance Core foram mantidos fora do escopo de extração.
 - Nenhum dado financeiro real, backup real, Firebase hospedado, OAuth ou Vercel foi usado. `finance-core.js`, `persistence-core.js`, regras Firebase e `package-lock.json` não foram alterados.
 - Nenhum processo desconhecido foi encerrado. Nenhuma worktree foi removida.
-- Sem push, PR, merge ou deploy. Commits locais ainda pendentes neste checkpoint.
+- Sem push, PR, merge ou deploy. Commits locais `81e93ea`, `754b5c6`, `28ed800` e `ce683e4`; HEAD final `ce683e4c6fa402b0c15a5cd2d1983489af5aae04` e worktree limpa antes desta atualização.
 
 ## Próxima ação segura
 
-Revisar o diff final e criar commits locais separados para renderer/cache, apresentação/tipografia e harness sintético de backup; depois confirmar HEAD e higiene do workspace. A missão não autoriza publicação remota.
+A revisão final dos commits foi concluída. Próximo passo: avaliação humana e autorização de publicação, se desejada. A missão não autoriza push, PR, merge ou deploy.

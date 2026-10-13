@@ -6,7 +6,7 @@
 - Matriz final: Legacy PASS, Modern 823/823, QA geral PASS, verify:release PASS, V289 18/18, V324 17/17. QA sintético não encontrou overflow ou erros relevantes em 390–1920 px; V289 inclui 360 px, os dois temas, Axe nos fluxos alterados e reduced motion.
 - `index.html` foi reduzido em 8.092 bytes e 135 linhas neste delta; JS inline reduziu 8.139 bytes. Permanecem cerca de 1,764 MB de JS inline da aplicação. CSS: microtextos explícitos até 11 px 797→791; `!important` 932→932; `@media` 212→212.
 - UTF-8 21/21, `git diff --check` e root hygiene PASS. Build Modern mantém warnings de bundling já observados, sem falha de teste. Capturas QA sintéticas em `.qa-state/v330-daily-use/`.
-- Finance Core, persistência, Firebase, dados reais, PRs e worktrees externas permaneceram intocados. Nenhum backup real, import, restore, escrita financeira, push, PR, merge ou deploy. Commits locais desta missão ainda pendentes.
+- Finance Core, persistência, Firebase, dados reais, PRs e worktrees externas permaneceram intocados. Nenhum backup real, import, restore, escrita financeira, push, PR, merge ou deploy. Commits locais `81e93ea`, `754b5c6`, `28ed800` e `ce683e4`; worktree limpa.
 
 ## MEGA 12 — checkpoint anterior de consolidação (2026-10-12)
 
