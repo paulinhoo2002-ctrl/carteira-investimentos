@@ -1,0 +1,1009 @@
+{
+  "schemaVersion": 1,
+  "inventoryDate": "2026-10-13",
+  "sourceRoot": "C:/Projetos/carteira-investimentos/.agents/skills (read-only host source)",
+  "count": {
+    "recursiveSkillFiles": 43,
+    "uniqueValidIds": 38,
+    "repositorySnapshot": 17
+  },
+  "rules": [
+    "Source hashes describe this host inventory snapshot and may drift.",
+    "Repository snapshot hashes are independent from host source hashes.",
+    "INCOMPLETE metadata must not be treated as an executable instruction summary.",
+    "Runtime availability is rediscovered per mission.",
+    "Skills never grant authorization or override project governance."
+  ],
+  "skills": [
+    {
+      "id": "archify",
+      "description": "Create polished, validated architecture, workflow, sequence, data-flow, and lifecycle/state diagrams as explorable standalone HTML with inline SVG, dark/light themes, optional trace motion, and PNG/JPEG/WebP/SVG/WebM export. Accept plain-language requirements or pasted Mermaid flowchart, sequenceDiagram, and stateDiagram input; inspect repository evidence when the diagram must reflect real code. Use when the user asks to visualize system architecture, infrastructure, cloud/security/network topology, technical workflows, API call sequences, request lifecycles, data pipelines, ETL/ELT, data lineage, state machines, or to convert/beautify Mermaid.",
+      "sourcePath": "archify/SKILL.md",
+      "sourceSha256": "4946d2fb2af9cb84461b1b98b732b44833e6a1ceaebfe8cd9e9d9ca4e939e12e",
+      "repositorySnapshot": {
+        "required": true,
+        "path": ".agents/skills/archify/SKILL.md",
+        "sha256": "2c597700742cbc220acde6ae1d48a8567151aa87cabd96aa8d7164547c8e602a"
+      },
+      "routingDisposition": "TRACKED_REPOSITORY_SNAPSHOT",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "ARCHITECTURE",
+      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED"
+    },
+    {
+      "id": "banner-design",
+      "description": "Design banners for social media, ads, website heroes, creative assets, and print. Multiple art direction options with AI-generated visuals. Actions: design, create, generate banner. Platforms: Facebook, Twitter/X, LinkedIn, YouTube, Instagram, Google Display, website hero, print. Styles: minimalist, gradient, bold typography, photo-based, illustrated, geometric, retro, glassmorphism, 3D, neon, duotone, editorial, collage. Uses ui-ux-pro-max, frontend-design, ai-artist, ai-multimodal skills.",
+      "sourcePath": "banner-design/SKILL.md",
+      "sourceSha256": "913d9c4b2a3b405d638d50131e0dd3fe2787c839423d79287b7858ac29255acc",
+      "repositorySnapshot": {
+        "required": true,
+        "path": ".agents/skills/banner-design/SKILL.md",
+        "sha256": "cdc362b63d110da6ef38ab451ad747c4c156ec450471604bda944ec1febc4029"
+      },
+      "routingDisposition": "TRACKED_REPOSITORY_SNAPSHOT",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "UI_UX",
+      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED"
+    },
+    {
+      "id": "brand",
+      "description": "Brand voice, visual identity, messaging frameworks, asset management, brand consistency. Activate for branded content, tone of voice, marketing assets, brand compliance, style guides.",
+      "sourcePath": "brand/SKILL.md",
+      "sourceSha256": "6a450ee1a83a403d47cec2ede9030feb60a67a81fc425d2406e975339313bd44",
+      "repositorySnapshot": {
+        "required": true,
+        "path": ".agents/skills/brand/SKILL.md",
+        "sha256": "f9569076abc20b6397a2fbaf4fa3dc25f5620849fa3fddcb6b72e745649594fd"
+      },
+      "routingDisposition": "TRACKED_REPOSITORY_SNAPSHOT",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "UI_UX",
+      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED"
+    },
+    {
+      "id": "browser-harness",
+      "description": "Always use browser-harness for any web interaction: automation, scraping, testing, or site/app work.",
+      "sourcePath": "browser-harness/SKILL.md",
+      "sourceSha256": "3e16c15c51cfa6fa3111cbb28e774bba96230ae141a576299cca841854e4b8a7",
+      "repositorySnapshot": {
+        "required": false,
+        "path": null,
+        "sha256": null
+      },
+      "routingDisposition": "SOURCE_ONLY_RUNTIME_NOT_GUARANTEED",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "BROWSER_QA",
+      "sourceSnapshotRelation": "SOURCE_ONLY"
+    },
+    {
+      "id": "browser-testing-with-devtools",
+      "description": "Tests in real browsers via Chrome DevTools MCP. Use when building or debugging anything that runs in a browser. Use when you need to inspect the DOM, capture console errors, analyze network requests, profile performance, or verify visual output with real runtime data. Requires the chrome-devtools MCP server to be configured.",
+      "sourcePath": "browser-testing-with-devtools/SKILL.md",
+      "sourceSha256": "5c10f5e6ad5d2429eccec9affe04b5e9adff906dfc160e3473b88890d5207f59",
+      "repositorySnapshot": {
+        "required": true,
+        "path": ".agents/skills/browser-testing-with-devtools/SKILL.md",
+        "sha256": "5c10f5e6ad5d2429eccec9affe04b5e9adff906dfc160e3473b88890d5207f59"
+      },
+      "routingDisposition": "TRACKED_REPOSITORY_SNAPSHOT",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "BROWSER_QA",
+      "sourceSnapshotRelation": "MATCH"
+    },
+    {
+      "id": "carteira-auditoria-real",
+      "description": "Auditar fatos reais do repositório, Git, filesystem, navegador, IndexedDB e backups da Carteira 2.0. Use quando houver contradições, paths duvidosos ou suspeita de saída inventada. Não implemente mudanças antes de fechar os fatos.",
+      "sourcePath": "carteira-auditoria-real/SKILL.md",
+      "sourceSha256": "63e6999f0f85a07c95f265920ecc6f342173b075ec6fd780980962f0262256d7",
+      "repositorySnapshot": {
+        "required": false,
+        "path": null,
+        "sha256": null
+      },
+      "routingDisposition": "REJECTED_CROSS_PROJECT_SCOPE",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "CROSS_PROJECT",
+      "sourceSnapshotRelation": "SOURCE_ONLY"
+    },
+    {
+      "id": "carteira-checkpoint-git",
+      "description": "Criar e validar checkpoints Git seguros da Carteira 2.0. Use quando o usuário pedir checkpoint, commit, consolidar ou fechar uma fase. Não fazer push ou deploy sem autorização explícita.",
+      "sourcePath": "carteira-checkpoint-git/SKILL.md",
+      "sourceSha256": "0a9adcf19edb93c277323d262ddc55817043c2e901a84aa8aca2a95aaa4543b4",
+      "repositorySnapshot": {
+        "required": false,
+        "path": null,
+        "sha256": null
+      },
+      "routingDisposition": "REJECTED_CROSS_PROJECT_SCOPE",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "CROSS_PROJECT",
+      "sourceSnapshotRelation": "SOURCE_ONLY"
+    },
+    {
+      "id": "carteira-finance-core-review",
+      "description": "Validar regras financeiras e consistência contábil da Carteira 2.0: patrimônio, caixa, BUY/SELL, preço médio, proventos, renda fixa, histórico, realized/unrealized e reconciliação. Não altere dados reais para fazer números fecharem.",
+      "sourcePath": "carteira-finance-core-review/SKILL.md",
+      "sourceSha256": "7f116f4bdb840712380363ff59a042324e7f2be6e1c375c21c91f5c5019584ec",
+      "repositorySnapshot": {
+        "required": false,
+        "path": null,
+        "sha256": null
+      },
+      "routingDisposition": "REJECTED_CROSS_PROJECT_SCOPE",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "CROSS_PROJECT",
+      "sourceSnapshotRelation": "SOURCE_ONLY"
+    },
+    {
+      "id": "carteira-migracao-segura",
+      "description": "Conduzir preview, dry-run, plano, importação e rollback do legado para a Carteira 2.0 com guardas rígidas. Use para backups, reconciliação, transaction, IndexedDB, primeira importação real e rollback. Nunca executar escrita real sem autorização humana explícita.",
+      "sourcePath": "carteira-migracao-segura/SKILL.md",
+      "sourceSha256": "9d276c15005027cb03a656436418a56777e8ff47243e19b882e1e5934b012fae",
+      "repositorySnapshot": {
+        "required": false,
+        "path": null,
+        "sha256": null
+      },
+      "routingDisposition": "REJECTED_CROSS_PROJECT_SCOPE",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "CROSS_PROJECT",
+      "sourceSnapshotRelation": "SOURCE_ONLY"
+    },
+    {
+      "id": "cavecrew",
+      "description": "Decision guide for delegating to caveman-style subagents. Tells the main thread WHEN to spawn `cavecrew-investigator` (locate code), `cavecrew-builder` (1-2 file edit), or `cavecrew-reviewer` (diff review) instead of doing the work inline or using vanilla `Explore`. Subagent output is caveman-compressed so the tool-result injected back into main context is ~60% smaller — main context lasts longer across long sessions. Trigger: \"delegate to subagent\", \"use cavecrew\", \"spawn investigator/builder/reviewer\", \"save context\", \"compressed agent output\".",
+      "sourcePath": "cavecrew/SKILL.md",
+      "sourceSha256": "f1ce6b651c9431cc248061471bf247787c2491c0b02b912691fc8f690f01be04",
+      "repositorySnapshot": {
+        "required": true,
+        "path": ".agents/skills/cavecrew/SKILL.md",
+        "sha256": "f1ce6b651c9431cc248061471bf247787c2491c0b02b912691fc8f690f01be04"
+      },
+      "routingDisposition": "TRACKED_REPOSITORY_SNAPSHOT",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "PROCESS",
+      "sourceSnapshotRelation": "MATCH"
+    },
+    {
+      "id": "caveman",
+      "description": "Ultra-compressed communication mode. Cuts token usage ~75% by speaking like caveman while keeping full technical accuracy. Supports intensity levels: lite, full (default), ultra, wenyan-lite, wenyan-full, wenyan-ultra. Use when user says \"caveman mode\", \"talk like caveman\", \"use caveman\", \"less tokens\", \"be brief\", or invokes /caveman. Also auto-triggers when token efficiency is requested.",
+      "sourcePath": "caveman/SKILL.md",
+      "sourceSha256": "2ce11c37750d6f0ed534cadae88e44866d572123b31f781c19c7b9f21c23df4e",
+      "repositorySnapshot": {
+        "required": true,
+        "path": ".agents/skills/caveman/SKILL.md",
+        "sha256": "2ce11c37750d6f0ed534cadae88e44866d572123b31f781c19c7b9f21c23df4e"
+      },
+      "routingDisposition": "TRACKED_REPOSITORY_SNAPSHOT",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "PROCESS",
+      "sourceSnapshotRelation": "MATCH"
+    },
+    {
+      "id": "caveman-commit",
+      "description": "Ultra-compressed commit message generator. Cuts noise from commit messages while preserving intent and reasoning. Conventional Commits format. Subject ≤50 chars, body only when \"why\" isn't obvious. Use when user says \"write a commit\", \"commit message\", \"generate commit\", \"/commit\", or invokes /caveman-commit. Auto-triggers when staging changes.",
+      "sourcePath": "caveman-commit/SKILL.md",
+      "sourceSha256": "54d5ca0894ecab0c74361d0077b71ff4e0bb60c67546880c1807bc8406ea7aab",
+      "repositorySnapshot": {
+        "required": true,
+        "path": ".agents/skills/caveman-commit/SKILL.md",
+        "sha256": "efc8841b2be57e5904033ecf5437d5f27902b2814f7c1fb6b3fec87371d7a01e"
+      },
+      "routingDisposition": "TRACKED_REPOSITORY_SNAPSHOT",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "PROCESS",
+      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED"
+    },
+    {
+      "id": "caveman-compress",
+      "description": "Compress natural language memory files (CLAUDE.md, todos, preferences) into caveman format to save input tokens. Preserves all technical substance, code, URLs, and structure. Compressed version overwrites the original file. Human-readable backup saved as FILE.original.md. Trigger: /caveman-compress FILEPATH or \"compress memory file\"",
+      "sourcePath": "caveman-compress/SKILL.md",
+      "sourceSha256": "208475f3dcdd425f5452551b2b6acb8c1879e19edbbad47450113904e5f9732e",
+      "repositorySnapshot": {
+        "required": true,
+        "path": ".agents/skills/caveman-compress/SKILL.md",
+        "sha256": "208475f3dcdd425f5452551b2b6acb8c1879e19edbbad47450113904e5f9732e"
+      },
+      "routingDisposition": "TRACKED_REPOSITORY_SNAPSHOT",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "PROCESS",
+      "sourceSnapshotRelation": "MATCH"
+    },
+    {
+      "id": "caveman-help",
+      "description": "Quick-reference card for all caveman modes, skills, and commands. One-shot display, not a persistent mode. Trigger: /caveman-help, \"caveman help\", \"what caveman commands\", \"how do I use caveman\".",
+      "sourcePath": "caveman-help/SKILL.md",
+      "sourceSha256": "c6fea66aacc891b9595aae54b2c8335c322e61f83ad8693e24d3b3ab8603849a",
+      "repositorySnapshot": {
+        "required": false,
+        "path": null,
+        "sha256": null
+      },
+      "routingDisposition": "SOURCE_ONLY_RUNTIME_NOT_GUARANTEED",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "PROCESS",
+      "sourceSnapshotRelation": "SOURCE_ONLY"
+    },
+    {
+      "id": "caveman-review",
+      "description": "Ultra-compressed code review comments. Cuts noise from PR feedback while preserving the actionable signal. Each comment is one line: location, problem, fix. Use when user says \"review this PR\", \"code review\", \"review the diff\", \"/review\", or invokes /caveman-review. Auto-triggers when reviewing pull requests.",
+      "sourcePath": "caveman-review/SKILL.md",
+      "sourceSha256": "f5fcb5ec7cb461bfd95a6f5eb6dbe624967057dce7992e71213bcd3462ace742",
+      "repositorySnapshot": {
+        "required": true,
+        "path": ".agents/skills/caveman-review/SKILL.md",
+        "sha256": "46e0eebf3987d83052048309a62547be94ccdebb495191db15471075c5415725"
+      },
+      "routingDisposition": "TRACKED_REPOSITORY_SNAPSHOT",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "PROCESS",
+      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED"
+    },
+    {
+      "id": "caveman-stats",
+      "description": "Show real token usage and estimated savings for the current session. Reads directly from the Claude Code session log — no AI estimation. Triggers on /caveman-stats. Output is injected by the mode-tracker hook; the model itself does not compute the numbers.",
+      "sourcePath": "caveman-stats/SKILL.md",
+      "sourceSha256": "7d6ba2ee3fb9b1629b6e95b326a0559f758d881d2ba826120fdfd625f578218d",
+      "repositorySnapshot": {
+        "required": false,
+        "path": null,
+        "sha256": null
+      },
+      "routingDisposition": "SOURCE_ONLY_RUNTIME_NOT_GUARANTEED",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "PROCESS",
+      "sourceSnapshotRelation": "SOURCE_ONLY"
+    },
+    {
+      "id": "deep-research",
+      "description": "Autonomous multi-step deep research engine implementing an iterative Think → Search → Extract → Synthesize → Stop loop. The LLM drives every decision: what to search, what's relevant, what's missing, and when to stop. Produces a cited, magazine-quality report with inline citations, category- specific formatting, and research stats. Trigger when the user asks for \"deep research\", \"research report on\", \"comprehensive analysis of\", \"look into X in depth\", \"write a report on X\", or any question needing multi-source synthesis beyond a single search. For entity vetting/dossiers use entity-research; for news digests use news-monitoring; for source-grounded Q&A use notebooklm-mode.",
+      "sourcePath": "deep-research/SKILL.md",
+      "sourceSha256": "2a37bb6052779ebabbb74dc07a89545cb362590050192cdccd75ac8bf434ff3c",
+      "repositorySnapshot": {
+        "required": false,
+        "path": null,
+        "sha256": null
+      },
+      "routingDisposition": "SOURCE_ONLY_RUNTIME_NOT_GUARANTEED",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "RESEARCH",
+      "sourceSnapshotRelation": "SOURCE_ONLY"
+    },
+    {
+      "id": "design",
+      "description": "Comprehensive design skill: brand identity, design tokens, UI styling, logo generation (55 styles, Gemini AI), corporate identity program (50 deliverables, CIP mockups), HTML presentations (Chart.js), banner design (22 styles, social/ads/web/print), icon design (15 styles, SVG, Gemini 3.1 Pro), social photos (HTML→screenshot, multi-platform). Actions: design logo, create CIP, generate mockups, build slides, design banner, generate icon, create social photos, social media images, brand identity, design system. Platforms: Facebook, Twitter, LinkedIn, YouTube, Instagram, Pinterest, TikTok, Threads, Google Ads.",
+      "sourcePath": "design/SKILL.md",
+      "sourceSha256": "413f4ab913d07f7fd92acbadc25d71aad63443be0c40d11234944aea688603b6",
+      "repositorySnapshot": {
+        "required": false,
+        "path": null,
+        "sha256": null
+      },
+      "routingDisposition": "SOURCE_ONLY_RUNTIME_NOT_GUARANTEED",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "UI_UX",
+      "sourceSnapshotRelation": "SOURCE_ONLY"
+    },
+    {
+      "id": "design-system",
+      "description": "Token architecture, component specifications, and slide generation. Three-layer tokens (primitive→semantic→component), CSS variables, spacing/typography scales, component specs, strategic slide creation. Use for design tokens, systematic design, brand-compliant presentations.",
+      "sourcePath": "design-system/SKILL.md",
+      "sourceSha256": "655468bb723a6bc9d17fcb09a6a005e10e313d63b879f4d74fb2abdc3041ae3f",
+      "repositorySnapshot": {
+        "required": true,
+        "path": ".agents/skills/design-system/SKILL.md",
+        "sha256": "b91fe756c32b26fa8f92fab5aa31225fc733d350487336dd89a038c3b8a40d60"
+      },
+      "routingDisposition": "TRACKED_REPOSITORY_SNAPSHOT",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "UI_UX",
+      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED"
+    },
+    {
+      "id": "doubt-driven-development",
+      "description": "Subjects every non-trivial decision to a fresh-context adversarial review before it stands. Use when correctness matters more than speed, when working in unfamiliar code, when stakes are high (production, security-sensitive logic, irreversible operations), or any time a confident output would be cheaper to verify now than to debug later.",
+      "sourcePath": "doubt-driven-development/SKILL.md",
+      "sourceSha256": "e40536830468337135dcd50471ea6688830c9277a11903fee019abce92a71999",
+      "repositorySnapshot": {
+        "required": true,
+        "path": ".agents/skills/doubt-driven-development/SKILL.md",
+        "sha256": "e40536830468337135dcd50471ea6688830c9277a11903fee019abce92a71999"
+      },
+      "routingDisposition": "TRACKED_REPOSITORY_SNAPSHOT",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "ENGINEERING",
+      "sourceSnapshotRelation": "MATCH"
+    },
+    {
+      "id": "fact-checker",
+      "description": "Targeted claim verification pipeline. Given a factual assertion, search multiple independent sources, cross-check for agreement or contradiction, rate confidence (verified / likely true / disputed / unverified / outdated), and produce a cited verification report.",
+      "sourcePath": "fact-checker/SKILL.md",
+      "sourceSha256": "da0559ab7333b3fe309be91941121582fbd38a7e21561ace3a1acb001fb955e5",
+      "repositorySnapshot": {
+        "required": false,
+        "path": null,
+        "sha256": null
+      },
+      "routingDisposition": "SOURCE_ONLY_RUNTIME_NOT_GUARANTEED",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "RESEARCH",
+      "sourceSnapshotRelation": "SOURCE_ONLY"
+    },
+    {
+      "id": "frontend-design",
+      "description": "Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults.",
+      "sourcePath": "frontend-design/SKILL.md",
+      "sourceSha256": "35c43b9d10c2388dbb228047ad028c989a14033750812125f351c85aa42c7a4a",
+      "repositorySnapshot": {
+        "required": true,
+        "path": ".agents/skills/frontend-design/SKILL.md",
+        "sha256": "35c43b9d10c2388dbb228047ad028c989a14033750812125f351c85aa42c7a4a"
+      },
+      "routingDisposition": "TRACKED_REPOSITORY_SNAPSHOT",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "UI_UX",
+      "sourceSnapshotRelation": "MATCH"
+    },
+    {
+      "id": "impeccable",
+      "description": "Use when the user wants to design, redesign, shape, critique, audit, polish, clarify, distill, harden, optimize, adapt, animate, colorize, extract, or otherwise improve a frontend interface. Covers websites, landing pages, dashboards, product UI, app shells, components, forms, settings, onboarding, and empty states. Handles UX review, visual hierarchy, information architecture, cognitive load, accessibility, performance, responsive behavior, theming, anti-patterns, typography, fonts, spacing, layout, alignment, color, motion, micro-interactions, UX copy, error states, edge cases, i18n, and reusable design systems or tokens. Also use for bland designs that need to become bolder or more delightful, loud designs that should become quieter, live browser iteration on UI elements, or ambitious visual effects that should feel technically extraordinary. Not for backend-only or non-UI tasks.",
+      "sourcePath": "impeccable/SKILL.md",
+      "sourceSha256": "14c4642368557af1f7bbaaac0aa184b791e6d70665dfd8fc53d8d4124f81abb8",
+      "repositorySnapshot": {
+        "required": false,
+        "path": null,
+        "sha256": null
+      },
+      "routingDisposition": "SOURCE_ONLY_RUNTIME_NOT_GUARANTEED",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "UI_UX",
+      "sourceSnapshotRelation": "SOURCE_ONLY"
+    },
+    {
+      "id": "interface-design",
+      "description": "Use when designing, reviewing, or refining user interfaces, interaction flows, visual hierarchy, accessibility, responsive layouts, or product screens. Apply to web apps, dashboards, tools, forms, and design-system aligned implementation work.",
+      "sourcePath": "interface-design/SKILL.md",
+      "sourceSha256": "24ae5698a60f638f8fdbd9980005d2321165c3ce1550e0eee2c1d8adda7c1d3a",
+      "repositorySnapshot": {
+        "required": true,
+        "path": ".agents/skills/interface-design/SKILL.md",
+        "sha256": "06b09967cfdd8b5f67cdcf8ed593afd67f85370c170d0ee79f409f29b45a6856"
+      },
+      "routingDisposition": "TRACKED_REPOSITORY_SNAPSHOT",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "UI_UX",
+      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED"
+    },
+    {
+      "id": "interview-me",
+      "description": "Extracts what the user actually wants instead of what they think they should want. Achieves this through one-question-at-a-time interview until ~95% confidence about the underlying intent. Use when an ask is underspecified (\"build me X\" without \"for whom\" or \"why now\"), when the user explicitly invokes (\"interview me\", \"grill me\", \"are we sure?\", \"stress-test my thinking\"), or when you catch yourself silently filling in ambiguous requirements before any plan, spec, or code exists.",
+      "sourcePath": "interview-me/SKILL.md",
+      "sourceSha256": "f1239ec43838a3bd7feb76995906162ea2c8c4f888480b4916da3e6c817045d1",
+      "repositorySnapshot": {
+        "required": true,
+        "path": ".agents/skills/interview-me/SKILL.md",
+        "sha256": "f1239ec43838a3bd7feb76995906162ea2c8c4f888480b4916da3e6c817045d1"
+      },
+      "routingDisposition": "TRACKED_REPOSITORY_SNAPSHOT",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "ENGINEERING",
+      "sourceSnapshotRelation": "MATCH"
+    },
+    {
+      "id": "mantis-architecture",
+      "description": "Synthesizes raw learnings and codebase analysis into an interlinked Markdown Knowledge Base (KB). Use at the beginning of a loop to build or update architecture.md, entities, and vulnerabilities. Don't use for generating threat models or formulating execution plans.",
+      "sourcePath": "mantis-architecture/SKILL.md",
+      "sourceSha256": "098761f3fc8ec7824fc12dbf19ce3a19d0087e8b4a4b80e6ac65726ef52d10fe",
+      "repositorySnapshot": {
+        "required": false,
+        "path": null,
+        "sha256": null
+      },
+      "routingDisposition": "SOURCE_ONLY_RUNTIME_NOT_GUARANTEED",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "ARCHITECTURE",
+      "sourceSnapshotRelation": "SOURCE_ONLY"
+    },
+    {
+      "id": "mantis-critic",
+      "description": "Assesses the production viability of findings, filtering out debug-only features and assertion traps. Use when findings have been validated and you need to confirm they are triggerable in production release builds (with assertions disabled). Don't use for writing reproduction scripts or patches.",
+      "sourcePath": "mantis-critic/SKILL.md",
+      "sourceSha256": "0bf41a88aeac7df04b59a4e2978e02ddca1de1dd8c104a5c2e983131ff2c6942",
+      "repositorySnapshot": {
+        "required": false,
+        "path": null,
+        "sha256": null
+      },
+      "routingDisposition": "SOURCE_ONLY_RUNTIME_NOT_GUARANTEED",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "ARCHITECTURE",
+      "sourceSnapshotRelation": "SOURCE_ONLY"
+    },
+    {
+      "id": "mantis-report",
+      "description": "Generates a human-readable security review packet compiled from confirmed findings and exploit chains. Use at the end of a review cycle to produce stakeholder-facing documentation. Don't use for auditing code or verifying patches directly.",
+      "sourcePath": "mantis-report/SKILL.md",
+      "sourceSha256": "847231f2ff47baeb2acd2e2db255dbc066232e408e51819158ce03fc5e1df8bd",
+      "repositorySnapshot": {
+        "required": false,
+        "path": null,
+        "sha256": null
+      },
+      "routingDisposition": "SOURCE_ONLY_RUNTIME_NOT_GUARANTEED",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "ARCHITECTURE",
+      "sourceSnapshotRelation": "SOURCE_ONLY"
+    },
+    {
+      "id": "mantis-review",
+      "description": "Independently reviews findings and filters out false positives. Use when consolidated findings need validation against the actual source code. Don't use for reproducing crashes or patching code.",
+      "sourcePath": "mantis-review/SKILL.md",
+      "sourceSha256": "cc38fff95f4805f244da8b05e6967bd09e7ee507c2cc15c408d58edd5d0e1344",
+      "repositorySnapshot": {
+        "required": false,
+        "path": null,
+        "sha256": null
+      },
+      "routingDisposition": "SOURCE_ONLY_RUNTIME_NOT_GUARANTEED",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "ARCHITECTURE",
+      "sourceSnapshotRelation": "SOURCE_ONLY"
+    },
+    {
+      "id": "mantis-structural-index",
+      "description": "Builds a content-addressed semantic-unit index from source code for structural context. Use when a pinned or live codebase is available and structural cross-reference data would improve research quality. Don't use for findings analysis, patching, or reporting.",
+      "sourcePath": "mantis-structural-index/SKILL.md",
+      "sourceSha256": "1b9585a6186e83d35337a3c9bbb2878127e4a435ac9ade7d737f599218eb29ff",
+      "repositorySnapshot": {
+        "required": false,
+        "path": null,
+        "sha256": null
+      },
+      "routingDisposition": "SOURCE_ONLY_RUNTIME_NOT_GUARANTEED",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "ARCHITECTURE",
+      "sourceSnapshotRelation": "SOURCE_ONLY"
+    },
+    {
+      "id": "mantis-threat-model",
+      "description": "Synthesizes trust boundaries, attack surfaces, and attacker profiles into a living threat model. Use as Stage B of the Knowledge Base generation process, reading architecture and entity definitions from the KB. Don't use for analyzing source code or extracting raw learnings from JSONL files.",
+      "sourcePath": "mantis-threat-model/SKILL.md",
+      "sourceSha256": "b449e61c7a586b10a04b8f3c07557236ae24eadb3699ccb629a08971a0a7fece",
+      "repositorySnapshot": {
+        "required": false,
+        "path": null,
+        "sha256": null
+      },
+      "routingDisposition": "SOURCE_ONLY_RUNTIME_NOT_GUARANTEED",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "ARCHITECTURE",
+      "sourceSnapshotRelation": "SOURCE_ONLY"
+    },
+    {
+      "id": "planning-with-files",
+      "description": "Planejamento persistente por missão para trabalhos longos, adaptado ao padrão Carteira 2.0.",
+      "sourcePath": "planning-with-files/SKILL.md",
+      "sourceSha256": "ad8da93de613f08623427afa746375795b4f64000284631908a5c27285a99d8c",
+      "repositorySnapshot": {
+        "required": false,
+        "path": null,
+        "sha256": null
+      },
+      "routingDisposition": "SOURCE_ONLY_RUNTIME_NOT_GUARANTEED",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "ENGINEERING",
+      "sourceSnapshotRelation": "SOURCE_ONLY"
+    },
+    {
+      "id": "playwright",
+      "description": "Use when the task requires automating a real browser from the terminal (navigation, form filling, snapshots, screenshots, data extraction, UI-flow debugging) via `playwright-cli` or the bundled wrapper script.",
+      "sourcePath": "playwright/SKILL.md",
+      "sourceSha256": "0ffaabcc8e0990627c4725f18bf1c7955534a796c1c199e872909de2013ce6a8",
+      "repositorySnapshot": {
+        "required": true,
+        "path": ".agents/skills/playwright/SKILL.md",
+        "sha256": "c52cc95125b720cdc3c9829b0294c2752d4ae9b85a5282aa153da8bba929af87"
+      },
+      "routingDisposition": "TRACKED_REPOSITORY_SNAPSHOT",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "BROWSER_QA",
+      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED"
+    },
+    {
+      "id": "slides",
+      "description": "Create strategic HTML presentations with Chart.js, design tokens, responsive layouts, copywriting formulas, and contextual slide strategies.",
+      "sourcePath": "slides/SKILL.md",
+      "sourceSha256": "2b90bdaf63f231919a01f4962f374ecd84af101a7e7545f8d9c68e049025accb",
+      "repositorySnapshot": {
+        "required": true,
+        "path": ".agents/skills/slides/SKILL.md",
+        "sha256": "a1dfc9442db2be627771fab97dacccd0eafa6a6f1a3d94bbdce5950431727aa5"
+      },
+      "routingDisposition": "TRACKED_REPOSITORY_SNAPSHOT",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "ENGINEERING",
+      "sourceSnapshotRelation": "SOURCE_DIFFERS_FROM_VERSIONED_SNAPSHOT_REVIEW_REQUIRED"
+    },
+    {
+      "id": "source-driven-development",
+      "description": "Grounds every implementation decision in official documentation. Use when you want authoritative, source-cited code free from outdated patterns. Use when building with any framework or library where correctness matters.",
+      "sourcePath": "source-driven-development/SKILL.md",
+      "sourceSha256": "b91b4698a996d01901b6885bcb907ec29c9f4cf8f9ebf761d192e7e5d00bb718",
+      "repositorySnapshot": {
+        "required": true,
+        "path": ".agents/skills/source-driven-development/SKILL.md",
+        "sha256": "b91b4698a996d01901b6885bcb907ec29c9f4cf8f9ebf761d192e7e5d00bb718"
+      },
+      "routingDisposition": "TRACKED_REPOSITORY_SNAPSHOT",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "ENGINEERING",
+      "sourceSnapshotRelation": "MATCH"
+    },
+    {
+      "id": "source-tracker",
+      "description": "Persistent citation database for multi-session research. Add URLs as they're cited, dedup variants, tag by topic, check link health, and export bibliographies in Markdown/BibTeX/CSV/JSON.",
+      "sourcePath": "source-tracker/SKILL.md",
+      "sourceSha256": "badd6d4d7e3bfe2650d873bbd66f0dbaaad287b06d2727ca33fe13bae5e2ce43",
+      "repositorySnapshot": {
+        "required": false,
+        "path": null,
+        "sha256": null
+      },
+      "routingDisposition": "SOURCE_ONLY_RUNTIME_NOT_GUARANTEED",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "RESEARCH",
+      "sourceSnapshotRelation": "SOURCE_ONLY"
+    },
+    {
+      "id": "ui-styling",
+      "description": "Create beautiful, accessible user interfaces with shadcn/ui components (built on Radix UI + Tailwind), Tailwind CSS utility-first styling, and canvas-based visual designs. Use when building user interfaces, implementing design systems, creating responsive layouts, adding accessible components (dialogs, dropdowns, forms, tables), customizing themes and colors, implementing dark mode, generating visual designs and posters, or establishing consistent styling patterns across applications.",
+      "sourcePath": "ui-styling/SKILL.md",
+      "sourceSha256": "f8b6c3832d2af51f67b3932e3c4a79bcd8a8596cc61ce1547a686fc951e5c62d",
+      "repositorySnapshot": {
+        "required": false,
+        "path": null,
+        "sha256": null
+      },
+      "routingDisposition": "SOURCE_ONLY_RUNTIME_NOT_GUARANTEED",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "UI_UX",
+      "sourceSnapshotRelation": "SOURCE_ONLY"
+    },
+    {
+      "id": "ui-ux-pro-max",
+      "description": "UI/UX design intelligence with searchable database",
+      "sourcePath": "ui-ux-pro-max/SKILL.md",
+      "sourceSha256": "0b64203a5ca7fd979bcc0c5bd8b6e9af09a1f43696f9286755ffdf993338d747",
+      "repositorySnapshot": {
+        "required": false,
+        "path": null,
+        "sha256": null
+      },
+      "routingDisposition": "SOURCE_ONLY_RUNTIME_NOT_GUARANTEED",
+      "metadataQuality": "FRONTMATTER_DESCRIPTION_ONLY",
+      "dependencies": "NOT_AUDITED",
+      "antiTriggers": "NOT_AUDITED",
+      "securityRisk": "NOT_ASSESSED_FROM_FRONTMATTER",
+      "applicability": "Use only when task routing and scope explicitly fit; skill instructions never grant authorization.",
+      "category": "UI_UX",
+      "sourceSnapshotRelation": "SOURCE_ONLY"
+    }
+  ],
+  "runtimeOnlySkills": [
+    "find-skills",
+    "web-quality-audit",
+    "firebase-security-rules-auditor",
+    "firebase:firebase-security-rules-auditor",
+    "browser-harness:browser-harness",
+    "verification-before-completion"
+  ],
+  "recursiveCandidates": [
+    {
+      "path": "archify/SKILL.md",
+      "id": "archify",
+      "sha256": "4946d2fb2af9cb84461b1b98b732b44833e6a1ceaebfe8cd9e9d9ca4e939e12e",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "archify-main/archify-main/archify/SKILL.md",
+      "id": "archify",
+      "sha256": "4946d2fb2af9cb84461b1b98b732b44833e6a1ceaebfe8cd9e9d9ca4e939e12e",
+      "disposition": "DUPLICATE_CONTENT_NONCANONICAL_COPY"
+    },
+    {
+      "path": "banner-design/SKILL.md",
+      "id": "banner-design",
+      "sha256": "913d9c4b2a3b405d638d50131e0dd3fe2787c839423d79287b7858ac29255acc",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "brand/SKILL.md",
+      "id": "brand",
+      "sha256": "6a450ee1a83a403d47cec2ede9030feb60a67a81fc425d2406e975339313bd44",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "browser-harness/SKILL.md",
+      "id": "browser-harness",
+      "sha256": "3e16c15c51cfa6fa3111cbb28e774bba96230ae141a576299cca841854e4b8a7",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "browser-harness-main/SKILL.md",
+      "id": "browser-harness",
+      "sha256": "acc5a71ae390da23768f10d65b22134b766ea933da9b96bec35a5bd7a7ccd9c9",
+      "disposition": "DUPLICATE_ID_NONCANONICAL_COPY"
+    },
+    {
+      "path": "browser-harness-main/skills/browser-harness/SKILL.md",
+      "id": null,
+      "sha256": "51e5cba874c5a2ce71c3adf50602abec67bd6e4231d0c666d98eb27a219af837",
+      "disposition": "INTERNAL_DOCUMENT_NO_SKILL_METADATA"
+    },
+    {
+      "path": "browser-harness-main/src/browser_harness/SKILL.md",
+      "id": null,
+      "sha256": "51e5cba874c5a2ce71c3adf50602abec67bd6e4231d0c666d98eb27a219af837",
+      "disposition": "INTERNAL_DOCUMENT_NO_SKILL_METADATA"
+    },
+    {
+      "path": "browser-testing-with-devtools/SKILL.md",
+      "id": "browser-testing-with-devtools",
+      "sha256": "5c10f5e6ad5d2429eccec9affe04b5e9adff906dfc160e3473b88890d5207f59",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "carteira-auditoria-real/SKILL.md",
+      "id": "carteira-auditoria-real",
+      "sha256": "63e6999f0f85a07c95f265920ecc6f342173b075ec6fd780980962f0262256d7",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "carteira-checkpoint-git/SKILL.md",
+      "id": "carteira-checkpoint-git",
+      "sha256": "0a9adcf19edb93c277323d262ddc55817043c2e901a84aa8aca2a95aaa4543b4",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "carteira-finance-core-review/SKILL.md",
+      "id": "carteira-finance-core-review",
+      "sha256": "7f116f4bdb840712380363ff59a042324e7f2be6e1c375c21c91f5c5019584ec",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "carteira-migracao-segura/SKILL.md",
+      "id": "carteira-migracao-segura",
+      "sha256": "9d276c15005027cb03a656436418a56777e8ff47243e19b882e1e5934b012fae",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "cavecrew/SKILL.md",
+      "id": "cavecrew",
+      "sha256": "f1ce6b651c9431cc248061471bf247787c2491c0b02b912691fc8f690f01be04",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "caveman/SKILL.md",
+      "id": "caveman",
+      "sha256": "2ce11c37750d6f0ed534cadae88e44866d572123b31f781c19c7b9f21c23df4e",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "caveman-commit/SKILL.md",
+      "id": "caveman-commit",
+      "sha256": "54d5ca0894ecab0c74361d0077b71ff4e0bb60c67546880c1807bc8406ea7aab",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "caveman-compress/SKILL.md",
+      "id": "caveman-compress",
+      "sha256": "208475f3dcdd425f5452551b2b6acb8c1879e19edbbad47450113904e5f9732e",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "caveman-help/SKILL.md",
+      "id": "caveman-help",
+      "sha256": "c6fea66aacc891b9595aae54b2c8335c322e61f83ad8693e24d3b3ab8603849a",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "caveman-review/SKILL.md",
+      "id": "caveman-review",
+      "sha256": "f5fcb5ec7cb461bfd95a6f5eb6dbe624967057dce7992e71213bcd3462ace742",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "caveman-stats/SKILL.md",
+      "id": "caveman-stats",
+      "sha256": "7d6ba2ee3fb9b1629b6e95b326a0559f758d881d2ba826120fdfd625f578218d",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "deep-research/SKILL.md",
+      "id": "deep-research",
+      "sha256": "2a37bb6052779ebabbb74dc07a89545cb362590050192cdccd75ac8bf434ff3c",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "design/SKILL.md",
+      "id": "design",
+      "sha256": "413f4ab913d07f7fd92acbadc25d71aad63443be0c40d11234944aea688603b6",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "design-system/SKILL.md",
+      "id": "design-system",
+      "sha256": "655468bb723a6bc9d17fcb09a6a005e10e313d63b879f4d74fb2abdc3041ae3f",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "doubt-driven-development/SKILL.md",
+      "id": "doubt-driven-development",
+      "sha256": "e40536830468337135dcd50471ea6688830c9277a11903fee019abce92a71999",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "fact-checker/SKILL.md",
+      "id": "fact-checker",
+      "sha256": "da0559ab7333b3fe309be91941121582fbd38a7e21561ace3a1acb001fb955e5",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "frontend-design/SKILL.md",
+      "id": "frontend-design",
+      "sha256": "35c43b9d10c2388dbb228047ad028c989a14033750812125f351c85aa42c7a4a",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "impeccable/SKILL.md",
+      "id": "impeccable",
+      "sha256": "14c4642368557af1f7bbaaac0aa184b791e6d70665dfd8fc53d8d4124f81abb8",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "impeccable.bak/SKILL.md",
+      "id": null,
+      "sha256": "2618c2db6a4eaa2af14187caee41cb43ee0fbd578dc02c5825541c9a485c28cc",
+      "disposition": "BACKUP_INVALID_METADATA"
+    },
+    {
+      "path": "interface-design/SKILL.md",
+      "id": "interface-design",
+      "sha256": "24ae5698a60f638f8fdbd9980005d2321165c3ce1550e0eee2c1d8adda7c1d3a",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "interview-me/SKILL.md",
+      "id": "interview-me",
+      "sha256": "f1239ec43838a3bd7feb76995906162ea2c8c4f888480b4916da3e6c817045d1",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "mantis-architecture/SKILL.md",
+      "id": "mantis-architecture",
+      "sha256": "098761f3fc8ec7824fc12dbf19ce3a19d0087e8b4a4b80e6ac65726ef52d10fe",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "mantis-critic/SKILL.md",
+      "id": "mantis-critic",
+      "sha256": "0bf41a88aeac7df04b59a4e2978e02ddca1de1dd8c104a5c2e983131ff2c6942",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "mantis-report/SKILL.md",
+      "id": "mantis-report",
+      "sha256": "847231f2ff47baeb2acd2e2db255dbc066232e408e51819158ce03fc5e1df8bd",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "mantis-review/SKILL.md",
+      "id": "mantis-review",
+      "sha256": "cc38fff95f4805f244da8b05e6967bd09e7ee507c2cc15c408d58edd5d0e1344",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "mantis-structural-index/SKILL.md",
+      "id": "mantis-structural-index",
+      "sha256": "1b9585a6186e83d35337a3c9bbb2878127e4a435ac9ade7d737f599218eb29ff",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "mantis-threat-model/SKILL.md",
+      "id": "mantis-threat-model",
+      "sha256": "b449e61c7a586b10a04b8f3c07557236ae24eadb3699ccb629a08971a0a7fece",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "planning-with-files/SKILL.md",
+      "id": "planning-with-files",
+      "sha256": "ad8da93de613f08623427afa746375795b4f64000284631908a5c27285a99d8c",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "playwright/SKILL.md",
+      "id": "playwright",
+      "sha256": "0ffaabcc8e0990627c4725f18bf1c7955534a796c1c199e872909de2013ce6a8",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "slides/SKILL.md",
+      "id": "slides",
+      "sha256": "2b90bdaf63f231919a01f4962f374ecd84af101a7e7545f8d9c68e049025accb",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "source-driven-development/SKILL.md",
+      "id": "source-driven-development",
+      "sha256": "b91b4698a996d01901b6885bcb907ec29c9f4cf8f9ebf761d192e7e5d00bb718",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "source-tracker/SKILL.md",
+      "id": "source-tracker",
+      "sha256": "badd6d4d7e3bfe2650d873bbd66f0dbaaad287b06d2727ca33fe13bae5e2ce43",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "ui-styling/SKILL.md",
+      "id": "ui-styling",
+      "sha256": "f8b6c3832d2af51f67b3932e3c4a79bcd8a8596cc61ce1547a686fc951e5c62d",
+      "disposition": "CATALOGED_PRIMARY"
+    },
+    {
+      "path": "ui-ux-pro-max/SKILL.md",
+      "id": "ui-ux-pro-max",
+      "sha256": "0b64203a5ca7fd979bcc0c5bd8b6e9af09a1f43696f9286755ffdf993338d747",
+      "disposition": "CATALOGED_PRIMARY"
+    }
+  ]
+}

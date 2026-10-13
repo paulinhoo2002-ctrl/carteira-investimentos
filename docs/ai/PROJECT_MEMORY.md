@@ -1941,3 +1941,10 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
 - V398: Regressões concluídas (todos os testes passam).
 - V394: BLOCKED_ENVIRONMENT mantido.
 - Nenhuma escrita financeira real, importação ou restauração (REAL_WRITES=0, REAL_IMPORT=false, REAL_RESTORE=false).
+
+## MEGA 17 — governança de Skills e evidência visual (2026-10-13)
+
+- Na worktree `v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`, `80025b1` corrige o resumo mobile de Ativos em 360 px; smoke específico passou depois da reprodução RED em 139,56 px.
+- O snapshot físico observado contém 43 `SKILL.md` recursivos, 38 IDs únicos válidos, 17 Skills no repo e cinco candidatos excluídos como duplicata/backup/documento interno. Quatro Skills com escopo explícito da Carteira 2.0 não são roteáveis no LEGACY. 9 hashes da origem local diferem do snapshot, sem sincronização. Novo `verify:skills` integrado ao `test:skills-routing`; teste focado 17/17 e gate estrito da origem PASS.
+- Manifesto aprovado de referências registra 38 imagens/HTML por caminho relativo e dimensões, sem copiar imagens nem conteúdo financeiro; 6 capturas revisadas. Demais imagens não foram visualmente inspecionadas, HTML não executado, sem referência mobile identificada.
+- Nenhuma mudança em Finance Core, persistência, Firebase, dados reais ou worktrees externas; sem push/PR/merge/deploy.

@@ -1,3 +1,11 @@
+## MEGA 17 — checkpoint de governança e Ativos mobile (2026-10-13)
+
+- Worktree LEGACY `C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`; origem `paulinhoo2002-ctrl/carteira-investimentos`; HEAD `80025b177a9115b7e4afd95426ae27e8a4df9d78`. A MEGA17 começou em `fdcb6d7c05762b9ee4e3d5747e1b6d05e9b694cc`; commit funcional `80025b1` corrigiu a altura do resumo de Ativos em 360 px sem reduzir fonte ou remover campos.
+- `tests/assets-performance-filter.smoke.test.js` reproduziu 139,56 px antes e passou após reduzir gaps/padding e impedir quebra de labels/valores no resumo; detalhes completos continuam acessíveis no cartão expandido.
+- Catálogo físico versionado: 43 arquivos `SKILL.md` recursivos, 38 IDs válidos únicos e 17 snapshots versionados; cinco arquivos classificados como duplicata, backup ou documentos internos sem metadados. Quatro Skills descrevem Carteira 2.0 e estão bloqueadas para roteamento LEGACY. 9 hashes de origem diferem do snapshot versionado e foram sinalizados, não sincronizados.
+- Adicionado `SKILL_DISCOVERY_GATE`, verificador de drift, testes do catálogo e índice de Skills. `test:skills-routing` 17/17 e comparação estrita da origem PASS. Referências visuais inventariadas sem copiar imagens/valores: 38 artefatos (27 PNG, 11 HTML), 6 capturas revisadas individualmente; HTML não executado e itens restantes não revisados.
+- Finance Core, persistência, Firebase, dados reais, PRs e worktrees externas não foram alterados. Sem push, PR, merge ou deploy. Smoke focal, gate de Skills, comparação estrita, `git diff --check` e root hygiene passaram; próximo: revisão do staged explícito e commit local de governança.
+
 ## MEGA 16 — checkpoint local (2026-10-13)
 
 - Worktree LEGACY `C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`; três commits locais: `121a1f8` (login privado), `c1badbd` (legibilidade de Renda Fixa em 1536 px), `a93290b` (harness confiável do smoke de Dividendos). HEAD: `a93290b93a11c63e9dd2eed0a53f33371db83163`.

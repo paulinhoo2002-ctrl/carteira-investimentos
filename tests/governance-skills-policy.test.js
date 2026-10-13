@@ -41,3 +41,14 @@ test('runtime-provided Firebase and discovery skills are conditional, not exclud
   assert.match(manifest, /find-skills[^\n]*(?:conditional|runtime)/i);
   assert.match(manifest, /firebase-security-rules-auditor[^\n]*(?:conditional|runtime)/i);
 });
+
+test('physical skill inventory has one versioned catalog and an executable drift gate', () => {
+  const agents = read('AGENTS.md');
+  const index = read('docs/ai/SKILLS_INDEX.md');
+  const catalog = JSON.parse(read('docs/ai/skills-catalog.json'));
+  assert.match(agents, /SKILL_DISCOVERY_GATE/);
+  assert.match(index, /skills-catalog\.json/);
+  assert.equal(catalog.skills.length, 38);
+  assert.equal(catalog.recursiveCandidates.length, 43);
+  assert.match(read('package.json'), /"verify:skills"/);
+});

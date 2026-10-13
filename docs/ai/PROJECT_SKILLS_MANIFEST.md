@@ -1,3 +1,5 @@
+> Índice físico atualizado em 2026-10-13: [`SKILLS_INDEX.md`](SKILLS_INDEX.md) e [`skills-catalog.json`](skills-catalog.json). Os 17 pacotes versionados nesta worktree são um snapshot; hashes da origem host divergentes não são sincronizados automaticamente.
+
 # Project Skills Manifest — Carteira de Investimentos
 
 Canonical skill source: `C:/Projetos/carteira-investimentos/.agents/skills/`

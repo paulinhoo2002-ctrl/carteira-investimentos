@@ -1,0 +1,557 @@
+{
+  "schemaVersion": 1,
+  "inventoryDate": "2026-10-13",
+  "sourceDescription": "User-approved local visual reference directory; source paths intentionally omitted.",
+  "counts": {
+    "images": 27,
+    "html": 11,
+    "total": 38,
+    "visuallyReviewed": 6
+  },
+  "policy": [
+    "Reference material is not financial authority.",
+    "Source images are not copied into this repository.",
+    "No OCR, financial values, account identifiers, or private data are included.",
+    "Prototype HTML is not executed.",
+    "No mobile-specific capture has been identified in the reviewed sample; mobile themes remain unknown."
+  ],
+  "references": [
+    {
+      "referenceId": "ui-ref-01",
+      "relativePath": "Captura de tela 2026-08-17 205934.png",
+      "type": "PNG",
+      "screen": "UNKNOWN",
+      "captureSize": {
+        "width": 1903,
+        "height": 614
+      },
+      "theme": "UNKNOWN",
+      "componentFamily": "UNKNOWN",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-02",
+      "relativePath": "Captura de tela 2026-08-23 134359.png",
+      "type": "PNG",
+      "screen": "UNKNOWN",
+      "captureSize": {
+        "width": 1908,
+        "height": 900
+      },
+      "theme": "UNKNOWN",
+      "componentFamily": "UNKNOWN",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-03",
+      "relativePath": "Captura de tela 2026-08-23 134857.png",
+      "type": "PNG",
+      "screen": "UNKNOWN",
+      "captureSize": {
+        "width": 1691,
+        "height": 620
+      },
+      "theme": "UNKNOWN",
+      "componentFamily": "UNKNOWN",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-04",
+      "relativePath": "Captura de tela 2026-08-23 134914.png",
+      "type": "PNG",
+      "screen": "UNKNOWN",
+      "captureSize": {
+        "width": 1694,
+        "height": 521
+      },
+      "theme": "UNKNOWN",
+      "componentFamily": "UNKNOWN",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-05",
+      "relativePath": "Captura de tela 2026-08-23 134932.png",
+      "type": "PNG",
+      "screen": "UNKNOWN",
+      "captureSize": {
+        "width": 1667,
+        "height": 172
+      },
+      "theme": "UNKNOWN",
+      "componentFamily": "UNKNOWN",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-06",
+      "relativePath": "Captura de tela 2026-08-23 140134.png",
+      "type": "PNG",
+      "screen": "UNKNOWN",
+      "captureSize": {
+        "width": 1680,
+        "height": 786
+      },
+      "theme": "UNKNOWN",
+      "componentFamily": "UNKNOWN",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-07",
+      "relativePath": "Captura de tela 2026-08-23 144750.png",
+      "type": "PNG",
+      "screen": "UNKNOWN",
+      "captureSize": {
+        "width": 1623,
+        "height": 412
+      },
+      "theme": "UNKNOWN",
+      "componentFamily": "UNKNOWN",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-08",
+      "relativePath": "Captura de tela 2026-08-23 144926.png",
+      "type": "PNG",
+      "screen": "UNKNOWN",
+      "captureSize": {
+        "width": 1649,
+        "height": 757
+      },
+      "theme": "UNKNOWN",
+      "componentFamily": "UNKNOWN",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-09",
+      "relativePath": "Captura de tela 2026-08-23 145351.png",
+      "type": "PNG",
+      "screen": "UNKNOWN",
+      "captureSize": {
+        "width": 1604,
+        "height": 907
+      },
+      "theme": "UNKNOWN",
+      "componentFamily": "UNKNOWN",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-10",
+      "relativePath": "Captura de tela 2026-08-23 151619.png",
+      "type": "PNG",
+      "screen": "UNKNOWN",
+      "captureSize": {
+        "width": 1140,
+        "height": 530
+      },
+      "theme": "UNKNOWN",
+      "componentFamily": "UNKNOWN",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-11",
+      "relativePath": "Captura de tela 2026-08-23 151700.png",
+      "type": "PNG",
+      "screen": "UNKNOWN",
+      "captureSize": {
+        "width": 1148,
+        "height": 681
+      },
+      "theme": "UNKNOWN",
+      "componentFamily": "UNKNOWN",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-12",
+      "relativePath": "Captura de tela 2026-08-23 151706.png",
+      "type": "PNG",
+      "screen": "UNKNOWN",
+      "captureSize": {
+        "width": 1158,
+        "height": 781
+      },
+      "theme": "UNKNOWN",
+      "componentFamily": "UNKNOWN",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-13",
+      "relativePath": "Captura de tela 2026-08-23 151742.png",
+      "type": "PNG",
+      "screen": "UNKNOWN",
+      "captureSize": {
+        "width": 1190,
+        "height": 574
+      },
+      "theme": "UNKNOWN",
+      "componentFamily": "UNKNOWN",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-14",
+      "relativePath": "Captura de tela 2026-08-23 151808.png",
+      "type": "PNG",
+      "screen": "UNKNOWN",
+      "captureSize": {
+        "width": 936,
+        "height": 647
+      },
+      "theme": "UNKNOWN",
+      "componentFamily": "UNKNOWN",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-15",
+      "relativePath": "Captura de tela 2026-08-23 151857.png",
+      "type": "PNG",
+      "screen": "UNKNOWN",
+      "captureSize": {
+        "width": 1905,
+        "height": 855
+      },
+      "theme": "UNKNOWN",
+      "componentFamily": "UNKNOWN",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-16",
+      "relativePath": "Captura de tela 2026-08-23 151915.png",
+      "type": "PNG",
+      "screen": "UNKNOWN",
+      "captureSize": {
+        "width": 1906,
+        "height": 889
+      },
+      "theme": "UNKNOWN",
+      "componentFamily": "UNKNOWN",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-17",
+      "relativePath": "Captura de tela 2026-08-23 154803.png",
+      "type": "PNG",
+      "screen": "UNKNOWN",
+      "captureSize": {
+        "width": 1918,
+        "height": 901
+      },
+      "theme": "UNKNOWN",
+      "componentFamily": "UNKNOWN",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-18",
+      "relativePath": "Captura de tela 2026-08-23 154950.png",
+      "type": "PNG",
+      "screen": "UNKNOWN",
+      "captureSize": {
+        "width": 1897,
+        "height": 907
+      },
+      "theme": "UNKNOWN",
+      "componentFamily": "UNKNOWN",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-19",
+      "relativePath": "carteira de investimento sugesta de telas 15.09.2026.png",
+      "type": "PNG",
+      "screen": "UNKNOWN",
+      "captureSize": {
+        "width": 1156,
+        "height": 780
+      },
+      "theme": "UNKNOWN",
+      "componentFamily": "UNKNOWN",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-20",
+      "relativePath": "index.html",
+      "type": "HTML",
+      "screen": "MULTI_SCREEN_PROTOTYPE",
+      "captureSize": null,
+      "theme": "UNKNOWN",
+      "componentFamily": "MULTI_SCREEN_PROTOTYPE",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-21",
+      "relativePath": "Tela de aportes e ativos.png",
+      "type": "PNG",
+      "screen": "ASSETS",
+      "captureSize": {
+        "width": 1536,
+        "height": 1024
+      },
+      "theme": "DARK",
+      "componentFamily": "ASSETS",
+      "reviewStatus": "VISUALLY_REVIEWED",
+      "notes": "Reviewed as a visual reference only; no financial values or rules are authoritative.",
+      "implementationRelevance": "Visual hierarchy and composition reference; adapt only within LEGACY product and financial contracts."
+    },
+    {
+      "referenceId": "ui-ref-22",
+      "relativePath": "Tela de ativos 05.09.20206.png",
+      "type": "PNG",
+      "screen": "ASSETS",
+      "captureSize": {
+        "width": 1638,
+        "height": 806
+      },
+      "theme": "DARK",
+      "componentFamily": "ASSETS",
+      "reviewStatus": "VISUALLY_REVIEWED",
+      "notes": "Reviewed as a visual reference only; no financial values or rules are authoritative.",
+      "implementationRelevance": "Visual hierarchy and composition reference; adapt only within LEGACY product and financial contracts."
+    },
+    {
+      "referenceId": "ui-ref-23",
+      "relativePath": "tela de rebalanceamento e analise da carteira e relatorio e auditoria.png",
+      "type": "PNG",
+      "screen": "REBALANCE_ANALYSIS_AUDIT",
+      "captureSize": {
+        "width": 1656,
+        "height": 950
+      },
+      "theme": "DARK",
+      "componentFamily": "REBALANCE_ANALYSIS_AUDIT",
+      "reviewStatus": "VISUALLY_REVIEWED",
+      "notes": "Reviewed as a visual reference only; no financial values or rules are authoritative.",
+      "implementationRelevance": "Visual hierarchy and composition reference; adapt only within LEGACY product and financial contracts."
+    },
+    {
+      "referenceId": "ui-ref-24",
+      "relativePath": "tela devidendos do sistema atual 1.png",
+      "type": "PNG",
+      "screen": "UNKNOWN",
+      "captureSize": {
+        "width": 1902,
+        "height": 848
+      },
+      "theme": "UNKNOWN",
+      "componentFamily": "UNKNOWN",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-25",
+      "relativePath": "Tela dividendos.png",
+      "type": "PNG",
+      "screen": "DIVIDENDS",
+      "captureSize": {
+        "width": 1536,
+        "height": 1024
+      },
+      "theme": "DARK",
+      "componentFamily": "DIVIDENDS",
+      "reviewStatus": "VISUALLY_REVIEWED",
+      "notes": "Reviewed as a visual reference only; no financial values or rules are authoritative.",
+      "implementationRelevance": "Visual hierarchy and composition reference; adapt only within LEGACY product and financial contracts."
+    },
+    {
+      "referenceId": "ui-ref-26",
+      "relativePath": "Tela Principal.png",
+      "type": "PNG",
+      "screen": "DASHBOARD",
+      "captureSize": {
+        "width": 1536,
+        "height": 1024
+      },
+      "theme": "DARK",
+      "componentFamily": "DASHBOARD",
+      "reviewStatus": "VISUALLY_REVIEWED",
+      "notes": "Reviewed as a visual reference only; no financial values or rules are authoritative.",
+      "implementationRelevance": "Visual hierarchy and composition reference; adapt only within LEGACY product and financial contracts."
+    },
+    {
+      "referenceId": "ui-ref-27",
+      "relativePath": "Tela remtabilidade e metas e patrimonio.png",
+      "type": "PNG",
+      "screen": "GOALS_NET_WORTH_PERFORMANCE",
+      "captureSize": {
+        "width": 1536,
+        "height": 1024
+      },
+      "theme": "DARK",
+      "componentFamily": "GOALS_NET_WORTH_PERFORMANCE",
+      "reviewStatus": "VISUALLY_REVIEWED",
+      "notes": "Reviewed as a visual reference only; no financial values or rules are authoritative.",
+      "implementationRelevance": "Visual hierarchy and composition reference; adapt only within LEGACY product and financial contracts."
+    },
+    {
+      "referenceId": "ui-ref-28",
+      "relativePath": "novos index carteira de investimentos/Imagem do Codex 25 de ago. de 2026, 18_01_20.png",
+      "type": "PNG",
+      "screen": "UNKNOWN",
+      "captureSize": {
+        "width": 1536,
+        "height": 1024
+      },
+      "theme": "UNKNOWN",
+      "componentFamily": "UNKNOWN",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-29",
+      "relativePath": "novos index carteira de investimentos/index2021.html",
+      "type": "HTML",
+      "screen": "MULTI_SCREEN_PROTOTYPE",
+      "captureSize": null,
+      "theme": "UNKNOWN",
+      "componentFamily": "MULTI_SCREEN_PROTOTYPE",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-30",
+      "relativePath": "novos index carteira de investimentos/index2022.html",
+      "type": "HTML",
+      "screen": "MULTI_SCREEN_PROTOTYPE",
+      "captureSize": null,
+      "theme": "UNKNOWN",
+      "componentFamily": "MULTI_SCREEN_PROTOTYPE",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-31",
+      "relativePath": "novos index carteira de investimentos/index2023.html",
+      "type": "HTML",
+      "screen": "MULTI_SCREEN_PROTOTYPE",
+      "captureSize": null,
+      "theme": "UNKNOWN",
+      "componentFamily": "MULTI_SCREEN_PROTOTYPE",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-32",
+      "relativePath": "novos index carteira de investimentos/index2024.html",
+      "type": "HTML",
+      "screen": "MULTI_SCREEN_PROTOTYPE",
+      "captureSize": null,
+      "theme": "UNKNOWN",
+      "componentFamily": "MULTI_SCREEN_PROTOTYPE",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-33",
+      "relativePath": "novos index carteira de investimentos/index2025.html",
+      "type": "HTML",
+      "screen": "MULTI_SCREEN_PROTOTYPE",
+      "captureSize": null,
+      "theme": "UNKNOWN",
+      "componentFamily": "MULTI_SCREEN_PROTOTYPE",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-34",
+      "relativePath": "novos index carteira de investimentos/index2026.html",
+      "type": "HTML",
+      "screen": "MULTI_SCREEN_PROTOTYPE",
+      "captureSize": null,
+      "theme": "UNKNOWN",
+      "componentFamily": "MULTI_SCREEN_PROTOTYPE",
+      "reviewStatus": "STATIC_SOURCE_INSPECTED_NOT_EXECUTED",
+      "notes": "Static source inspection only. External CDN dependencies were not executed or adopted.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-35",
+      "relativePath": "novos index carteira de investimentos/index2027.html",
+      "type": "HTML",
+      "screen": "MULTI_SCREEN_PROTOTYPE",
+      "captureSize": null,
+      "theme": "UNKNOWN",
+      "componentFamily": "MULTI_SCREEN_PROTOTYPE",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-36",
+      "relativePath": "novos index carteira de investimentos/index2028.html",
+      "type": "HTML",
+      "screen": "MULTI_SCREEN_PROTOTYPE",
+      "captureSize": null,
+      "theme": "UNKNOWN",
+      "componentFamily": "MULTI_SCREEN_PROTOTYPE",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-37",
+      "relativePath": "novos index carteira de investimentos/index2029.html",
+      "type": "HTML",
+      "screen": "MULTI_SCREEN_PROTOTYPE",
+      "captureSize": null,
+      "theme": "UNKNOWN",
+      "componentFamily": "MULTI_SCREEN_PROTOTYPE",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    },
+    {
+      "referenceId": "ui-ref-38",
+      "relativePath": "novos index carteira de investimentos/investpro-dashboard.html",
+      "type": "HTML",
+      "screen": "MULTI_SCREEN_PROTOTYPE",
+      "captureSize": null,
+      "theme": "UNKNOWN",
+      "componentFamily": "MULTI_SCREEN_PROTOTYPE",
+      "reviewStatus": "UNREVIEWED",
+      "notes": "Metadata only; visual content not reviewed.",
+      "implementationRelevance": "No implementation claims until individually reviewed."
+    }
+  ]
+}

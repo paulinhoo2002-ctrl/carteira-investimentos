@@ -369,6 +369,13 @@ Codex e outros agentes devem seguir no fluxo diário.
 
 ## V197 compact boot contract
 
+### SKILL_DISCOVERY_GATE
+
+Use `docs/ai/SKILLS_INDEX.md` for discovery, `docs/ai/skills-catalog.json` for
+the versioned inventory snapshot, and `docs/ai/skills-routing.json` for task
+selection. Run `npm run verify:skills` to detect local catalog drift; runtime
+Skills must still be rediscovered per session and never grant authorization.
+
 |Toda sessão deve executar primeiro o PROJECT IDENTITY GATE, ler `AGENTS.md`,
 `docs/ai/PROJECT_MEMORY.md`, `docs/ai/NEXT_STEP.md`, `docs/ai/DECISIONS.md` e
 `docs/ai/SKILLS_ROUTING.md`, descobrir Skills em `.agents/skills`, sempre

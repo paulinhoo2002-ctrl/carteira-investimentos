@@ -1,5 +1,10 @@
 # Skills Routing — Carteira de Investimentos
 
+Inventário físico: [`SKILLS_INDEX.md`](SKILLS_INDEX.md) e
+[`skills-catalog.json`](skills-catalog.json). Rotas executáveis continuam em
+[`skills-routing.json`](skills-routing.json). Rode `npm run verify:skills` para
+detectar drift entre catálogo, snapshot versionado e Skills descobertas.
+
 **Canonical routing for all agents (Hermes, Codex, etc.) in this project.**
 
 ---

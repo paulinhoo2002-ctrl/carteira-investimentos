@@ -1,3 +1,5 @@
+> Inventário operacional histórico abaixo preservado como snapshot de 2026-10-10. O inventário físico mais recente, seus 38 IDs únicos, hashes independentes e candidatos excluídos estão em [`SKILLS_INDEX.md`](SKILLS_INDEX.md) e [`skills-catalog.json`](skills-catalog.json); valide drift com `npm run verify:skills`.
+
 # Skills locais do projeto
 
 ## SKILL SELECTION PROTOCOL
