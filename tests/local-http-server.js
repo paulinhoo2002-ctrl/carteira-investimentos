@@ -36,6 +36,10 @@ async function startLocalHttpServer(root, port = 0, { syntheticQa = true } = {})
     try {
       const requestUrl = new URL(req.url || '/', 'http://127.0.0.1');
       const pathname = decodeURIComponent(requestUrl.pathname);
+      if (/\/(?:\.git|\.qa-state|local-imports|backups|backups-seguros|_backups-seguros|\.env[^/]*)(?:\/|$)/i.test(pathname.replaceAll('\\','/'))) {
+        res.writeHead(403);
+        return res.end();
+      }
       if (pathname === '/api/yahoo-quote') {
         const requested = String(requestUrl.searchParams.get('symbols') || requestUrl.searchParams.get('tickers') || '')
           .split(',').map(symbol => symbol.trim().toUpperCase()).filter(Boolean).slice(0, 50);
@@ -46,6 +50,14 @@ async function startLocalHttpServer(root, port = 0, { syntheticQa = true } = {})
         ? pathname.replace('/modern/dist/', '/.qa-state/modern-build/')
         : pathname;
       const filePath = path.resolve(documentRoot, servedPath === '/' ? 'index.html' : `.${servedPath}`);
+      if (servedPath !== pathname) {
+        const buildRoot = path.join(documentRoot, '.qa-state/modern-build');
+        const buildRelative = path.relative(buildRoot, filePath);
+        if (buildRelative === '..' || buildRelative.startsWith(`..${path.sep}`) || path.isAbsolute(buildRelative)) {
+          res.writeHead(403);
+          return res.end();
+        }
+      }
       const relativePath = path.relative(documentRoot, filePath);
       if (relativePath === '..' || relativePath.startsWith(`..${path.sep}`) || path.isAbsolute(relativePath)) {
         res.writeHead(403);
