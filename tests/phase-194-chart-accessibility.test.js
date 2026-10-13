@@ -4,12 +4,11 @@ const path = require('node:path');
 const test = require('node:test');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const chartSource = fs.readFileSync(path.join(__dirname, '..', 'legacy/js/ui/charts.js'), 'utf8');
 
 test('shared line chart exposes semantic name and text summary', () => {
-  const start = source.indexOf('function lineChart(series, labels, chartClass=', 0);
-  const end = source.indexOf('\nfunction syncAssetsFromAportes', start);
-  assert.ok(start >= 0 && end > start);
-  const block = source.slice(start, end);
+  const block = chartSource;
+  assert.match(block, /function lineChart\(series, labels, chartClass=/);
   assert.match(block, /role="img"/);
   assert.match(block, /aria-labelledby=/);
   assert.match(block, /chartSummary/);

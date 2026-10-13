@@ -20,6 +20,7 @@ function loadPresentationHarness() {
   const context = {
     document,
     assetContributionSignal() { return { tone: 'muted', label: 'Sem sinal confirmado' }; },
+    normalizeQuickMovementKind(value) { return ['compra', 'venda', 'provento', 'renda-fixa', 'outro'].includes(value) ? value : 'compra'; },
     fmt(value) { return `R$ ${Number(value).toFixed(2)}`; },
     fmtP(value) { return `${Number(value).toFixed(1)}%`; },
     esc(value) { return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); },
@@ -43,6 +44,14 @@ test('dashboard icons preserve accessible-hidden SVG mappings and readonly shiel
   assert.match(context.dashboardMetricIcon('unknown'), /<path d="M3 6\.5h14v10H3z"/);
   assert.match(context.waveBIcon('income'), /wave-b-icon ds-icon-container/);
   assert.match(context.waveBIcon('readonly'), /<path d="M10 2\.5l6 2\.2v4\.1/);
+});
+
+test('quick movement icons use accessible-hidden SVGs for each movement kind', () => {
+  const { context } = loadPresentationHarness();
+  for (const kind of ['compra', 'venda', 'provento', 'renda-fixa', 'outro']) {
+    assert.match(context.quickMovementKindIcon(kind), /class="quick-movement-kind-icon" aria-hidden="true"><svg viewBox="0 0 20 20">/);
+  }
+  assert.match(context.quickMovementKindIcon('venda'), /M3\.5 10h12/);
 });
 
 test('toast helper keeps message text, color, replacement, and timer behavior', () => {

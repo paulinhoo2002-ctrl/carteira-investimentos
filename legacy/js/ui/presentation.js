@@ -28,6 +28,16 @@ function dashboardMetricIcon(name){
   };
   return `<span class="dashboard-metric-glyph" aria-hidden="true"><svg viewBox="0 0 20 20">${paths[name]||paths.wallet}</svg></span>`;
 }
+function quickMovementKindIcon(kind){
+  const paths={
+    compra:'<circle cx="10" cy="10" r="6.5"/><path d="M10 6v8M6 10h8"/>',
+    venda:'<path d="M3.5 10h12M10 4.5l5.5 5.5L10 15.5"/>',
+    provento:'<circle cx="10" cy="10" r="6.5"/><path d="M12.5 7.5c-.5-1-4-1-4 .8 0 2 4 1 4 3.2s-3.5 2.1-4.5.8M10 6v8"/>',
+    'renda-fixa':'<path d="M3.5 16.5h13M5 16.5V8l5-4 5 4v8.5M8 16.5v-5h4v5"/>',
+    outro:'<circle cx="5" cy="10" r="1"/><circle cx="10" cy="10" r="1"/><circle cx="15" cy="10" r="1"/>'
+  };
+  return `<span class="quick-movement-kind-icon" aria-hidden="true"><svg viewBox="0 0 20 20">${paths[normalizeQuickMovementKind(kind)]||paths.outro}</svg></span>`;
+}
 function waveBIcon(name){
   const map={
     income:'cash',

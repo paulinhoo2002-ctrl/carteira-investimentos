@@ -5,6 +5,7 @@ const vm = require('node:vm');
 const test = require('node:test');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const chartSource = fs.readFileSync(path.join(__dirname, '..', 'legacy/js/ui/charts.js'), 'utf8');
 const start = source.indexOf('function dashboardEvolutionPanel(data){');
 const end = source.indexOf('\nfunction dashboardIncomePanel(data){', start);
 const panel = source.slice(start, end);
@@ -25,11 +26,9 @@ test('evolucao usa a serie real de aportes acumulados e nao a rotula como patrim
 });
 
 test('evolucao patrimonial preserva pontos navegáveis, dominio valido e lacunas sem inventar serie', () => {
-  const chartStart = source.indexOf('function lineChart(series, labels, chartClass=', 0);
-  const chartEnd = source.indexOf('\nfunction syncAssetsFromAportes(', chartStart);
-  const chart = source.slice(chartStart, chartEnd);
+  const chart = chartSource;
 
-  assert.ok(chartStart >= 0 && chartEnd > chartStart, 'lineChart precisa existir');
+  assert.match(chart, /function lineChart\(series, labels, chartClass=/, 'lineChart precisa existir no módulo extraído');
   assert.match(chart, /class="chart-data-point"/);
   assert.match(chart, /tabindex="0"/);
   assert.match(chart, /aria-label="\$\{esc\(tooltip\)\}"/);

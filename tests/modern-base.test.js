@@ -570,6 +570,7 @@ test('modern shell exists and stays isolated', async () => {
     'legacy/css/fixed-income.css', 'legacy/css/screen-overrides.css', 'legacy/css/premium-overrides.css',
     'legacy/css/final-overrides.css',
     'legacy/js/ui/presentation.js',
+    'legacy/js/ui/charts.js',
   ]) assert.ok(staticBuild.includes(requiredAsset), 'static build must validate ' + requiredAsset);
   assert.equal(packageJson.scripts.test.includes('test:modern'), false);
   assert.match(packageJson.scripts.test, /node --test tests\/readonly-contract-architecture\.test\.js/);

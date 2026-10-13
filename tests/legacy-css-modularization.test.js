@@ -8,6 +8,8 @@ const { readLegacyHtml } = require('./helpers/read-legacy-html.cjs');
 const root = path.join(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
+const sharedCss = fs.readFileSync(path.join(root, 'legacy/css/responsive-layout.css'), 'utf8');
+const compactCss = fs.readFileSync(path.join(root, 'legacy/css/dividends-compact.css'), 'utf8');
 const head = html.slice(html.indexOf('<head'), html.indexOf('</head>'));
 const links = [...head.matchAll(/<link\b(?=[^>]*\bdata-legacy-css\b)[^>]*\bhref="([^"]+)"[^>]*>/gi)];
 
@@ -37,6 +39,17 @@ test('legacy CSS is extracted into ordered external modules and pre-cached offli
   assert.equal([...reconstructedHead.matchAll(/<style\b/gi)].length, 27, 'Static tests can reconstruct original style block boundaries');
   assert.ok(reconstructedHead.includes('<style id="apple-pass-wave-1">'));
   assert.ok(sw.includes("'./legacy/js/ui/presentation.js'"), 'Service worker must pre-cache extracted presentation helpers');
+  assert.ok(html.includes('<script src="legacy/js/ui/charts.js"></script>'), 'Extracted chart renderer must load from index.html');
+  assert.ok(sw.includes("'./legacy/js/ui/charts.js'"), 'Service worker must pre-cache the chart renderer');
+});
+
+test('functional movement and backup guidance text stays readable on mobile', () => {
+  assert.match(sharedCss, /\.note-pill\{font-size:12px/);
+  assert.match(sharedCss, /\.quick-movement-preview-label\{font-size:12px/);
+  assert.match(compactCss, /\.note-title p\{[^}]*font-size:12px/s);
+  assert.match(compactCss, /\.note-pill\{font-size:12px/);
+  assert.match(compactCss, /\.note-foot \.hint\{[^}]*font-size:12px/s);
+  assert.match(compactCss, /\.backup-warning\{font-size:12px/);
 });
 
 test('local synthetic server serves extracted stylesheets with CSS MIME type', async () => {

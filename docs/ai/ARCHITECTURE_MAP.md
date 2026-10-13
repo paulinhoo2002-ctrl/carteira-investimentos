@@ -6,6 +6,7 @@
 Browser
   -> index.html bootstrap and ordered legacy/css modules
   -> legacy/js/ui/presentation.js shared presentation renderers
+  -> legacy/js/ui/charts.js accessible line-chart renderer and tooltip behavior
   -> remaining inline application JavaScript
   -> testMode/auth/Firebase bootstrap
   -> PersistenceCore load or local fixture
@@ -30,6 +31,7 @@ modern/vite.config.ts -> modern/src host -> readonly bridges/contracts
 | `index.html` | Authoritative legacy SPA, shell, screens, handlers and remaining inline application code | High; mixed product/runtime file |
 | `legacy/css/*.css` | Ordered external modules extracted from the legacy style blocks | Presentation only; preserve link order |
 | `legacy/js/ui/presentation.js` | Shared legacy presentation helpers and markup renderers | Presentation only; classic script with runtime globals |
+| `legacy/js/ui/charts.js` | Shared SVG line-chart renderer and tooltip behavior; accepts prepared series and does not calculate financial indicators | Presentation only; classic script with runtime globals |
 | `finance-core.js` | Pure financial calculations and domain helpers | Protected |
 | `persistence-core.js` | Serialization, load/save and storage boundary | Protected |
 | `portfolio-movement-contract.js` | Movement validation/contract | Protected |

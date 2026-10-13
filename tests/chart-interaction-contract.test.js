@@ -3,13 +3,14 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 
 const source = fs.readFileSync('index.html', 'utf8');
+const chartSource = fs.readFileSync('legacy/js/ui/charts.js', 'utf8');
 
 test('line charts expose grouped period tooltips and a hidden crosshair', () => {
-  assert.match(source, /data-chart-index=/);
-  assert.match(source, /data-chart-x=/);
-  assert.match(source, /class="chart-crosshair"/);
-  assert.match(source, /querySelectorAll\(`\[data-chart-index=/);
-  assert.match(source, /onpointermove="showLineChartTooltip\(this,event\)"/);
+  assert.match(chartSource, /data-chart-index=/);
+  assert.match(chartSource, /data-chart-x=/);
+  assert.match(chartSource, /class="chart-crosshair"/);
+  assert.match(chartSource, /querySelectorAll\(`\[data-chart-index=/);
+  assert.match(chartSource, /onpointermove="showLineChartTooltip\(this,event\)"/);
 });
 
 test('asset search covers ticker, name, type and sector without changing numeric sources', () => {
