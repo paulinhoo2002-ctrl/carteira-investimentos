@@ -68,12 +68,12 @@ test('protected mode guards every identified write channel', () => {
   assert.match(html, /function startCloudSync\([\s\S]*?if\(isProtectedReadOnlyQaBoot\(\) && !readOnlyOnly\) return;/);
   assert.match(html, /function scheduleAutoProventosGratis\([\s\S]*?if\(isProtectedReadOnlyQaBoot\(\)\) return false;/);
   assert.match(html, /function runAutoProventosGratis\([\s\S]*?if\(isProtectedReadOnlyQaBoot\(\)\) return false;/);
-  assert.match(html, /function saveV76RuntimeStores\(\)[\s\S]*?if\(isProtectedReadOnlyQaBoot\(\)\) return false;/);
+  assert.match(html, /function saveV76RuntimeStores\(\)[\s\S]*?if\(isLocalTestMode\(\) \|\| isProtectedReadOnlyQaBoot\(\)\) return false;/);
   assert.match(html, /function backupCorruptedStorageValue\([\s\S]*?if\(protectedQa \|\| authoritativeLocal\) return null;/);
   assert.match(html, /function initEditProtection\(\)[\s\S]*?EDIT_LOCK_STATE=\{ownerId:'',updatedAt:0,mode:'readonly',stale:false\}/);
 });
 
 test('protected mode skips persistence enablement and public event runtime', () => {
-  assert.match(html, /if\(!isProtectedReadOnlyQaBoot\(\)\)\{\s*try\{ FB\.db\.enablePersistence/);
-  assert.match(html, /function startPublicEventsSync\(\)[\s\S]*?isProtectedReadOnlyQaBoot\(\)\)return/);
+  assert.match(html, /if\(!isProtectedReadOnlyQaBoot\(\) && !emulatorMode\)\{\s*try\{ FB\.db\.enablePersistence/);
+  assert.match(html, /function startPublicEventsSync\(\)[\s\S]*?isLocalTestMode\(\)\|\|isProtectedShadowBoot\(\)\|\|isProtectedReadOnlyQaBoot\(\)\)return/);
 });

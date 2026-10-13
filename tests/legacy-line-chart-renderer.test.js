@@ -75,10 +75,14 @@ test('real dividend chart tooltip shows accessible text and respects pinned focu
 
 test('chart module loads before app callers and participates in build and offline shell', () => {
   const moduleTag = html.indexOf('<script src="legacy/js/ui/charts.js"></script>');
+  const settingsModuleTag = html.indexOf('<script src="legacy/js/screens/settings.js"></script>');
   const appTag = html.indexOf('<script>\n(()=>{if(window.__LOCAL_TEST_MODE__) return;');
   assert.ok(moduleTag >= 0 && moduleTag < appTag, 'chart globals must load before application callers');
-  assert.match(html, /__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v250\.6'/);
-  assert.match(sw, /SW_VERSION = 'v250\.6'/);
+  assert.ok(settingsModuleTag >= 0 && settingsModuleTag < appTag, 'settings renderer must load before application callers');
+  assert.match(html, /__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v250\.7'/);
+  assert.match(sw, /SW_VERSION = 'v250\.7'/);
   assert.ok(sw.includes("'./legacy/js/ui/charts.js'"), 'offline shell must pre-cache the extracted renderer');
+  assert.ok(sw.includes("'./legacy/js/screens/settings.js'"), 'offline shell must pre-cache the settings renderer');
   assert.ok(packageJson.scripts.build.includes('legacy/js/ui/charts.js'), 'static build must require the renderer');
+  assert.ok(packageJson.scripts.build.includes('legacy/js/screens/settings.js'), 'static build must require the settings renderer');
 });
