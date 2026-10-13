@@ -199,5 +199,5 @@
         #assets-premium-rf-table-desktop{display:none !important}
         .assets-premium-mobile-list{display:flex !important}
         .assets-page-actions{justify-content:flex-start;gap:6px;margin:-2px 0 8px}
-        .assets-page-actions .btn{min-height:36px;padding:7px 9px!important;font-size:10px!important}
+        .assets-page-actions .btn{min-height:36px;padding:7px 9px!important}
       }

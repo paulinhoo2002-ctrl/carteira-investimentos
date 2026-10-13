@@ -292,29 +292,41 @@ test('V328 premium screens remain readable across the responsive viewport matrix
 
 test('V330 daily-use visual evidence captures premium screens with synthetic data', async () => {
   const runtime = await createRuntime({ width: 1366, height: 768 });
-  const screenshotDir = path.join(__dirname, '..', '.qa-state', 'v330-daily-use');
-  const screenshots = [
-    { route: 'ativos', width: 1366, height: 768 },
-    { route: 'ativos', width: 390, height: 844 },
-    { route: 'renda-fixa', width: 1366, height: 768 },
-    { route: 'renda-fixa', width: 390, height: 844 },
-    { route: 'dividendos', width: 1366, height: 768 },
-    { route: 'dividendos', width: 390, height: 844 },
-    { route: 'dashboard', width: 1366, height: 768 },
-    { route: 'patrimonio', width: 1366, height: 768 },
-    { route: 'metas', width: 1366, height: 768 },
-    { route: 'rentabilidade', width: 1366, height: 768 },
-    { route: 'ajudar', width: 1366, height: 768 },
-  ];
+  const screenshotDir = path.join(__dirname, '..', '.qa-state', 'v330-daily-use-mega14c-after');
+  const screenshots = ['dashboard', 'patrimonio', 'ativos', 'dividendos', 'renda-fixa'].flatMap(route => [
+    { route, width: 390, height: 844, theme: 'dark' },
+    { route, width: 390, height: 844, theme: 'light' },
+    { route, width: 1366, height: 768, theme: 'dark' },
+    { route, width: 1366, height: 768, theme: 'light' },
+    { route, width: 1920, height: 1080, theme: 'dark' },
+  ]);
   try {
     await fs.mkdir(screenshotDir, { recursive: true });
     for (const item of screenshots) {
       await runtime.page.setViewportSize({ width: item.width, height: item.height });
       await applyV289VisualFixture(runtime.page, 'baseline');
-      await setThemeAndRoute(runtime.page, 'dark', item.route);
+      await setThemeAndRoute(runtime.page, item.theme, item.route);
       const layout = await inspectLayout(runtime.page);
       assert.equal(layout.pageOverflow, false, `${item.route} overflows at ${item.width}x${item.height}`);
       assert.deepEqual(layout.clipped, [], `${item.route} clips controls at ${item.width}x${item.height}`);
+      const functionalTextSelectors = {
+        dashboard: '.premium-exec-sub,.dashboard-quick-action-sub,.dash-chip',
+        patrimonio: '.patrimonio-kpi-label,.patrimonio-kpi-sub,.patrimonio-top-asset-name,.patrimony-composition-label,.patrimonio-insight-note',
+        ativos: '.assets-premium-shell .filter-count,.assets-premium-shell .asset-type,.assets-premium-shell .asset-ticker,.assets-premium-shell .asset-premium-card-meta span,.assets-premium-shell .asset-premium-card-details .asset-premium-card-row span',
+        dividendos: '.div-premium .div-receipt-date,.div-premium .div-receipt-name,.div-premium .div-receipt-note,.div-premium .div-receipt-source,.div-premium .div-collapsible-sub,.div-premium .div-asset-rank,.div-premium .div-asset-sub,.div-premium .div-month-filter-label,.div-premium .div-timeline-summary-sub,.div-premium .div-timeline-summary-meta,.div-premium .div-upcoming-label',
+        'renda-fixa': '.premium-rf-kicker,.premium-rf-kpi-label,.premium-rf-kpi-note,.premium-rf-panel-sub,.premium-rf-panel-badge,.premium-rf-provenance,.premium-rf-trust-count,.premium-row-sub,.rf-history-badge,.rf-event-sub',
+        metas: '.metas-goal-status,.metas-kpi-sub,.metas-summary-label,.metas-summary-detail,.passive-goal-kicker,.passive-goal-sub,.passive-goal-badge',
+      }[item.route];
+      if (functionalTextSelectors) {
+        const smallFunctionalText = await runtime.page.locator(functionalTextSelectors).evaluateAll(elements => elements
+          .filter(element => {
+            const style = getComputedStyle(element);
+            const rect = element.getBoundingClientRect();
+            return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0 && Number.parseFloat(style.fontSize) < 12;
+          })
+          .map(element => ({ className: element.className.baseVal || element.className, fontSize: getComputedStyle(element).fontSize, text: element.textContent.trim().slice(0, 32) })));
+        assert.deepEqual(smallFunctionalText, [], `${item.route} has active functional text below 12px at ${item.width}px: ${JSON.stringify(smallFunctionalText)}`);
+      }
       if (item.route === 'ativos') {
         assert.ok(layout.assetMetricLabels.length > 0, `Ativos information metrics missing at ${item.width}px`);
         assert.ok(layout.assetMetricLabels.every(label => label.font >= 12), `Ativos metric label too small at ${item.width}px`);
@@ -344,7 +356,7 @@ test('V330 daily-use visual evidence captures premium screens with synthetic dat
         assert.match(receivedKpi, /R\$\s*19,37/, 'synthetic paid receipt in the current year must be included once');
       }
       await runtime.page.screenshot({
-        path: path.join(screenshotDir, `${item.route}-${item.width}x${item.height}.png`),
+        path: path.join(screenshotDir, `${item.route}-${item.width}x${item.height}-${item.theme}.png`),
         fullPage: true,
       });
       if (item.route === 'renda-fixa' && item.width <= 430) {

@@ -719,3 +719,64 @@ html[data-theme="light"] .premium-dividends-3 .div-type-badge.outro{color:#47556
 .premium-rf-distribution-label,.premium-rf-distribution-value,.premium-rf-panel-sub{font-size:12px}
 .premium-rf-row-actions .btn{min-height:44px;font-size:12px}
 .premium-rf-row-results .premium-rf-row-meta{font-size:12px}
+
+/* V14C: active screen context remains readable without shrinking functional text. */
+.canon-dashboard .premium-exec-sub,
+.canon-dashboard .dashboard-quick-action-sub,
+.canon-dashboard .dash-chip,
+.patrimonio-kpi-label,
+.patrimonio-kpi-sub,
+.patrimonio-top-asset-name,
+.patrimony-composition-label,
+.patrimonio-insight-note,
+.assets-premium-shell .filter-count,
+.assets-premium-shell .asset-type,
+.assets-premium-shell .asset-ticker,
+.assets-premium-shell .asset-premium-card-meta span,
+.assets-premium-shell .asset-premium-card-details .asset-premium-card-row span,
+.div-premium .div-receipt-date,
+.div-premium .div-receipt-name,
+.div-premium .div-receipt-note,
+.div-premium .div-receipt-source,
+.div-premium .div-collapsible-sub,
+.div-premium .div-asset-rank,
+.div-premium .div-asset-sub,
+.div-premium .div-month-filter-label,
+.div-premium .div-timeline-summary-sub,
+.div-premium .div-timeline-summary-meta,
+.div-premium .div-upcoming-label,
+.premium-rf-kicker,
+.premium-rf-kpi-label,
+.premium-rf-kpi-note,
+.premium-rf-panel-sub,
+.premium-rf-panel-badge,
+.premium-rf-provenance,
+.premium-rf-trust-count,
+.premium-row-sub,
+.rf-history-badge,
+.rf-event-sub,
+.metas-goal-status,
+.metas-kpi-sub,
+.metas-summary-label,
+.metas-summary-detail,
+.passive-goal-kicker,
+.passive-goal-sub,
+.passive-goal-badge{font-size:12px}
+.rf-preview-row .premium-row-sub,.irpf-mobile-row .premium-row-sub,.irpf-mobile-value .premium-row-sub{font-size:12px}
+.canon-dashboard .dashboard-highlight-column .premium-exec-sub,.canon-dashboard .dashboard-highlight-row .premium-exec-sub{font-size:12px;line-height:1.3}
+.metas-shell .passive-goal-card .passive-goal-kicker,.metas-shell .passive-goal-card .passive-goal-sub,.metas-shell .metas-kpi-sub,.ds-kpi__context{font-size:12px}
+.passive-goal-card .passive-goal-badge.ds-badge{font-size:12px}
+.asset-inner-tab,.asset-premium-card-label,.asset-premium-card-result-money,.asset-premium-card-details .asset-premium-card-row strong,.asset-class-result-head span,.asset-class-result-values span,.asset-premium-summary .gn{font-size:12px}
+.canon-last-update,#investBottomNav button,#investBottomNav button span,#investBottomNav .nav-center span:last-child{font-size:12px}
+.dashboard-highlights-tabs .asset-inner-tab,.canon-dashboard .canon-dash-meta .canon-last-update,.canon-dashboard .dashboard-highlight-column-head span,.canon-dashboard .premium-exec-value,.canon-dashboard .dashboard-highlight-row strong,.canon-dashboard small{font-size:12px}
+.premium-exec-value,.premium-exec-value .gn{font-size:12px}
+.dashboard-highlight-details strong{font-size:12px}
+.canon-dashboard .dashboard-highlight-row .dashboard-highlight-details,.canon-dashboard .dashboard-highlight-row .dashboard-highlight-details strong{font-size:12px}
+.nav-section-title,.portfolio-search-trigger kbd{font-size:12px}
+.tabs-desktop .nav-section-title{font-size:12px}
+.tabs-desktop .side-status{font-size:12px}
+.patrimonio-premium .patrimonio-subtitle,.patrimonio-premium .dash-chip,.patrimonio-premium .patrimonio-panel-sub,.patrimonio-premium .patrimonio-panel-badge,.patrimonio-premium .patrimony-month-label,.patrimonio-premium .patrimony-month-value,.patrimonio-premium .patrimonio-top-asset-rank,.patrimonio-premium .patrimonio-top-asset-amount,.patrimonio-premium .patrimonio-top-asset-perc,.patrimonio-premium .patrimony-composition-value,.patrimonio-premium .patrimony-composition-text,.patrimonio-premium .patrimonio-insight-label,.patrimonio-premium .premium-note{font-size:12px}
+.assets-premium-shell .btn,.assets-premium-shell .asset-premium-card-details strong,.assets-premium-shell .positive-text,.assets-premium-shell .asset-detail-link,.assets-premium-shell .acc-sub,.assets-premium-shell .assets-premium-controls span,.assets-premium-shell .assets-premium-controls strong,.assets-premium-shell .assets-premium-controls small{font-size:12px}
+.assets-premium-shell .sh .btn,.assets-premium-shell .asset-premium-card-details .asset-premium-card-row strong,.assets-premium-shell .asset-premium-card-details .positive-text{font-size:12px}
+.assets-premium-shell .assets-page-actions .btn,.assets-premium-shell>.sh>div:last-child .btn{font-size:12px}
+.assets-table th{font-size:12px!important}.assets-table .num,.assets-table .asset-logo{font-size:12px}
