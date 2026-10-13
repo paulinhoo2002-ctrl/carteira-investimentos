@@ -111,7 +111,8 @@ function validateInventory({ skillsRoot, catalog, routes, strictSource = false }
     if (!skill && !runtimeOnly.has(id)) errors.push(`DANGLING_ROUTE_SKILL:${id}`);
     if (skill?.routingDisposition === 'REJECTED_CROSS_PROJECT_SCOPE') errors.push(`ROUTED_CROSS_PROJECT_EXCLUDED_SKILL:${id}`);
   }
-  return { ok: errors.length === 0, errors, discovered: directFiles.length, cataloged: byId.size };
+  return { ok: errors.length === 0, errors, discovered: directFiles.length, cataloged: byId.size,
+    uniqueValidIds: seen.size, uncatalogedApplicableSkills: [...seen.keys()].filter(id => !byId.has(id)).length };
 }
 
 function main(args = process.argv.slice(2)) {

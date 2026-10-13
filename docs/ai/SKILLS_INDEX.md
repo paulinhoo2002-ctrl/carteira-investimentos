@@ -1,5 +1,9 @@
 # Índice físico de Skills LEGACY
 
+## Contagem física versus IDs (MEGA 19)
+
+As 40 entradas diretas não são 40 Skills distintas: 38 IDs válidos únicos, uma cópia `browser-harness-main/SKILL.md` do ID já catalogado `browser-harness` (`DUPLICATE_ID_NONCANONICAL_COPY`), e `impeccable.bak/SKILL.md`, backup sem frontmatter válido (`BACKUP_INVALID_METADATA`). Ambos já estão classificados nos `recursiveCandidates` do catálogo; não instalar, sincronizar ou rotear essas cópias. Nenhuma Skill aplicável permanece sem catálogo. Os três arquivos recursivos adicionais são a cópia aninhada de `archify` e dois documentos internos sem metadados de Skill.
+
 O catálogo [`skills-catalog.json`](skills-catalog.json) é a fonte versionada de IDs, caminhos, hashes do snapshot, disponibilidade no repositório e candidatos excluídos. Este índice é uma leitura rápida; rotas executáveis continuam em [`skills-routing.json`](skills-routing.json).
 
 Inventário de origem observado em 2026-10-13: **43 arquivos recursivos, 38 IDs únicos válidos, 17 Skills no snapshot desta worktree**. Origem lida em modo somente leitura; hashes de origem e do snapshot Git são independentes. Runtime deve ser redescoberto em cada sessão.
