@@ -128,3 +128,54 @@ test('income with unresolved duplicates cannot be reported as a complete amount'
   assert.equal(result[0].receivedByKind.JCP.observedCents,null);
   assert.equal(result[0].receivedByKind.DIVIDEND.observedCents,500);
 });
+
+test('year preview reports zero only with attested coverage and retains duplicate risk', () => {
+  const zero = Engine.buildYearPreview([{date:'2025-03-01',kind:'BUY',incomeStatus:'EXCLUDED'}], {year:'2025',sourceCoverage:'COMPLETE'});
+  assert.equal(zero.status,'COMPLETE');
+  assert.equal(zero.observedReceivedCents,0);
+  const partial = Engine.buildYearPreview([{date:'2025-03-01',kind:'JCP',incomeStatus:'RECEIVED',amountCents:1000,duplicateState:'UNRESOLVED'}], {year:'2025',sourceCoverage:'COMPLETE'});
+  assert.equal(partial.status,'PARTIAL');
+  assert.equal(partial.observedReceivedCents,null);
+  assert.deepEqual(partial.reasonCodes,['DUPLICATE_RISK']);
+  assert.equal(Engine.buildYearPreview([], {year:'2025'}).status,'UNKNOWN');
+  const unknownIncome = Engine.buildYearPreview([{date:'2025-04-01',kind:'INCOME_CANDIDATE',incomeStatus:'UNKNOWN'}], {year:'2025',sourceCoverage:'COMPLETE'});
+  assert.equal(unknownIncome.incomeCoverage,'PARTIAL');
+  assert.equal(unknownIncome.observedReceivedCents,null);
+  assert.deepEqual(unknownIncome.reasonCodes,['UNKNOWN_INCOME_CLASSIFICATION']);
+});
+
+test('historical position derives only from a complete interval and resolved position events', () => {
+  const result = Engine.deriveHistoricalPosition({
+    snapshot:{quantityMicros:10_000_000,asOf:'2026-01-31',sourceId:'SYNTH_SNAPSHOT',coverage:'COMPLETE'},
+    targetAsOf:'2025-12-31',
+    completeMonths:['2025-12','2026-01'],
+    events:[
+      {rawRecordId:'buy',date:'2026-01-03',kind:'BUY',quantityDeltaMicros:2_000_000},
+      {rawRecordId:'sell',date:'2026-01-10',kind:'SELL',quantityDeltaMicros:1_000_000},
+      {rawRecordId:'income',date:'2026-01-12',kind:'JCP',quantityDeltaMicros:null},
+    ],
+  });
+  assert.equal(result.status,'DERIVED');
+  assert.equal(result.quantityMicros,9_000_000);
+  assert.deepEqual(result.eventIds,['buy','sell','income']);
+  const unknownCoverage = Engine.deriveHistoricalPosition({snapshot:{quantityMicros:10,asOf:'2026-01-31',coverage:'COMPLETE'},targetAsOf:'2025-12-31'});
+  assert.equal(unknownCoverage.status,'UNKNOWN');
+  assert.equal(unknownCoverage.reasonCode,'INTERVAL_COVERAGE_NOT_COMPLETE');
+  const unresolved = Engine.deriveHistoricalPosition({
+    snapshot:{quantityMicros:10,asOf:'2026-01-31',coverage:'COMPLETE'},targetAsOf:'2025-12-31',completeMonths:['2025-12','2026-01'],
+    events:[{rawRecordId:'unknown',date:'2026-01-04',kind:'UNKNOWN',quantityDeltaMicros:2}],
+  });
+  assert.equal(unresolved.status,'UNKNOWN');
+  assert.equal(unresolved.reasonCode,'UNRESOLVED_POSITION_EVENT');
+});
+
+test('source preview aggregates provenance without exposing row payloads', () => {
+  const result = Engine.buildSourcePreview([
+    {sourceId:'PRIMARY_SYNTH',kind:'BUY',duplicateState:'UNIQUE',includedInCanonical:true},
+    {sourceId:'SUBSET_SYNTH',kind:'BUY',duplicateState:'OVERLAPPING_EXPORT',includedInCanonical:false},
+  ]);
+  assert.deepEqual(result,[
+    {sourceId:'PRIMARY_SYNTH',recordCount:1,canonicalRecordCount:1,kinds:{BUY:1},duplicateStates:{UNIQUE:1}},
+    {sourceId:'SUBSET_SYNTH',recordCount:1,canonicalRecordCount:0,kinds:{BUY:1},duplicateStates:{OVERLAPPING_EXPORT:1}},
+  ]);
+});

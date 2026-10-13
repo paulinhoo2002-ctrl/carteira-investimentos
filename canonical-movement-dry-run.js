@@ -255,6 +255,76 @@ function summarizeIncome(records = [], { completeYears = [] } = {}) {
   });
 }
 
+function buildYearPreview(records = [], { year, sourceCoverage = 'UNKNOWN' } = {}) {
+  if (!/^\d{4}$/.test(String(year))) throw new Error('VALID_YEAR_REQUIRED');
+  const rows = (Array.isArray(records) ? records : []).filter(row => String(row.date || '').startsWith(`${year}-`));
+  const kinds = {};
+  let receivedCents = 0, receivedAmountUnknown = false, duplicateRisk = false, recordDuplicateRisk = false;
+  for (const row of rows) {
+    const kind = String(row.kind || 'UNKNOWN');
+    kinds[kind] = (kinds[kind] || 0) + 1;
+    if (row.duplicateState && row.duplicateState !== 'UNIQUE') recordDuplicateRisk = true;
+    if (row.incomeStatus !== 'RECEIVED') continue;
+    if (Number.isSafeInteger(row.amountCents) && Number.isSafeInteger(receivedCents + row.amountCents)) receivedCents += row.amountCents;
+    else receivedAmountUnknown = true;
+    if (row.duplicateState && row.duplicateState !== 'UNIQUE') duplicateRisk = true;
+  }
+  const receivedKnown = !receivedAmountUnknown && !duplicateRisk;
+  const unknownIncomeRecords = rows.filter(row => row.incomeStatus === 'UNKNOWN' || row.kind === 'INCOME_CANDIDATE').length;
+  const noIncomeConfirmed = sourceCoverage === 'COMPLETE' && !recordDuplicateRisk && !unknownIncomeRecords && !rows.some(row => row.incomeStatus === 'RECEIVED');
+  return {
+    year: String(year), recordCount: rows.length,
+    sourceCoverage: ['COMPLETE', 'PARTIAL', 'UNKNOWN'].includes(sourceCoverage) ? sourceCoverage : 'UNKNOWN',
+    receivedRecordCount: rows.filter(row => row.incomeStatus === 'RECEIVED').length,
+    unknownRecordCount: rows.filter(row => row.kind === 'UNKNOWN' || row.incomeStatus === 'UNKNOWN').length,
+    transferRecordCount: rows.filter(row => String(row.kind || '').startsWith('TRANSFER') || row.kind === 'SETTLEMENT_CANDIDATE').length,
+    assetKeys: [...new Set(rows.map(row => row.assetKey).filter(Boolean))].sort(),
+    custodians: [...new Set(rows.map(row => row.custodian).filter(Boolean))].sort(),
+    kinds,
+    status: sourceCoverage === 'COMPLETE' && !recordDuplicateRisk && !unknownIncomeRecords && !receivedAmountUnknown ? 'COMPLETE' : rows.length ? 'PARTIAL' : 'UNKNOWN',
+    incomeCoverage: sourceCoverage === 'COMPLETE' && !recordDuplicateRisk && !unknownIncomeRecords && !receivedAmountUnknown ? 'COMPLETE' : rows.length ? 'PARTIAL' : 'UNKNOWN',
+    unknownIncomeRecordCount: unknownIncomeRecords,
+    reasonCodes: [...(recordDuplicateRisk ? ['DUPLICATE_RISK'] : []), ...(sourceCoverage !== 'COMPLETE' ? ['SOURCE_COVERAGE_NOT_ATTESTED'] : []), ...(unknownIncomeRecords ? ['UNKNOWN_INCOME_CLASSIFICATION'] : []), ...(receivedAmountUnknown ? ['RECEIVED_AMOUNT_UNKNOWN'] : [])],
+    observedReceivedCents: receivedKnown && rows.some(row => row.incomeStatus === 'RECEIVED') ? receivedCents : noIncomeConfirmed ? 0 : null,
+  };
+}
+
+function deriveHistoricalPosition({ snapshot, events = [], targetAsOf, completeMonths = [] } = {}) {
+  if (!snapshot || !/^\d{4}-\d{2}-\d{2}$/.test(String(snapshot.asOf || '')) || !/^\d{4}-\d{2}-\d{2}$/.test(String(targetAsOf || '')) || !Number.isSafeInteger(snapshot.quantityMicros)) return { status: 'UNKNOWN', quantityMicros: null, reasonCode: 'VALID_SNAPSHOT_AND_TARGET_REQUIRED' };
+  if (snapshot.coverage !== 'COMPLETE' || targetAsOf > snapshot.asOf) return { status: 'UNKNOWN', quantityMicros: null, reasonCode: snapshot.coverage !== 'COMPLETE' ? 'SNAPSHOT_COVERAGE_NOT_COMPLETE' : 'TARGET_AFTER_SNAPSHOT' };
+  if (targetAsOf === snapshot.asOf) return { status: 'OBSERVED', quantityMicros: snapshot.quantityMicros, sourceIds: [String(snapshot.sourceId || 'UNKNOWN_SOURCE')], eventIds: [] };
+  const requiredMonths = monthRange(monthKey(targetAsOf), monthKey(snapshot.asOf));
+  const attested = new Set(completeMonths);
+  if (requiredMonths.some(month => !attested.has(month))) return { status: 'UNKNOWN', quantityMicros: null, reasonCode: 'INTERVAL_COVERAGE_NOT_COMPLETE' };
+  const relevant = (Array.isArray(events) ? events : []).filter(event => event.date > targetAsOf && event.date <= snapshot.asOf);
+  const nonPositionKinds = new Set(['DIVIDEND', 'JCP', 'FII_INCOME', 'INTEREST', 'AMORTIZATION', 'FEE', 'TAX']);
+  let delta = 0;
+  for (const event of relevant) {
+    if (nonPositionKinds.has(event.kind)) continue;
+    if (!['BUY', 'SELL', 'TRANSFER_IN', 'TRANSFER_OUT', 'CORPORATE_EVENT_CONFIRMED'].includes(event.kind) || !Number.isSafeInteger(event.quantityDeltaMicros)) return { status: 'UNKNOWN', quantityMicros: null, reasonCode: 'UNRESOLVED_POSITION_EVENT', blockingEventId: String(event.rawRecordId || '') };
+    delta += event.kind === 'SELL' || event.kind === 'TRANSFER_OUT' ? -event.quantityDeltaMicros : event.quantityDeltaMicros;
+    if (!Number.isSafeInteger(delta)) return { status: 'UNKNOWN', quantityMicros: null, reasonCode: 'QUANTITY_OVERFLOW' };
+  }
+  const quantityMicros = snapshot.quantityMicros - delta;
+  if (!Number.isSafeInteger(quantityMicros) || quantityMicros < 0) return { status: 'UNKNOWN', quantityMicros: null, reasonCode: 'DERIVED_QUANTITY_INVALID' };
+  return { status: 'DERIVED', quantityMicros, sourceIds: [String(snapshot.sourceId || 'UNKNOWN_SOURCE')], eventIds: relevant.map(event => String(event.rawRecordId || '')).filter(Boolean), derivationStart: targetAsOf, derivationEnd: snapshot.asOf, assumptions: ['COMPLETE_SOURCE_COVERAGE_FOR_EACH_INTERVAL_MONTH', 'EVENT_QUANTITY_IN_MICRO_UNITS'] };
+}
+
+function buildSourcePreview(auditRecords = []) {
+  const groups = new Map();
+  for (const row of Array.isArray(auditRecords) ? auditRecords : []) {
+    const id = String(row.sourceId || 'UNKNOWN_SOURCE');
+    const item = groups.get(id) || { sourceId: id, recordCount: 0, canonicalRecordCount: 0, kinds: {}, duplicateStates: {} };
+    item.recordCount++;
+    if (row.includedInCanonical) item.canonicalRecordCount++;
+    const kind = String(row.kind || 'UNKNOWN'), duplicateState = String(row.duplicateState || 'UNRESOLVED');
+    item.kinds[kind] = (item.kinds[kind] || 0) + 1;
+    item.duplicateStates[duplicateState] = (item.duplicateStates[duplicateState] || 0) + 1;
+    groups.set(id, item);
+  }
+  return [...groups.values()].sort((a, b) => a.sourceId.localeCompare(b.sourceId));
+}
+
 function buildReadonlyImportPreview(canonicalization) {
   if (!canonicalization?.summary || !Array.isArray(canonicalization.auditRecords) || !Array.isArray(canonicalization.canonicalRecords)) throw new Error('CANONICALIZATION_RESULT_REQUIRED');
   const { summary } = canonicalization;
@@ -282,4 +352,4 @@ function buildReadonlyImportPreview(canonicalization) {
   };
 }
 
-module.exports = { classifyMovement, rowFingerprint, canonicalizeSources, pairTransfers, monthlyCoverage, summarizeIncome, buildReadonlyImportPreview };
+module.exports = { classifyMovement, rowFingerprint, canonicalizeSources, pairTransfers, monthlyCoverage, summarizeIncome, buildYearPreview, deriveHistoricalPosition, buildSourcePreview, buildReadonlyImportPreview };
