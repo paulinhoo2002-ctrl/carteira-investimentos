@@ -33,3 +33,18 @@ test('real dashboard boots while secondary screen modules are pending and routes
     await new Promise(resolve=>harness.server.close(resolve));
   }
 });
+
+test('failed secondary module gives an explicit retry state and leaves navigation available',async()=>{
+  const harness=await startLocalHttpServer(path.resolve(__dirname,'..'));
+  const browser=await chromium.launch({executablePath:process.env.CHROME_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
+  try{
+    const page=await browser.newPage({viewport:{width:390,height:844}});
+    await page.route('**/legacy/js/screens/assets.js',route=>route.abort());
+    await page.goto(harness.url+'&testReadOnly=1');
+    await page.evaluate(()=>go('ativos'));
+    await page.getByRole('alert').filter({hasText:'Não foi possível abrir Ativos'}).waitFor();
+    assert.equal(await page.getByRole('button',{name:'Tentar novamente',exact:true}).count(),1);
+    await page.locator('#investBottomNav').getByRole('button',{name:/Resumo/}).click();
+    assert.equal(await page.evaluate(()=>S.tab),'dashboard');
+  }finally{await browser.close();harness.server.closeAllConnections?.();await new Promise(resolve=>harness.server.close(resolve));}
+});

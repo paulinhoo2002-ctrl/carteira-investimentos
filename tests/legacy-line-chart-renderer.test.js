@@ -83,8 +83,8 @@ test('chart module loads before app callers and participates in build and offlin
   assert.ok(settingsModuleTag >= 0 && settingsModuleTag < appTag, 'settings renderer must load before application callers');
   assert.ok(dashboardModuleTag >= 0 && dashboardModuleTag < appTag, 'dashboard KPI renderer must load before application callers');
   assert.ok(allocationModuleTag >= 0 && allocationModuleTag < appTag, 'dashboard allocation renderer must load before application callers');
-  assert.match(html, /__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v250\.9'/);
-  assert.match(sw, /SW_VERSION = 'v250\.9'/);
+  assert.match(html, /__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v250\.10'/);
+  assert.match(sw, /SW_VERSION = 'v250\.10'/);
   assert.ok(sw.includes("'./legacy/js/ui/charts.js'"), 'offline shell must pre-cache the extracted renderer');
   assert.ok(sw.includes("'./legacy/js/screens/settings.js'"), 'offline shell must pre-cache the settings renderer');
   assert.ok(sw.includes("'./legacy/js/screens/dashboard-executive-kpis.js'"), 'offline shell must pre-cache the dashboard KPI renderer');

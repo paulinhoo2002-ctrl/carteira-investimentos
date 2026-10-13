@@ -13,7 +13,7 @@ test('sorts by issuer and keeps missing issuers last', () => {
     { ticker: 'A', issuer: 'Banco A' },
   ];
   assert.deepEqual(FixedIncomeTrust.sortRows(rows, 'issuer', 'asc').map(row => row.ticker), ['A', 'Z', 'B']);
-  const source = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+  const source = fs.readFileSync(path.join(__dirname, '../legacy/js/screens/fixed-income.js'), 'utf8');
   assert.ok(source.includes('value="issuer-asc"'));
   assert.ok(source.includes('>Instituição A–Z<'));
   assert.ok(source.includes('premium-rf-row-issuer'));

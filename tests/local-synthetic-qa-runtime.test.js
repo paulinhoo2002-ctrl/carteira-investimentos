@@ -208,9 +208,10 @@ test('synthetic QA cannot preserve corrupt financial storage into localStorage',
 });
 
 test('asset class return summary formats its sign once', () => {
-  const start = source.indexOf('<div class="acc-metric-label ag-k">Rentab.</div>');
-  const end = source.indexOf('</div>', source.indexOf('</div>', start) + 6);
-  const metric = source.slice(start, end);
+  const assetSource=fs.readFileSync(require('node:path').join(__dirname,'../legacy/js/screens/assets.js'),'utf8');
+  const start = assetSource.indexOf('<div class="acc-metric-label ag-k">Rentab.</div>');
+  const end = assetSource.indexOf('</div>', assetSource.indexOf('</div>', start) + 6);
+  const metric = assetSource.slice(start, end);
   assert.match(metric, /typeReturn == null \? '—' : fmtP\(typeReturn\)/);
   assert.doesNotMatch(metric, /resultPrefix.*fmtP\(typeReturn\)/);
 });

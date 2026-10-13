@@ -174,7 +174,7 @@ function loadAssetPerformanceOverviewRowsFromAnalysis(assets, analysisRowsOrFact
 test('fase 202 painel de desempenho usa fontes oficiais e roteiro correto', () => {
   const roadmap = read('docs/project-phases-roadmap.md');
   const phaseDoc = read('docs/phase-202-assets-performance-overview.md');
-  const indexHtml = read('index.html');
+  const indexHtml = read('index.html') + '\n' + read('legacy/js/screens/assets.js');
 
   assertUtf8WithoutBom('docs/project-phases-roadmap.md');
   assertUtf8WithoutBom('docs/phase-202-assets-performance-overview.md');

@@ -62,6 +62,11 @@ test('old release to new release clears only the old app cache', { skip: !resolv
   const newWorker = swSource + '\n// release B';
   const server = http.createServer((req, res) => {
     const url = new URL(req.url || '/', 'http://127.0.0.1');
+    if(['/legacy/js/screens/assets.js','/legacy/js/screens/fixed-income.js'].includes(url.pathname)){
+      res.setHeader('Content-Type','text/javascript');
+      res.setHeader('Cache-Control','no-store');
+      return res.end(fs.readFileSync(path.join(root,url.pathname.slice(1))));
+    }
     res.setHeader('Content-Type', url.pathname === '/sw.js' || url.pathname === '/fixture.js' ? 'text/javascript' : 'text/html');
     res.setHeader('Cache-Control', 'no-store');
     if (url.pathname === '/sw.js') return res.end(release === 'A' ? oldWorker : newWorker);
@@ -106,6 +111,11 @@ test('old release to new release clears only the old app cache', { skip: !resolv
     await page.reload({ waitUntil: 'networkidle' });
     assert.equal(await page.evaluate(() => document.body.dataset.release), 'B');
     assert.deepEqual(await page.evaluate(() => caches.keys()), [currentCacheName]);
+    await context.setOffline(true);
+    for(const [file,renderer] of [['assets.js','ativos'],['fixed-income.js','rendaFixaTab']]){
+      const source=await page.evaluate(async file=>(await fetch('/legacy/js/screens/'+file)).text(),file);
+      assert.ok(source.includes('function '+renderer+'('),'new production renderer must remain available offline after cache update');
+    }
   } finally {
     if (context) await context.close().catch(() => {});
     if (browser) await browser.close().catch(() => {});
