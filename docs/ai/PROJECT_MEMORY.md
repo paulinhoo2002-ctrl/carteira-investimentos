@@ -1,3 +1,10 @@
+## MEGA 19 — decisões de QA e apresentação (2026-10-13)
+
+- QA usa modern/vite.qa.config.ts para compilar os mesmos inputs/plugins em .qa-state/modern-build; pretest, qa:all e visual regression seguem essa saída. Plugin copia para o diretório real do bundle. O server sintético mapeia /modern/dist/ somente dentro do build e bloqueia hidden/private paths. Build manual padrão permanece protegido.
+- SSR tests desativam o WebSocket Vite com server.ws:false; hmr:false sozinho não impedia listener 24678 na versão instalada. Renderers assets.js e fixed-income.js carregam com defer e estados de loading/error reais; SW v250.10 precacheia ambos.
+- Ativos monta uma representação por viewport conforme CSS 640px; um listener de breakpoint fora do render refaz a tela somente ao cruzar a fronteira. Busca preserva foco/cursor; filtro master não usa seu valor padrão on como classe. Settings usa superfícies canônicas e texto funcional >=12px.
+- Código f33ae01c81f56734d8a258fca0cfbe23748ec0fd: verify:release exit 0 com output isolado, Modern 823/823, UI 348/348, V289 16/16; QA readonly em 140 estados, 28 scans Axe sem critical/serious. Benchmarks são sintéticos, não RUM; boot não demonstrou speedup. Não certifica auth/persistência hospedadas, dados reais ou publicação.
+
 ## MEGA 16 — login privado e correções visuais (2026-10-13)
 
 - Na worktree isolada `v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`, commits locais `121a1f8`, `c1badbd`, `a93290b`; HEAD final `a93290b93a11c63e9dd2eed0a53f33371db83163`.

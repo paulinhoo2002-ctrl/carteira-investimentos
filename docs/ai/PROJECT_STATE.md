@@ -1,3 +1,11 @@
+## MEGA 19 — estado local atual (2026-10-13)
+
+- Branch codex/legacy-product-mega-12, worktree v012-mega-12-lifetime-redesign; código validado f33ae01c81f56734d8a258fca0cfbe23748ec0fd. Relatório detalhado em MEGA19_PRODUCT_CERTIFICATION.md; entradas anteriores abaixo são históricas.
+- verify:release e qa:all passaram com build Modern isolado, preservando os 15 arquivos de modern/dist. UI 348/348, Modern 823/823, V289 16/16, Finance 96/96, persistência 32/32 e backup sintético 16/16.
+- Ativos monta somente a apresentação ativa (200 posições: 19.259 → 5.859 nós). Renderers de Ativos/RF foram extraídos e defer não bloqueia Dashboard. Filtros/reset/busca/foco corrigidos; RF mobile tem leitura prioritária; Settings respeita temas e microtexto funcional caiu 23 → 0.
+- QA sintético cobre sete rotas, dois temas e dez larguras 320–1920; 140 estados sem overflow/IDs duplicados, 28 scans Axe sem critical/serious. UI pública de login foi revisada; autenticação hospedada não foi executada.
+- Finance Core, persistência, Firebase, dados reais, demais worktrees e PRs não foram modificados. Sem publicação. Certificação hospedada e importação real continuam bloqueadas; dívida inline/warnings explícita no relatório.
+
 ## MEGA 17 — checkpoint de governança e Ativos mobile (2026-10-13)
 
 - Worktree LEGACY `C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`; origem `paulinhoo2002-ctrl/carteira-investimentos`; HEAD `80025b177a9115b7e4afd95426ae27e8a4df9d78`. A MEGA17 começou em `fdcb6d7c05762b9ee4e3d5747e1b6d05e9b694cc`; commit funcional `80025b1` corrigiu a altura do resumo de Ativos em 360 px sem reduzir fonte ou remover campos.

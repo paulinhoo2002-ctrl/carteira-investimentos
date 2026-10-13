@@ -1,3 +1,13 @@
+# MEGA 19 — próximo gate (2026-10-13)
+
+1. Worktree v012-mega-12-lifetime-redesign, branch codex/legacy-product-mega-12; código validado em f33ae01c81f56734d8a258fca0cfbe23748ec0fd. Relatório: [MEGA19_PRODUCT_CERTIFICATION.md](MEGA19_PRODUCT_CERTIFICATION.md). As seções seguintes são histórico.
+2. Entregue: renderers Ativos/RF extraídos e defer; DOM de Ativos sem duplicação desktop/mobile; buscas/filtros com foco e reset corretos; RF mobile recolhível e saldo prioritário; Configurações coerente em claro/escuro e sem microtexto funcional.
+3. verify:release exit 0: npm test, Modern 823/823, qa:all (inclui daily-use/Axe) e visual 18/18. V289 16/16, UI 348/348, Finance 96/96, persistência 32/32, backup sintético 16/16. QA readonly 140 estados 320–1920, 28 scans Axe sem critical/serious, sem overflow/IDs duplicados/erros de console.
+4. O bloqueio modern/dist foi resolvido: build QA isolado em .qa-state/modern-build, plugin respeita saída; 15 hashes protegidos preservados. Não usar build:modern padrão nesta worktree sem escopo explícito. Caminhos privados/hidden e escape do build retornam 403 no server de QA.
+5. Publicação segue proibida. Auth Emulator não repetido; hosted auth/persistência/recovery não certificados. Restam JS inline ~1,67 MB e warnings Modern/type-loader não bloqueantes. Microtexto de Configurações: 23 → 0; corpo financeiro e dados reais intocados. Próximo: revisão do produto local e autorização específica de QA hospedado isolado; nenhum import real permitido.
+
+---
+
 # MEGA 18 — fechamento local (2026-10-13)
 
 1. Worktree `C:/Projetos/carteira-investimentos.worktrees/v012-mega-12-lifetime-redesign`, branch `codex/legacy-product-mega-12`; commits locais `ead3700` (roteamento contextual e gates), `399e812` (referências visuais/Skills) e `9669be1` (legibilidade e acessibilidade do QA sintético). Sem push, PR, merge ou deploy.
