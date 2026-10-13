@@ -19,6 +19,8 @@ function rendaFixaTab(){
       ? ''
     : `<section class="premium-rf-panel premium-rf-ipca-diagnostics ds-panel ds-panel--readonly" aria-labelledby="rf-ipca-diagnostics-title"><div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title" id="rf-ipca-diagnostics-title">Diagnóstico da série IPCA</div><div class="premium-rf-panel-sub">Diagnóstico do índice; não calcula o valor do título.</div></div><span class="ds-badge">${ipcaDiagnostics.length} posição${ipcaDiagnostics.length===1?'':'ões'}</span></div><div class="premium-income-list">${ipcaDiagnostics.map(item=>`<div class="premium-income-row"><div class="premium-row-main"><div class="premium-row-title">${esc(item.ticker||item.name||'Título IPCA')}</div><div class="premium-row-sub">Valuation: não suportado · valor manual continua sendo a autoridade</div></div><div class="premium-row-value"><span class="ds-badge">Cobertura ${esc(item.coverageStatus==='UNAVAILABLE'?'indisponível':item.coverageStatus==='PARTIAL'?'parcial':'completa')}${item.coveragePercent===null?'':` · ${esc(String(item.coveragePercent))}%`}</span><div class="premium-row-sub">Frescor ${esc(item.freshness==='UNKNOWN'?'desconhecido':item.freshness==='STALE'?'desatualizado':'atual')} · fonte até ${esc(item.sourceAsOf||'indisponível')}</div></div></div>`).join('')}</div></section>`;
   const count=data.assets.length;
+  const filtersExpanded=!!S.rfFiltersOpen;
+  const filtersActive=!!S.rfSearch || (S.rfTrustFilter && S.rfTrustFilter!=='all') || (S.rfSort && S.rfSort!=='name-asc');
   const {overdue, soon30, soon90, soon12m, longTerm, missingDue, missingRate}=data;
   const trustSummary=data.trustSummary||{};
   const trustApi=globalThis.FixedIncomeTrust;
@@ -76,7 +78,7 @@ function rendaFixaTab(){
         <div class="premium-rf-row-meta premium-rf-row-issuer">Instituição: ${esc(row.issuer||'não informada')}</div>
       </div>
       <div class="premium-rf-row-value">
-        <div class="premium-rf-row-financial"><span class="premium-rf-row-financial-label">Atual</span>${display.currentText}</div>
+        <div class="premium-rf-row-financial"><span class="premium-rf-row-financial-label">Atual</span><strong class="premium-rf-current-value">${display.currentText}</strong></div>
         <div class="premium-rf-row-meta">Valor aplicado ${display.appliedText}</div>
         <div class="premium-rf-row-meta"><span class="premium-rf-provenance ${esc(display.provenance?.tone||'muted')}">${esc(display.provenance?.label||'Valor informado')}</span> ${esc(display.currentNote)}</div>
         ${provenanceDetails?.rows?.length ? `<details class="premium-rf-provenance-details"><summary>Como foi avaliado</summary><div class="premium-rf-provenance-grid">${provenanceDetails.rows.map(([key,value])=>`<span>${esc(key)}</span><strong>${esc(value)}</strong>`).join('')}</div></details>` : ''}
@@ -89,7 +91,7 @@ function rendaFixaTab(){
       ${assetId ? `
       <div class="premium-rf-row-actions">
         <button type="button" class="asset-detail-link" onclick='openAssetDetail(${JSON.stringify(assetId)})'>Detalhes</button>
-        <button type="button" class="btn bsv asset-action" onclick='openRfMovementEditor(${JSON.stringify(assetId)}, "aporte")'>Movimentar</button>
+        <button type="button" class="btn bgh asset-action" onclick='openRfMovementEditor(${JSON.stringify(assetId)}, "aporte")'>Movimentar</button>
         <button type="button" class="btn bgh asset-action" onclick='openRfMovementEditor(${JSON.stringify(assetId)}, "resgate_parcial")'>Resgatar</button>
         <button type="button" class="btn bgh asset-action" aria-label="Editar ${esc(row.ticker)}" onclick='edA(${JSON.stringify(assetId)})'>✎ Editar</button>
       </div>` : ''}
@@ -231,8 +233,9 @@ function rendaFixaTab(){
     <div class="premium-rf-grid">
       <div class="premium-rf-panel ds-panel ds-panel--readonly">
         <div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title">Posições de Renda Fixa</div><div class="premium-rf-panel-sub">Atual e resultado derivados do valor oficial de cada título.</div></div><div class="premium-rf-panel-badge">${trustRows.length}/${count} posições</div></div>
-        <div class="premium-rf-controls" aria-label="Controles de leitura de renda fixa">
-          <label><span>Buscar</span><input type="search" aria-label="Buscar título de renda fixa" placeholder="Nome, emissor ou indexador" value="${esc(S.rfSearch||'')}" oninput="setRfTrustSearch(this.value)"></label>
+        <button type="button" class="premium-rf-filter-toggle" aria-label="Filtros de renda fixa" aria-controls="rf-reading-controls" aria-expanded="${filtersExpanded}" onclick="S.rfFiltersOpen=!S.rfFiltersOpen;render();document.querySelector('.premium-rf-filter-toggle')?.focus({preventScroll:true})">${filtersExpanded?'Recolher filtros':'Buscar e filtrar'}${filtersActive?' · filtros ativos':''}</button>
+        <div class="premium-rf-controls${filtersExpanded?'':' is-collapsed'}" id="rf-reading-controls" aria-label="Controles de leitura de renda fixa">
+          <label><span>Buscar</span><input type="search" id="rf-reading-search" aria-label="Buscar título de renda fixa" placeholder="Nome, emissor ou indexador" value="${esc(S.rfSearch||'')}" oninput="setRfTrustSearch(this.value)"></label>
           <label><span>Status do valuation</span><select aria-label="Filtrar status do valuation" onchange="setRfTrustFilter(this.value)">
             <option value="all" ${S.rfTrustFilter==='all'?'selected':''}>Todos</option>
             <option value="MANUAL_AUTHORITATIVE" ${S.rfTrustFilter==='MANUAL_AUTHORITATIVE'?'selected':''}>Valor manual</option>

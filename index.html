@@ -19754,6 +19754,8 @@ function disarmQuoteUi(){ quoteUiArmed=false; quoteUiSnapshot=null; }
 function render(){
   const root=document.getElementById('root');
   if(!root) return;
+  const focusedSearch=document.activeElement?.matches?.('input[type="search"][id]') ? document.activeElement : null;
+  const searchSelection=focusedSearch ? [focusedSearch.selectionStart,focusedSearch.selectionEnd] : null;
   try{
     S._dashboardHighlightsCache=null;
     if(S._rmpTrace) console.log('[rmP] render() chamado');
@@ -19765,6 +19767,11 @@ function render(){
     root.innerHTML=withRenderCycleReportCache(()=>app());
     bind();
     renderPortfolioSearch();
+    const nextSearch=focusedSearch && document.getElementById(focusedSearch.id);
+    if(nextSearch){
+      nextSearch.focus({preventScroll:true});
+      nextSearch.setSelectionRange(...searchSelection);
+    }
     if(preserveQuoteUI) restoreQuoteUi();
     else if(preserveScroll) restoreScroll();
   }catch(error){
