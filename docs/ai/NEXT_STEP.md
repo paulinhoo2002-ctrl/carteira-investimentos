@@ -1341,3 +1341,10 @@ Confirmar CI do novo HEAD da Draft #456 e revisar cadeia #456→#457 atualizada 
 - A branch `codex/legacy-package1-final-write-safety` possui uma prévia V2 somente leitura, injetada apenas pelo QA local. Dashboard, Patrimônio, Ativos, Renda Fixa, Rentabilidade, IR e Dividendos exibem snapshot oficial separado do detalhe parcial; a rota legada continua sem essa prévia quando a flag está desligada.
 - O cenário com totais exatos fica em `.qa-state/package1/ui-synthetic-contract.json`, ignorado pelo Git. O teste versionado usa também números fictícios portáveis; nenhum documento ou posição financeira real foi incluído no commit.
 - A prévia não consulta Firebase, não importa, não grava e não substitui a UI de produção. Próximo gate: descoberta controlada do destino de banco e certificação autenticada em ambiente isolado, por missão autorizada; escrita final continua bloqueada.
+
+## Package 1A — hosted field certified, release candidate local (2026-10-14)
+
+- The single authorized Firestore transaction added only `package1_v2` to the verified LEGACY `portfolios/{uid}` document. Immediate readback matched the canonical payload hash and found zero unrelated field changes. The private BEFORE backup was read back and remains Git-ignored.
+- The official account snapshot remains separate from partial position detail. `position_detail_operational=false`: operational positions still use the legacy path. Package 1B had no hosted write.
+- Eleven identified Package 1A commits from `codex/legacy-package1-final-write-safety` were integrated locally into `codex/legacy-product-mega-12`. The release identity gate and full `verify:release` matrix passed on that candidate, including synthetic browser and Axe coverage. The worktree has a pre-existing, unrelated `.gitignore` edit that was preserved outside these commits.
+- Next human gate: review the exact release SHA and authorize push/deployment separately. Do not repeat the single-use Package 1A write or activate Package 1B positions. Preserve the private BEFORE backup for rollback under the documented concurrency guard.
