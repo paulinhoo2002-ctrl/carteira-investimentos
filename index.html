@@ -18235,7 +18235,7 @@ function render(){
     syncBodyModalLock();
     root.innerHTML=withRenderCycleReportCache(()=>app());
     if(FB.package1V2Status==='PRESENT' && FB.package1V2ReadView && window.Package1PortfolioReadonlyUi){
-      window.Package1PortfolioReadonlyUi.mount(root,S.tab,FB.package1V2ReadView);
+      window.Package1PortfolioReadonlyUi.mount(root,S.tab,FB.package1V2ReadView,{hideValues:!!S.hideValues});
     }
     if(isLocalTestReadOnlyMode() && window.Package1V2Qa) window.Package1V2Qa.mount(root,S.tab);
     bind();
@@ -18255,7 +18255,7 @@ function render(){
         S.tab='dashboard';
         root.innerHTML=withRenderCycleReportCache(()=>app());
         if(FB.package1V2Status==='PRESENT' && FB.package1V2ReadView && window.Package1PortfolioReadonlyUi){
-          window.Package1PortfolioReadonlyUi.mount(root,S.tab,FB.package1V2ReadView);
+          window.Package1PortfolioReadonlyUi.mount(root,S.tab,FB.package1V2ReadView,{hideValues:!!S.hideValues});
         }
         bind();
         renderPortfolioSearch();

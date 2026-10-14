@@ -1,25 +1,32 @@
 # Package 1 — próximo gate local (2026-10-14)
 
-## Integração local V2 e pré-escrita (2026-10-14)
+## Certificação pré-escrita final (2026-10-14)
 
-- Identidade revalidada na worktree `legacy-package1-final-write-safety`, branch `codex/legacy-package1-final-write-safety`. Commit local `307dc29` contém o mapeamento inicial; a integração seguinte permanece local e não publicada.
+- Identidade confirmada na worktree `legacy-package1-final-write-safety`, branch `codex/legacy-package1-final-write-safety`, HEAD inicial `0523c1ec3a62427da6e951d17cc6899f73961c13`. Origin e Git comum correspondem ao repositório LEGACY.
+- O caminho real de leitura V2 continua separado do estado/localStorage legado. A integração visual mostra resumo oficial, detalhe e diferença como `PARTIAL`, respeita ocultação de valores e preserva a tela operacional existente. O detalhe V2 não é apresentado como lista operacional: diferenças de identidade/quantidade e vínculos de ações ainda impedem sua promoção segura.
+- Leitura hospedada única nesta missão confirmou o mesmo `updateTime` do backup anterior. O backup privado foi copiado e validado em `.qa-state/package1/portfolio-before-final-certification.json`, ignorado pelo Git; nenhum dado bruto foi versionado. A projeção muda somente `package1_v2`: tamanho Firestore calculado 380.997 bytes atual + 25.818 bytes do campo = 406.827 bytes projetados, com margem de 641.745 bytes; zero campos legados removidos/modificados.
+- A reconciliação continua `PARTIAL`. Há 10 quantidades divergentes entre candidatos de identidade, quatro detalhes V2 sem contraparte legada e cinco posições legadas sem contraparte V2; valores não são comparáveis por falta de data de referência legada. Quatro classes de ações emprestadas não têm vínculo de empréstimo comprovado. As 25 evidências FIFO seguem em quarentena e o payload real mantém custo `UNKNOWN` nas 35 posições; não promover evidência incompleta para persistência.
+- O resumo V2 não substitui filtros/ações legados nem os combina: uma nota acessível explica a separação. QA sintético validou as rotas e 390/430/768/1366/1920 em claro/escuro, sem overflow ou violações Axe critical/serious no painel. Isso não certifica integração operacional das 35 posições.
+- `firestore.rules` permite acesso do proprietário ao documento; isso é análise estática, não prova de execução. Auth/Firestore Emulator já está bloqueado por falha local do runtime; sem nova hipótese, não repetido. Não existe writer Package 1 transacional testado; uma futura escrita precisa de transação que compare `updateTime`/hash e atualize somente `package1_v2`.
+- Validação: focused Package 1 18/18; Finance 120/120; Persistence 32/32; `npm test` PASS; Modern 823/823; `qa:all` PASS, incluindo smoke 390–1920 sem erros de console/overflow/IDs duplicados; regressão visual 19/19. `verify:release` bloqueou no gate esperado de identidade da branch/worktree e configuração Vercel ausente. Não enfraquecer esse gate.
+- `HOSTED_MUTATIONS=0`, `REAL_DATA_WRITES=0`, `PUSH=0`, `DEPLOY=0`. `READY_FOR_FINAL_WRITE_AUTHORIZATION=NO`: pendem reconciliação dos registros e vínculos de ações emprestadas, teste de rules em runtime, writer transacional com concorrência otimista e certificação da tela operacional para os dados V2.
+- Próximo passo: obter evidência de origem que resolva as divergências e vínculos de empréstimo; depois implementar e testar somente a transação condicional no campo embutido, executar Rules Emulator em ambiente compatível e refazer a revisão pré-escrita. Não autorizar nem executar escrita hospedada antes disso.
+
+## Integração local V2 e pré-escrita (histórico, 2026-10-14)
+
 - `package1_v2` é lido pelo caminho real de `applyCloudData` para um estado em memória separado. O leitor exige batch `INTER_CURRENT_POSITION_2026-10-10_V1`, custodiante `INTER` e data `2026-10-10`; ausente, inválido e leitor indisponível são estados distintos. O V2 não entra em `S` nem no localStorage legado.
-- Salvamentos legados omitem `package1_v2` do payload de `set(..., {merge:true})` para preservar a versão remota mais recente sem replay de uma cópia stale. Teste browser chama `applyCloudData`, `mergeCloudReferencePayload` e `uploadLocalToCloud` com Firestore falso local, incluindo corrida V2 concorrente e armazenamento sintético.
-- UI V2 mostra snapshot oficial, soma detalhada, gap e estado `PARTIAL` nas rotas principais. Não mescla nem renderiza novamente as 35 posições; a comparação de identidade/quantidade real permanece conflituosa e essa limitação evita duplicação. Portanto, certificação visual completa das listas Ativos/RF/P&L/IR continua pendente.
-- Leitura hospedada autorizada: um único `portfolios/{uid}` do projeto LEGACY foi capturado em backup privado ignorado pelo Git. Projeção local altera somente `package1_v2`; tamanho estimado permanece abaixo do limite do Firestore com margem. Não incluir snapshot, projeção ou dados pessoais no Git.
-- `firestore.rules` local permite leitura/escrita ao owner em `portfolios/{uid}`; não exige mudança de regra para o campo embutido. A prova runtime de rules não foi concluída: Auth/Firestore Emulator encerrou com erro fatal ao iniciar. Não inferir compatibilidade hospedada apenas do arquivo local.
-- Estado financeiro continua `PARTIAL`: oficial R$ 569.316,83; detalhe R$ 558.964,89; diferença R$ 10.351,94. Custos FIFO permanecem `DERIVED`, custos desconhecidos indisponíveis e divergências de quantidade não resolvidas.
-- Após o último ajuste: testes focados 11/11, `npm test`, `test:modern` (823/823), `qa:all` e regressão visual (19/19) passaram; `qa:all` reportou zero erros de console/página. `verify:release` bloqueia no gate esperado de branch/Vercel; não enfraquecer. O Auth/Firestore Emulator não iniciou, então compatibilidade runtime das rules segue não certificada. Não houve escrita hospedada.
-- Próximo: concluir regressão final e revisão independente; criar commit local após aprovação dos testes. Escrita real segue bloqueada por ausência de prova de rules em runtime, certificação UI completa das 35 posições e autorização humana específica para a mutação.
+- Salvamentos legados omitem `package1_v2` do payload de `set(..., {merge:true})` para preservar a versão remota mais recente sem replay de uma cópia stale. Testes sintéticos cobrem `applyCloudData`, `mergeCloudReferencePayload`, `uploadLocalToCloud` e salvamento local.
 
-## Mapeamento de schema legado/V2 (2026-10-14)
+## Mapeamento de schema legado/V2 (registro anterior, 2026-10-14)
 
 - O desenho local/sintético recomenda um único campo canônico `package1_v2` dentro de `portfolios/{uid}`. A regra atual de owner cobre esse documento; coleções top-level não têm regra e subcoleções exigiriam regras novas.
 - O adaptador isolado `package1-portfolio-schema-mapping.js` converte os 35 detalhes e o snapshot para um mapa V2 em uma unidade de escrita, sem ligar o app ou o Firebase a esse contrato. Totais permanecem apenas no snapshot; `reconciliation` contém estado/cobertura.
 - Testes sintéticos cobrem documento legado, legado+V2, V2 isolado, cobertura parcial, custo desconhecido, schema malformado, preservação do campo por merge legado, round-trip local e sete rotas no QA local. Isso não certifica leitura/renderização V2 pelo fluxo de produção.
 - `npm test`, `test:modern` (823/823), `qa:all`, regressão visual (19/19), `test:finance`, `test:persistence` e `git diff --check` passaram. `verify:deploy-identity` bloqueou corretamente esta worktree/branch e configuração Vercel ausente; o gate não foi alterado.
-- Nenhuma leitura hospedada foi feita nesta missão. Finance Core, Persistence Core, Firestore rules, Firebase e dados reais permaneceram intocados.
-- Próximo: implementar e testar separadamente a leitura V2 do documento no adapter/app, comprovar que `ProtectedCloudPersistence.mergePayload` não descarta `package1_v2`, medir o tamanho final do documento existente e testar rollback exato. Só então pedir gate específico de escrita hospedada; esta decisão não autoriza escrita.
+- Naquela etapa não houve leitura hospedada. Finance Core, Persistence Core, Firestore rules, Firebase e dados reais permaneceram intocados.
+- Estado à época: leitura hospedada, backup e integração no fluxo real ainda não tinham sido executados. A certificação atual está registrada acima e substitui este próximo passo histórico.
+
+## Package 1 dry-run anterior (histórico)
 
 1. Worktree `legacy-package1-final-write-safety`, branch `codex/legacy-package1-final-write-safety`; commits `b2fc6ea` (plano de escrita por IDs exatos) e `e4f8177` (APIs V2 opt-in em Finance/Persistence Core). Nenhum push, importação, escrita financeira real, merge ou deploy.
 2. Payload privado ignorado pelo Git: 35 posições e 1 snapshot oficial. As 25 evidências FIFO ficam em quarentena; 19 divergem na quantidade e nenhuma comprova preço médio verdadeiro. O plano simula 36 inserções somente para destinos declarados ausentes; repetição idêntica simula 36 inalterados.
@@ -1318,7 +1325,7 @@ Confirmar CI do novo HEAD da Draft #456 e revisar cadeia #456→#457 atualizada 
   2. Abrir Draft PR para revisão humana.
   3. Aguardar gate humano para revisão do Draft PR e decisão de merge.
   4. Após merge autorizado, preparar release de produção.
-# Package 1 V2 — prévia de UI sintética local (2026-10-14)
+# Package 1 V2 — prévia de UI sintética local (histórico, 2026-10-14)
 
 - A branch `codex/legacy-package1-final-write-safety` possui uma prévia V2 somente leitura, injetada apenas pelo QA local. Dashboard, Patrimônio, Ativos, Renda Fixa, Rentabilidade, IR e Dividendos exibem snapshot oficial separado do detalhe parcial; a rota legada continua sem essa prévia quando a flag está desligada.
 - O cenário com totais exatos fica em `.qa-state/package1/ui-synthetic-contract.json`, ignorado pelo Git. O teste versionado usa também números fictícios portáveis; nenhum documento ou posição financeira real foi incluído no commit.

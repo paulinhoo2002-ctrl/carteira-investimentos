@@ -52,6 +52,7 @@ test('embedded portfolio schema feeds all Package 1 synthetic UI routes without 
   try {
     await page.goto(server.url + '&testReadOnly=1', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => typeof S !== 'undefined' && !!document.querySelector('.test-mode-banner'));
+    await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') });
     const before = await page.evaluate(() => JSON.stringify({ assets: S.assets, aportes: S.aportes, proventos: S.proventos, rfEvents: S.rfEvents }));
     await page.addScriptTag({ path: path.join(ROOT, 'legacy/js/ui/package1-v2-qa.js') });
     const embedded = Mapping.toEmbeddedPackage1(packageFixture());
@@ -128,6 +129,19 @@ test('embedded portfolio schema feeds all Package 1 synthetic UI routes without 
     assert.equal(hydration.legacySaved,true,'V2 must stay outside legacy local storage');
     assert.deepEqual(hydration.malformed,{status:'INVALID',viewCleared:true,legacyCount:JSON.parse(before).assets.length});
     assert.deepEqual(hydration.unavailable,{status:'UNAVAILABLE',viewCleared:true,legacyCount:JSON.parse(before).assets.length});
+    const localSave=await page.evaluate(()=>{
+      const previous={localMode:isLocalTestMode,readOnly:isLocalTestReadOnlyMode,owner:canEditFromThisTab,queue:queueCloudSave};
+      isLocalTestMode=()=>false; isLocalTestReadOnlyMode=()=>false; canEditFromThisTab=()=>true; queueCloudSave=()=>{};
+      try{
+        const saved=save({queueCloud:false});
+        const stored=JSON.parse(localStorage.getItem('civ5')||'{}');
+        return {saved:saved===true,v2Persisted:Object.hasOwn(stored,'package1_v2'),hasSyntheticAssets:Array.isArray(stored.assets)};
+      }finally{
+        isLocalTestMode=previous.localMode; isLocalTestReadOnlyMode=previous.readOnly;
+        canEditFromThisTab=previous.owner; queueCloudSave=previous.queue;
+      }
+    });
+    assert.deepEqual(localSave,{saved:true,v2Persisted:false,hasSyntheticAssets:true});
     const mergeSafety=await page.evaluate(currentV2=>{
       const latest=structuredClone(currentV2);
       latest.import_batch_id='SYN_CONCURRENT_NEWER_BATCH';
@@ -168,18 +182,38 @@ test('embedded portfolio schema feeds all Package 1 synthetic UI routes without 
       }
     },productionPackage);
     assert.deepEqual(legacySave,{pass:true,setCalled:true,merge:true,outgoingHasV2:false,concurrentV2Preserved:true});
-    for (const route of routes) {
-      await page.evaluate(routeName => go(routeName), route);
-      const panel=page.locator('.package1-portfolio-summary');
-      await panel.waitFor();
-      assert.equal(await panel.getAttribute('data-reconciliation'),'PARTIAL');
-      const text=await panel.innerText();
-      assert.match(text,/R\$\s?140,00/);
-      assert.match(text,/R\$\s?132,00/);
-      assert.match(text,/R\$\s?8,00/);
-      assert.match(text,/lista legada/);
-      assert.equal(await page.locator('.package1-v2-qa').count(),0);
+    const detailCounts={dashboard:0,patrimonio:0,ativos:0,'renda-fixa':0,rentabilidade:0,irpf:0,dividendos:0};
+    for(const width of [390,430,768,1366,1920]){
+      await page.setViewportSize({width,height:900});
+      for(const theme of ['dark','light']){
+        await page.evaluate(themeName=>applyTheme(themeName),theme);
+        for (const route of routes) {
+          await page.evaluate(routeName => go(routeName), route);
+          const panel=page.locator('.package1-portfolio-summary');
+          await panel.waitFor();
+          assert.equal(await panel.getAttribute('data-reconciliation'),'PARTIAL');
+          const text=await panel.innerText();
+          assert.match(text,/R\$\s?140,00/);
+          assert.match(text,/R\$\s?132,00/);
+          assert.match(text,/R\$\s?8,00/);
+          const positionCards=page.locator('.package1-portfolio-summary__position');
+          assert.equal(await positionCards.count(),detailCounts[route],`${route}/${width}/${theme} canonical position count`);
+          if(['dashboard','patrimonio','ativos','renda-fixa','rentabilidade','irpf'].includes(route)){
+            assert.match(text,/conteúdo operacional legado abaixo foi preservado/);
+            assert.ok(await page.locator('.wrap > :not(.package1-portfolio-summary)').count()>0,`${route} operational screen must remain mounted`);
+          }
+          if(route==='rentabilidade') assert.match(text,/P&L parcial/);
+          if(route==='irpf') assert.match(text,/DERIVED 25 · MANUAL 0 · UNKNOWN 10/);
+          assert.equal(await page.evaluate(()=>new Set([...document.querySelectorAll('.package1-portfolio-summary__position')].map(card=>card.dataset.positionId)).size),detailCounts[route]);
+          assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`${route}/${width}/${theme} overflow`);
+          const a11y=await panel.evaluate(async element=>axe.run(element,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa']}}));
+          assert.deepEqual(a11y.violations.filter(item=>['critical','serious'].includes(item.impact)).map(item=>item.id),[],`${route}/${width}/${theme} V2 panel Axe`);
+          assert.equal(await page.locator('.package1-v2-qa').count(),0);
+        }
+      }
     }
+    await page.evaluate(()=>{S.hideValues=true;render();});
+    assert.doesNotMatch(await page.locator('.package1-portfolio-summary').innerText(),/R\$\s?\d/,'production V2 summary respects hidden-values preference');
     assert.equal(await page.evaluate(() => JSON.stringify({ assets: S.assets, aportes: S.aportes, proventos: S.proventos, rfEvents: S.rfEvents })), before);
     assert.deepEqual(errors, []);
   } finally {
