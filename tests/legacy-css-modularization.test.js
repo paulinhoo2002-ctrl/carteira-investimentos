@@ -16,7 +16,9 @@ const links = [...head.matchAll(/<link\b(?=[^>]*\bdata-legacy-css\b)[^>]*\bhref=
 test('legacy CSS is extracted into ordered external modules and pre-cached offline', () => {
   assert.ok(links.length >= 10, 'Expected named external CSS modules in the document head');
   assert.equal([...head.matchAll(/<style\b/gi)].length, 0, 'The main document should no longer embed screen CSS');
-  assert.equal([...html.matchAll(/<style\b/gi)].length, 2, 'Only runtime-generated print document CSS remains as markup text');
+  assert.equal([...html.matchAll(/<style\b/gi)].length, 1, 'Only runtime-generated print document CSS remains as markup text');
+  const irpfModuleSource = fs.readFileSync(path.join(root, 'legacy', 'js', 'screens', 'irpf.js'), 'utf8');
+  assert.equal([...irpfModuleSource.matchAll(/<style\b/gi)].length, 1, 'Extracted IRPF module keeps its runtime print-document CSS');
 
   const segments = [];
   for (const [, href] of links) {

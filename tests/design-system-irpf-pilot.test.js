@@ -4,15 +4,17 @@ const path = require('node:path');
 const test = require('node:test');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-const renderer = source.slice(source.indexOf('function irpfTabPremium()'), source.indexOf('\nfunction irpfTab(){'));
+const irpfModule = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'js', 'screens', 'irpf.js'), 'utf8');
+const combined = source + '\n' + irpfModule;
+const renderer = irpfModule.slice(irpfModule.indexOf('function irpfTabPremium()'), irpfModule.indexOf('\nfunction irpfTab(){'));
 
 test('IRPF adopts visual primitives without replacing its fiscal renderer', () => {
-  assert.match(source, /function irpfBuildYearReport\(year\)/);
-  assert.match(source, /function irpfTaxBucket\(type\)/);
-  assert.match(source, /function irpfProventoCategory\(p\)/);
-  assert.match(source, /function irpfSummaryMetrics\(report, year\)/);
-  assert.match(source, /function irpfExportCSV\(\)/);
-  assert.match(source, /function irpfExportPdf\(\)/);
+  assert.match(combined, /function irpfBuildYearReport\(year\)/);
+  assert.match(combined, /function irpfTaxBucket\(type\)/);
+  assert.match(combined, /function irpfProventoCategory\(p\)/);
+  assert.match(combined, /function irpfSummaryMetrics\(report, year\)/);
+  assert.match(combined, /function irpfExportCSV\(\)/);
+  assert.match(combined, /function irpfExportPdf\(\)/);
   assert.match(renderer, /class="irpf-summary-card ds-kpi/);
   assert.match(renderer, /class="sec irpf-section ds-panel ds-panel--readonly/);
   assert.match(renderer, /class="irpf-section-badge ds-badge/);

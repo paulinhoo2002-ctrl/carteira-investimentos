@@ -39,6 +39,9 @@ const APP_SHELL = [
   './legacy/js/screens/settings.js',
   './legacy/js/screens/assets.js',
   './legacy/js/screens/fixed-income.js',
+  './legacy/js/screens/patrimonio.js',
+  './legacy/js/screens/rentabilidade.js',
+  './legacy/js/screens/irpf.js',
 ];
 
 const NEVER_CACHE_PATHS = [

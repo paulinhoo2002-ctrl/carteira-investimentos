@@ -377,5 +377,6 @@ test('fluxo de impressÃ£o dos relatÃ³rios usa janela protegida com noopener 
   assert.equal(harness.counters.openCalls.length, 1);
   assert.equal(harness.counters.openCalls[0].features, 'noopener,noreferrer,width=900,height=700');
   const html = readIndexHtml();
-  assert.match(html, /window\.open\('about:blank', '_blank', 'noopener,noreferrer,width=1280,height=900'\)/);
+  const irpfModule = fs.readFileSync(path.join(__dirname, '..', 'legacy', 'js', 'screens', 'irpf.js'), 'utf8');
+  assert.match(html + '\n' + irpfModule, /window\.open\('about:blank', '_blank', 'noopener,noreferrer,width=1280,height=900'\)/);
 });
