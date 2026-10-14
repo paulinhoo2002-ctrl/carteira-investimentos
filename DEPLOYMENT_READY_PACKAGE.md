@@ -131,10 +131,20 @@ DEPLOY_EXECUTED=NO (local only)
 
 ## ROLLBACK STRATEGY
 
-If deployment issues arise:
-1. **Vercel rollback** to `dpl_Wa3L65ayNbjPEWhZiurnAAnePL3h` @ `a6b1d34` (last known clean LEGACY deploy)
-2. **Git revert** to `998a888` (pre-overnight state, all green)
-3. **SW cache bust**: bump SW_VERSION in sw.js to force fresh install
+Vercel Hobby tier limitations: rollback beyond the immediately previous production deployment requires Pro/Enterprise. Old deployments may be pruned. Never use Carteira 2.0 code as rollback.
+
+**PRIMARY_ROLLBACK** (preferred):
+- Vercel dashboard → Deployments → "Instant Rollback" to the immediately previous production deployment, if available and permitted by the Hobby plan.
+- This is the fastest path and requires no rebuild.
+
+**FALLBACK_ROLLBACK** (if instant rollback is unavailable):
+- Redeploy the last known verified LEGACY commit from this branch: `3a0a717` (HEAD at time of this package).
+- If the immediately previous deployment is also broken, redeploy from the last certified base: `998a888` or the last production-verified commit `a6b1d34`.
+- Command: `vercel --prod` from the worktree at the chosen commit, after `npm run verify:deploy-identity` passes.
+
+**NEVER** rollback using any code, commit, or project from Carteira 2.0 (`prj_ib6zLz3gPUXbEwJyZrK5hOo3Vjdp`). The deploy identity gate blocks this.
+
+**SW cache bust**: if a stale service worker causes issues, bump `SW_VERSION` in `sw.js` to force a fresh install on next load.
 
 ---
 
