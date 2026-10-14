@@ -1,3 +1,12 @@
+# Package 1 — próximo gate local (2026-10-14)
+
+1. Worktree `legacy-package1-final-write-safety`, branch `codex/legacy-package1-final-write-safety`; commits `b2fc6ea` (plano de escrita por IDs exatos) e `e4f8177` (APIs V2 opt-in em Finance/Persistence Core). Nenhum push, importação, escrita financeira real, merge ou deploy.
+2. Payload privado ignorado pelo Git: 35 posições e 1 snapshot oficial. As 25 evidências FIFO ficam em quarentena; 19 divergem na quantidade e nenhuma comprova preço médio verdadeiro. O plano simula 36 inserções somente para destinos declarados ausentes; repetição idêntica simula 36 inalterados.
+3. `npm ci --ignore-scripts` preservou o lockfile. Testes focados 125/125, `npm test`, Modern 823/823, `qa:all` e regressão visual 18/18 passaram. `verify:release` parou no gate de identidade de deploy, que exige a branch MEGA 12 e configuração Vercel ausente nesta worktree; o gate não foi afrouxado.
+4. Próximo: integrar o V2 nas telas reais com fixture sintética, validar Dashboard/Patrimônio/Ativos/RF/P&L/IR/Dividendos e ler os 36 destinos na base correta antes de criar backup exato. Não autorizar escrita final até essa certificação e aprovação humana específica. Detalhes em [PACKAGE1_WRITE_SAFETY_GATE.md](PACKAGE1_WRITE_SAFETY_GATE.md).
+
+---
+
 # MEGA 19 — próximo gate (2026-10-13)
 
 1. Worktree v012-mega-12-lifetime-redesign, branch codex/legacy-product-mega-12; código validado em f33ae01c81f56734d8a258fca0cfbe23748ec0fd. Relatório: [MEGA19_PRODUCT_CERTIFICATION.md](MEGA19_PRODUCT_CERTIFICATION.md). As seções seguintes são histórico.
