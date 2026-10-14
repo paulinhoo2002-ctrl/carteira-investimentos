@@ -95,6 +95,8 @@ document.write([
 </script>
 <script src="finance-core.js"></script>
 <script src="persistence-core.js"></script>
+<script src="package1-portfolio-schema-mapping.js"></script>
+<script src="legacy/js/ui/package1-portfolio-readonly.js"></script>
 <script src="backup-portability.js"></script>
 <script src="protected-local-cloud-authority.js?v=phase4i-authority-2"></script>
 <script src="portfolio-runtime-stores.js"></script>
@@ -318,6 +320,7 @@ let FB = {
   ready:false, app:null, auth:null, db:null, user:null,
   unsub:null, cloudLoaded:false, cloudStateModel:null, cloudSyncTimeoutTimer:null, applying:false, saveTimer:null, cloudRetryTimer:null, pendingCloudSave:false, lastCloudUpdate:null, lastCloudError:null,
   lastCloudSignature:'', authResolved:false, syncInFlight:false, securitySaving:false,
+  package1V2Status:'ABSENT', package1V2ReadView:null,
   readOnlyOfflineSnapshotReady:false, readOnlyOfflineSnapshotScope:'', readOnlyOfflineSnapshotSignature:'',
   access:{loaded:false,loading:true,allowed:false,reason:'',cfg:null,lastDeniedAt:null}
 };
@@ -2963,7 +2966,9 @@ function extractCloudActiveState(cloud={}){
 }
 function mergeCloudReferencePayload(payload, cloud){
   const helper=window.ProtectedCloudPersistence;
-  return helper?.mergePayload ? helper.mergePayload(payload, cloud) : payload;
+  return window.Package1PortfolioSchemaMapping.mergeLegacyCloudPayload(
+    payload, cloud, helper?.mergePayload ? helper.mergePayload.bind(helper) : null
+  );
 }
 function hasLocalData(){
   return (S.wallets&&S.wallets.length>1)||(S.assets&&S.assets.length)||(S.aportes&&S.aportes.length)||(S.proventos&&S.proventos.length)||(Number(S.divGoal)||0)||(S.goals&&JSON.stringify(normalizeGoals(S.goals))!==JSON.stringify(normalizeGoals()));
@@ -3026,6 +3031,22 @@ async function applyCloudData(d){
       pendingCloudSave:true,
     });
     return false;
+  }
+  try{
+    const reader=window.Package1PortfolioSchemaMapping?.readCurrentPackage1;
+    if(typeof reader!=='function'){
+      FB.package1V2Status='UNAVAILABLE';
+      FB.package1V2ReadView=null;
+      debugWarn('Package 1 V2 reader unavailable; legacy hydration continues.');
+    }else{
+      const embedded=reader(d);
+      FB.package1V2Status=embedded?.status||'ABSENT';
+      FB.package1V2ReadView=embedded?.status==='PRESENT'?embedded.view:null;
+    }
+  }catch(error){
+    FB.package1V2Status='INVALID';
+    FB.package1V2ReadView=null;
+    debugWarn('Package 1 V2 indisponível; hidratação legada preservada.',{code:String(error?.message||'PACKAGE1_V2_INVALID')});
   }
   FB.applying=true;
   const before=cloudSnapshotSignature();
@@ -18213,6 +18234,9 @@ function render(){
     if(preserveScroll && !scrollRestorePoint && !preserveQuoteUI) rememberScroll();
     syncBodyModalLock();
     root.innerHTML=withRenderCycleReportCache(()=>app());
+    if(FB.package1V2Status==='PRESENT' && FB.package1V2ReadView && window.Package1PortfolioReadonlyUi){
+      window.Package1PortfolioReadonlyUi.mount(root,S.tab,FB.package1V2ReadView);
+    }
     if(isLocalTestReadOnlyMode() && window.Package1V2Qa) window.Package1V2Qa.mount(root,S.tab);
     bind();
     renderPortfolioSearch();
@@ -18230,6 +18254,9 @@ function render(){
       try{
         S.tab='dashboard';
         root.innerHTML=withRenderCycleReportCache(()=>app());
+        if(FB.package1V2Status==='PRESENT' && FB.package1V2ReadView && window.Package1PortfolioReadonlyUi){
+          window.Package1PortfolioReadonlyUi.mount(root,S.tab,FB.package1V2ReadView);
+        }
         bind();
         renderPortfolioSearch();
         debugWarn(`A aba "${failedTab}" falhou ao abrir. Dashboard carregado como proteção.`);

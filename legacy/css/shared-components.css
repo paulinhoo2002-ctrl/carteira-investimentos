@@ -668,3 +668,14 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   /* ===== Barras de alocação por classe ===== */
     .dashboard-class-bar{grid-column:1/-1;height:4px;border-radius:999px;background:rgba(148,163,184,.14);overflow:hidden}
     .dashboard-class-bar i{display:block;height:100%;border-radius:999px}
+
+  /* Package 1 read-only official snapshot summary */
+  .package1-portfolio-summary{margin:12px auto;padding:16px;max-width:1180px;border:1px solid var(--border);border-left:4px solid var(--warning,#d89a24);border-radius:var(--pd-radius-md,12px);background:var(--surface);color:var(--text)}
+  .package1-portfolio-summary h2{margin:0 0 12px;font-size:16px;font-weight:750}
+  .package1-portfolio-summary__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0}
+  .package1-portfolio-summary__grid>div{min-width:0;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-raised,var(--surface))}
+  .package1-portfolio-summary__grid dt{color:var(--muted);font-size:12px}
+  .package1-portfolio-summary__grid dd{margin:4px 0 0;font-size:clamp(16px,2vw,20px);font-weight:750;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+  .package1-portfolio-summary__state,.package1-portfolio-summary__note{margin:10px 0 0;font-size:13px;line-height:1.5}
+  .package1-portfolio-summary__state{font-weight:700}
+  @media(max-width:600px){.package1-portfolio-summary{margin:10px 0;padding:12px}.package1-portfolio-summary__grid{grid-template-columns:1fr}.package1-portfolio-summary__grid>div{display:flex;align-items:baseline;justify-content:space-between;gap:10px}.package1-portfolio-summary__grid dd{text-align:right}}

@@ -132,3 +132,38 @@ test('legacy cloud merge preserves one canonical embedded V2 copy and has exact 
   assert.equal(after[Mapping.FIELD].official_snapshot.total_official, 140);
   assert.equal(after[Mapping.FIELD].reconciliation.detail_coverage, 'PARTIAL');
 });
+
+test('production legacy merge omits V2 to prevent stale overwrite and Firestore merge preserves latest value', () => {
+  const packageV2=Mapping.buildPortfolioFieldUpdate(syntheticPackage())[Mapping.FIELD];
+  const cloud={assets:[{id:'SYN_LEGACY'}],[Mapping.FIELD]:packageV2};
+  const payload={assets:[{id:'SYN_UPDATED'}]};
+  const dropping=Mapping.mergeLegacyCloudPayload(payload,cloud,()=>({assets:payload.assets}));
+  assert.equal(Object.hasOwn(dropping,Mapping.FIELD),false);
+  const mutating=Mapping.mergeLegacyCloudPayload(payload,cloud,()=>({assets:payload.assets,[Mapping.FIELD]:{schema_version:999}}));
+  assert.equal(Object.hasOwn(mutating,Mapping.FIELD),false);
+  assert.equal(Object.hasOwn(payload,Mapping.FIELD),false);
+  const concurrentV2=structuredClone(packageV2);
+  concurrentV2.import_batch_id='SYN_NEWER_BATCH';
+  const latestCloud={...cloud,[Mapping.FIELD]:concurrentV2};
+  const afterLegacySet=Mapping.simulateLegacyMerge(latestCloud,dropping);
+  assert.deepEqual(afterLegacySet[Mapping.FIELD],concurrentV2,'legacy merge must preserve concurrent newer V2');
+});
+
+test('current Package 1 boundary rejects a coherent but wrong batch, custodian, or as-of date',()=>{
+  const current=Mapping.buildPortfolioFieldUpdate(syntheticPackage())[Mapping.FIELD];
+  current.import_batch_id='INTER_CURRENT_POSITION_2026-10-10_V1';
+  current.custodian_id='INTER';
+  current.official_snapshot.import_batch_id=current.import_batch_id;
+  current.official_snapshot.custodian_id=current.custodian_id;
+  for(const position of current.detail_positions){
+    position.import_batch_id=current.import_batch_id;
+    position.custodian_id=current.custodian_id;
+  }
+  assert.equal(Mapping.readCurrentPackage1({[Mapping.FIELD]:current}).status,'PRESENT');
+  for(const mutate of [value=>{value.import_batch_id='SYN_WRONG_BATCH';value.official_snapshot.import_batch_id=value.import_batch_id;value.detail_positions.forEach(row=>row.import_batch_id=value.import_batch_id);},
+    value=>{value.custodian_id='OTHER';value.official_snapshot.custodian_id='OTHER';value.detail_positions.forEach(row=>row.custodian_id='OTHER');},
+    value=>{value.as_of='2026-10-09';value.official_snapshot.as_of='2026-10-09';value.detail_positions.forEach(row=>row.as_of='2026-10-09');}]){
+    const wrong=structuredClone(current); mutate(wrong);
+    assert.throws(()=>Mapping.readCurrentPackage1({[Mapping.FIELD]:wrong}),/PACKAGE1_IMPORT_IDENTITY_MISMATCH/);
+  }
+});

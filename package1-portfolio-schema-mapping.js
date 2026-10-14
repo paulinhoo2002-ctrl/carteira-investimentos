@@ -1,10 +1,23 @@
 'use strict';
 
-// Local design adapter only. It does not connect to Firestore or persistence.
-const PersistenceCore = require('./persistence-core');
+// Schema adapter only. It never connects to Firestore or performs writes.
+(function(root, factory){
+  const persistence = root.PersistenceCore || (typeof require==='function' ? require('./persistence-core') : null);
+  const api=factory(persistence);
+  if(typeof module==='object' && module.exports) module.exports=api;
+  else root.Package1PortfolioSchemaMapping=api;
+})(typeof globalThis!=='undefined'?globalThis:window, function(PersistenceCore){
+'use strict';
+
+if(!PersistenceCore?.buildPackage1ReadOnlyView) throw new Error('PACKAGE1_PERSISTENCE_CORE_UNAVAILABLE');
 
 const FIELD = 'package1_v2';
 const SCHEMA_VERSION = 1;
+const CURRENT_IMPORT = Object.freeze({
+  import_batch_id: 'INTER_CURRENT_POSITION_2026-10-10_V1',
+  custodian_id: 'INTER',
+  as_of: '2026-10-10'
+});
 
 function clone(value) {
   return value === undefined ? undefined : JSON.parse(JSON.stringify(value));
@@ -73,6 +86,17 @@ function readEmbeddedPackage1(portfolioDocument) {
   return { status: 'PRESENT', value: clone(value), view: safe };
 }
 
+function readCurrentPackage1(portfolioDocument) {
+  const result=readEmbeddedPackage1(portfolioDocument);
+  if(result.status!=='PRESENT') return result;
+  const {value}=result;
+  if(value.import_batch_id!==CURRENT_IMPORT.import_batch_id ||
+     value.custodian_id!==CURRENT_IMPORT.custodian_id || value.as_of!==CURRENT_IMPORT.as_of) {
+    throw new Error('PACKAGE1_IMPORT_IDENTITY_MISMATCH');
+  }
+  return result;
+}
+
 function buildPortfolioFieldUpdate(packageData) {
   return { [FIELD]: toEmbeddedPackage1(packageData) };
 }
@@ -94,12 +118,26 @@ function simulateLegacyMerge(portfolioDocument, legacyCloudPayload) {
   return { ...clone(portfolioDocument), ...clone(legacyCloudPayload) };
 }
 
-module.exports = {
+function mergeLegacyCloudPayload(payload, cloud, mergeHelper) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new Error('LEGACY_PAYLOAD_INVALID');
+  const merged=typeof mergeHelper==='function' ? mergeHelper(payload, cloud) : payload;
+  if (!merged || typeof merged !== 'object' || Array.isArray(merged)) throw new Error('LEGACY_MERGE_INVALID');
+  // Omit the V2 field from legacy set(..., {merge:true}) payloads. Firestore
+  // preserves omitted fields, while copying an old V2 value could overwrite
+  // a newer Package 1 update that arrived after the legacy read.
+  return Object.fromEntries(Object.entries(merged).filter(([key])=>key!==FIELD));
+}
+
+return {
   FIELD,
   SCHEMA_VERSION,
+  CURRENT_IMPORT,
   toEmbeddedPackage1,
   readEmbeddedPackage1,
+  readCurrentPackage1,
   buildPortfolioFieldUpdate,
   simulateFieldUpdate,
-  simulateLegacyMerge
+  simulateLegacyMerge,
+  mergeLegacyCloudPayload
 };
+});

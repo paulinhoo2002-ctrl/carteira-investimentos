@@ -1,5 +1,17 @@
 # Package 1 — próximo gate local (2026-10-14)
 
+## Integração local V2 e pré-escrita (2026-10-14)
+
+- Identidade revalidada na worktree `legacy-package1-final-write-safety`, branch `codex/legacy-package1-final-write-safety`. Commit local `307dc29` contém o mapeamento inicial; a integração seguinte permanece local e não publicada.
+- `package1_v2` é lido pelo caminho real de `applyCloudData` para um estado em memória separado. O leitor exige batch `INTER_CURRENT_POSITION_2026-10-10_V1`, custodiante `INTER` e data `2026-10-10`; ausente, inválido e leitor indisponível são estados distintos. O V2 não entra em `S` nem no localStorage legado.
+- Salvamentos legados omitem `package1_v2` do payload de `set(..., {merge:true})` para preservar a versão remota mais recente sem replay de uma cópia stale. Teste browser chama `applyCloudData`, `mergeCloudReferencePayload` e `uploadLocalToCloud` com Firestore falso local, incluindo corrida V2 concorrente e armazenamento sintético.
+- UI V2 mostra snapshot oficial, soma detalhada, gap e estado `PARTIAL` nas rotas principais. Não mescla nem renderiza novamente as 35 posições; a comparação de identidade/quantidade real permanece conflituosa e essa limitação evita duplicação. Portanto, certificação visual completa das listas Ativos/RF/P&L/IR continua pendente.
+- Leitura hospedada autorizada: um único `portfolios/{uid}` do projeto LEGACY foi capturado em backup privado ignorado pelo Git. Projeção local altera somente `package1_v2`; tamanho estimado permanece abaixo do limite do Firestore com margem. Não incluir snapshot, projeção ou dados pessoais no Git.
+- `firestore.rules` local permite leitura/escrita ao owner em `portfolios/{uid}`; não exige mudança de regra para o campo embutido. A prova runtime de rules não foi concluída: Auth/Firestore Emulator encerrou com erro fatal ao iniciar. Não inferir compatibilidade hospedada apenas do arquivo local.
+- Estado financeiro continua `PARTIAL`: oficial R$ 569.316,83; detalhe R$ 558.964,89; diferença R$ 10.351,94. Custos FIFO permanecem `DERIVED`, custos desconhecidos indisponíveis e divergências de quantidade não resolvidas.
+- Após o último ajuste: testes focados 11/11, `npm test`, `test:modern` (823/823), `qa:all` e regressão visual (19/19) passaram; `qa:all` reportou zero erros de console/página. `verify:release` bloqueia no gate esperado de branch/Vercel; não enfraquecer. O Auth/Firestore Emulator não iniciou, então compatibilidade runtime das rules segue não certificada. Não houve escrita hospedada.
+- Próximo: concluir regressão final e revisão independente; criar commit local após aprovação dos testes. Escrita real segue bloqueada por ausência de prova de rules em runtime, certificação UI completa das 35 posições e autorização humana específica para a mutação.
+
 ## Mapeamento de schema legado/V2 (2026-10-14)
 
 - O desenho local/sintético recomenda um único campo canônico `package1_v2` dentro de `portfolios/{uid}`. A regra atual de owner cobre esse documento; coleções top-level não têm regra e subcoleções exigiriam regras novas.
