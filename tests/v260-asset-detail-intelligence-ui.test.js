@@ -6,7 +6,7 @@ const html = fs.readFileSync('index.html', 'utf8');
 const engineSource = fs.readFileSync('asset-detail-intelligence.js', 'utf8');
 
 test('V260 conecta os motores certificados ao detalhe do ativo sem duplicar cálculo', () => {
-  assert.match(html, /<script src="asset-detail-intelligence\.js"><\/script>/);
+  assert.match(html, /<script defer src="asset-detail-intelligence\.js"><\/script>/);
   assert.match(html, /options:detailIntelligenceOptions/);
   assert.match(html, /v257QualityModel\(\)/);
   assert.match(html, /v258MonitoringModel\(detailQualityModel\)/);

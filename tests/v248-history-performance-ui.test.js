@@ -5,7 +5,7 @@ const { readLegacyHtml } = require('./helpers/read-legacy-html.cjs');
 const index = readLegacyHtml();
 
 test('V248 carrega o engine histórico puro na superfície legada', () => {
-  assert.match(index, /<script src="historical-performance-engine\.js"><\/script>/);
+  assert.match(index, /<script defer src="historical-performance-engine\.js"><\/script>/);
   assert.match(index, /function v248HistoricalPerformanceSnapshot\(\)/);
 });
 

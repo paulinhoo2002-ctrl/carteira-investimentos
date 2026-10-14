@@ -77,7 +77,7 @@ test('chart module loads before app callers and participates in build and offlin
   // Normalize line endings for reliable indexOf checks
   const normalizedHtml = html.replace(/\r\n/g, '\n');
   const moduleTag = normalizedHtml.indexOf('<script src="legacy/js/ui/charts.js"></script>');
-  const settingsModuleTag = normalizedHtml.indexOf('<script src="legacy/js/screens/settings.js"></script>');
+  const settingsModuleTag = normalizedHtml.indexOf('<script defer src="legacy/js/screens/settings.js"></script>');
   const dashboardModuleTag = normalizedHtml.indexOf('<script src="legacy/js/screens/dashboard-executive-kpis.js"></script>');
   const allocationModuleTag = normalizedHtml.indexOf('<script src="legacy/js/screens/dashboard-allocation.js"></script>');
   const appTag = normalizedHtml.indexOf('<script>\n(()=>{if(window.__LOCAL_TEST_MODE__) return;');

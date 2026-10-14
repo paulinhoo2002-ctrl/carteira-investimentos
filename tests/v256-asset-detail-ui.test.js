@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const html = fs.readFileSync('index.html', 'utf8');
 
 test('V256 carrega o modelo read-only de inteligência do detalhe', () => {
-  assert.match(html, /<script src="asset-detail-intelligence\.js"><\/script>/);
+  assert.match(html, /<script defer src="asset-detail-intelligence\.js"><\/script>/);
   assert.match(html, /AssetDetailIntelligence\?\.buildAssetDetailIntelligence/);
   assert.match(html, /data-asset-intelligence="true"/);
 });
