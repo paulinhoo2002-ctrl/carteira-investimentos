@@ -22,11 +22,17 @@
     panel.setAttribute('aria-labelledby','package1-portfolio-summary-title');
     const heading=root.document.createElement('h2');
     heading.id='package1-portfolio-summary-title';
-    text(heading,`Posição oficial · ${labels[route]}`);
+    text(heading,`${labels[route]} · Posição oficial`);
     const grid=root.document.createElement('dl');
     grid.className='package1-portfolio-summary__grid';
     const hideValues=options.hideValues===true;
-    const metrics=[['Total oficial',summary.officialTotal],['Detalhe disponível',summary.detailTotal],['Diferença sem detalhe',summary.reconciliationGap]];
+    const metrics=[
+      ['Total oficial',summary.officialTotal],
+      ['RV oficial',summary.rvOfficial],
+      ['RF oficial',summary.rfOfficial],
+      ['Detalhe disponível',summary.detailTotal],
+      ['Diferença sem detalhe',summary.reconciliationGap]
+    ];
     for(const [name,value] of metrics){
       const item=root.document.createElement('div');
       const term=text(root.document.createElement('dt'),name);
@@ -61,6 +67,16 @@
       const note=root.document.createElement('p');
       note.className='package1-portfolio-summary__note';
       text(note,'Recebido — · esperado —. Esta posição não fornece cobertura de proventos; ausência não confirma zero.');
+      panel.append(note);
+    }else if(route==='ativos'){
+      const note=root.document.createElement('p');
+      note.className='package1-portfolio-summary__note';
+      text(note,'Totais operacionais abaixo usam cotações disponíveis; diferem do total oficial certificado.');
+      panel.append(note);
+    }else if(route==='renda-fixa'){
+      const note=root.document.createElement('p');
+      note.className='package1-portfolio-summary__note';
+      text(note,'KPIs de RF operacionais usam valores explícitos das posições; total oficial inclui itens não detalhados.');
       panel.append(note);
     }
 

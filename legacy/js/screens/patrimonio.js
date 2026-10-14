@@ -68,17 +68,39 @@
       </div>`;
     }).join('') : '<div class="premium-empty">Sem ativos com cotação atual para ranquear.</div>';
 
+    // Package 1A official totals
+    const hasP1A = typeof globalThis.Package1A !== 'undefined' && typeof globalThis.Package1A.computeTotals === 'function';
+    const p1aTotals = hasP1A && data?.snapshot ? globalThis.Package1A.computeTotals(data.snapshot) : null;
+    const officialTotal = p1aTotals ? p1aTotals.total : null;
+    const officialRV = p1aTotals ? p1aTotals.rv : null;
+    const officialRF = p1aTotals ? p1aTotals.rf : null;
+    const reconciliationGap = hasP1A && data?.snapshot ? globalThis.Package1A.computeGaps(data.snapshot) : null;
+    const gapTotal = reconciliationGap ? reconciliationGap.total_gap : null;
+    const gapRV = reconciliationGap ? reconciliationGap.rv_gap : null;
+    const gapRF = reconciliationGap ? reconciliationGap.rf_gap : null;
+    
+    const showOfficial = officialTotal !== null;
+    const primaryTotal = showOfficial ? officialTotal : (currentKnown ? tC : null);
+    const primaryLabel = showOfficial ? 'Patrimônio oficial' : 'Patrimônio total';
+    const primarySub = showOfficial 
+      ? `Total certificado Inter · Gap detalhamento ${gapTotal !== null ? fmt(gapTotal) : '—'}`
+      : (currentKnown ? undefined : data.availability.note);
+    const primaryClass = showOfficial ? 'semantic-official' : '';
+    const badge = showOfficial 
+      ? '<span class="ds-badge ds-badge--official" style="margin-left:8px;font-size:9px">OFICIAL</span>' 
+      : '<span class="ds-badge ds-badge--operational" style="margin-left:8px;font-size:9px">OPERACIONAL</span>';
+
     return `<div class="patrimonio-premium">
       <div class="patrimonio-hero">
         <div class="patrimonio-head">
-          <div><h1 class="patrimonio-title">Patrimônio</h1><div class="patrimonio-subtitle">Composição atual e aportes registrados; histórico patrimonial indisponível.</div></div>
+          <div><h1 class="patrimonio-title">Patrimônio${badge}</h1><div class="patrimonio-subtitle">Composição atual e aportes registrados; histórico patrimonial indisponível.</div></div>
           <div class="patrimony-reading">${resultKnown ? data.reading.text : 'Valores parciais ou sem base aplicada completa. Resultado atual indisponível (' + data.availability.note + ').'}</div>
         </div>
         <div class="patrimonio-kpis">
-          <div class="patrimonio-kpi patrimonio-kpi-main">
-            <div class="patrimonio-kpi-label">Patrimônio total</div>
-            <div class="patrimonio-kpi-value">${currentKnown ? fmt(tC) : '—'}</div>
-            ${!currentKnown ? `<div class="patrimonio-kpi-sub">${esc(data.availability.note)}</div>` : ''}
+          <div class="patrimonio-kpi patrimonio-kpi-main ${primaryClass}">
+            <div class="patrimonio-kpi-label">${primaryLabel}</div>
+            <div class="patrimonio-kpi-value">${currentKnown ? fmt(primaryTotal) : '—'}</div>
+            ${primarySub ? `<div class="patrimonio-kpi-sub">${esc(primarySub)}</div>` : ''}
           </div>
           <div class="patrimonio-kpi">
             <div class="patrimonio-kpi-label">Resultado atual</div>

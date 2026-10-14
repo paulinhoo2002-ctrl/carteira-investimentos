@@ -19,6 +19,13 @@
   --accent:var(--primary);
   --stale:#fbbf24;
   --manual:#c084fc;
+  /* ═══ OFFICIAL vs OPERATIONAL SEMANTIC HIERARCHY ═══ */
+  --semantic-official:#4f46e5;    /* primary purple - official authority */
+  --semantic-partial:#f59e0b;     /* amber - partial reconciliation */
+  --semantic-operational:#60a5fa; /* blue - legacy operational */
+  --semantic-official-bg:rgba(79,70,229,.12);
+  --semantic-partial-bg:rgba(245,158,11,.12);
+  --semantic-operational-bg:rgba(96,165,250,.12);
   --shadow:0 18px 50px rgba(0,0,0,.28);
   --fs-xs:10px;
   --fs-sm:11px;
@@ -102,6 +109,13 @@ html[data-theme="light"]{
   --accent:var(--primary);
   --stale:#8a5a00;
   --manual:#6b3fa0;
+  /* ═══ OFFICIAL vs OPERATIONAL SEMANTIC HIERARCHY ═══ */
+  --semantic-official:#4057d6;
+  --semantic-partial:#854d0e;
+  --semantic-operational:#2f6fd1;
+  --semantic-official-bg:rgba(64,87,214,.12);
+  --semantic-partial-bg:rgba(133,77,14,.12);
+  --semantic-operational-bg:rgba(47,111,209,.12);
   --shadow:0 8px 24px rgba(15,23,42,.08);
   --shadow-sm:0 2px 12px rgba(15,23,42,.08);
   --shadow-md:0 8px 24px rgba(15,23,42,.08);
@@ -170,6 +184,32 @@ html[data-theme="light"]{
 .ds-badge--negative{border-color:color-mix(in srgb,var(--ds-negative) 28%,var(--ds-border));background:color-mix(in srgb,var(--ds-negative) 8%,transparent);color:var(--ds-negative)}
 .ds-badge--warning{border-color:color-mix(in srgb,var(--ds-warning) 28%,var(--ds-border));background:color-mix(in srgb,var(--ds-warning) 8%,transparent);color:var(--ds-warning)}
 .ds-badge--info{border-color:color-mix(in srgb,var(--ds-info) 28%,var(--ds-border));background:color-mix(in srgb,var(--ds-info) 8%,transparent);color:var(--ds-info)}
+/* ═══ SEMANTIC HIERARCHY BADGES ═══ */
+.ds-badge--official{border-color:color-mix(in srgb,var(--semantic-official) 35%,var(--ds-border));background:var(--semantic-official-bg);color:var(--semantic-official)}
+.ds-badge--partial{border-color:color-mix(in srgb,var(--semantic-partial) 35%,var(--ds-border));background:var(--semantic-partial-bg);color:var(--semantic-partial)}
+.ds-badge--operational{border-color:color-mix(in srgb,var(--semantic-operational) 35%,var(--ds-border));background:var(--semantic-operational-bg);color:var(--semantic-operational)}
+
+/* Semantic KPI card variants */
+.ds-kpi--official .ds-kpi__value{color:var(--semantic-official)}
+.ds-kpi--partial .ds-kpi__value{color:var(--semantic-partial)}
+.ds-kpi--operational .ds-kpi__value{color:var(--semantic-operational)}
+.ds-kpi--official{border-color:color-mix(in srgb,var(--semantic-official) 28%,var(--ds-border));background:var(--semantic-official-bg)}
+.ds-kpi--partial{border-color:color-mix(in srgb,var(--semantic-partial) 28%,var(--ds-border));background:var(--semantic-partial-bg)}
+.ds-kpi--operational{border-color:color-mix(in srgb,var(--semantic-operational) 28%,var(--ds-border));background:var(--semantic-operational-bg)}
+
+/* Patrimônio semantic-official class */
+.semantic-official{border-left:3px solid var(--semantic-official)}
+.semantic-official .patrimonio-kpi-value{color:var(--semantic-official)}
+.semantic-official .patrimonio-kpi-label{color:var(--semantic-official)}
+
+/* Tooltip for semantic context */
+.semantic-tooltip{position:relative;cursor:help}
+.semantic-tooltip::after{content:attr(data-tooltip);position:absolute;bottom:125%;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 8px;font-size:var(--fs-xs);color:var(--muted);white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+.semantic-tooltip:hover::after{opacity:1}
+@media(max-width:640px){
+  .semantic-tooltip::after{font-size:9px;padding:4px 6px;max-width:280px;white-space:normal}
+}
+
 .ds-empty-state{padding:var(--ds-space-6) var(--ds-space-4);border:1px dashed var(--ds-border);border-radius:var(--ds-radius-control);background:var(--ds-surface-subtle);color:var(--ds-text-secondary);font-size:11px;line-height:1.45;text-align:center}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;font-size:14px;overflow-x:hidden;transition:background .2s ease,color .2s ease}
