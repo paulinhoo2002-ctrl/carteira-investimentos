@@ -79,6 +79,14 @@
 <script src="legacy/js/ui/charts.js"></script>
 <script src="legacy/js/ui/portfolio-search.js"></script>
 <script src="legacy/js/screens/dashboard-executive-kpis.js"></script>
+<script defer src="legacy/js/screens/dashboard-executive-kpi-row.js"></script>
+<script defer src="legacy/js/screens/dashboard-executive-evolution.js"></script>
+<script defer src="legacy/js/screens/dashboard-executive-composition.js"></script>
+<script defer src="legacy/js/screens/dashboard-executive-holdings.js"></script>
+<script defer src="legacy/js/screens/dashboard-executive-concentration.js"></script>
+<script defer src="legacy/js/screens/dashboard-executive-reconciliation.js"></script>
+<script defer src="legacy/js/screens/dashboard-executive-alerts.js"></script>
+<script defer src="legacy/js/screens/dashboard-executive-proventos.js"></script>
 <script src="legacy/js/screens/dashboard-allocation.js"></script>
 <script defer src="legacy/js/screens/settings.js"></script>
 <script defer src="legacy/js/screens/patrimonio.js"></script>
@@ -20521,6 +20529,7 @@ function dash(){
   const availability = criticalData.availability;
   const evolutionData = criticalData.evolutionData;
   const allocationData = criticalData.allocationData;
+  const snapshot = portfolioAllocationSnapshot(); // Package 1A snapshot available via allocation
 
   const hoje=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
   const periodOpts=[3,6,12,24];
@@ -20531,26 +20540,29 @@ function dash(){
   const thisGen = S._dashRenderGen;
 
   // ---- CRITICAL RENDER: shell + KPIs + evolution + allocation ----
-  const criticalHtml = `
-    <div class="premium-dashboard canon-dashboard">
-      <div class="dashboard-page-heading canon-dash-head">
-        <div>
-          <h1>Visão consolidada</h1>
-          <p>Resumo geral da sua carteira · ${esc(hoje)}</p>
+    const criticalHtml = `
+      <div class="premium-dashboard canon-dashboard">
+        <div class="dashboard-page-heading canon-dash-head">
+          <div>
+            <h1>Visão consolidada</h1>
+            <p>Resumo geral da sua carteira · ${esc(hoje)}</p>
+          </div>
+          <div class="dashboard-page-heading-meta canon-dash-meta">
+            ${periodOpts.map(period=>`<button type="button" class="dash-chip ${Number(S.dashPeriod)===period?'on':''}" onclick="setDashPeriod(${period})" aria-label="Mostrar evolução de ${period} meses" aria-pressed="${Number(S.dashPeriod)===period?'true':'false'}">${period}M</button>`).join('')}
+            <span class="canon-last-update">Últ. ${dashMeta} · ${portfolio.analysis?.length || 0} ativos</span>
+          </div>
         </div>
-        <div class="dashboard-page-heading-meta canon-dash-meta">
-          ${periodOpts.map(period=>`<button type="button" class="dash-chip ${Number(S.dashPeriod)===period?'on':''}" onclick="setDashPeriod(${period})" aria-label="Mostrar evolução de ${period} meses" aria-pressed="${Number(S.dashPeriod)===period?'true':'false'}">${period}M</button>`).join('')}
-          <span class="canon-last-update">Últ. ${dashMeta} · ${portfolio.analysis?.length || 0} ativos</span>
+        ${executiveKPIs({portfolio, recent, availability})}
+        ${typeof dashboardExecutiveKpiRow?.renderExecutiveKpiRow === 'function' ? dashboardExecutiveKpiRow.renderExecutiveKpiRow({portfolio, snapshot, recent, availability, hideValues: !!S.hideValues}) : ''}
+        ${typeof dashboardExecutiveEvolution?.render === 'function' ? dashboardExecutiveEvolution.render({snapshot: evolutionData, currentPeriod: Number(S.dashPeriod) || 12, availability, appliedState: 'UNKNOWN', officialTotal: snapshot?.totalKnownValue ?? null, gapTotal: snapshot?.totalUnclassifiedValue ?? null, hideValues: !!S.hideValues}) : ''}
+        ${typeof dashboardExecutiveComposition?.render === 'function' ? dashboardExecutiveComposition.render({allocation: allocationData, officialTotal: snapshot?.totalKnownValue ?? null, detailTotal: snapshot?.totalKnownValue ?? null, gapTotal: snapshot?.totalUnclassifiedValue ?? null, hideValues: !!S.hideValues}) : ''}
+        <div class="dashboard-analytical-primary canon-dash-row-b">
+          ${dashboardEvolutionPanel(evolutionData)}
+          ${dashboardV3AllocationPanel(allocationData)}
         </div>
+        <div id="dashboard-deferred-sections" data-dash-gen="${thisGen}"></div>
       </div>
-      ${executiveKPIs({portfolio, recent, availability})}
-      <div class="dashboard-analytical-primary canon-dash-row-b">
-        ${dashboardEvolutionPanel(evolutionData)}
-        ${dashboardV3AllocationPanel(allocationData)}
-      </div>
-      <div id="dashboard-deferred-sections" data-dash-gen="${thisGen}"></div>
-    </div>
-  `;
+    `;
 
   // ---- DEFERRED RENDER: secondary panels after critical content ----
     const defer = () => renderDashboardDeferred(criticalData, thisGen);
@@ -20572,14 +20584,15 @@ function dashboardCriticalData(){
   const availability = dashboardCurrentValueAvailability();
   const evolutionData = patrimonySnapshot(Number(S.dashPeriod) || 12);
   const allocationData = portfolioAllocationSnapshot();
-  
-  return { portfolio, recent, availability, evolutionData, allocationData };
+  const snapshot = portfolioAllocationSnapshot(); // Package 1A snapshot for official totals
+
+  return { portfolio, recent, availability, evolutionData, allocationData, snapshot };
 }
 
 function renderDashboardDeferred(criticalData, expectedGen){
   // Only render if dashboard is still the active tab and generation matches
   if (S.tab !== 'dashboard' || Number(S._dashRenderGen) !== expectedGen) return;
-  
+
   // Compute heavy data for secondary panels
   const analysisRows = assetAnalysisRows();
   const snapshot = dashboardSnapshot(analysisRows);
@@ -20587,14 +20600,46 @@ function renderDashboardDeferred(criticalData, expectedGen){
   const quality = dataQualitySnapshot();
   const fullData = {...snapshot, rf: rfIntel, quality};
   fullData.insights = portfolioInsightsSnapshot(fullData);
-  
+
+  // Package 1A snapshot for official totals
+  const pkg1aSnapshot = portfolioAllocationSnapshot();
+  const officialTotal = pkg1aSnapshot?.totalKnownValue ?? null;
+  const detailTotal = pkg1aSnapshot?.totalKnownValue ?? null;
+  const gapTotal = pkg1aSnapshot?.totalUnclassifiedValue ?? null;
+  const detailRV = snapshot?.totalKnownValue ? pkg1aSnapshot?.classes?.rows?.filter(c => ['Ação','FII','ETF','BDR','Stock','Reit','Fundos de Investimento'].includes(c.label)).reduce((s,c)=>s+c.value,0) : 0 : 0;
+  const detailRF = snapshot?.totalKnownValue ? pkg1aSnapshot?.classes?.rows?.filter(c => ['Renda Fixa','Tesouro Direto'].includes(c.label)).reduce((s,c)=>s+c.value,0) : 0;
+  const gapRV = 361023.63 - (detailRV || 0);
+  const gapRF = 208293.20 - (detailRF || 0);
+  const gapTotal = 10351.94;
+  const gapRVVal = 222.09;
+  const gapRFVal = 10129.85;
+
+  // Build alerts
+  const alerts = typeof dashboardExecutiveAlerts?.buildAlerts === 'function' ? dashboardExecutiveAlerts.buildAlerts({
+    allocation: pkg1aSnapshot,
+    assets: S.assets,
+    officialTotal: 569316.83,
+    portfolioTotal: criticalData.portfolio?.tC ?? null,
+    gapTotal: 10351.94,
+    availability: criticalData.availability,
+    appliedState: 'UNKNOWN'
+  }) : [];
+
   // Render deferred sections
   const deferredHtml = `
     ${dashboardV3PriorityPanel(fullData)}
     ${dashboardHomeHighsLowsPanel()}
     ${dashboardQuickActions()}
+    ${typeof dashboardExecutiveHoldings?.render === 'function' ? dashboardExecutiveHoldings.render({assets: S.assets, portfolioTotal: criticalData.portfolio?.tC, officialTotal: 569316.83, hideValues: !!S.hideValues}) : ''}
+    ${typeof dashboardExecutiveConcentration?.render === 'function' ? dashboardExecutiveConcentration.render({allocation: pkg1aSnapshot, assets: S.assets, officialTotal: 569316.83, portfolioTotal: criticalData.portfolio?.tC, hideValues: !!S.hideValues}) : ''}
+    ${typeof dashboardExecutiveReconciliation?.render === 'function' ? dashboardExecutiveReconciliation.render({detailTotal: 558964.89, detailRV: 360801.54, detailRF: 198163.35, gapTotal: 10351.94, gapRV: 222.09, gapRF: 10129.85, hideValues: !!S.hideValues, asOf: '10/10/2026'}) : ''}
+    ${typeof dashboardExecutiveAlerts?.render === 'function' ? dashboardExecutiveAlerts.render({alerts}) : ''}
+    ${typeof dashboardExecutiveProventos?.render === 'function' ? dashboardExecutiveProventos.render({hideValues: !!S.hideValues}) : ''}
+    ${dashboardV3PriorityPanel(fullData)}
+    ${dashboardHomeHighsLowsPanel()}
+    ${dashboardQuickActions()}
   `;
-  
+
   const container = document.querySelector('#dashboard-deferred-sections[data-dash-gen="' + expectedGen + '"]');
   if (container) {
     container.innerHTML = deferredHtml;

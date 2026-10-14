@@ -31,7 +31,7 @@
     const patrimonyValue = ['UNKNOWN', 'NO_DATA'].includes(availability.state) || totalCurrent === null ? '—' : fmt(totalCurrent);
     const investedContext = totalApplied === null ? 'Capital aplicado indisponível' : totalApplied > 0 ? `Investido ${fmt(totalApplied)}` : 'Sem capital aplicado';
     const patrimonyNote = availability.state === 'AVAILABLE' && totalCurrent === 0 ? 'Valor conhecido: zero' : availability.note;
-    
+
     // Package 1A official totals (if available)
     const hasP1A = typeof root !== 'undefined' && root.Package1A && typeof root.Package1A.computeTotals === 'function';
     const p1aTotals = hasP1A && data?.snapshot ? root.Package1A.computeTotals(data.snapshot) : null;
@@ -40,12 +40,12 @@
     const officialRF = p1aTotals ? p1aTotals.rf : null;
     const reconciliationGap = hasP1A && data?.snapshot ? root.Package1A.computeGaps(data.snapshot) : null;
     const gapTotal = reconciliationGap ? reconciliationGap.total_gap : null;
-    
+
     // Determine which total to show as primary
     const showOfficial = officialTotal !== null;
     const primaryValue = showOfficial ? fmt(officialTotal) : patrimonyValue;
     const primaryLabel = showOfficial ? 'Patrimônio oficial' : 'Patrimônio atual';
-    const primarySub = showOfficial 
+    const primarySub = showOfficial
       ? `Total certificado Inter · ${gapTotal !== null ? `Gap detalhamento ${fmt(gapTotal)}` : 'Data-base 10/10/2026'}`
       : `${investedContext} · ${patrimonyNote} · Base operacional`;
     const primaryClass = showOfficial ? 'ds-kpi--official' : 'ds-kpi--operational';
