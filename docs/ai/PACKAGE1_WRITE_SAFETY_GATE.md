@@ -28,6 +28,13 @@ separate from the partial detail sum. Each record has the same immutable batch
 ID. Exact target IDs are in the ignored local payload. No document ID is
 generated at write time.
 
+Finance Core and Persistence Core now expose opt-in, read-only V2 functions.
+They validate observed current values and the official snapshot while keeping
+cost and P&L unavailable when cost is unverified. Legacy storage and its
+existing formulas remain unchanged. A future legacy-to-V2 migration must
+receive explicit source, date and custodian evidence; the old fields alone
+are insufficient and are not migrated automatically.
+
 The local planner requires an explicit read result for each of the 36 target
 IDs. If all are absent, it simulates 36 inserts; the identical second run
 simulates 36 unchanged records. Existing identical records are unchanged.
@@ -48,9 +55,8 @@ IDs, document content, official and detail totals, and validate the real UI.
 
 - Database/project identity and live target state have not been read. Actual
   insert count and prewrite backup are unknown.
-- Finance Core and persistence do not yet consume Position V2 or the official
-  snapshot. The standalone preview test does not certify backward compatibility
-  in the real application.
+- The application screens do not yet mount the opt-in V2 view. Core unit tests
+  establish API compatibility, but cannot certify the full UI.
 - Dashboard, Patrimônio, Ativos, Renda Fixa, P&L, IR and Dividendos have not
   been certified against the final payload in the real UI.
 - Hosted writes require a separate explicit authorization after protected

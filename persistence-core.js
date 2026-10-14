@@ -123,6 +123,85 @@
     return JSON.parse(raw || '{}');
   }
 
+  // Opt-in Package 1 boundary. No V2 document is added to legacy storage.
+  function package1Cents(value) {
+    if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 ||
+        !Number.isSafeInteger(Math.round(value * 100)) ||
+        Math.abs(value * 100 - Math.round(value * 100)) > 0.00001) return null;
+    return Math.round(value * 100);
+  }
+
+  function normalizePositionV2(position) {
+    if (!isRecord(position) || position.schema_version !== 2 ||
+        !String(position.document_id || '').trim() || !String(position.custodian_id || '').trim() ||
+        !String(position.asset_id || '').trim() || !String(position.asset_type || '').trim() ||
+        !/^\d{4}-\d{2}-\d{2}$/.test(position.as_of || '') ||
+        typeof position.quantity !== 'number' || !Number.isFinite(position.quantity) || position.quantity < 0 ||
+        package1Cents(position.current_value) === null ||
+        !isRecord(position.provenance) || !String(position.provenance.source_id || '').trim() ||
+        !Array.isArray(position.source_ids) || !position.source_ids.length ||
+        position.source_ids.some(id => !String(id || '').trim()) ||
+        !String(position.import_batch_id || '').trim() ||
+        !String(position.created_at || '').trim() || !String(position.updated_at || '').trim() ||
+        position.reconciliation_status !== 'PARTIAL') throw new Error('POSITION_V2_INVALID');
+    if (position.average_cost_status !== 'UNKNOWN' || position.average_cost !== null) {
+      throw new Error('AVERAGE_COST_UNCERTIFIED');
+    }
+    if (position.cost_basis_status === 'UNKNOWN') {
+      if (position.cost_basis_value !== null || position.cost_method !== null) throw new Error('COST_BASIS_INVALID');
+    } else if (position.cost_basis_status === 'DERIVED') {
+      if (package1Cents(position.cost_basis_value) === null || position.cost_method !== 'FIFO') {
+        throw new Error('COST_BASIS_INVALID');
+      }
+    } else throw new Error('COST_BASIS_INVALID');
+    return sanitizeBackupValue(position);
+  }
+
+  function normalizeAccountSnapshotV1(snapshot) {
+    if (!isRecord(snapshot) || snapshot.schema_version !== 1 ||
+        !String(snapshot.snapshot_id || '').trim() || snapshot.snapshot_id !== snapshot.document_id ||
+        !String(snapshot.custodian_id || '').trim() || !/^\d{4}-\d{2}-\d{2}$/.test(snapshot.as_of || '') ||
+        !String(snapshot.import_batch_id || '').trim() ||
+        !isRecord(snapshot.provenance) || !String(snapshot.provenance.source_id || '').trim() ||
+        snapshot.reconciliation_status !== 'PARTIAL') throw new Error('SNAPSHOT_INVALID');
+    const fields = ['rv_official', 'rf_official', 'total_official', 'rv_detail_sum', 'rf_detail_sum',
+      'detail_total', 'rv_gap', 'rf_gap', 'total_gap'];
+    const cents = {};
+    for (const field of fields) {
+      cents[field] = package1Cents(snapshot[field]);
+      if (cents[field] === null) throw new Error('SNAPSHOT_INVALID');
+    }
+    if (cents.rv_official + cents.rf_official !== cents.total_official ||
+        cents.rv_detail_sum + cents.rf_detail_sum !== cents.detail_total ||
+        cents.rv_official - cents.rv_detail_sum !== cents.rv_gap ||
+        cents.rf_official - cents.rf_detail_sum !== cents.rf_gap ||
+        cents.total_official - cents.detail_total !== cents.total_gap) {
+      throw new Error('SNAPSHOT_TOTAL_MISMATCH');
+    }
+    return sanitizeBackupValue(snapshot);
+  }
+
+  function buildPackage1ReadOnlyView(positions, snapshot) {
+    if (!Array.isArray(positions)) throw new Error('PACKAGE1_POSITIONS_INVALID');
+    const safeSnapshot = normalizeAccountSnapshotV1(snapshot);
+    const safePositions = positions.map(normalizePositionV2);
+    const ids = new Set();
+    let rv = 0;
+    let rf = 0;
+    for (const position of safePositions) {
+      if (position.custodian_id !== safeSnapshot.custodian_id || position.as_of !== safeSnapshot.as_of ||
+          position.import_batch_id !== safeSnapshot.import_batch_id) throw new Error('PACKAGE1_SCOPE_MISMATCH');
+      if (ids.has(position.document_id)) throw new Error('PACKAGE1_DUPLICATE_ID');
+      ids.add(position.document_id);
+      if (position.asset_type.startsWith('RV')) rv += package1Cents(position.current_value);
+      else if (position.asset_type === 'RF') rf += package1Cents(position.current_value);
+      else throw new Error('PACKAGE1_ASSET_TYPE_INVALID');
+    }
+    if (rv !== package1Cents(safeSnapshot.rv_detail_sum) ||
+        rf !== package1Cents(safeSnapshot.rf_detail_sum)) throw new Error('PACKAGE1_DETAIL_MISMATCH');
+    return { positions: safePositions, snapshot: safeSnapshot, mode: 'READ_ONLY' };
+  }
+
   function applyStorageTransaction(storage, stateKey, configKey, nextStateRaw, nextConfigRaw) {
     const required = ['getItem', 'setItem', 'removeItem'];
     const invalid = !storage || required.some(name => typeof storage[name] !== 'function');
@@ -261,6 +340,9 @@
     buildBackupState,
     serializeStoredState,
     parseStoredState,
+    normalizePositionV2,
+    normalizeAccountSnapshotV1,
+    buildPackage1ReadOnlyView,
     createBackupPayload,
     parseBackupRaw,
     backupStats

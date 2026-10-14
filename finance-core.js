@@ -69,6 +69,46 @@
     return Number.isFinite(v.rentab) ? v.rentab : null;
   }
 
-  const api={configure,assetAppliedValue,assetCurrentValue,assetJurosValue,assetRentabPct};
+  // Package 1 is an opt-in read-only view; legacy asset calculations stay unchanged.
+  function positionV2Metrics(position){
+    const value=position?.current_value;
+    if(position?.schema_version!==2 || typeof value!=='number' || !Number.isFinite(value) || value<0 ||
+       typeof position.quantity!=='number' || !Number.isFinite(position.quantity) || position.quantity<0 ||
+       position.average_cost_status!=='UNKNOWN' || position.average_cost!==null ||
+       position.reconciliation_status!=='PARTIAL') throw new Error('POSITION_V2_INVALID');
+    const costStatus=position.cost_basis_status;
+    if(costStatus!=='UNKNOWN' && costStatus!=='DERIVED') throw new Error('POSITION_V2_INVALID');
+    if(costStatus==='UNKNOWN' && (position.cost_basis_value!==null || position.cost_method!==null)) throw new Error('POSITION_V2_INVALID');
+    if(costStatus==='DERIVED' && (position.cost_method!=='FIFO' || typeof position.cost_basis_value!=='number' ||
+       !Number.isFinite(position.cost_basis_value) || position.cost_basis_value<0)) throw new Error('POSITION_V2_INVALID');
+    return {currentValue:value,averageCost:null,appliedValue:null,pnl:null,
+      averageCostStatus:'UNKNOWN',costBasisStatus:costStatus,reconciliationStatus:'PARTIAL'};
+  }
+
+  function accountSnapshotSummary(snapshot){
+    if(snapshot?.schema_version!==1 || snapshot.reconciliation_status!=='PARTIAL' ||
+       typeof snapshot.as_of!=='string') throw new Error('SNAPSHOT_INVALID');
+    const fields=['rv_official','rf_official','total_official','rv_detail_sum','rf_detail_sum','detail_total','rv_gap','rf_gap','total_gap'];
+    const cents={};
+    for(const field of fields){
+      const value=snapshot[field];
+      if(typeof value!=='number' || !Number.isFinite(value) || value<0 ||
+         Math.abs(value*100-Math.round(value*100))>0.00001) throw new Error('SNAPSHOT_INVALID');
+      cents[field]=Math.round(value*100);
+    }
+    if(cents.rv_official+cents.rf_official!==cents.total_official ||
+       cents.rv_detail_sum+cents.rf_detail_sum!==cents.detail_total ||
+       cents.rv_official-cents.rv_detail_sum!==cents.rv_gap ||
+       cents.rf_official-cents.rf_detail_sum!==cents.rf_gap ||
+       cents.total_official-cents.detail_total!==cents.total_gap) throw new Error('SNAPSHOT_TOTAL_MISMATCH');
+    const amount=field=>cents[field]/100;
+    return {rvOfficial:amount('rv_official'),rfOfficial:amount('rf_official'),
+      officialTotal:amount('total_official'),rvDetail:amount('rv_detail_sum'),
+      rfDetail:amount('rf_detail_sum'),detailTotal:amount('detail_total'),
+      reconciliationGap:amount('total_gap'),reconciliationStatus:'PARTIAL',asOf:snapshot.as_of};
+  }
+
+  const api={configure,assetAppliedValue,assetCurrentValue,assetJurosValue,assetRentabPct,
+    positionV2Metrics,accountSnapshotSummary};
   return api;
 });
