@@ -18213,6 +18213,7 @@ function render(){
     if(preserveScroll && !scrollRestorePoint && !preserveQuoteUI) rememberScroll();
     syncBodyModalLock();
     root.innerHTML=withRenderCycleReportCache(()=>app());
+    if(isLocalTestReadOnlyMode() && window.Package1V2Qa) window.Package1V2Qa.mount(root,S.tab);
     bind();
     renderPortfolioSearch();
     const nextSearch=focusedSearch && document.getElementById(focusedSearch.id);

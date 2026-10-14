@@ -1297,3 +1297,8 @@ Confirmar CI do novo HEAD da Draft #456 e revisar cadeia #456→#457 atualizada 
   2. Abrir Draft PR para revisão humana.
   3. Aguardar gate humano para revisão do Draft PR e decisão de merge.
   4. Após merge autorizado, preparar release de produção.
+# Package 1 V2 — prévia de UI sintética local (2026-10-14)
+
+- A branch `codex/legacy-package1-final-write-safety` possui uma prévia V2 somente leitura, injetada apenas pelo QA local. Dashboard, Patrimônio, Ativos, Renda Fixa, Rentabilidade, IR e Dividendos exibem snapshot oficial separado do detalhe parcial; a rota legada continua sem essa prévia quando a flag está desligada.
+- O cenário com totais exatos fica em `.qa-state/package1/ui-synthetic-contract.json`, ignorado pelo Git. O teste versionado usa também números fictícios portáveis; nenhum documento ou posição financeira real foi incluído no commit.
+- A prévia não consulta Firebase, não importa, não grava e não substitui a UI de produção. Próximo gate: descoberta controlada do destino de banco e certificação autenticada em ambiente isolado, por missão autorizada; escrita final continua bloqueada.
