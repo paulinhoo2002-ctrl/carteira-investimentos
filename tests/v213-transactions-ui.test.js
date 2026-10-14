@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const html = fs.readFileSync('index.html', 'utf8');
 
 test('loads the V213 transaction trust helper before the application', () => {
-  assert.match(html, /<script src="v213-transaction-trust\.js"><\/script>/);
+  assert.match(html, /<script defer src="v213-transaction-trust\.js"><\/script>/);
 });
 
 test('keeps accessible read-only transaction productivity controls', () => {

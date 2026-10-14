@@ -372,7 +372,7 @@ test('R10: Legacy rentBenchSeries does NOT execute old synthetic implementation'
 });
 
 test('R10b: Adapter loads after legacy rentability globals are defined', () => {
-  const adapterTag = indexHtml.indexOf('<script src="v283-rentability-adapter.js"></script>');
+  const adapterTag = indexHtml.indexOf('<script defer src="v283-rentability-adapter.js"></script>');
   const legacyHistory = indexHtml.indexOf('function rentabilityHistory(');
   assert.ok(adapterTag >= 0, 'Rentability adapter script tag exists');
   assert.ok(legacyHistory >= 0, 'Legacy history function exists for compatibility');
