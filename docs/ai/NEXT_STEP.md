@@ -1,5 +1,14 @@
 # Package 1 — próximo gate local (2026-10-14)
 
+## Mapeamento de schema legado/V2 (2026-10-14)
+
+- O desenho local/sintético recomenda um único campo canônico `package1_v2` dentro de `portfolios/{uid}`. A regra atual de owner cobre esse documento; coleções top-level não têm regra e subcoleções exigiriam regras novas.
+- O adaptador isolado `package1-portfolio-schema-mapping.js` converte os 35 detalhes e o snapshot para um mapa V2 em uma unidade de escrita, sem ligar o app ou o Firebase a esse contrato. Totais permanecem apenas no snapshot; `reconciliation` contém estado/cobertura.
+- Testes sintéticos cobrem documento legado, legado+V2, V2 isolado, cobertura parcial, custo desconhecido, schema malformado, preservação do campo por merge legado, round-trip local e sete rotas no QA local. Isso não certifica leitura/renderização V2 pelo fluxo de produção.
+- `npm test`, `test:modern` (823/823), `qa:all`, regressão visual (19/19), `test:finance`, `test:persistence` e `git diff --check` passaram. `verify:deploy-identity` bloqueou corretamente esta worktree/branch e configuração Vercel ausente; o gate não foi alterado.
+- Nenhuma leitura hospedada foi feita nesta missão. Finance Core, Persistence Core, Firestore rules, Firebase e dados reais permaneceram intocados.
+- Próximo: implementar e testar separadamente a leitura V2 do documento no adapter/app, comprovar que `ProtectedCloudPersistence.mergePayload` não descarta `package1_v2`, medir o tamanho final do documento existente e testar rollback exato. Só então pedir gate específico de escrita hospedada; esta decisão não autoriza escrita.
+
 1. Worktree `legacy-package1-final-write-safety`, branch `codex/legacy-package1-final-write-safety`; commits `b2fc6ea` (plano de escrita por IDs exatos) e `e4f8177` (APIs V2 opt-in em Finance/Persistence Core). Nenhum push, importação, escrita financeira real, merge ou deploy.
 2. Payload privado ignorado pelo Git: 35 posições e 1 snapshot oficial. As 25 evidências FIFO ficam em quarentena; 19 divergem na quantidade e nenhuma comprova preço médio verdadeiro. O plano simula 36 inserções somente para destinos declarados ausentes; repetição idêntica simula 36 inalterados.
 3. `npm ci --ignore-scripts` preservou o lockfile. Testes focados 125/125, `npm test`, Modern 823/823, `qa:all` e regressão visual 18/18 passaram. `verify:release` parou no gate de identidade de deploy, que exige a branch MEGA 12 e configuração Vercel ausente nesta worktree; o gate não foi afrouxado.
