@@ -223,23 +223,31 @@
       return { ok: false, error, rollbackErrors: [], previousStateRaw, previousConfigRaw };
     }
     try {
-      storage.setItem(stateKey, nextStateRaw);
-      storage.setItem(configKey, nextConfigRaw);
-      return { ok: true, previousStateRaw, previousConfigRaw };
-    } catch (error) {
-      const rollbackErrors = [];
-      const restore = (key, value) => {
-        try {
-          if (value === null) storage.removeItem(key);
-          else storage.setItem(key, value);
-        } catch (rollbackError) {
-          rollbackErrors.push(rollbackError);
+          storage.setItem(stateKey, nextStateRaw);
+          storage.setItem(configKey, nextConfigRaw);
+          return { ok: true, previousStateRaw, previousConfigRaw };
+        } catch (error) {
+          // Explicit QuotaExceededError handling - localStorage quota exceeded
+          // Preserve original QuotaExceededError; wrap other quota-like errors
+          if (error && error.name === 'QuotaExceededError') {
+            // Already a proper QuotaExceededError, keep as-is
+          } else if (error && (error.code === 22 || /quota|storage/i.test(error.message))) {
+            error = new Error(`QUOTA_EXCEEDED: localStorage quota exceeded. Cannot save state. Current state size: ${nextStateRaw.length} chars.`);
+            error.name = 'QuotaExceededError';
+          }
+          const rollbackErrors = [];
+          const restore = (key, value) => {
+            try {
+              if (value === null) storage.removeItem(key);
+              else storage.setItem(key, value);
+            } catch (rollbackError) {
+              rollbackErrors.push(rollbackError);
+            }
+          };
+          restore(stateKey, previousStateRaw);
+          restore(configKey, previousConfigRaw);
+          return { ok: false, error, rollbackErrors, previousStateRaw, previousConfigRaw };
         }
-      };
-      restore(stateKey, previousStateRaw);
-      restore(configKey, previousConfigRaw);
-      return { ok: false, error, rollbackErrors, previousStateRaw, previousConfigRaw };
-    }
   }
 
   function createBackupPayload(state, config, options = {}) {
