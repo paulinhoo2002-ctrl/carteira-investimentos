@@ -4,6 +4,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const PersistenceCore = require('../persistence-core');
 const Mapping = require('../package1-portfolio-schema-mapping');
+const Package1A = require('../legacy/js/package1-snapshot');
 
 function syntheticPackage() {
   const asOf = '2026-10-10';
@@ -67,8 +68,21 @@ test('embedded schema maps 36 source records into one atomic portfolio field upd
   assert.equal(embedded.schema_version, 1);
   assert.equal(embedded.detail_positions.length, 35);
   assert.equal(embedded.official_snapshot.total_official, 140);
+  assert.equal(embedded.custodian_id, 'inter');
+  assert.equal(embedded.official_snapshot.custodian_id, 'inter');
+  assert.ok(embedded.detail_positions.every(position => position.custodian_id === 'inter'));
   assert.equal(embedded.reconciliation.status, 'PARTIAL');
   assert.equal(embedded.reconciliation.detail_coverage, 'PARTIAL');
+  assert.equal(embedded.reconciliation.detail_status, 'PARTIAL');
+  assert.equal(embedded.reconciliation.position_detail_operational, false);
+  assert.deepEqual(embedded.coverage, { detail_status: 'PARTIAL', position_detail_operational: false });
+  assert.equal(Package1A.validatePackage1A(embedded).valid, true);
+  assert.deepEqual(Package1A.computeGaps(embedded), { rv_gap: 2, rf_gap: 6, total_gap: 8 });
+  assert.deepEqual(Package1A.computeGaps({ reconciliation: { status: 'PARTIAL' } }),
+    { rv_gap: null, rf_gap: null, total_gap: null });
+  const operational = structuredClone(embedded);
+  operational.reconciliation.position_detail_operational = true;
+  assert.equal(Package1A.validatePackage1A(operational).valid, false);
   assert.equal(embedded.detail_positions.filter(position => position.cost_basis_status === 'DERIVED').length, 25);
   assert.equal(embedded.detail_positions.filter(position => position.cost_basis_status === 'UNKNOWN').length, 10);
   assert.ok(embedded.detail_positions.every(position => position.average_cost === null));
@@ -152,7 +166,7 @@ test('production legacy merge omits V2 to prevent stale overwrite and Firestore 
 test('current Package 1 boundary rejects a coherent but wrong batch, custodian, or as-of date',()=>{
   const current=Mapping.buildPortfolioFieldUpdate(syntheticPackage())[Mapping.FIELD];
   current.import_batch_id='INTER_CURRENT_POSITION_2026-10-10_V1';
-  current.custodian_id='INTER';
+  current.custodian_id='inter';
   current.official_snapshot.import_batch_id=current.import_batch_id;
   current.official_snapshot.custodian_id=current.custodian_id;
   for(const position of current.detail_positions){

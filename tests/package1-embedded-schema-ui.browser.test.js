@@ -85,12 +85,12 @@ test('embedded portfolio schema feeds all Package 1 synthetic UI routes without 
     // this call; no cloud SDK/network is used and all persisted values are synthetic.
     const productionPackage=structuredClone(embedded);
     productionPackage.import_batch_id='INTER_CURRENT_POSITION_2026-10-10_V1';
-    productionPackage.custodian_id='INTER';
+    productionPackage.custodian_id='inter';
     productionPackage.official_snapshot.import_batch_id=productionPackage.import_batch_id;
-    productionPackage.official_snapshot.custodian_id='INTER';
+    productionPackage.official_snapshot.custodian_id='inter';
     for(const position of productionPackage.detail_positions){
       position.import_batch_id=productionPackage.import_batch_id;
-      position.custodian_id='INTER';
+      position.custodian_id='inter';
     }
     const hydration=await page.evaluate(async package1 => {
       window.Package1V2Qa=null;

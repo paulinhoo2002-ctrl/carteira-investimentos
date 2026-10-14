@@ -100,6 +100,9 @@
     }
     if (!payload.reconciliation) return { valid: false, reason: 'MISSING_RECONCILIATION' }
     if (payload.reconciliation.status !== 'PARTIAL') return { valid: false, reason: 'INVALID_STATUS' }
+    if (payload.reconciliation.detail_status !== 'PARTIAL' || payload.reconciliation.position_detail_operational !== false) {
+      return { valid: false, reason: 'INVALID_DETAIL_OPERATIONAL_STATE' };
+    }
     return { valid: true };
   }
 
@@ -123,10 +126,11 @@
   function computeGaps(package1A) {
     if (!package1A || !package1A.reconciliation) return null;
     const r = package1A.reconciliation;
+    const snapshot = package1A.official_snapshot || {};
     return {
-      rv_gap: r.rv_gap ?? 0,
-      rf_gap: r.rf_gap ?? 0,
-      total_gap: r.total_gap ?? 0,
+      rv_gap: typeof r.rv_gap === 'number' ? r.rv_gap : typeof snapshot.rv_gap === 'number' ? snapshot.rv_gap : null,
+      rf_gap: typeof r.rf_gap === 'number' ? r.rf_gap : typeof snapshot.rf_gap === 'number' ? snapshot.rf_gap : null,
+      total_gap: typeof r.total_gap === 'number' ? r.total_gap : typeof snapshot.total_gap === 'number' ? snapshot.total_gap : null,
     };
   }
 
