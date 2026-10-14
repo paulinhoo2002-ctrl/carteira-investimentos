@@ -25,7 +25,9 @@ const MATRIX_VIEWPORTS = [
   { width: 1536, height: 864 },
   { width: 1920, height: 1080 },
 ];
-const INTERNAL_ROUTES = new Set(['ranking', 'desempenho', 'patrimonio']);
+const INTERNAL_ROUTES = new Set(['ranking', 'patrimonio']);
+// Routes that go() redirects to a different tab (not stable S.tab values)
+const REDIRECTED_ROUTES = new Set(['desempenho', 'importacao']);
 
 async function createRuntime(viewport) {
   const harness = await startLocalHttpServer(path.join(__dirname, '..'));
@@ -119,9 +121,10 @@ async function assertSyntheticReadOnlyRuntime(runtime) {
 }
 
 async function directRoutes(page) {
-  return page.evaluate(excludedRoutes => [...new Set(
-    [...content.toString().matchAll(/if\(S\.tab===['"]([^'"]+)['"]\)/g)].map(match => match[1])
-  )].filter(route => !excludedRoutes.includes(route)), [...INTERNAL_ROUTES]);
+  const indexHtml = await page.evaluate(() => content.toString());
+  return [...new Set(
+    [...indexHtml.matchAll(/if\(S\.tab===['"]([^'"]+)['"]\)/g)].map(match => match[1])
+  )].filter(route => !INTERNAL_ROUTES.has(route) && !REDIRECTED_ROUTES.has(route));
 }
 
 async function setThemeAndRoute(page, theme, route) {
@@ -129,7 +132,9 @@ async function setThemeAndRoute(page, theme, route) {
     applyTheme(theme);
     go(route);
   }, { theme, route });
-  await page.waitForFunction(route => S.tab === route, route);
+  // Wait for the actual resulting tab (handles redirects like 'desempenho' -> 'ativos', 'importacao' -> 'dashboard')
+  const expectedTab = route === 'desempenho' ? 'ativos' : route === 'importacao' ? 'dashboard' : route;
+  await page.waitForFunction(expectedTab => S.tab === expectedTab, expectedTab);
 }
 
 async function inspectLayout(page) {
@@ -553,12 +558,14 @@ test('Patrimônio mantém valores correntes e base aplicada indisponíveis quand
       S.tab = 'patrimonio';
       render();
     });
+    // Wait for patromônio screen content to render (handles deferred module load)
+    await runtime.page.waitForSelector('.patrimonio-premium', { timeout: 5000 });
     await runtime.page.waitForFunction(() => S.tab === 'patrimonio');
     const current = await runtime.page.locator('.patrimonio-kpi-main .patrimonio-kpi-value').innerText();
     const result = await runtime.page.locator('.patrimonio-kpi').nth(1).innerText();
     assert.equal(current.trim(), '—', 'total da carteira parcial não pode parecer completo');
     assert.match(result, /indisponível|parcial|incompleta/i, 'resultado não pode ser calculado com valores correntes parciais');
-    assert.equal(await runtime.page.locator('.patrimony-month-row').count(), 1, 'meses sem movimento não podem aparecer como aporte acumulado zero');
+    assert.equal(await runtime.page.locator('.patrimonio-month-row').count(), 1, 'meses sem movimento não podem aparecer como aporte acumulado zero');
     await runtime.page.evaluate(() => {
       S.assets.forEach(asset => { asset.avg_price = null; asset.appliedValue = null; });
       render();
