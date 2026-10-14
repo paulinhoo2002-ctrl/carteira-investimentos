@@ -1,3 +1,14 @@
+# Continuação Package 1 — writer local e reconciliação mista (2026-10-14)
+
+- Branch autorizada `codex/legacy-package1-final-write-safety`: writer transacional injetável implementado em `package1-transaction-writer.js`. Exige projeto LEGACY, UID e caminho exatos, lote esperado, hash do payload, hash do documento e `updateTime` lido dentro da transação. A comparação preserva segundos/nanos do Firestore; alterações de campos legados, presença prévia do campo V2 e mudanças submilissegundo abortam antes de `update`.
+- O writer e o rollback foram exercitados somente com transações falsas locais. O rollback atualiza/deleta apenas `package1_v2`, condicionado ao lote/hash corrente, e preserva alterações posteriores em campos legados. Nenhum cliente Firestore ou chamada hospedada foi executado pelo módulo.
+- Política `package1-mixed-source-policy.js`: apenas `EXACT_CERTIFIED_MATCH` troca o legado pela posição V2; posições não resolvidas continuam no legado, e V2 sem contraparte certificada fica excluído da visão operacional. O cenário real privado selecionou 36 linhas legadas, excluiu 35 V2 não certificados e encontrou zero duplicidade.
+- Tabela completa de 35 posições e apêndice de cinco posições somente legadas foram materializados exclusivamente em `.qa-state/package1/position-reconciliation-final-private.json`, ignorado pelo Git. Classificações: 21 `LIKELY_MATCH`, seis `QUANTITY_CONFLICT`, quatro `LOAN_RELATION_UNKNOWN` e quatro `V2_ONLY`; nenhuma posição foi promovida a correspondência certificada.
+- Uma leitura hospedada mascarada e autorizada confirmou o projeto LEGACY, o mesmo `updateTime` do backup privado e ausência de `package1_v2`. Backup não precisou ser renovado. A projeção privada foi recalculada; somente o campo `package1_v2` seria adicionado. Writer e rollback foram simulados novamente contra essa versão; nenhum write hospedado ocorreu.
+- Rules: validação de sintaxe via Firebase retornou sem erros; teste estático local confirmou a regra `/portfolios/{userId}` limitada ao proprietário. Auth/Rules Emulator continua bloqueado por ambiente e não foi declarado aprovado em runtime.
+- Testes desta continuação: 29 focados no último lote; `npm test`, `test:modern` (823/823), `qa:all` e `test:persistence` passaram. QA mostrou zero erros de console, overflow ou IDs duplicados. Os avisos conhecidos do Vite permanecem. `git diff --check` passou.
+- Próximo gate permanece humano: resolver divergências/ações emprestadas e certificar Auth/Rules no Emulator compatível. `HOSTED_MUTATIONS=0`, `REAL_DATA_WRITES=0`; não autorizar escrita real com base apenas no writer local.
+
 # Package 1 — próximo gate local (2026-10-14)
 
 ## Certificação pré-escrita final (2026-10-14)

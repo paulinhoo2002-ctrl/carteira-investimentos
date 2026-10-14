@@ -16,7 +16,7 @@
     "test:visual-regression": "node --test tests/v289-visual-regression.test.js tests/v333-dividend-month-coverage.browser.test.js tests/package1-embedded-schema-ui.browser.test.js",
     "verify:deploy-identity": "node scripts/verify-deploy-identity.js",
     "verify:release": "npm run verify:deploy-identity && npm test && npm run test:modern && npm run qa:all && npm run test:visual-regression",
-    "test:finance": "node --test tests/finance-core.test.js tests/v333-dividend-month-coverage.test.js tests/v333-passive-income-coverage.test.js tests/package1-write-safety.test.js tests/package1-core-integration.test.js tests/package1-portfolio-schema-mapping.test.js tests/package1-production-readonly-ui.test.js",
+    "test:finance": "node --test tests/finance-core.test.js tests/v333-dividend-month-coverage.test.js tests/v333-passive-income-coverage.test.js tests/package1-write-safety.test.js tests/package1-core-integration.test.js tests/package1-portfolio-schema-mapping.test.js tests/package1-production-readonly-ui.test.js tests/package1-transaction-writer.test.js tests/package1-mixed-source-policy.test.js tests/package1-position-reconciliation.test.js tests/package1-firestore-rules-static.test.js",
     "test:persistence": "node --test tests/persistence-core.test.js",
     "test:backup-restore": "node --test tests/backup-restore-integration.test.js tests/backup-security-policy.test.js tests/backup-encryption.test.js",
     "test:load": "node --test tests/load-integration.test.js",
