@@ -11645,6 +11645,7 @@ function startCloudSync({readOnlyOnly=false}={}){
       if(FB.cloudStateModel?.attempt!==syncAttempt) return;
       if(!snap.exists){
         if(!readOnlyOnly && hasLocalData()) await uploadLocalToCloud(false,{allowMissingCloud:true});
+        FB.package2=null;
         FB.cloudLoaded=true;
         clearTimeout(FB.cloudSyncTimeoutTimer);
         FB.cloudStateModel=CloudSyncState.resolve(FB.cloudStateModel,{exists:false,hasData:false});
@@ -11657,6 +11658,9 @@ function startCloudSync({readOnlyOnly=false}={}){
         return;
       }
       const data=snap.data()||{};
+      // Package 2 embedded summary: read-only for the client. Never persisted to
+      // S and never uploaded (cloudPayload builds from S only). Absent field → null.
+      FB.package2=data.package2_v2||null;
       const changed=await applyCloudData(data);
       FB.cloudLoaded=true;
       clearTimeout(FB.cloudSyncTimeoutTimer);
@@ -31521,6 +31525,7 @@ function dash(){
         </div>
       </div>
       ${executiveKPIs(data)}
+      ${package2ExecutivePanel()}
       <div class="dashboard-analytical-primary canon-dash-row-b">
         ${dashboardEvolutionPanel(data)}
         ${dashboardV3AllocationPanel()}
@@ -31690,6 +31695,44 @@ function executiveKPIs(data){
       ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida','#10b981','rgba(16,185,129,.14)')}
     </div>
   `;
+}
+function package2ExecutivePanel(){
+  const p2=(typeof FB!=='undefined'&&FB)||{};
+  const summary=p2.package2||null;
+  const hidden=!!S.hideValues;
+  if(!summary){
+    // package2_v2 absent (QA synthetic, pre-write, or unauthenticated): render
+    // nothing so the first-fold contract of the classic dashboard is preserved.
+    // The panel appears only for the authenticated owner once package2_v2 exists.
+    return '';
+  }
+  const rs=summary.current_result_summary||{};
+  const income=summary.income_summary||{};
+  // Minimum shape guard: at least one certified aggregate must be present,
+  // otherwise degrade to nothing (never render empty/fake cards).
+  const hasResult=Number.isFinite(Number(rs.rv_total));
+  const hasIncome=Number.isFinite(Number(income.y2026_total));
+  if(!hasResult&&!hasIncome) return '';
+  const rvTotal=Number(rs.rv_total);
+  const rvValid=Number.isFinite(rvTotal);
+  const coverage=Number(rs.coverage_ratio);
+  const coveragePct=Number.isFinite(coverage)?`${(coverage*100).toFixed(2).replace('.',',')}`:'—';
+  const fullScope=String(rs.coverage_status||'').toUpperCase()==='FULL_CERTIFIED_SCOPE';
+  const gainTone=!rvValid||rvTotal>=0?'#34d399':'#f87171';
+  const gainGlow=!rvValid||rvTotal>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)';
+  const gainValue=rvValid&&!hidden?fmt(rvTotal):'—';
+  const gainScope=fullScope?'COMPLETA':'PARCIAL';
+  const gainNote=rvValid?`${rs.rv_certified_count||0} posições certificadas · cobertura ${coveragePct}% · ${gainScope}`:'Base indisponível';
+  const y2026=Number(income.y2026_total);
+  const incomeValid=Number.isFinite(y2026);
+  const incomeValue=incomeValid&&!hidden?fmt(y2026):'—';
+  const incomeNote=incomeValid?`Recebidos em 2026 · ${Number(income.y2026_events)||0} eventos`:'Base indisponível';
+  return `
+    <div class="dashboard-executive-kpis package2-kpis" data-package2="present">
+      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Ganho de capital atual',gainValue,`${gainNote} · valor indicativo, não é lucro realizado`,gainTone,gainGlow)}
+      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Proventos recebidos',incomeValue,incomeNote,'#10b981','rgba(16,185,129,.14)')}
+      ${dashboardMetricCard(dashboardMetricIcon('info'),'Resultado total','Em consolidação','Combinação de escopos ainda não certificada','#94a3b8','rgba(148,163,184,.12)')}
+    </div>`;
 }
 function dashboardEvolutionPanel(data){
   const snapshot=patrimonySnapshot(Number(S.dashPeriod)||12);
