@@ -21,9 +21,14 @@
    * Firestore REAL data source — reads/writes to Firestore under UID scope.
    * Only used when account mode is REAL.
    */
-  function createFirestoreRealDataSource(uid, firestoreDb) {
+  function createFirestoreRealDataSource(uid, firestoreDb, options) {
     if (!uid) throw new TypeError('FirestoreRealDataSource requires a UID');
     if (!firestoreDb) throw new TypeError('FirestoreRealDataSource requires a Firestore db');
+    // P18 hard guard: REAL mode is a CONSTRUCTION requirement — fail closed in
+    // DEMO/BLOCKED/LOGIN_REQUIRED before any Firestore handle exists.
+    if (!options || options.accountMode !== 'REAL') {
+      throw new TypeError('FirestoreRealDataSource requires ACCOUNT_MODE=REAL (fail closed)');
+    }
     return Object.freeze({
       type: SOURCE_TYPES.FIRESTORE_REAL,
       uid,

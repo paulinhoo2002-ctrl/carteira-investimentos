@@ -88,6 +88,16 @@
     }
     if (json.includes('361023')) throw new Error('DEMO SAFETY: real financial value detected');
     if (json.includes('569316')) throw new Error('DEMO SAFETY: real financial value detected');
+    // P31 — real artifact leakage guard: production doc ids, hosted project,
+    // private filenames and evidence directories never enter demo state.
+    const FORBIDDEN_PATTERNS = [
+      'movimentacao-2026', 'posicao-2026', 'PosicaoDetalhada',
+      'package1_v2', 'package2_v2', 'carteira-de-investimento-16725',
+      '_backups', '.qa-state',
+    ];
+    for (const p of FORBIDDEN_PATTERNS) {
+      if (json.includes(p)) throw new Error(`DEMO SAFETY: real artifact pattern ${p} detected`);
+    }
     return true;
   }
 

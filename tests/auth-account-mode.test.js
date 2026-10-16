@@ -136,7 +136,7 @@ test('B8: LocalDemoDataSource never has Firestore type', () => {
 });
 
 test('B8: data sources are frozen (immutable)', () => {
-  const real = createFirestoreRealDataSource('uid', { collection: () => ({ doc: () => ({ get: async () => ({}) }) }) });
+  const real = createFirestoreRealDataSource('uid', { collection: () => ({ doc: () => ({ get: async () => ({}) }) }) }, { accountMode: 'REAL' });
   const demo = createLocalDemoDataSource('test-key');
   assert.ok(Object.isFrozen(real));
   assert.ok(Object.isFrozen(demo));
@@ -234,7 +234,7 @@ test('B11: Firestore data source uses merge (not whole-document replace)', async
       }),
     }),
   };
-  const ds = createFirestoreRealDataSource('test-uid', mockDb);
+  const ds = createFirestoreRealDataSource('test-uid', mockDb, { accountMode: 'REAL' });
   await ds.save({ test: true });
   assert.ok(setOptions && setOptions.merge === true, 'save must use merge:true, not whole-document replace');
 });
