@@ -105,12 +105,38 @@ e corrigido: badge vivia em .hdr-right display:none → overlay fixo
 `#auth-demo-badge` sincronizado no render() (visível em todas as rotas,
 removido fora do DEMO). Screenshots privados: .qa-state/auth-demo-browser/.
 
-## Blockers restantes
+## Bateria pesada final (HEAD c19184d) — PASS COMPLETO
 
-1. Bateria pesada em execução no fechamento: `npm test` + `test:modern`
-   (background); `qa:all`/visual regression dependem de build:modern (vite) —
-   verificar disponibilidade da toolchain.
-2. onSnapshot push browser (P15) = BLOCKED_BY_HARNESS (app conecta emulador em
-   8080/9099; 8080 ocupada por órfão do projeto carteira-2.0 — intocado);
-   REST same-UID + isolamento emulador permanecem certificados.
-3. Órfão java 8080 do projeto carteira-2.0 (PID 5916, parent morto) — humano decide.
+`npm ci --ignore-scripts` (0 vulns) → `npm test` EXIT=0 (cadeia completa:
+v324-backup, finance 96/96, persistence 32/32, backup-restore, load, roundtrip,
+extraction, ui, performance, readonly-contract, v330, local-synthetic);
+`test:modern` 823/823; `qa:all` EXIT=0 (build + vite build:modern +
+qa-harness + smoke: OVERFLOW=0, CONSOLE_ERRORS=0, PAGE_ERRORS=0,
+REQUEST_ERRORS_RELEVANT=0); `test:visual-regression` 18/18; emulador auth-demo
+20/20; browser certification 9/9; wiring/boot/account-mode fail 0.
+Nota ambiental: primeiro run de `npm test` falhou em test:v324-backup por
+root de backup aprovado ausente — `C:\Projetos\_backups\carteira-investimentos`
+recriado (diretório vazio aprovado; nada pré-existente foi tocado).
+
+## AUTH_DEMO_PHASE2_READY=YES (P26)
+
+Todos os critérios do gate atendidos; única exceção documentada (permitida):
+SAME_UID_REALTIME_SYNC_BROWSER=BLOCKED_BY_HARNESS (app conecta emulador nas
+portas 8080/9099; 8080 ocupada por órfão do projeto carteira-2.0 — intocado),
+com REST same-UID + isolamento em emulador permanecendo certificados.
+
+## Phase 3 preflight (planejamento apenas — NÃO executado nesta missão)
+
+1. Humano decide destino do órfão 8080 (carteira-2.0, PID 5916) → libera
+   emulador browser full-flow para certificação onSnapshot push.
+2. Deploy das regras `firestore.auth-demo.rules` para produção (gate humano;
+   hoje PRODUCTION_RULES_DEPLOY=0) com revisão de impacto no owner.
+3. Bootstrap do registro em produção: `authorizedUsers/{ownerUid}`
+   {enabled:true, role:'owner', blocked:false} via Admin SDK (trusted path)
+   ANTES do cutover das regras — garante owner REAL via registro.
+4. Validação do owner em produção pós-deploy (login, portfolio, Package1A/2
+   intactos) — sem migração de dados.
+5. Somente então: execução do plano de migração P35 (backup → hash canônico →
+   cópia idempotente → readback → rollback por hash de campo → cutover).
+6. Certificação same-UID device-a-device (browser) e revogação em produção
+   controlada (sandbox primeiro).
