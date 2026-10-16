@@ -17,6 +17,7 @@
 <script src="cloud-sync-state.js"></script>
 <script src="v250-offline-session.js"></script>
 <script src="v250-runtime.js"></script>
+<script src="ir2026/ui/readiness.js"></script>
 <title>📈 Carteira de Investimentos</title>
 <script>
 (()=>{try{
@@ -22948,6 +22949,7 @@ function irpfTabPremium(){
     </div>`).join('');
   return `
     <div class="irpf-shell">
+      ${ir2026ReadinessSection()}
       <div class="irpf-head">
         <div style="min-width:0">
           <div class="irpf-badge ds-badge ds-badge--info">Relatório auxiliar de IRPF</div>
@@ -23119,6 +23121,12 @@ function irpfTabPremium(){
 
 function irpfTab(){
   return irpfTabPremium();
+}
+
+function ir2026ReadinessSection(){
+  if(typeof IR2026Readiness==='undefined') return '';
+  const contract=IR2026Readiness.buildReadinessContract();
+  return IR2026Readiness.renderReadinessPanel(contract, esc);
 }
 
 const DATA_AUDIT_AREAS=['Ativos','Dividendos/Proventos','Renda Fixa','Patrimônio','IRPF','Metas','Backup/Configurações'];

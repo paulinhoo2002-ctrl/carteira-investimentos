@@ -5,6 +5,11 @@
  * Renders the blocked tax state honestly — never shows R$ 0,00 for unknown tax.
  * UNKNOWN is never zero. TAX_DUE is always "Não calculado" until evidence gates pass.
  */
+(function exposeIR2026Readiness(root, factory){
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  if (root) root.IR2026Readiness = api;
+})(typeof globalThis === 'object' ? globalThis : this, function createIR2026Readiness(){
 const READINESS_SNAPSHOT = Object.freeze({
   ENGINE: 'READY',
   DRY_RUN: 'COMPLETE',
@@ -166,10 +171,11 @@ function renderReadinessPanel(contract, escFn) {
     </div>`;
 }
 
-module.exports = {
-  READINESS_SNAPSHOT, STATUS_LABEL, STATUS_TONE,
-  buildReadinessContract, renderReadinessPanel,
-  taxDueLabel, buildSummaryCards, buildBlockers,
-  buildEvidenceChecklist, buildPriorityActions,
-  buildSaleCoverage, buildOpeningCoverage, buildRulesStatus,
-};
+  return {
+    READINESS_SNAPSHOT, STATUS_LABEL, STATUS_TONE,
+    buildReadinessContract, renderReadinessPanel,
+    taxDueLabel, buildSummaryCards, buildBlockers,
+    buildEvidenceChecklist, buildPriorityActions,
+    buildSaleCoverage, buildOpeningCoverage, buildRulesStatus,
+  };
+});
