@@ -175,14 +175,10 @@ function classifyAssetClass(ticker, hints) {
     // heuristic guard: only non-FII-pattern tickers ending 34 are BDRs
     if (!/^[A-Z]{4}1[1-9]$/.test(t)) return { assetClass: 'BDR', basis: 'HEURISTIC:SUFFIX34' };
   }
-  if (/^[A-Z]{4}11$/.test(t)) {
+  if (/^[A-Z]{4}1[0-5]$/.test(t)) {
+    // 11=FII/FIDC, 12/13=units/segments, 14/15=fundos — product name refines DEB
     if (/DEB[NÊ]NCULA|INFRA/.test(product)) return { assetClass: 'FIXED_INCOME_DEB', basis: 'PRODUCT_NAME:DEB' };
     return { assetClass: 'FII', basis: 'PATTERN:FII' };
-  }
-  if (/^[A-Z]{4}(12|13|14)$/.test(t)) {
-    // units/funds of FII (12/13) or fundos (14) — classify by product name
-    if (/DEB[NÊ]NCULA|INFRA/.test(product)) return { assetClass: 'FIXED_INCOME_DEB', basis: 'PRODUCT_NAME:DEB' };
-    return { assetClass: 'FII', basis: 'PATTERN:FII_UNIT' };
   }
   if (/[34]$/.test(t) || /^[A-Z]{4,5}\d$/.test(t)) return { assetClass: 'BRAZIL_STOCK', basis: 'PATTERN:BR_SHARE' };
   if (/^(BOVA|SPXI|IVVB|SMAL|HASH|DIVD|NDIV|IMAB|Findo)/.test(t)) return { assetClass: 'ETF_BR', basis: 'PATTERN:ETF' };
