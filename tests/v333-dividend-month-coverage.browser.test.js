@@ -42,7 +42,7 @@ for (const viewport of [{ width: 1366, height: 768 }, { width: 390, height: 844 
       await page.evaluate(() => setDividendViewMode('overview'));
       const kpis = await page.locator('.div-exec-kpis').textContent();
       assert.match(kpis, /Cobertura confirmada: 0\/12 meses/);
-      assert.match(kpis, /Estimativa · somente meses completos/);
+      assert.match(kpis, /Estimativa · não recebida · somente meses completos/);
       const result = await page.evaluate(() => dividendAnnualMatrixData([], { '2024-01': { state: 'COMPLETE', fullMonthConfirmed: true, source: 'QA_SYNTHETIC_FULL_MONTH' } })[0]);
       assert.equal(result.months[0].total, 0);
       assert.equal(result.months[1].total, null);

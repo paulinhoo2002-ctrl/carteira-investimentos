@@ -17,6 +17,7 @@
 <script src="cloud-sync-state.js"></script>
 <script src="v250-offline-session.js"></script>
 <script src="v250-runtime.js"></script>
+<script src="ir2026/ui/readiness.js"></script>
 <title>📈 Carteira de Investimentos</title>
 <script>
 (()=>{try{
@@ -150,7 +151,7 @@ html[data-theme="light"]{
   --primary:#4057d6;
   --success:#137333;
   --danger:#c62828;
-  --warning:#9a6700;
+  --warning:#8a5a00;
   --positive:var(--success);
   --negative:var(--danger);
   --info:#2f6fd1;
@@ -3510,7 +3511,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
   color:var(--muted);
   box-shadow:none;
 }
-.div-premium .div-recent-more{font-size:8px;color:var(--muted);margin-top:4px;text-align:right;opacity:.85}
+.div-premium .div-recent-more{font-size:8px;color:var(--muted);margin-top:4px;text-align:right}
 .div-premium .div-asset-group{background:linear-gradient(180deg,var(--panel-2),var(--panel));overflow:hidden;box-shadow:0 10px 24px rgba(2,6,23,.08)}
 .div-premium .div-asset-group>summary{padding:9px 10px;gap:8px}
 .div-premium .div-asset-group>summary{grid-template-columns:auto minmax(140px,1fr) minmax(80px,1fr) minmax(100px,1fr) auto;gap:8px;align-items:center}
@@ -3682,6 +3683,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
 .div-premium .div-upcoming-group-sub,
 .div-premium .div-upcoming-subline,
 .div-premium .div-upcoming-note{font-size:9px;line-height:1.25;color:var(--muted)}
+.div-premium .div-recent-more{font-size:12px;line-height:1.35;color:var(--muted);opacity:1}
 .div-premium .div-premium-metric-value,
 .div-premium .div-receipt-value,
 .div-premium .div-month-stat-value,
@@ -6434,6 +6436,10 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       .premium-rf-position-list,.premium-rf-maturity-list{display:flex;flex-direction:column}
       .premium-rf-position-row,.premium-rf-maturity-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 15px;border-bottom:1px solid var(--border)}
       .premium-rf-position-row:last-child,.premium-rf-maturity-row:last-child{border-bottom:0}
+      .premium-rf-primary-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 12px}
+      .premium-rf-primary-kpi{min-width:0;padding:11px 12px}
+      .premium-rf-primary-kpi .premium-rf-kpi-value{overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+      .premium-rf-primary-kpi .premium-rf-kpi-note{min-height:2.5em}
       .premium-rf-row-main{min-width:0;flex:1}
       .premium-rf-row-title{color:var(--text);font-size:12px;font-weight:850;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
       .premium-rf-row-meta{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.35;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
@@ -6442,7 +6448,13 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       .premium-rf-trust-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:11px 13px;border:1px solid rgba(96,165,250,.22);border-radius:14px;background:rgba(96,165,250,.06)}
       .premium-rf-trust-copy{display:flex;flex-direction:column;gap:3px;min-width:220px;color:var(--muted);font-size:10px;line-height:1.35}.premium-rf-trust-copy strong{color:var(--text);font-size:12px}
       .premium-rf-trust-counts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.premium-rf-trust-count{padding:4px 7px;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:10px;white-space:nowrap}.premium-rf-trust-count b{color:var(--text);margin-left:3px}.premium-rf-trust-count.warn{color:#fcd34d}
-      .premium-rf-controls{display:grid;grid-template-columns:minmax(180px,1.5fr) repeat(2,minmax(150px,1fr));gap:8px;padding:10px 15px;border-bottom:1px solid var(--border);background:var(--surface)}
+      .premium-rf-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:10px 15px;border-bottom:1px solid var(--border);background:var(--surface)}
+      .premium-rf-controls .premium-rf-search-control{grid-column:span 2}
+      .premium-rf-filter-details{grid-column:1/-1;min-width:0}
+      .premium-rf-filter-details>summary{display:none;align-items:center;justify-content:space-between;gap:8px;min-height:44px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:var(--panel);color:var(--text);font-size:12px;font-weight:800;cursor:pointer;list-style:none}
+      .premium-rf-filter-details>summary::-webkit-details-marker{display:none}
+      .premium-rf-active-filter-count{color:var(--muted);font-size:10px;font-weight:750}
+      .premium-rf-filter-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
       .premium-rf-controls label{display:grid;gap:4px;color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}.premium-rf-controls input,.premium-rf-controls select{width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:var(--panel);color:var(--text);font:inherit;font-size:11px;text-transform:none;letter-spacing:normal}.premium-rf-controls input:focus-visible,.premium-rf-controls select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       .premium-rf-row-meta.pos{color:var(--success)}
             .premium-rf-row-meta.neg{color:#f87171}
@@ -6488,6 +6500,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       .premium-rf-ipca-diagnostics .premium-income-row{grid-template-columns:minmax(0,1fr) minmax(0,auto)}
       .premium-rf-ipca-diagnostics .premium-row-value{min-width:0;text-align:right;white-space:normal}
       @media(max-width:1499px){.premium-rf-position-row,.premium-rf-maturity-row{flex-wrap:wrap}.premium-rf-row-main{flex:1 1 220px}.premium-rf-row-value{flex:1 1 220px}.premium-rf-row-actions{flex:1 1 100%;justify-content:flex-end;flex-wrap:wrap;gap:6px}}
+      @media(min-width:768px){.premium-rf-filter-details:not([open])>.premium-rf-filter-options{display:grid}.premium-rf-secondary-overview .premium-rf-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
       @media(max-width:1199px){.premium-rf-grid{grid-template-columns:1fr}.premium-rf-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.premium-rf-review-groups{grid-template-columns:repeat(2,minmax(0,1fr))}.premium-rf-review-group:nth-child(3){border-left:0;border-top:1px solid var(--border)}.premium-rf-review-group:nth-child(4){border-top:1px solid var(--border)}}
       @media(max-width:767px){
         .premium-rf-page{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
@@ -6499,12 +6512,21 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
         .premium-rf-kpi{padding:10px}
         .premium-rf-kpi-value{font-size:15px}
         .premium-rf-grid,.premium-rf-distribution{grid-template-columns:1fr}
+        .premium-rf-primary-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+        .premium-rf-primary-kpi{padding:9px}
+        .premium-rf-primary-kpi .premium-rf-kpi-value{font-size:13px}
+        .premium-rf-primary-kpi .premium-rf-kpi-note{min-height:0;font-size:9px;line-height:1.3}
         .premium-rf-controls{grid-template-columns:1fr;padding:10px 12px}
+        .premium-rf-controls .premium-rf-search-control{grid-column:auto}
+        .premium-rf-filter-details{grid-column:auto}
+        .premium-rf-filter-details>summary{display:flex}
+        .premium-rf-filter-options{grid-template-columns:1fr;padding-top:8px}
         .premium-rf-position-row,.premium-rf-maturity-row{padding:10px 12px}
         .premium-rf-row-main{flex-basis:100%}
         .premium-rf-row-value{text-align:left}
         .premium-rf-row-financial,.premium-rf-row-results{justify-content:flex-start}
-        .premium-rf-row-actions{justify-content:flex-start}
+        .premium-rf-row-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));justify-content:stretch;width:100%}
+        .premium-rf-row-actions .btn,.premium-rf-row-actions .asset-detail-link{width:100%;min-height:44px;justify-content:center}
         .premium-rf-review-groups{grid-template-columns:1fr}
         .premium-rf-review-group+.premium-rf-review-group,.premium-rf-review-group:nth-child(3),.premium-rf-review-group:nth-child(4){border-left:0;border-top:1px solid var(--border)}
         .premium-rf-review-queue-head,.premium-rf-review-group{padding-left:12px;padding-right:12px}
@@ -6918,7 +6940,8 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     .asset-premium-card-summary .asset-logo { width: 32px; height: 32px; font-size: 12px; }
     .asset-premium-card-meta { min-width:0; display:grid; gap:5px; text-align:right; }
     .asset-premium-card-meta>div{display:flex;flex-direction:column;gap:1px;min-width:0}
-    .asset-premium-card-meta span{font-size:9px;line-height:1.2;color:var(--muted)}
+    .asset-premium-card-meta span{font-size:9px;line-height:1.2}
+    .asset-premium-card-meta span:not(.asset-type){color:var(--muted)}
     .asset-premium-card-meta strong{font-size:12px;line-height:1.25;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
     .asset-premium-card-details { padding: 12px; border-top: 1px solid var(--border); background: var(--bg); }
     .asset-premium-card-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; }
@@ -7449,7 +7472,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 .portfolio-search-result-action{color:#7dd3fc;font-size:11px;white-space:nowrap}
 .portfolio-search-trigger{display:flex;align-items:center;gap:8px;width:100%;min-height:42px;margin:4px 0 10px;padding:8px 10px;border:1px solid rgba(148,163,184,.16);border-radius:10px;background:rgba(148,163,184,.05);color:#bdc9d9;text-align:left;cursor:pointer;font:inherit;font-size:12px}
 .portfolio-search-trigger:hover,.portfolio-search-trigger:focus-visible{background:rgba(56,189,248,.1);border-color:rgba(125,211,252,.4);color:#f8fafc;outline:2px solid rgba(125,211,252,.48);outline-offset:2px}
-.portfolio-search-trigger kbd{margin-left:auto;color:#71829a;font-size:10px;border:1px solid rgba(148,163,184,.2);border-radius:5px;padding:2px 5px}
+.portfolio-search-trigger kbd{margin-left:auto;color:#8ea0b8;font-size:10px;border:1px solid rgba(148,163,184,.2);border-radius:5px;padding:2px 5px}
 .portfolio-search-mobile-trigger{width:100%;min-height:46px;margin:0 0 12px;padding:11px 13px;border:1px solid rgba(148,163,184,.18);border-radius:12px;background:rgba(148,163,184,.06);color:#e2e8f0;text-align:left;font:inherit;cursor:pointer}
 .portfolio-search-mobile-trigger:focus-visible{outline:2px solid #7dd3fc;outline-offset:2px}
 .analysis-context-links{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 12px}
@@ -8971,7 +8994,7 @@ let S = {
   irpfYear:new Date().getFullYear(),
   irpfStep:1,
   apHistoryOpen:false, apSearch:'',
-  rfSearch:'', rfTrustFilter:'all', rfSort:'name-asc', rfSearchTimer:null,
+  rfSearch:'', rfTrustFilter:'all', rfIssuerFilter:'', rfCategoryFilter:'', rfSort:'name-asc', rfFilterPanelOpen:null, rfSearchTimer:null,
   aportesViewMode:'extrato',
   aportesFilter:'todos',
   aportesSort:'date-desc',
@@ -11625,6 +11648,7 @@ function startCloudSync({readOnlyOnly=false}={}){
       if(FB.cloudStateModel?.attempt!==syncAttempt) return;
       if(!snap.exists){
         if(!readOnlyOnly && hasLocalData()) await uploadLocalToCloud(false,{allowMissingCloud:true});
+        FB.package2=null;
         FB.cloudLoaded=true;
         clearTimeout(FB.cloudSyncTimeoutTimer);
         FB.cloudStateModel=CloudSyncState.resolve(FB.cloudStateModel,{exists:false,hasData:false});
@@ -11637,6 +11661,9 @@ function startCloudSync({readOnlyOnly=false}={}){
         return;
       }
       const data=snap.data()||{};
+      // Package 2 embedded summary: read-only for the client. Never persisted to
+      // S and never uploaded (cloudPayload builds from S only). Absent field → null.
+      FB.package2=data.package2_v2||null;
       const changed=await applyCloudData(data);
       FB.cloudLoaded=true;
       clearTimeout(FB.cloudSyncTimeoutTimer);
@@ -11813,12 +11840,12 @@ function cloudSyncRecoveryPanel(){
   </section>`;
 }
 function cloudStatus(){
-  if(isLocalTestMode()) return '<span style="font-size:11px;color:#fbbf24">Modo teste local</span>';
-  if(isV250OfflineCachedSession()) return '<span style="font-size:11px;color:#fbbf24">Offline · dados em cache</span>';
-  if(!FB.ready) return '<span style="font-size:11px;color:#f87171">Firebase offline</span>';
-  if(!FB.user) return '<span style="font-size:11px;color:#64748b">Local</span>';
+  if(isLocalTestMode()) return '<span style="font-size:11px;color:var(--warning)">Modo teste local</span>';
+  if(isV250OfflineCachedSession()) return '<span style="font-size:11px;color:var(--warning)">Offline · dados em cache</span>';
+  if(!FB.ready) return '<span style="font-size:11px;color:var(--negative)">Firebase offline</span>';
+  if(!FB.user) return '<span style="font-size:11px;color:var(--muted)">Local</span>';
   const state=cloudSyncState().status;
-  const tone=state===CloudSyncState.STATES.CONNECTED||state===CloudSyncState.STATES.EMPTY_CONFIRMED?'#34d399':state===CloudSyncState.STATES.SYNCING||state===CloudSyncState.STATES.INITIALIZING||state===CloudSyncState.STATES.AUTHENTICATING?'#fbbf24':'#f87171';
+  const tone=state===CloudSyncState.STATES.CONNECTED||state===CloudSyncState.STATES.EMPTY_CONFIRMED?'var(--success)':state===CloudSyncState.STATES.SYNCING||state===CloudSyncState.STATES.INITIALIZING||state===CloudSyncState.STATES.AUTHENTICATING?'var(--warning)':'var(--negative)';
   return `<span style="font-size:11px;color:${tone}">${esc(cloudStatusText())}</span>`;
 }
 function authBox(){
@@ -22922,6 +22949,7 @@ function irpfTabPremium(){
     </div>`).join('');
   return `
     <div class="irpf-shell">
+      ${ir2026ReadinessSection()}
       <div class="irpf-head">
         <div style="min-width:0">
           <div class="irpf-badge ds-badge ds-badge--info">Relatório auxiliar de IRPF</div>
@@ -23093,6 +23121,12 @@ function irpfTabPremium(){
 
 function irpfTab(){
   return irpfTabPremium();
+}
+
+function ir2026ReadinessSection(){
+  if(typeof IR2026Readiness==='undefined') return '';
+  const contract=IR2026Readiness.buildReadinessContract();
+  return IR2026Readiness.renderReadinessPanel(contract, esc);
 }
 
 const DATA_AUDIT_AREAS=['Ativos','Dividendos/Proventos','Renda Fixa','Patrimônio','IRPF','Metas','Backup/Configurações'];
@@ -29036,10 +29070,10 @@ function app(){
       ${mobileTopActionButton()}
 
       <div style="text-align:right">
-        <div style="font-size:11px;color:#2e3f58">${now}</div>
+        <div style="font-size:11px;color:var(--muted)">${now}</div>
         <div style="display:flex;align-items:center;gap:5px;justify-content:flex-end;margin-top:2px">
           <span class="qdot${S.qLoad?' spin':''}"></span>
-          <span style="font-size:10px;color:#2e3f58">Cotações ${lu} · <span id="cd-span">${S.cd}</span>s</span>
+          <span style="font-size:10px;color:var(--muted)">Cotações ${lu} · <span id="cd-span">${S.cd}</span>s</span>
         </div>
       </div>
     </div>
@@ -29047,8 +29081,8 @@ function app(){
   ${isLocalTestMode()?`
   <div class="test-mode-banner" style="margin:10px 0 2px;padding:10px 12px;border:1px solid rgba(251,191,36,.28);border-radius:14px;background:linear-gradient(180deg,rgba(251,191,36,.14),rgba(251,191,36,.08));display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)">
     <div style="min-width:0">
-      <div class="test-mode-banner-title" style="font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#fde68a">TESTE LOCAL${isLocalTestReadOnlyMode()?' · SOMENTE LEITURA':''}</div>
-      <div class="test-mode-banner-text" role="status" style="font-size:12px;line-height:1.45;color:#e5edf8">Dados sintéticos em memória. Sem Firebase, sincronização, importação/exportação ou persistência financeira.</div>
+      <div class="test-mode-banner-title" style="font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--warning)">TESTE LOCAL${isLocalTestReadOnlyMode()?' · SOMENTE LEITURA':''}</div>
+      <div class="test-mode-banner-text" role="status" style="font-size:12px;line-height:1.45;color:var(--text)">Dados sintéticos em memória. Sem Firebase, sincronização, importação/exportação ou persistência financeira.</div>
     </div>
     ${isLocalTestReadOnlyMode()?'<span class="test-mode-readonly-status" role="status">Necessita revisão antes da confirmação; ações bloqueadas.</span>':'<button class="btn bgh" onclick="restoreLocalTestData()" style="min-height:44px;padding:0 12px;border-radius:10px;font-size:12px;font-weight:800;flex-shrink:0">Restaurar dados de teste</button>'}
   </div>`:''}
@@ -30365,6 +30399,7 @@ function rfIntelligenceSnapshot(){
       rate:assetRfContractRate(a)||'taxa não informada',
       issuer:String(a?.fixed_issuer||a?.issuer||'').trim(),
       applied,
+      appliedKnown:!!vals.appliedState && !['missing','invalid'].includes(vals.appliedState.state),
       current,
       profit,
       pct,
@@ -30792,13 +30827,28 @@ function setRfTrustSearch(value){
   if(S.rfSearchTimer) clearTimeout(S.rfSearchTimer);
   S.rfSearchTimer=setTimeout(()=>{S.rfSearchTimer=null;render();},120);
 }
-function setRfTrustFilter(value){
+function setRfTrustFilter(value, filtersOpen){
+  if(typeof filtersOpen==='boolean') S.rfFilterPanelOpen=filtersOpen;
   const allowed=['all','MANUAL_AUTHORITATIVE','REFERENCE_SHADOW','UNSUPPORTED','UNAVAILABLE','STALE'];
   S.rfTrustFilter=allowed.includes(String(value||'')) ? String(value) : 'all';
   render();
 }
-function setRfTrustSort(value){
-  const allowed=['name-asc','value-desc','value-asc','maturity-asc','issuer-asc'];
+function setRfIssuerFilter(value, filtersOpen){
+  if(typeof filtersOpen==='boolean') S.rfFilterPanelOpen=filtersOpen;
+  S.rfIssuerFilter=String(value||'');
+  render();
+}
+function setRfCategoryFilter(value, filtersOpen){
+  if(typeof filtersOpen==='boolean') S.rfFilterPanelOpen=filtersOpen;
+  S.rfCategoryFilter=String(value||'');
+  render();
+}
+function setRfFilterPanelOpen(value){
+  S.rfFilterPanelOpen=!!value;
+}
+function setRfTrustSort(value, filtersOpen){
+  if(typeof filtersOpen==='boolean') S.rfFilterPanelOpen=filtersOpen;
+  const allowed=['name-asc','value-desc','value-asc','maturity-asc','issuer-asc','type-asc'];
   S.rfSort=allowed.includes(String(value||'')) ? String(value) : 'name-asc';
   render();
 }
@@ -30827,8 +30877,12 @@ function rendaFixaTab(){
   const trustSummary=data.trustSummary||{};
   const trustApi=globalThis.FixedIncomeTrust;
   const trustFiltered=trustApi?.filterRows ? trustApi.filterRows(data.tableRows,S.rfSearch,S.rfTrustFilter) : data.tableRows;
+  const issuerFiltered=trustApi?.filterByIssuer ? trustApi.filterByIssuer(trustFiltered,S.rfIssuerFilter) : trustFiltered;
+  const categoryFiltered=trustApi?.filterByCategory ? trustApi.filterByCategory(issuerFiltered,S.rfCategoryFilter) : issuerFiltered;
   const sortParts=String(S.rfSort||'name-asc').split('-');
-  const trustRows=trustApi?.sortRows ? trustApi.sortRows(trustFiltered,sortParts[0]==='value'?'value':sortParts[0]==='maturity'?'maturity':sortParts[0]==='issuer'?'issuer':'name',sortParts[1]==='desc'?'desc':'asc') : trustFiltered;
+  const trustRows=trustApi?.sortRows ? trustApi.sortRows(categoryFiltered,sortParts[0]==='value'?'value':sortParts[0]==='maturity'?'maturity':sortParts[0]==='issuer'?'issuer':sortParts[0]==='type'?'category':'name',sortParts[1]==='desc'?'desc':'asc') : categoryFiltered;
+  const issuerOptions=[...new Set(data.tableRows.map(row=>String(row.issuer||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  const categoryOptions=[...new Set(data.tableRows.map(row=>String(row.category||row.type||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
   const attentionBadges=count ? [
     overdue>0 ? `<span class="note-pill" style="color:#fecaca;background:#3f1d24;border-color:rgba(248,113,113,.24)">${overdue} vencido${overdue===1?'':'s'}</span>` : '',
     soon30>0 ? `<span class="note-pill" style="color:#fde68a;background:#3d2f12;border-color:rgba(251,191,36,.24)">${soon30} em até 30 dias</span>` : '',
@@ -30847,13 +30901,16 @@ function rendaFixaTab(){
     </div>` : '';
   const nextMaturity=data.maturityRows[0]||null;
   const resultTone=data.totalProfit>0?'#34d399':data.totalProfit<0?'#f87171':'#94a3b8';
-  const kpis=[
-    ['Valor atual RF',fmt(data.totalCurrent),data.explicitCount===count?'Valores atuais informados':`${data.explicitCount}/${count} explícitos`,'#34d399'],
-    ['Total aplicado',fmt(data.totalApplied),count?'Capital principal cadastrado':'Cadastre títulos','#a78bfa'],
-    ['Resultado',count?fmt(data.totalProfit):'—',count?`${fmtP(data.totalPct)} estimado`:'Sem posições',resultTone],
-    ['Próximo vencimento',nextMaturity?(nextMaturity.days===0?'Hoje':nextMaturity.days===1?'Amanhã':`${nextMaturity.days} dias`):'—',nextMaturity?(nextMaturity.ticker||'Título RF'):'Nenhum vencimento futuro','#fbbf24'],
-    ['Posições abertas',String(count),count?'Títulos acompanhados':'Carteira vazia','#60a5fa']
-  ].map(([label,value,note,tone])=>`<div class="premium-rf-kpi ds-kpi" style="--rf-kpi-tone:${tone}"><div class="premium-rf-kpi-label ds-kpi__label">${esc(label)}</div><div class="premium-rf-kpi-value ds-kpi__value" style="color:${tone}">${esc(value)}</div><div class="premium-rf-kpi-note ds-kpi__context">${esc(note)}</div></div>`);
+  const appliedCount=data.assets.filter(row=>row.appliedKnown).length;
+  const knownCurrentTotal=data.assets.filter(row=>row.explicit && Number.isFinite(row.current)).reduce((sum,row)=>sum+row.current,0);
+  const kpiHtml=(items,extraClass='')=>items.map(([label,value,note,tone])=>`<div class="premium-rf-kpi ds-kpi ${extraClass}" style="--rf-kpi-tone:${tone}"><div class="premium-rf-kpi-label ds-kpi__label">${esc(label)}</div><div class="premium-rf-kpi-value ds-kpi__value" style="color:${tone}">${esc(value)}</div><div class="premium-rf-kpi-note ds-kpi__context">${esc(note)}</div></div>`).join('');
+  const primaryKpis=[
+    ['Valor atual informado',data.explicitCount?fmt(knownCurrentTotal):'—',count?`${data.explicitCount}/${count} posições com valor explícito`:'Sem posições','#34d399'],
+    ['Capital aplicado',count&&appliedCount===count?fmt(data.totalApplied):'—',count?`${appliedCount}/${count} bases informadas`:'Sem posições','#a78bfa'],
+    ['Resultado',count&&data.missingCurrent===0&&appliedCount===count&&Number.isFinite(data.totalProfit)?fmt(data.totalProfit):'—',count?(data.missingCurrent===0&&appliedCount===count&&Number.isFinite(data.totalPct)?`${fmtP(data.totalPct)} com valores completos`:'Indisponível enquanto houver valores atuais ou bases ausentes'):'Sem posições',resultTone],
+    ['Próximo vencimento',nextMaturity?(nextMaturity.days===0?'Hoje':nextMaturity.days===1?'Amanhã':`${nextMaturity.days} dias`):'—',nextMaturity?(nextMaturity.ticker||'Título RF'):'Nenhum vencimento futuro','#fbbf24']
+  ];
+  const activeRfFilters=[S.rfTrustFilter!=='all',!!S.rfIssuerFilter,!!S.rfCategoryFilter].filter(Boolean).length;
 
   function maturityBadge(days){
     if(days===null || days===undefined) return '<span class="premium-rf-maturity-badge ds-badge muted">Sem data</span>';
@@ -30870,7 +30927,7 @@ function rendaFixaTab(){
     const assetId=asset?getAssetEventId(asset):null;
     const display=row.explicit===false
       ? {kind:'missing', appliedText:fmt(row.applied), currentText:'Atualização necessária', currentNote:'Valor atual não informado', maturityText:row.due?row.due.toLocaleDateString('pt-BR'):'não informado', resultClass:'neutral', resultText:'—', rentabilityText:'—'}
-      : {kind:'current', appliedText:fmt(row.applied), currentText:fmt(row.current), currentNote:(globalThis.FixedIncomeDisplay?.describe(row.currentMeta)?.note || row.currentMeta?.source || 'Valor atual informado'), provenance:(globalThis.FixedIncomeDisplay?.describe(row.currentMeta) || {label:'Valor informado',tone:'ok'}), maturityText:row.due?row.due.toLocaleDateString('pt-BR'):'não informado', resultClass:row.profit>0?'pos':row.profit<0?'neg':'neutral', resultText:assetSignedMoneyText(row.profit), rentabilityText:fmtP(row.pct)};
+      : {kind:'current', appliedText:fmt(row.applied), currentText:fmt(row.current), currentNote:(globalThis.FixedIncomeDisplay?.describe(row.currentMeta)?.note || row.currentMeta?.source || 'Valor atual informado'), provenance:(globalThis.FixedIncomeDisplay?.describe(row.currentMeta) || {label:'Valor informado',tone:'ok'}), maturityText:row.due?row.due.toLocaleDateString('pt-BR'):'não informado', resultClass:row.profit>0?'pos':row.profit<0?'neg':'neutral', resultText:assetSignedMoneyText(row.profit), rentabilityText:Number.isFinite(row.pct)?fmtP(row.pct):'—'};
     const provenanceDetails=display.kind==='current' ? fixedIncomeProvenanceDetails(row.currentMeta) : null;
     return `
     <div class="premium-rf-position-row">
@@ -30987,8 +31044,8 @@ function rendaFixaTab(){
         <div class="rf-preview-value">
                    ${row.explicit === false
                      ? `<div class="rf-strong" style="color:#c8a84b">Atualização necessária</div>`
-                     : `<div class="${row.profit>=0?'gn':'rd'}">${fmt(row.profit)}</div>
-                        <div class="premium-row-sub">${fmtP(row.pct)} · ${row.currentMeta.source||'fonte não informada'}</div>`
+                     : `<div class="${row.profit>0?'gn':row.profit<0?'rd':''}">${Number.isFinite(row.profit)?fmt(row.profit):'—'}</div>
+                        <div class="premium-row-sub">${Number.isFinite(row.pct)?fmtP(row.pct):'—'} · ${row.currentMeta.source||'fonte não informada'}</div>`
                    }
                  </div>
         ${rfEventReceiptsSummaryHtml(row) ? `<div class="rf-event-summary-inline" style="grid-column:1 / -1">${rfEventReceiptsSummaryHtml(row)}</div>` : ''}
@@ -31015,11 +31072,11 @@ function rendaFixaTab(){
         <div class="rf-strong">${fmt(row.receivedNet)}</div>
         <div class="rf-mini">${row.eventCount>0 ? `${row.eventCount} evento${row.eventCount===1?'':'s'} · bruto ${fmt(row.receivedGross)} · IR ${fmt(row.receivedIr)} · IOF ${fmt(row.receivedIof)}` : 'Sem eventos de renda fixa'}</div>
       </td>
-      <td class="rf-right ${row.resultWithEvents>=0?'gn':'rd'}">
-        <div class="rf-strong">${row.explicit===false ? '—' : fmt(row.resultWithEvents)}</div>
-        <div class="rf-mini">${row.explicit===false ? 'resultado total indisponível' : `${row.rentabWithEvents!=null?fmtP(row.rentabWithEvents):'—'} · resultado total`}</div>
+      <td class="rf-right ${row.resultWithEvents>0?'gn':row.resultWithEvents<0?'rd':''}">
+        <div class="rf-strong">${Number.isFinite(row.resultWithEvents)?fmt(row.resultWithEvents):'—'}</div>
+        <div class="rf-mini">${Number.isFinite(row.resultWithEvents) ? `${Number.isFinite(row.rentabWithEvents)?fmtP(row.rentabWithEvents):'—'} · resultado total` : 'resultado total indisponível'}</div>
       </td>
-      <td class="rf-right ${row.pct>=0?'gn':'rd'}">${fmtP(row.pct)}</td>
+      <td class="rf-right ${row.pct>0?'gn':row.pct<0?'rd':''}">${Number.isFinite(row.pct)?fmtP(row.pct):'—'}</td>
       <td>${row.due?row.due.toLocaleDateString('pt-BR'):'—'}</td>
       <td><span class="analysis-pill ${row.issues.length? (row.days!=null && row.days<0 ? 'danger' : row.days!=null && row.days<=30 ? 'warn' : 'muted') : 'ok'}">${esc(row.issues.length?row.issues[0].label:'OK')}</span></td>
     </tr>`).join('') : '<tr><td colspan="10" style="padding:14px;color:#7489a4;text-align:center">Nenhum título cadastrado.</td></tr>';
@@ -31032,12 +31089,16 @@ function rendaFixaTab(){
         <button type="button" class="btn bp ds-button ds-button--primary" onclick="openQuickMovement('renda-fixa')" style="min-height:44px">+ Nova aplicação</button>
       </div>
     </div>
+    <div class="premium-rf-primary-kpis">${kpiHtml(primaryKpis,'premium-rf-primary-kpi')}</div>
     <div class="premium-rf-grid">
       <div class="premium-rf-panel ds-panel ds-panel--readonly">
         <div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title">Posições de Renda Fixa</div><div class="premium-rf-panel-sub">Atual e resultado derivados do valor oficial de cada título.</div></div><div class="premium-rf-panel-badge">${trustRows.length}/${count} posições</div></div>
         <div class="premium-rf-controls" aria-label="Controles de leitura de renda fixa">
-          <label><span>Buscar</span><input type="search" aria-label="Buscar título de renda fixa" placeholder="Nome, emissor ou indexador" value="${esc(S.rfSearch||'')}" oninput="setRfTrustSearch(this.value)"></label>
-          <label><span>Status do valuation</span><select aria-label="Filtrar status do valuation" onchange="setRfTrustFilter(this.value)">
+          <label class="premium-rf-search-control"><span>Buscar</span><input type="search" aria-label="Buscar título de renda fixa" placeholder="Nome, emissor ou indexador" value="${esc(S.rfSearch||'')}" oninput="setRfTrustSearch(this.value)"></label>
+          <details class="premium-rf-filter-details" ${typeof window==='undefined'||window.innerWidth>=768||S.rfFilterPanelOpen?'open':''} ontoggle="setRfFilterPanelOpen(this.open)">
+            <summary aria-label="Filtros de posições de renda fixa"><span>Filtros <span class="premium-rf-active-filter-count">${activeRfFilters?`${activeRfFilters} ativo${activeRfFilters===1?'':'s'}`:'Nenhum ativo'}</span></span><span aria-hidden="true">⌄</span></summary>
+            <div class="premium-rf-filter-options">
+          <label><span>Status do valuation</span><select aria-label="Filtrar status do valuation" onchange="setRfTrustFilter(this.value,this.closest('details').open)">
             <option value="all" ${S.rfTrustFilter==='all'?'selected':''}>Todos</option>
             <option value="MANUAL_AUTHORITATIVE" ${S.rfTrustFilter==='MANUAL_AUTHORITATIVE'?'selected':''}>Valor manual</option>
             <option value="REFERENCE_SHADOW" ${S.rfTrustFilter==='REFERENCE_SHADOW'?'selected':''}>Referência shadow</option>
@@ -31045,13 +31106,24 @@ function rendaFixaTab(){
             <option value="UNAVAILABLE" ${S.rfTrustFilter==='UNAVAILABLE'?'selected':''}>Indisponível</option>
             <option value="STALE" ${S.rfTrustFilter==='STALE'?'selected':''}>Desatualizada</option>
           </select></label>
-          <label><span>Ordenar</span><select aria-label="Ordenar posições de renda fixa" onchange="setRfTrustSort(this.value)">
+          <label><span>Instituição</span><select aria-label="Filtrar por instituição" onchange="setRfIssuerFilter(this.value,this.closest('details').open)">
+            <option value="" ${!S.rfIssuerFilter?'selected':''}>Todas as instituições</option>
+            ${issuerOptions.map(issuer=>`<option value="${esc(issuer)}" ${S.rfIssuerFilter===issuer?'selected':''}>${esc(issuer)}</option>`).join('')}
+          </select></label>
+          <label><span>Produto</span><select aria-label="Filtrar por produto de renda fixa" onchange="setRfCategoryFilter(this.value,this.closest('details').open)">
+            <option value="" ${!S.rfCategoryFilter?'selected':''}>Todos os produtos</option>
+            ${categoryOptions.map(category=>`<option value="${esc(category)}" ${S.rfCategoryFilter===category?'selected':''}>${esc(category)}</option>`).join('')}
+          </select></label>
+          <label><span>Ordenar</span><select aria-label="Ordenar posições de renda fixa" onchange="setRfTrustSort(this.value,this.closest('details').open)">
             <option value="name-asc" ${S.rfSort==='name-asc'?'selected':''}>Nome A–Z</option>
             <option value="value-desc" ${S.rfSort==='value-desc'?'selected':''}>Maior valor</option>
             <option value="value-asc" ${S.rfSort==='value-asc'?'selected':''}>Menor valor</option>
             <option value="maturity-asc" ${S.rfSort==='maturity-asc'?'selected':''}>Vencimento próximo</option>
             <option value="issuer-asc" ${S.rfSort==='issuer-asc'?'selected':''}>Instituição A–Z</option>
+            <option value="type-asc" ${S.rfSort==='type-asc'?'selected':''}>Tipo do produto A–Z</option>
           </select></label>
+            </div>
+          </details>
         </div>
         <div class="premium-rf-position-list">${positionRows}</div>
       </div>
@@ -31063,7 +31135,6 @@ function rendaFixaTab(){
     <details class="premium-rf-secondary-overview sec ds-panel ds-panel--readonly">
       <summary><div><div class="sec-title">Resumo e confiabilidade</div><div class="sec-meta">Indicadores agregados e diagnósticos de cobertura, fonte e vencimentos.</div></div><div class="sec-meta">Abrir detalhes</div></summary>
       <div class="sec-body" style="display:grid;gap:12px">
-        <div class="premium-rf-kpis">${kpis.join('')}</div>
         <section class="premium-rf-trust-bar" aria-labelledby="rf-trust-title">
           <div class="premium-rf-trust-copy"><strong id="rf-trust-title">Confiança da leitura</strong><span>Valor manual continua sendo a autoridade; referências shadow não alteram o patrimônio.</span></div>
           <div class="premium-rf-trust-counts" aria-label="Resumo dos status de valuation">
@@ -31464,6 +31535,7 @@ function dash(){
         </div>
       </div>
       ${executiveKPIs(data)}
+      ${package2ExecutivePanel()}
       <div class="dashboard-analytical-primary canon-dash-row-b">
         ${dashboardEvolutionPanel(data)}
         ${dashboardV3AllocationPanel()}
@@ -31634,6 +31706,44 @@ function executiveKPIs(data){
     </div>
   `;
 }
+function package2ExecutivePanel(){
+  const p2=(typeof FB!=='undefined'&&FB)||{};
+  const summary=p2.package2||null;
+  const hidden=!!S.hideValues;
+  if(!summary){
+    // package2_v2 absent (QA synthetic, pre-write, or unauthenticated): render
+    // nothing so the first-fold contract of the classic dashboard is preserved.
+    // The panel appears only for the authenticated owner once package2_v2 exists.
+    return '';
+  }
+  const rs=summary.current_result_summary||{};
+  const income=summary.income_summary||{};
+  // Minimum shape guard: at least one certified aggregate must be present,
+  // otherwise degrade to nothing (never render empty/fake cards).
+  const hasResult=Number.isFinite(Number(rs.rv_total));
+  const hasIncome=Number.isFinite(Number(income.y2026_total));
+  if(!hasResult&&!hasIncome) return '';
+  const rvTotal=Number(rs.rv_total);
+  const rvValid=Number.isFinite(rvTotal);
+  const coverage=Number(rs.coverage_ratio);
+  const coveragePct=Number.isFinite(coverage)?`${(coverage*100).toFixed(2).replace('.',',')}`:'—';
+  const fullScope=String(rs.coverage_status||'').toUpperCase()==='FULL_CERTIFIED_SCOPE';
+  const gainTone=!rvValid||rvTotal>=0?'#34d399':'#f87171';
+  const gainGlow=!rvValid||rvTotal>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)';
+  const gainValue=rvValid&&!hidden?fmt(rvTotal):'—';
+  const gainScope=fullScope?'COMPLETA':'PARCIAL';
+  const gainNote=rvValid?`${rs.rv_certified_count||0} posições certificadas · cobertura ${coveragePct}% · ${gainScope}`:'Base indisponível';
+  const y2026=Number(income.y2026_total);
+  const incomeValid=Number.isFinite(y2026);
+  const incomeValue=incomeValid&&!hidden?fmt(y2026):'—';
+  const incomeNote=incomeValid?`Recebidos em 2026 · ${Number(income.y2026_events)||0} eventos`:'Base indisponível';
+  return `
+    <div class="dashboard-executive-kpis package2-kpis" data-package2="present">
+      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Ganho de capital atual',gainValue,`${gainNote} · valor indicativo, não é lucro realizado`,gainTone,gainGlow)}
+      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Proventos recebidos',incomeValue,incomeNote,'#10b981','rgba(16,185,129,.14)')}
+      ${dashboardMetricCard(dashboardMetricIcon('info'),'Resultado total','Em consolidação','Combinação de escopos ainda não certificada','#94a3b8','rgba(148,163,184,.12)')}
+    </div>`;
+}
 function dashboardEvolutionPanel(data){
   const snapshot=patrimonySnapshot(Number(S.dashPeriod)||12);
   const values=snapshot.months.map(row=>row.movementCount?row.cumulative:null);
@@ -31787,7 +31897,7 @@ function patrimonioTab(){
           <div><h2 class="patrimonio-panel-title">Aportes líquidos acumulados</h2><div class="patrimonio-panel-sub">Acumulado apenas nos meses com movimentos registrados; não representa valuation histórico e a cobertura dos registros é desconhecida.</div></div>
           <div class="patrimonio-panel-badge">Patrimônio atual ${currentKnown?fmt(tC):'indisponível'}</div>
         </div>
-        <div class="patrimony-month-list">${monthRows}</div>
+        <div class="patrimony-month-list" tabindex="0" role="region" aria-label="Aportes líquidos por mês">${monthRows}</div>
       </div>
       <div class="patrimonio-panel patrimonio-panel-top">
         <div class="patrimonio-panel-head"><div><h2 class="patrimonio-panel-title">Top Ativos</h2><div class="patrimonio-panel-sub">Maiores posições por valor atual; barras e percentuais comparam as posições exibidas.</div></div><div class="patrimonio-panel-badge">${topAssets.length} ativos</div></div>
@@ -32357,8 +32467,8 @@ function ativos(){
         <h1 id="ativos-page-title" class="st">Ativos</h1>
       </div>
       <div style="display:flex; gap:8px;">
-        <button class="btn btn-ghost" onclick="exportData()"> Exportar</button>
-        <button class="btn btn-primary" onclick="openAssetModal()">+ Novo Ativo</button>
+        <button class="btn bgh" onclick="exportData()"> Exportar</button>
+        <button class="btn bp" onclick="openAssetModal()">+ Novo Ativo</button>
       </div>
     </div>
     ${innerTabsHtml}
@@ -34913,7 +35023,7 @@ function dividendExecutiveKpis(rows=dividendPremiumRows()){
     ['Recebido no ano','income',receivedThisYearKnown?fmt(receivedThisYear):'—',receivedThisYearSub,receivedThisYearKnown&&receivedThisYear>0?'good':'',''],
     ['Média mensal','history',monthlyAvg===null?'—':fmt(monthlyAvg),`Cobertura confirmada: ${complete.length}/12 meses`,monthlyAvg>0?'good':'','blue'],
     ['Último mês','trend',lastMonth===null?'—':fmt(lastMonth),lastMonthSub,lastMonth>0?'good':'','orange'],
-    ['Projeção anual','target',annualProjection===null?'—':fmt(annualProjection),'Estimativa · somente meses completos',annualProjection>0?'good':'','purple'],
+    ['Projeção anual','target',annualProjection===null?'—':fmt(annualProjection),'Estimativa · não recebida · somente meses completos',annualProjection>0?'good':'','purple'],
     ['Yield atual','percent',yieldNow!=null?`${yieldNow.toFixed(2)}%`:'—','Rendimento sobre o patrimônio',yieldNow!=null?'good':'','cyan']
   ];
   return `<section class="dividend-executive-kpis div-exec-kpis div-kpis-canon" aria-label="Resumo financeiro de dividendos"><div class="dividend-kpis-canon-grid">${cards.map(([label,icon,value,sub,tone,color])=>`<article class="dividend-executive-kpi div-premium-metric canon-kpi-card"><span class="dividend-executive-kpi-icon ${color}" aria-hidden="true">${waveBIcon(icon)}</span><div class="dividend-executive-kpi-label div-premium-metric-label">${esc(label)}</div><div class="dividend-executive-kpi-value div-premium-metric-value ${tone}" aria-label="${esc(`${label}: ${value}`)}">${value}</div><div class="dividend-executive-kpi-sub div-premium-metric-sub">${esc(sub)}</div></article>`).join('')}</div></section>`;
@@ -35847,7 +35957,7 @@ function metasTab(){
 
   <div class="metas-kpi-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px">
     <div class="card al metas-kpi-card ds-kpi ds-kpi--warning" style="border-left-color:var(--warning)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('income')}<span>Renda projetada/mês</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--warning)">${goalSnapshot.hasPortfolioData?fmt(mD):'Indisponível'}</div><div class="metas-kpi-sub ds-kpi__context">Estimativa da carteira · não recebida</div></div>
-    <div class="card al metas-kpi-card ds-kpi ds-kpi--positive" style="border-left-color:var(--success)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('trend')}<span>Projeção anual</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--success)">${goalSnapshot.hasPortfolioData?fmt(aD):'Indisponível'}</div></div>
+    <div class="card al metas-kpi-card ds-kpi ds-kpi--positive" style="border-left-color:var(--success)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('trend')}<span>Projeção anual</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--success)">${goalSnapshot.hasPortfolioData?fmt(aD):'Indisponível'}</div><div class="metas-kpi-sub ds-kpi__context">Estimativa · não recebida</div></div>
     <div class="card al metas-kpi-card ds-kpi ds-kpi--informational" style="border-left-color:var(--primary)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('percent')}<span>DY médio</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--primary)">${goalSnapshot.hasPortfolioData?avgDY.toFixed(2)+'%':'Indisponível'}</div></div>
     <div class="card al metas-kpi-card ds-kpi" style="border-left-color:var(--primary)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('wallet')}<span>Total da carteira</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--text)">${goalSnapshot.hasPortfolioData?fmt(tC):'Indisponível'}</div></div>
   </div>
@@ -38325,6 +38435,9 @@ html[data-theme="light"] .aporte-contribution-meta{color:#334155!important}
 html[data-theme="light"] .perf-badge,
 html[data-theme="light"] .div-asset-rank{color:#3730a3!important}
 html[data-theme="light"] .premium-exec-value.rd{color:#b91c1c!important}
+html[data-theme="light"] .side-avatar{color:var(--success)}
+html[data-theme="light"] .rd,html[data-theme="light"] .premium-rf-row-meta.neg{color:var(--negative)}
+html[data-theme="light"] .patrimonio-top-asset-rank{color:#3730a3}
 html[data-theme="light"] .premium-exec-value.am{color:#854d0e!important}
 html[data-theme="light"] .perf-pct,
 html[data-theme="light"] .asset-performance-pct{color:#15803d!important}
@@ -38539,6 +38652,10 @@ html[data-theme="light"] .canon-dashboard .dashboard-quick-action-sub{color:#405
 html[data-theme="light"] .premium-dividends-3 .div-premium-tab{color:#4b5d70}
 html[data-theme="light"] .premium-dividends-3 .div-type-badge.rendimento{color:#137333}
 html[data-theme="light"] .premium-dividends-3 .div-type-badge.outro{color:#475569}
+html[data-theme="light"] .div-type-badge.dividendo{color:#1d4ed8}
+html[data-theme="light"] .div-type-badge.jcp{color:#8a5a00}
+html[data-theme="light"] .div-type-badge.renda-fixa{color:#6b3fa0}
+html[data-theme="light"] .div-rf-money-item span{color:#334155}
 .assets-premium-shell .ag-k{font-size:12px;white-space:normal;overflow:visible;text-overflow:clip}
 </style>
 <script>

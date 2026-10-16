@@ -1,3 +1,9 @@
+## MEGA 08 — integração local pós-PR #496 (2026-10-12)
+
+- #496 foi confirmada MERGED no SHA a6b1d349170b973528b2bf64f1eddcbfe9bc1e5b; origin/main aponta para o mesmo commit.
+- Worktree isolada codex/legacy-mega-08-final-integration parte dessa main e contém somente os quatro commits funcionais exclusivos da MEGA 07, reaplicados sem conflito. PR #496 e worktrees anteriores permanecem intactas.
+- verify:release passou; focados 34/34, Modern 823/823, V289 18/18, qa:all sem overflow/erros relevantes; Finance Core, persistência e regras Firebase não foram alterados.
+- Sem push, PR, CI remoto ou Preview nesta missão. Nenhuma escrita financeira real ou ação de produção.
 ## V1005 — certificação operacional (2026-10-11)
 
 - Base `origin/main` `4cc31ed54000754bda0905aae2e9d06aa75ed6e6`; branch isolada `codex/v1005-operational-certification`.

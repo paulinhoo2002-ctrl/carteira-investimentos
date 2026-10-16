@@ -76,6 +76,18 @@
     });
   }
 
+  function filterByIssuer(rows, issuer = '') {
+    const list = Array.isArray(rows) ? rows : [];
+    const selected = text(issuer);
+    return selected ? list.filter(row => text(row.issuer) === selected) : list;
+  }
+
+  function filterByCategory(rows, category = '') {
+    const list = Array.isArray(rows) ? rows : [];
+    const selected = text(category);
+    return selected ? list.filter(row => text(row.category || row.type) === selected) : list;
+  }
+
   function sortRows(rows, key = 'name', direction = 'asc') {
     const multiplier = direction === 'desc' ? -1 : 1;
     return [...(Array.isArray(rows) ? rows : [])].sort((a, b) => {
@@ -83,9 +95,10 @@
       let right;
       if (key === 'value') { left = finite(a.current); right = finite(b.current); }
       else if (key === 'maturity') { left = Date.parse(text(a.due) || '') || Number.POSITIVE_INFINITY; right = Date.parse(text(b.due) || '') || Number.POSITIVE_INFINITY; }
-      else if (key === 'issuer') {
-        left = text(a.issuer).toLocaleLowerCase('pt-BR');
-        right = text(b.issuer).toLocaleLowerCase('pt-BR');
+      else if (key === 'issuer' || key === 'category') {
+        const field = key === 'issuer' ? 'issuer' : 'category';
+        left = text(a[field] || (key === 'category' ? a.type : '')).toLocaleLowerCase('pt-BR');
+        right = text(b[field] || (key === 'category' ? b.type : '')).toLocaleLowerCase('pt-BR');
         if (!left && right) return 1;
         if (!right && left) return -1;
       }
@@ -114,5 +127,5 @@
     };
   }
 
-  return Object.freeze({ STATUS, classify, describeAuthority, describeSource, describeIndexer, filterRows, sortRows, summarize });
+  return Object.freeze({ STATUS, classify, describeAuthority, describeSource, describeIndexer, filterRows, filterByIssuer, filterByCategory, sortRows, summarize });
 });

@@ -67,6 +67,12 @@ test('Dividendos preserva parcial e mês desconhecido sem converter ausência em
   assert.match(partialZero, />—<\/div>/);
 });
 
-test('Metas identifica renda mensal como estimativa separada de recebimentos', () => {
+test('Metas identifica renda mensal e anual como estimativas não recebidas', () => {
   assertSourceIncludes(html(), 'Estimativa da carteira · não recebida');
+  assertSourceIncludes(html(), 'metas-kpi-sub ds-kpi__context">Estimativa · não recebida</div>');
+});
+
+test('Dividendos identifica projeção anual como estimativa não recebida', () => {
+  const source = extract('function dividendExecutiveKpis(rows=dividendPremiumRows()){', 'function dividendDistributionRow(month, maxVal){');
+  assertSourceIncludes(source, 'Estimativa · não recebida · somente meses completos');
 });

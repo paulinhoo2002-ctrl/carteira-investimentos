@@ -46,7 +46,7 @@ async function main() {
     // Run smoke test with the determined origin
     const child = spawn(process.execPath, [SMOKE_SCRIPT], {
       cwd: ROOT,
-      stdio: ['pipe', 'pipe', 'pipe'],
+      stdio: ['ignore', 'pipe', 'pipe'],
       env: { ...process.env, QA_ORIGIN: originToUse }
     });
     

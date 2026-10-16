@@ -1,10 +1,9 @@
 const assert = require('node:assert/strict');
-const http = require('node:http');
 const fs = require('node:fs');
-const fsp = require('node:fs/promises');
 const path = require('node:path');
 const test = require('node:test');
 const { applyV289VisualFixture } = require('./helpers/v289-visual-fixtures');
+const { startLocalHttpServer: startServer } = require('./local-http-server.js');
 
 function resolveBrowser() {
   return [
@@ -16,26 +15,6 @@ function resolveBrowser() {
   ].filter(Boolean).find(candidate => {
     try { fs.accessSync(candidate); return true; } catch { return false; }
   });
-}
-
-async function startServer(rootDir) {
-  const server = http.createServer(async (req, res) => {
-    try {
-      const pathname = decodeURIComponent(new URL(req.url || '/', 'http://127.0.0.1').pathname);
-      const file = path.normalize(path.join(rootDir, pathname === '/' ? '/index.html' : pathname));
-      if (!file.startsWith(rootDir)) { res.writeHead(403); res.end(''); return; }
-      const contentType = file.endsWith('.html') ? 'text/html; charset=utf-8'
-        : file.endsWith('.js') || file.endsWith('.mjs') ? 'text/javascript; charset=utf-8'
-          : file.endsWith('.css') ? 'text/css; charset=utf-8' : 'text/plain';
-      res.writeHead(200, { 'Content-Type': contentType });
-      res.end(await fsp.readFile(file));
-    } catch (error) {
-      res.writeHead(error.code === 'ENOENT' ? 404 : 500);
-      res.end('');
-    }
-  });
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  return { server, url: `http://127.0.0.1:${server.address().port}/index.html?testMode=1` };
 }
 
 const viewports = [

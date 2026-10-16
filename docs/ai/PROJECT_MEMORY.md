@@ -1,3 +1,10 @@
+## MEGA 08 — integração pós-#496 (2026-10-12)
+
+- #496 foi verificada no GitHub como MERGED; merge_commit_sha=a6b1d349170b973528b2bf64f1eddcbfe9bc1e5b e origin/main foi atualizado por fetch normal para esse SHA.
+- Criada worktree C:\Projetos\carteira-investimentos.worktrees\legacy-mega-08-final-integration em codex/legacy-mega-08-final-integration. Reaplicados apenas quatro commits funcionais exclusivos da MEGA 07: clareza de valuation/estimativas, filtros por instituição/produto, layout mobile e reutilização do QA harness confiável. Dois commits de checkpoint históricos não foram reaplicados.
+- Focados 34/34; npm run verify:release PASS, incluindo npm test/V324, Modern 823/823, qa:all e V289 18/18. Capturas sintéticas de RF em 390x844 e 1366x768; overflow 0. Finance Core/persistência/Firebase sem diff.
+- Reuso de node_modules existente em worktree irmã, com lockfile idêntico; sem instalação de dependências. Build manteve dois avisos anteriores no host de relatórios Modern. Sem autenticação hospedada, push, PR, merge ou deploy.
+- Próximo gate: autorização humana específica para publicar a branch.
 ## V1005 — operacional e exportação portátil protegida (2026-10-11)
 
 - Na branch isolada `codex/v1005-operational-certification`, export portátil recebeu AES-256-GCM com chave derivada PBKDF2/SHA-256; a validação de proprietário/manifesto/SHA continua antes da cifra e depois da decifra. Snapshots locais do navegador permanecem sem esta criptografia e a UI de import continua preview-only.
