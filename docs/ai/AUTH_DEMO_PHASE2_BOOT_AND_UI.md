@@ -1,0 +1,84 @@
+# AUTH-DEMO Phase 2 — Boot security, realtime, e contrato de migração (P6-P35)
+
+Missão: `LEGACY_MULTIUSER_AUTH_DEMO_PHASE2_SECURITY_BOOT_AND_UI` (P6-P37).
+Branch: `codex/legacy-auth-demo` (base `634c6fd`; segurança P0-P5 em `14fbeab`).
+Estado deste documento: módulos certificados; integração `index.html` + QA browser pendentes (ver Blockers).
+
+## Boot security order (P6) — `auth/boot.js`
+
+`runBoot(deps)` executa a ordem EXATA (assert nos testes, `tests/auth-boot.test.js`):
+`INIT_FIREBASE → RESOLVE_AUTH → SHOW_LOADING → INSPECT_EMAIL_VERIFIED → LOAD_AUTHORIZATION → RESOLVE_ACCOUNT_MODE → SELECT_DATA_SOURCE → LOAD_PORTFOLIO → RENDER`.
+
+- `REAL_DATA_FETCH_BEFORE_AUTHORIZATION=0` provado: `loadPortfolio` só existe após modo+fonte resolvidos; nunca chamado em BLOCKED/LOGIN_REQUIRED.
+- Fail-closed: REAL sem UID → `BOOT_FAIL_CLOSED`; sem registro → DEMO (nunca REAL); malformado → BLOCKED.
+- Revocação/flash: `clearRealCache` é chamado ANTES do render em qualquer modo ≠ REAL — estado real em cache nunca sobrevive a uma sessão DEMO/BLOCKED/LOGIN (P25/P27 módulo-nível).
+- DEMO→REAL (P26): boot REAL nunca constrói/lee a fonte demo — dados demo não são migrados nem copiados.
+- P32: em DEMO, `createRealSource` não é chamado — `DEMO_FIRESTORE_READS=0`, `DEMO_FIRESTORE_WRITES=0` (estrutural; regras negam no servidor — T03/T04).
+
+## Routing (P8-P11) — `auth/boot-ui.js` + data-source guard (P18)
+
+- Loading: "Verificando sua conta..." (`role="status"`, `aria-live="polite"`, zero valores).
+- Login: "Continuar com Google" sempre; "Entrar com e-mail" SOMENTE se o host provar provedor configurado (`emailAuthConfigured: true`) — nunca inventar provider.
+- BLOCKED: "Acesso indisponível" — sem valores, sem jargão, sem auto-DEMO.
+- Badge demo: "Modo demonstração" + "Dados fictícios" persistente; reset "Restaurar demonstração" com confirmação.
+- P18: `createFirestoreRealDataSource(uid, db, {accountMode})` lança `ACCOUNT_MODE=REAL (fail closed)` em DEMO/BLOCKED/LOGIN_REQUIRED — fonte real não pode ser construída fora do REAL.
+
+## Realtime/isolamento (P19/P20) — classificação honesta
+
+- Firestore emulator NÃO implementa `documents:listen` REST (HTTP 404 com token válido) e não há SDK firebase em node_modules (60 pkgs; nova dependência exige aprovação) — sem como certificar push `onSnapshot` neste worktree.
+- `SAME_UID_REALTIME_SYNC=PARTIAL_REST_DATA_PARITY`: dois dispositivos (2 sessões) mesmo UID REAL — cada um escreve e OBSERVA a escrita do outro (REST) — provado em `tests/auth-demo-realtime.test.js`. Gap exato: semântica de PUSH (listener) requer teste com SDK.
+- `CROSS_USER_ISOLATION=PASS_READ_LEVEL`: B→A leitura/escrita negadas (403) e A íntegro; `onSnapshot` é autorizado pela MESMA regra `allow read` (negação rule-identical), mas a negação no nível listen/wire não foi testável (endpoint ausente).
+
+## Escrita concorrente (P21/P22) — modelo e decisão
+
+- Auditoria: `FirestoreRealDataSource.save` usa `set(data, {merge:true})` (Fase 1) = merge a nível de CAMPO, não replace integral. Equivalente REST: `PATCH?updateMask.fieldPaths=...` — provado no emulador: A grava campo X, B grava campo Y, ambos sobrevivem + campos pré-existentes preservados (P21 PASS).
+- Risco documentado: merge:true substitui SUBMAPAS do campo gravado (não faz merge profundo) — mutações concorrentes no MESMO campo estrutural são last-write-wins por campo.
+- P22 DECISÃO: NÃO adicionar contador de revisão agora (complexidade sem ganho material — conflitos reais são por campo e o merge já os escopa; `updatedAt` continua sendo responsabilidade do payload do host). Reavaliar se aparecer perda real.
+
+## Offline/reconnect (P23)
+
+`OFFLINE_CONFLICT_MODEL=DESIGNED_ONLY` — política declarada: escritas são merge por campo (last-write-wins por campo após reconexão); NENHUMA resolução custom de conflito implementada; offline queue é comportamento do SDK no app real. Não reivindicar resolução perfeita.
+
+## Settings (P24) — `SETTINGS_SYNC_POLICY` (`auth/boot.js`)
+
+- SYNC_ACCOUNT: theme, currency, locale, goals, divGoal, dashboardPeriod, rentabilidadeBenchmark.
+- DEVICE_LOCAL: selectedTab, openModal, temporaryUiState, scrollPosition, browserCacheFlags.
+- Fail-closed: chave não classificada → `UNCLASSIFIED_DO_NOT_SYNC` (nunca sincar por padrão).
+
+## Privacidade demo (P31) — guardas estendidas em `assertDemoSafety`
+
+Além de UID real/tickers/valores (Fase 1), agora rejeita: `movimentacao-2026*`, `posicao-2026*`, `PosicaoDetalhada`, `package1_v2`, `package2_v2`, projeto de produção `carteira-de-investimento-16725`, `_backups`, `.qa-state`. Testado positivo (fixture ok) e negativo (injeções rejeitadas).
+
+## Portas do emulador auth-demo
+
+Migrado para portas PRIVADAS (auth 9100, firestore 8085, hub 4401, logging 4501) em `firebase.auth-demo-emulator.json` + ambos os arquivos de teste. Motivo: colisão recorrente na 8080 — incluindo um órfão java DE OUTRO PROJETO (carteira-2.0-multiuser, `demo-carteira-2-0`, PID 5916, parent morto) que NÃO foi tocado (missão proíbe). Portas privadas eliminam a classe de conflito.
+
+## Compatibilidade de produção (P34) e plano de migração Phase 3 (P35)
+
+Produção INTACTA: `firestore.rules` não modificado; `portfolios/{uid}`/Package1A/Package2 não migrados; zero escritas hospedadas.
+
+Plano exato (execução futura, human-gated):
+1. Backup canônico do doc `portfolios/{ownerUid}` (export JSON local, SHA-256 registrado).
+2. `source_doc_hash` (hash canônico recursivo — ordem de chaves NÃO-determinística no REST: usar canonicalize).
+3. Caminho alvo: `users/{uid}/portfolio` (modelo final escolhido) — ou manter `portfolios/{uid}` e só adicionar `authorizedUsers` (decisão de produto; o modelo de regras auth-demo suporta ambos).
+4. Preservação campo a campo: package1_v2 e package2_v2 copiados byte-identicos; campos não relacionados nunca reescritos.
+5. Idempotência: NOOP_IF_EXACT_MATCH (hash de conteúdo igual → skip); INSERT_IF_ABSENT; ABORT_IF_CONFLICT (padrão do writer Package2).
+6. Readback pós-cópia: GET + re-hash == source hash; UNRELATED_FIELDS_CHANGED=0.
+7. Rollback: remover APENAS o campo/doc criado pela migração (hash do campo próprio, nunca updateTime do doc inteiro — preserva mutações estranhas posteriores).
+8. Cutover: (a) regras novas deployadas (gated), (b) adapter READ de compatibilidade ativo, (c) cópia idempotente, (d) readback, (e) switch de leitura do app, (f) escrita dual nunca — single-writer.
+9. Adapter de compatibilidade (P31/34): `readPortfolioCompat(uid)` tenta `users/{uid}/portfolio`, fallback `portfolios/{uid}` — READ-only, sem mutação em produção.
+
+## Gates verificados neste HEAD (worktree legacy-auth-demo)
+
+- `npm run test:auth-demo-emulator`: 20/20 (matriz 16 + realtime 4), SUITE_EXIT=0
+- `tests/auth-boot.test.js` + `tests/auth-account-mode.test.js`: 51/51
+- `npm run test:finance`: 96/96; `test:persistence`: 32/32; `test:ir2026`: 71/71
+- `node --check`: OK em todos os arquivos novos/alterados
+
+## Blockers restantes (AUTH_DEMO_PHASE2_READY=NO)
+
+1. Integração real em `index.html` (boot gate, login/badge/reset/blocked nas telas existentes) — módulos prontos, wiring exige fase própria + bateria completa.
+2. QA browser: responsivo 390/768/1366/1920 + Axe claro/escuro nos estados auth (P29/P30).
+3. Bateria pesada: `npm test`, `test:modern`, `qa:all`, visual regression (P33 completo).
+4. onSnapshot push real (SDK) para P19 (P19 atual = data parity REST).
+5. Órfão java 8080 do projeto carteira-2.0 (PID 5916, parent morto) — intocado; humano decide.
