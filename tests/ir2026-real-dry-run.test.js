@@ -18,10 +18,18 @@ test('real dry-run boundary keeps absent January opening UNKNOWN and never certi
   assert.equal(report.MONTHLY_2026.length, 12);
   assert.equal(report.MONTHLY_2026[0].TAX_DUE, 'NOT_CALCULATED');
   assert.equal(report.CURRENT_POSITION_CROSSCHECK.STATUS, 'PARTIAL');
+  assert.equal(report.CURRENT_POSITION_CROSSCHECK.COUNTS.EXACT, 0);
+  assert.equal(report.CURRENT_POSITION_CROSSCHECK.ROWS[0].STATUS, 'UNKNOWN');
   assert.deepEqual(report.CURRENT_POSITION_CROSSCHECK.CURRENT_COST_CERTIFIED_BUT_FISCAL_UNKNOWN_ASSETS, ['TEST4']);
   assert.equal(buildDryRun(input, master).HASHES.LEDGER, report.HASHES.LEDGER);
 });
 
 test('real dry-run rejects duplicate canonical events', () => {
   assert.throws(() => buildDryRun([syntheticEvent, syntheticEvent], []), /duplicate canonical event/);
+});
+
+
+test('real dry-run rejects duplicate current-position rows', () => {
+  const row = { asset_identity: 'TEST4', package1a_quantity: 2 };
+  assert.throws(() => buildDryRun([syntheticEvent], [row, row]), /duplicate current-position row/);
 });

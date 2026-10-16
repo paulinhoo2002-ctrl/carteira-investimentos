@@ -53,6 +53,11 @@ function classifyEvent(raw, record) {
 
 function buildDryRun(rawEvents, masterRows, registry = loadRegistry()) {
   if (!Array.isArray(rawEvents) || !Array.isArray(masterRows)) throw new TypeError('evidence arrays required');
+  const masterIds = new Set();
+  for (const row of masterRows) {
+    if (!row.asset_identity || masterIds.has(row.asset_identity) || !Number.isFinite(row.package1a_quantity)) throw new Error('invalid or duplicate current-position row');
+    masterIds.add(row.asset_identity);
+  }
   const ids = new Set();
   for (const event of rawEvents) {
     if (!event.CANONICAL_ID || ids.has(event.CANONICAL_ID) || !/^\d{4}-\d{2}-\d{2}$/.test(event.DATE)) throw new Error('invalid or duplicate canonical event');
@@ -83,9 +88,17 @@ function buildDryRun(rawEvents, masterRows, registry = loadRegistry()) {
     return { MONTH: month, CLOSES: ledger.MONTHLY_CLOSES.filter(c => c.YEAR_MONTH === month),
       TAX_DUE: 'NOT_CALCULATED', COVERAGE: 'UNKNOWN' };
   });
-  const current = masterRows.map(row => ({ ASSET: row.asset_identity, AS_OF: '2026-10-10',
-    CURRENT_QTY: row.package1a_quantity, CURRENT_AVG_COST_STATUS: row.average_cost_status,
-    OPENING_SOURCE_ALLOWED: false }));
+  const current = masterRows.map(row => {
+    const openingRow = opening.ROWS.find(o => o.ASSET === row.asset_identity);
+    const closing = ledger.STATES[row.asset_identity];
+    const derivedQty = closing?.QTY ?? null;
+    const delta = derivedQty === null ? null : Number((row.package1a_quantity - derivedQty).toFixed(8));
+    return { ASSET: row.asset_identity, AS_OF: '2026-10-10', CURRENT_QTY: row.package1a_quantity,
+      CURRENT_AVG_COST_STATUS: row.average_cost_status, DERIVED_QTY: derivedQty, DELTA: delta,
+      STATUS: derivedQty === null ? 'UNKNOWN' : 'PARTIAL',
+      REASON: openingRow?.QTY_STATUS === 'CERTIFIED' ? 'SOURCE_DATE_OR_EVENT_COVERAGE_UNVERIFIED' : 'OPENING_2026_NOT_CERTIFIED',
+      OPENING_SOURCE_ALLOWED: false };
+  });
   const currentCertifiedFiscalUnknown = current.filter(row => row.CURRENT_AVG_COST_STATUS === 'CERTIFIED'
     && opening.ROWS.find(o => o.ASSET === row.ASSET)?.COST_STATUS !== 'CERTIFIED').map(row => row.ASSET);
   const rulesToVerify = registry.RULES.filter(r => r.STATUS === 'NEEDS_CURRENT_LEGAL_SOURCE').map(r => ({
@@ -93,7 +106,8 @@ function buildDryRun(rawEvents, masterRows, registry = loadRegistry()) {
     QUESTION_TO_VERIFY: r.NOTES, CURRENT_ENGINE_BEHAVIOR: 'TAX_DUE_NOT_CALCULATED', BLOCKS_OUTPUTS: ['IR_CALCULATION_READY'] }));
   const report = { FISCAL_YEAR: fiscalYear, SOURCE_BOUNDARY: '2019-2025 analytical; 2026 fiscal',
     OPENING: opening, LEDGER: ledger, MONTHLY_2026: monthRows, CERTIFICATION: certification,
-    CURRENT_POSITION_CROSSCHECK: { STATUS: 'PARTIAL', AS_OF: '2026-10-10', ROWS: current,
+    CURRENT_POSITION_CROSSCHECK: { STATUS: 'PARTIAL', AS_OF: '2026-10-10',
+      COUNTS: { PARTIAL: current.filter(r => r.STATUS === 'PARTIAL').length, UNKNOWN: current.filter(r => r.STATUS === 'UNKNOWN').length, EXACT: 0 }, ROWS: current,
       CURRENT_COST_CERTIFIED_BUT_FISCAL_UNKNOWN_ASSETS: currentCertifiedFiscalUnknown },
     EVENT_COUNTS: { TOTAL: yearEvents.length, BY_TYPE: eventTypes, BY_FISCAL_STATUS: eventStatuses },
     UNKNOWN_FORENSICS: unknown, TAX_RULE_VERIFICATION_CHECKLIST: rulesToVerify,
