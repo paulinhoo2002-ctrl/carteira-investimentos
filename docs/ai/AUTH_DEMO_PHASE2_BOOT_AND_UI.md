@@ -90,11 +90,27 @@ fictícios" + Restaurar no authBox; sw.js APP_SHELL inclui os 5 módulos.
 Certificações: auth-demo-wiring 12/12; inline-syntax OK; e2e-auth-mode e
 local-synthetic-qa-runtime preservados; v201/v250b/v284 94/94; emulador 20/20.
 
-## Blockers restantes (AUTH_DEMO_PHASE2_READY=NO)
+## Browser certification — CONCLUÍDO (sessão final)
 
-1. QA browser: responsivo 390/768/1366/1920 + Axe claro/escuro nos estados auth (P18-P20).
-2. Bateria pesada: `npm test`, `test:modern`, `qa:all`, visual regression (P22/P23 completo).
-3. onSnapshot push real (SDK) para P15 (REST data parity certificada em P19/P20).
-4. Órfão java 8080 do projeto carteira-2.0 (PID 5916, parent morto) — intocado; humano decide.
-5. Demo IRPF screen-level: estado sintético existe (generateDemoIrpfState, testado);
-   hook por tela pendente de fase própria.
+`npm run test:auth-demo-browser` 9/9 PASS (Chromium real, server local dedicado,
+lifecycle determinístico): LOGIN gate sem valores; AUTH_LOADING
+"Verificando sua conta..." com role=status/aria-live (adicionado ao gate);
+DEMO 7 rotas renderizadas com badge visível + IRPF 100% sintético
+(generateDemoIrpfState, sem "0 de 61"/bloqueios do owner); Restaurar demonstração
+reseta fixture exata (9 ativos) sem requests; persistência demo = memória/sessão
+(reload volta ao gate — modelo honesto); BLOCKED dedicado; no-flash no boot;
+responsivo 390/768/1366/1920 × claro/escuro GLOBAL_OVERFLOW=0 (40 combos);
+Axe (local axe-core) critical=0/serious=0 em 10 combos. Defeito real encontrado
+e corrigido: badge vivia em .hdr-right display:none → overlay fixo
+`#auth-demo-badge` sincronizado no render() (visível em todas as rotas,
+removido fora do DEMO). Screenshots privados: .qa-state/auth-demo-browser/.
+
+## Blockers restantes
+
+1. Bateria pesada em execução no fechamento: `npm test` + `test:modern`
+   (background); `qa:all`/visual regression dependem de build:modern (vite) —
+   verificar disponibilidade da toolchain.
+2. onSnapshot push browser (P15) = BLOCKED_BY_HARNESS (app conecta emulador em
+   8080/9099; 8080 ocupada por órfão do projeto carteira-2.0 — intocado);
+   REST same-UID + isolamento emulador permanecem certificados.
+3. Órfão java 8080 do projeto carteira-2.0 (PID 5916, parent morto) — humano decide.

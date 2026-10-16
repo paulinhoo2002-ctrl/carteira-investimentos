@@ -11970,7 +11970,7 @@ function accessGateBox(){
   const title = loading ? 'Verificando sua conta...' : (FB.user ? 'Seu e-mail não está autorizado' : 'Entre com Google para continuar');
   const chip = FB.user ? `<span class="note-pill" style="background:#111827;color:#c7d2fe;border-color:rgba(99,102,241,.22)">${esc(FB.user.email || '')}</span>` : '';
   return `
-    <div style="min-height:calc(100vh - 86px);display:grid;place-items:center;padding:14px 16px 20px">
+    <div${loading ? ' role="status" aria-live="polite"' : ''} style="min-height:calc(100vh - 86px);display:grid;place-items:center;padding:14px 16px 20px">
       <div style="width:min(460px,100%);background:linear-gradient(180deg,#0d1320 0%,#0a1020 100%);border:1px solid #1d2940;border-radius:20px;box-shadow:0 16px 42px rgba(0,0,0,.36);overflow:hidden;position:relative">
         <div style="height:3px;background:linear-gradient(90deg,#7c8dff 0%,#6ee7b7 100%);box-shadow:0 0 24px rgba(124,141,255,.18)"></div>
         <div style="padding:20px 22px 12px">
@@ -23227,6 +23227,38 @@ function irpfTab(){
 
 function ir2026ReadinessSection(){
   if(typeof IR2026Readiness==='undefined') return '';
+  // P7 DEMO: synthetic fiscal state only — the owner's real IR2026 readiness
+  // (61 sales, 2025 evidence blockers, opening coverage) is NEVER rendered in DEMO.
+  if(FB.accountMode === 'DEMO' && window.DemoPortfolio && DemoPortfolio.generateDemoIrpfState){
+    const d = DemoPortfolio.generateDemoIrpfState();
+    const card = (label, detail, tone) => `
+      <div class="irpf-summary-card ds-kpi ${tone}">
+        <div class="analysis-summary-kicker ds-kpi__label">${esc(label)}</div>
+        <div class="analysis-summary-value ds-kpi__value">${esc(detail)}</div>
+      </div>`;
+    return `
+    <div class="irpf-shell ir2026-readiness">
+      <div class="irpf-head">
+        <div>
+          <div class="irpf-title">APURAÇÃO DO IR 2026</div>
+          <div class="irpf-sub">Modo demonstração · Dados fictícios para demonstração. Nenhum dado fiscal real é exibido.</div>
+        </div>
+        <span class="irpf-badge warn">DADOS FICTÍCIOS</span>
+      </div>
+      <div class="irpf-summary">
+        ${card('Imposto (demo)', esc(d.taxDue), '')}
+        ${card('Abertura fiscal (demo)', `${d.openingQty.certified} certificadas · ${d.openingQty.partial} parciais (fictício)`, 'warn')}
+        ${card('Vendas analisadas (demo)', `${d.sales.certified} de ${d.sales.analyzed} certificadas (fictício)`, 'warn')}
+        ${card('Regras (demo)', `${d.rules.certified} de ${d.rules.total} certificadas (fictício)`, 'warn')}
+      </div>
+      <div class="irpf-section">
+        <h2 class="irpf-section-title">Estado sintético da demonstração</h2>
+        <ul class="ir2026-blockers">
+          <li><span class="irpf-badge warn">DEMO</span> Painel inteiramente fictício — ${esc(d.explanation)}</li>
+        </ul>
+      </div>
+    </div>`;
+  }
   const contract=IR2026Readiness.buildReadinessContract();
   return IR2026Readiness.renderReadinessPanel(contract, esc);
 }
@@ -28882,9 +28914,37 @@ function restoreQuoteUi(){
   requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({left:x,top:y,behavior:'auto'})));
 }
 function disarmQuoteUi(){ quoteUiArmed=false; quoteUiSnapshot=null; }
+// P8: persistent VISIBLE demo badge. The header authBox container is hidden in
+// some shell states (hdr-right display:none) — a fixed overlay guarantees the
+// badge stays visible across all routes while DEMO, and is removed otherwise.
+function syncDemoBadgeOverlay(){
+  let el=document.getElementById('auth-demo-badge');
+  if(FB.accountMode==='DEMO'){
+    if(!el){
+      el=document.createElement('div');
+      el.id='auth-demo-badge';
+      el.setAttribute('role','status');
+      el.style.cssText='position:fixed;right:10px;bottom:10px;z-index:9999;display:flex;align-items:center;gap:6px;background:rgba(6,15,28,.92);border:1px solid rgba(110,231,183,.35);border-radius:999px;padding:6px 10px;box-shadow:0 6px 18px rgba(0,0,0,.35)';
+      const label=document.createElement('span');
+      label.style.cssText='font-size:10px;font-weight:800;color:#6ee7b7';
+      label.textContent='Modo demonstração · Dados fictícios';
+      const btn=document.createElement('button');
+      btn.type='button';
+      btn.textContent='Restaurar';
+      btn.title='Restaurar demonstração';
+      btn.setAttribute('aria-label','Restaurar demonstração');
+      btn.style.cssText='font-size:9px;font-weight:800;border:1px solid rgba(110,231,183,.35);background:transparent;color:#6ee7b7;border-radius:999px;padding:3px 8px;cursor:pointer;min-height:24px';
+      btn.addEventListener('click',resetDemoPortfolio);
+      el.appendChild(label);
+      el.appendChild(btn);
+      document.body.appendChild(el);
+    }
+  }else if(el){ el.remove(); }
+}
 function render(){
   const root=document.getElementById('root');
   if(!root) return;
+  try{ syncDemoBadgeOverlay(); }catch(e){}
   try{
     S._dashboardHighlightsCache=null;
     if(S._rmpTrace) console.log('[rmP] render() chamado');
