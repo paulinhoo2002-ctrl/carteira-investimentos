@@ -212,3 +212,37 @@ test('dividend recent-list footer meets Axe contrast in dark and light themes', 
     }
   });
 });
+
+test('shared financial colors meet contrast in light and dark themes', async () => {
+  await withPage({ width: 1366, height: 768 }, async page => {
+    await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') });
+    for (const theme of ['light', 'dark']) {
+      await page.evaluate(theme => {
+        applyTheme(theme);
+        document.querySelector('.contrast-regression-fixture')?.remove();
+        const fixture = document.createElement('div');
+        fixture.className = 'div-premium contrast-regression-fixture';
+        fixture.innerHTML = `
+          <div style="background:${theme === 'light' ? '#fff' : 'var(--surface)'}">
+            <span class="side-avatar">QA</span>
+            <span class="rd">Resultado negativo sintético</span>
+            <span class="premium-rf-row-meta neg">Resultado negativo sintético</span>
+            <span class="div-recent-more">Rodapé sintético</span>
+          </div>
+          <div style="background:var(--surface)">
+            <span class="patrimony-month-value">Valor sintético</span>
+            <span class="patrimonio-panel-badge rd">Estado sintético</span>
+          </div>
+          <div style="background:var(--surface-2)">
+            <span class="patrimonio-top-asset-rank">#1</span>
+            <span class="patrimonio-top-asset-perc rd">Variação sintética</span>
+          </div>`;
+        document.body.append(fixture);
+      }, theme);
+      const result = await page.evaluate(async () => axe.run('.contrast-regression-fixture', {
+        runOnly: { type: 'rule', values: ['color-contrast'] },
+      }));
+      assert.deepEqual(result.violations.map(item => ({ id: item.id, targets: item.nodes.map(node => node.target) })), [], `${theme} semantic contrast`);
+    }
+  });
+});
