@@ -1,0 +1,65 @@
+rules_version = '2';
+
+// ============================================================================
+// AUTH-DEMO Phase 2 — emulator-ready security rules (future UID-scoped model).
+// NOT deployed to production (PRODUCTION_RULES_DEPLOY=0).
+// Server-side mirror of auth/account-mode.js resolveAccountMode() — the
+// authorization REGISTRY is the server truth; client ACCOUNT_MODE is a UI
+// hint only and can never bypass these rules. Fail-closed everywhere:
+// missing/malformed registry => DENY.
+//
+// Core invariants (mission P2):
+//   1. unauthenticated      -> no real portfolio read/write
+//   2. DEMO user            -> no real Firestore portfolio read/write
+//   3. REAL user            -> own UID scope only
+//   4. USER_A               -> cannot read/write USER_B
+//   5. BLOCKED              -> no access
+//   6. normal user          -> cannot mutate authorization registry
+//   7. client-side spoof    -> cannot bypass (rules never see client mode)
+// ============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null && request.auth.uid != null;
+    }
+
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    // Server-side mirror of resolveAccountMode === REAL:
+    // authenticated + verified + registry(enabled, valid role, not blocked) + own scope.
+    // Missing registry doc -> get() errors -> DENY (fail-closed: no record = no access).
+    function isRealAuthorizedOwner(userId) {
+      let reg = get(/databases/$(database)/documents/authorizedUsers/$(userId)).data;
+      return isEmailVerified()
+        && request.auth.uid == userId
+        && reg.role in ['owner', 'user', 'viewer', 'admin']
+        && reg.enabled == true
+        && reg.blocked == false;
+    }
+
+    // --- Authorization registry (P3): server truth --------------------------
+    // Client read: ONLY the signed-in user's OWN entry — the app resolves the
+    // account mode from it; nobody can read another user's registry.
+    // Client write: NEVER — no self-escalation, no self-unblock, no role edit.
+    // Mutations happen exclusively via Admin SDK (trusted server path, which
+    // bypasses rules).
+    match /authorizedUsers/{uid} {
+      allow read: if isSignedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // --- Real financial portfolio: UID-scoped, registry-gated (P2) -----------
+    match /portfolios/{userId} {
+      allow read, write: if isRealAuthorizedOwner(userId);
+    }
+
+    // --- Legacy user docs: same UID-scope discipline --------------------------
+    match /users/{userId} {
+      allow read, write: if isRealAuthorizedOwner(userId);
+    }
+  }
+}
