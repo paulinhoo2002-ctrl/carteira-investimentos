@@ -75,10 +75,26 @@ Plano exato (execução futura, human-gated):
 - `npm run test:finance`: 96/96; `test:persistence`: 32/32; `test:ir2026`: 71/71
 - `node --check`: OK em todos os arquivos novos/alterados
 
+## Wiring index.html — CONCLUÍDO (sessão de boot/UI)
+
+Boot seguro integrado ao caminho REAL do app (não módulo isolado): 5 módulos auth
+carregados antes do app; decisão ÚNICA de modo em onAuthStateChanged (sessão
+offline protegida V250 preservada antes do roteamento); compat adapter
+registry → meta/access → admin allowlist (owner continua carregando normally);
+DEMO hidrata pela rota canônica (normalizeWalletEntry + syncStateFromWallet);
+BLOCKED renderiza tela dedicada (AuthBootUi); logout limpa S em memória
+(REAL_DATA_FLASH pós-logout); guards accountMode em
+startCloudSync/queueCloudSave/uploadLocalToCloud (DEMO_MODE_NO_CLOUD_WRITES);
+gate loading "Verificando sua conta..."; badge "Modo demonstração · Dados
+fictícios" + Restaurar no authBox; sw.js APP_SHELL inclui os 5 módulos.
+Certificações: auth-demo-wiring 12/12; inline-syntax OK; e2e-auth-mode e
+local-synthetic-qa-runtime preservados; v201/v250b/v284 94/94; emulador 20/20.
+
 ## Blockers restantes (AUTH_DEMO_PHASE2_READY=NO)
 
-1. Integração real em `index.html` (boot gate, login/badge/reset/blocked nas telas existentes) — módulos prontos, wiring exige fase própria + bateria completa.
-2. QA browser: responsivo 390/768/1366/1920 + Axe claro/escuro nos estados auth (P29/P30).
-3. Bateria pesada: `npm test`, `test:modern`, `qa:all`, visual regression (P33 completo).
-4. onSnapshot push real (SDK) para P19 (P19 atual = data parity REST).
-5. Órfão java 8080 do projeto carteira-2.0 (PID 5916, parent morto) — intocado; humano decide.
+1. QA browser: responsivo 390/768/1366/1920 + Axe claro/escuro nos estados auth (P18-P20).
+2. Bateria pesada: `npm test`, `test:modern`, `qa:all`, visual regression (P22/P23 completo).
+3. onSnapshot push real (SDK) para P15 (REST data parity certificada em P19/P20).
+4. Órfão java 8080 do projeto carteira-2.0 (PID 5916, parent morto) — intocado; humano decide.
+5. Demo IRPF screen-level: estado sintético existe (generateDemoIrpfState, testado);
+   hook por tela pendente de fase própria.
