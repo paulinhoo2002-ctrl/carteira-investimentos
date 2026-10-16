@@ -168,15 +168,30 @@ test('torture: explicit CORPORATE_SPLIT handler (synthetic event type)', () => {
 });
 
 // ---- 10. bonus --------------------------------------------------------------
-test('torture: bonus adds qty, preserves total cost (avg falls)', () => {
+test('bonus without capitalized cost evidence cannot alter fiscal quantity or average cost', () => {
   const st = fresh();
   applyEvent({ PETR4: st }, normalizeEvent(mkEv({ QUANTITY: 100, UNIT_PRICE: 10, AMOUNT: 1000 })), { registry, fiscalYear: 2026 });
   const bonus = normalizeEvent(mkEv({ DATE: '2026-02-01', TYPE: 'CORPORATE_ACTION', MOVEMENT_RAW: 'Bonificação em Ativos', QUANTITY: 20, UNIT_PRICE: null, AMOUNT: null }));
   const rec = applyEvent({ PETR4: st }, bonus, { registry, fiscalYear: 2026 });
-  assert.strictEqual(rec.PROCESSING, 'APPLIED');
-  assert.strictEqual(st.QTY, 120);
+  assert.strictEqual(rec.PROCESSING, 'BLOCKED_UNKNOWN');
+  assert.strictEqual(rec.BLOCK_REASON, 'CORPORATE_BONUS_COST_BASIS_UNKNOWN');
+  assert.strictEqual(st.QTY, 100);
   assert.strictEqual(st.TOTAL_COST_CENTS, 100000);
-  assert.strictEqual(st.AVG_COST_CENTS, Math.round(100000 / 120));
+  assert.strictEqual(st.AVG_COST_CENTS, 1000);
+  assert.strictEqual(st.COST_STATUS, 'UNKNOWN');
+  const sale = applyEvent({ PETR4: st }, normalizeEvent(mkEv({ DATE: '2026-03-01', TYPE: 'SELL', DIRECTION: 'Debito', QUANTITY: 10, UNIT_PRICE: 12, AMOUNT: 120 })), { registry, fiscalYear: 2026 });
+  assert.strictEqual(sale.PROCESSING, 'BLOCKED_UNKNOWN');
+  assert.strictEqual(sale.REALIZED, null);
+});
+
+test('uncertified bonus also downgrades fiscal coverage before a subsequent sale', () => {
+  const st = fresh();
+  applyEvent({ PETR4: st }, normalizeEvent(mkEv({ QUANTITY: 100, UNIT_PRICE: 10, AMOUNT: 1000 })), { registry, fiscalYear: 2026 });
+  const bonus = normalizeEvent(mkEv({ DATE: '2026-02-01', TYPE: 'CORPORATE_ACTION', MOVEMENT_RAW: 'Bonificação em Ativos', QUANTITY: 20, AMOUNT: null, STATUS: 'PARTIAL' }));
+  const rec = applyEvent({ PETR4: st }, bonus, { registry, fiscalYear: 2026 });
+  assert.strictEqual(rec.PROCESSING, 'BLOCKED_UNKNOWN');
+  assert.strictEqual(st.QTY_STATUS, 'PARTIAL');
+  assert.strictEqual(st.COST_STATUS, 'UNKNOWN');
 });
 
 // ---- 11. amortization ---------------------------------------------------------

@@ -338,15 +338,15 @@ function applyEvent(states, ev, ctx) {
     case 'BONUS': {
       if (ev.EVIDENCE_STATUS !== 'CERTIFIED' || ev.QTY === null || ev.QTY <= 0) {
         st.FLAGS.HAD_CORPORATE_PARTIAL = true;
+        downgradeQty(st, 'PARTIAL'); downgradeCost(st, 'UNKNOWN');
         return blocked('CORPORATE_BONUS_INSUFFICIENT_EVIDENCE', ['AFFECTS_CURRENT_POSITION', 'AFFECTS_FISCAL_COST']);
       }
       rule('RULE_BONUS_NO_COST_INFLATION');
-      st.QTY = toQty(st.QTY + ev.QTY); // total cost preserved → avg falls
-      st.AVG_COST_CENTS = avgCost(st);
-      rec.PROCESSING = 'APPLIED';
-      rec.IMPACT_FLAGS = ['AFFECTS_FISCAL_COST'];
-      rec.AFTER_STATE = summary(st);
-      return rec;
+      // IN RFB 1.585 art. 58 §1: stock bonus cost can equal capitalized profits/reserves.
+      // Canonical events do not carry that evidence, so changing the average here is unsafe.
+      st.FLAGS.HAD_CORPORATE_PARTIAL = true;
+      downgradeQty(st, 'PARTIAL'); downgradeCost(st, 'UNKNOWN');
+      return blocked('CORPORATE_BONUS_COST_BASIS_UNKNOWN', ['AFFECTS_CURRENT_POSITION', 'AFFECTS_FISCAL_COST', 'AFFECTS_REALIZED_GAIN', 'AFFECTS_IR']);
     }
     case 'CORPORATE_SPLIT':
     case 'CORPORATE_REVERSE_SPLIT': {

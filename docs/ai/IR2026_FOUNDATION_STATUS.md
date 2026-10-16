@@ -82,3 +82,17 @@ Todos os 26 itens abaixo permanecem NEEDS_CURRENT_LEGAL_SOURCE. Fonte oficial pr
 | RULE_CAPITAL_RETURN_TREATMENT | Devolução de capital | Quando o pagamento reduz custo e quando constitui rendimento tributável? | Lei federal e atos da Receita Federal | Fatos de 2026 | TAX_DUE=NOT_CALCULATED; saída não certificada | Custo e rendimento |
 
 Este checklist é agenda de pesquisa, não parecer tributário. Nenhuma das 26 regras foi certificada aqui.
+
+## Verificação oficial de 16/10/2026
+
+O registro versionado [`ir2026/rules/legal-review-2026.json`](../../ir2026/rules/legal-review-2026.json) relaciona, por `RULE_ID`, as 26 regras acima com fonte oficial, seção, síntese, comportamento esperado, casos de teste, confiança e estado de pesquisa. Os campos de escopo, classe, estado operacional e vigência permanecem no registro principal e são ligados pelo ID. O teste de contrato impede omissões, duplicatas e fonte sem URL. Resultado: **19 com evidência legal parcial, 7 ainda exigindo fonte específica, 0 certificadas para executar cálculo**. `TAX_DUE=NOT_CALCULATED` permanece.
+
+Achados que afetam segurança fiscal:
+
+- Bonificação: [IN RFB 1.585/2015, art. 58 §1º](https://normas.receita.fazenda.gov.br/sijut2consulta/link.action?idAto=67494) atribui custo às ações bonificadas pelo valor de lucros/reservas capitalizados. O motor anterior apenas aumentava a quantidade e diluía o custo médio. Agora bloqueia o evento sem essa evidência; não cria custo zero.
+- FII: [Receita Federal, Fundos de Investimento no Brasil](https://www.gov.br/receitafederal/pt-br/assuntos/meu-imposto-de-renda/pagamento/renda-variavel/fundos-de-investimento-no-brasil) indica 20% sobre ganho de alienação de cota em bolsa. O ID `RULE_FII_ALIENATION_EXEMPT_PF` é um nome legado enganoso e permanece pendente; nenhuma isenção é habilitada.
+- JCP: [IN RFB 1.700/2017, art. 75 §7º, redação de 2026](https://normas.receita.fazenda.gov.br/sijut2consulta/link.action?idAto=81268) indica 17,5% no pagamento ou crédito. Referências antigas de 15% não são adequadas para fatos posteriores à alteração.
+- Dividendos: [Lei 15.270/2025, art. 6º-A](https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2025/lei/l15270.htm) introduz retenção condicional a partir de janeiro de 2026, incluindo agregação por fonte pagadora/mês e transição. Não há no ledger prova suficiente para inferir retenção.
+- RF: regimes de CDB, CRA, LIG e debênture incentivada não podem compartilhar uma tabela única sem classificação documental. ETF de ticker terminado em `11` também não pode ser presumido FII. Ambos ficam como bloqueios de classificação.
+
+Fontes publicadas para o **exercício IRPF 2026** tratam majoritariamente do **ano-calendário 2025** e não certificam, sozinhas, fatos de 2026. A matriz preserva datas de publicação e marca explicitamente as ainda não verificadas. Revisão tributária independente e evidência fiscal de abertura, custos, perdas e retenções continuam necessárias antes de qualquer imposto devido.

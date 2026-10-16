@@ -88,6 +88,34 @@ test('rules registry: loads, unique ids, valid statuses (P21)', () => {
   assert.ok(reg.REGISTRY_SHA256.length === 64);
 });
 
+test('official 2026 review covers each pending rule once without enabling tax calculation', () => {
+  const registry = rulesMod.loadRegistry();
+  const review = JSON.parse(fs.readFileSync(path.join(__dirname, '../ir2026/rules/legal-review-2026.json'), 'utf8'));
+  assert.strictEqual(review.TAX_YEAR, 2026);
+  assert.strictEqual(review.REVIEWS.length, 26);
+  const pending = new Set(rulesMod.rulesNeedingExternalVerification(registry));
+  const allowed = new Set(['CERTIFIED_BY_OFFICIAL_SOURCE', 'PARTIAL_LEGAL_EVIDENCE',
+    'CONFLICTING_OFFICIAL_EVIDENCE', 'NEEDS_MORE_SOURCE', 'NOT_APPLICABLE']);
+  for (const [id, sourceIds, section, summary, behavior, cases, confidence, status] of review.REVIEWS) {
+    assert.ok(pending.delete(id), `duplicate or non-pending review: ${id}`);
+    assert.ok(allowed.has(status), id);
+    assert.ok(summary && behavior && cases && confidence, id);
+    for (const sourceId of sourceIds.split(',').filter(Boolean)) {
+      const source = review.SOURCES[sourceId];
+      assert.ok(source && source[0] && source[1] && /^https:\/\//.test(source[2]), `${id}: ${sourceId}`);
+      assert.ok(section, `${id}: official section missing`);
+    }
+    if (status === 'CERTIFIED_BY_OFFICIAL_SOURCE') assert.ok(sourceIds && section, id);
+  }
+  assert.strictEqual(pending.size, 0);
+  assert.strictEqual(rulesMod.taxDueCalculationAllowed(registry, ['RULE_RV_SWING_RATE']), false);
+  assert.strictEqual(rulesMod.taxDueCalculationAllowed(registry, ['RULE_FII_ALIENATION_EXEMPT_PF']), false);
+  const bonus = rulesMod.resolveRule(registry, 'RULE_BONUS_NO_COST_INFLATION', '2026-10-16');
+  assert.strictEqual(bonus.RULE_VERSION, 2);
+  assert.strictEqual(bonus.LEGAL_STATUS, 'PARTIAL_LEGAL_EVIDENCE');
+  assert.strictEqual(bonus.STATUS, 'NEEDS_CURRENT_LEGAL_SOURCE');
+});
+
 test('rules registry: legal-sensitive rules flagged NEEDS_CURRENT_LEGAL_SOURCE (P22)', () => {
   const reg = rulesMod.loadRegistry();
   const need = rulesMod.rulesNeedingExternalVerification(reg);
