@@ -38,7 +38,7 @@ function computeCertification({ opening, ledger, invariantReport }) {
         DETAIL: { blocked_realized_impact: blockedRealizedImpact.length, blocked_total: anyBlocked.length, events: records.length },
       };
 
-  const taxDueBlocked = ledger.MONTHLY_CLOSES.some((c) => c.TAX_DUE === 'NOT_CALCULATED');
+  const taxDueBlocked = ledger.MONTHLY_CLOSES.length === 0 || ledger.MONTHLY_CLOSES.some((c) => c.TAX_DUE === 'NOT_CALCULATED');
   layers.MONTHLY_CLOSE_READY = taxDueBlocked
     ? { STATUS: 'PARTIAL', DETAIL: { reason: 'TAX_RULES_UNCERTIFIED', closes: ledger.MONTHLY_CLOSES.length } }
     : { STATUS: 'READY', DETAIL: { closes: ledger.MONTHLY_CLOSES.length } };
