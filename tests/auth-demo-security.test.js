@@ -33,8 +33,8 @@ const { before, test } = require('node:test');
 const { resolveAccountMode, MODES } = require('../auth/account-mode');
 
 const PROJECT = 'demo-auth-demo-phase2';
-const AUTH = 'http://127.0.0.1:9099';
-const FS = `http://127.0.0.1:8080/v1/projects/${PROJECT}/databases/(default)/documents`;
+const AUTH = 'http://127.0.0.1:9100';
+const FS = `http://127.0.0.1:8085/v1/projects/${PROJECT}/databases/(default)/documents`;
 
 async function request(url, options = {}) {
   return fetch(url, { ...options, signal: AbortSignal.timeout(12000) });
