@@ -47,7 +47,7 @@ function conservativeOpening(candidate, rawEvents) {
 function classifyEvent(raw, record) {
   if (record.PROCESSING === 'BLOCKED_UNKNOWN' || raw.TYPE === 'UNKNOWN' || record.TYPE === 'UNKNOWN') return 'UNKNOWN';
   if (record.IMPACT_FLAGS.includes('NO_CURRENT_FISCAL_IMPACT') && record.TYPE === 'STOCK_LOAN_OUT') return 'NOT_FISCALLY_RELEVANT';
-  if (raw.STATUS === 'CERTIFIED' && record.PROCESSING === 'APPLIED' && !['BUY', 'SELL', 'RIGHTS_TRANSFER', 'RF_REDEMPTION'].includes(record.TYPE)) return 'CERTIFIED';
+  // Source evidence may be certified while tax treatment remains unverified.
   return 'PARTIAL';
 }
 
@@ -109,7 +109,8 @@ function buildDryRun(rawEvents, masterRows, registry = loadRegistry()) {
     CURRENT_POSITION_CROSSCHECK: { STATUS: 'PARTIAL', AS_OF: '2026-10-10',
       COUNTS: { PARTIAL: current.filter(r => r.STATUS === 'PARTIAL').length, UNKNOWN: current.filter(r => r.STATUS === 'UNKNOWN').length, EXACT: 0 }, ROWS: current,
       CURRENT_COST_CERTIFIED_BUT_FISCAL_UNKNOWN_ASSETS: currentCertifiedFiscalUnknown },
-    EVENT_COUNTS: { TOTAL: yearEvents.length, BY_TYPE: eventTypes, BY_FISCAL_STATUS: eventStatuses },
+    EVENT_COUNTS: { TOTAL: yearEvents.length, SOURCE_EVIDENCE_CERTIFIED: yearEvents.filter(e => e.STATUS === 'CERTIFIED').length,
+      BY_TYPE: eventTypes, BY_FISCAL_STATUS: eventStatuses },
     UNKNOWN_FORENSICS: unknown, TAX_RULE_VERIFICATION_CHECKLIST: rulesToVerify,
     INPUT_HASHES: { EVENTS: sha256Json(rawEvents), MASTER: sha256Json(masterRows), RULES: registry.REGISTRY_SHA256 },
     HASHES: { OPENING: opening.SHA256, LEDGER: ledger.LEDGER_SHA256,

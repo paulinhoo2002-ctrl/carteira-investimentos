@@ -16,6 +16,9 @@ test('real dry-run boundary keeps absent January opening UNKNOWN and never certi
   assert.equal(opening.COST_STATUS, 'UNKNOWN');
   assert.equal(report.CERTIFICATION.LAYERS.MONTHLY_CLOSE_READY.STATUS, 'PARTIAL');
   assert.equal(report.MONTHLY_2026.length, 12);
+  assert.equal(report.EVENT_COUNTS.SOURCE_EVIDENCE_CERTIFIED, 1);
+  assert.equal(report.EVENT_COUNTS.BY_FISCAL_STATUS.CERTIFIED, 0);
+  assert.equal(report.EVENT_COUNTS.BY_FISCAL_STATUS.UNKNOWN, 1);
   assert.equal(report.MONTHLY_2026[0].TAX_DUE, 'NOT_CALCULATED');
   assert.equal(report.CURRENT_POSITION_CROSSCHECK.STATUS, 'PARTIAL');
   assert.equal(report.CURRENT_POSITION_CROSSCHECK.COUNTS.EXACT, 0);
