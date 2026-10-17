@@ -20,7 +20,9 @@
 
 const { buildOpeningFiscal } = require('./opening-fiscal');
 const { buildTaxLedger } = require('./ledger');
-const { detectDayTrade } = require('./day-trade');
+const { detectDayTrade, buildDayTradeMatchGroups } = require('./day-trade');
+const { buildFiscalCoverage } = require('./coverage');
+const { checklistFromBlockers } = require('./blockers');
 const { sha256Json } = require('./hash');
 
 const COST_BLOCKER_FLAGS = ['COST_UNKNOWN_TRANSFER', 'HAD_UNKNOWN_EVENT', 'HAD_CORPORATE_PARTIAL'];
@@ -73,33 +75,68 @@ function corporateActionBlockers(rawEvents, sellRecords) {
   return out;
 }
 
-function salesMatrix(rawEvents, simulationLedger, sellClassification) {
+function salesMatrix(rawEvents, simulationLedger, sellClassification, dayTradeGroups) {
   const byId = new Map(rawEvents.filter((e) => e.DATE >= '2026-01-01').map((e) => [e.CANONICAL_ID, e]));
   const sells = simulationLedger.PROCESSING_RECORDS.filter((r) => r.TYPE === 'SELL');
+  // P7: unpriced sells paired with same-day same-asset lending/transfer rows of
+  // equal qty are custody/lending movements, not evidenced economic sales.
+  const custodySignature = new Map();
+  for (const s of sells) {
+    const raw = byId.get(s.EVENT_ID);
+    if (!raw || raw.AMOUNT !== null && raw.AMOUNT !== undefined) continue;
+    const paired = rawEvents.some((e) => e.DATE === s.DATE && e.TICKER === s.ASSET
+      && e.CANONICAL_ID !== s.EVENT_ID && (e.QUANTITY || 0) === (raw.QUANTITY || 0)
+      && ['STOCK_LOAN', 'TRANSFER_CANDIDATE'].includes(e.TYPE));
+    if (paired) custodySignature.set(s.EVENT_ID, true);
+  }
+  const BLOCKER_MAP = {
+    FISCAL_COST_UNKNOWN: 'MISSING_OPENING_COST',
+    OPENING_STATE_UNKNOWN: 'MISSING_OPENING_QTY',
+    SELL_MISSING_QTY_OR_AMOUNT: 'MISSING_SALE_AMOUNT',
+    TRANSFER_MISSING_QTY: 'TRANSFER_COST_UNKNOWN',
+  };
   const rows = sells.map((r) => {
     const raw = byId.get(r.EVENT_ID) || {};
     const before = r.BEFORE_STATE || {};
     const applied = r.PROCESSING && r.PROCESSING.startsWith('APPLIED');
     const derivedCost = applied && before.TOTAL_COST_CENTS !== null;
+    const blockerCodes = [];
+    if (r.BLOCK_REASON && BLOCKER_MAP[r.BLOCK_REASON]) blockerCodes.push(BLOCKER_MAP[r.BLOCK_REASON]);
+    if (custodySignature.get(r.EVENT_ID)) blockerCodes.push('LENDING_CUSTODY_UNPRICED');
+    if (raw.AMOUNT === null || raw.AMOUNT === undefined) blockerCodes.push('MISSING_SALE_AMOUNT');
+    const dtMatch = (dayTradeGroups || []).flatMap((g) => g.MATCHES.filter((m) => m.SELL_EVENT_ID === r.EVENT_ID));
+    const dtMatchedQty = dtMatch.reduce((s, m) => s + (m.MATCHED_QTY || 0), 0);
+    const dtUnmatchedQty = dtMatch.reduce((s, m) => s + (m.UNMATCHED_INTRADAY_QTY || 0), 0);
     return {
+      SALE_ID: r.EVENT_ID,
       EVENT_ID: r.EVENT_ID,
       DATE: r.DATE,
       ASSET: r.ASSET,
       ASSET_CLASS: before.ASSET_CLASS || null,
       QTY_SOLD: raw.QUANTITY ?? null,
-      SELL_VALUE_CENTS: r.GROSS_CENTS,
-      FEES_STATUS: before.FEES_STATUS || 'UNKNOWN',
+      GROSS_AMOUNT_CENTS: r.GROSS_CENTS,
+      NET_AMOUNT_CENTS: null, // no itemized fees evidence; net never invented (P7/P8)
+      FEES_CENTS: null,
+      FEES_STATUS: 'MISSING_FEES',
       IRRF_IF_KNOWN_CENTS: null,
       IRRF_STATUS: 'UNKNOWN',
+      DAY_TRADE: dtMatchedQty > 0 ? {
+        CLASSIFICATION: 'DAY_TRADE_CANDIDATE',
+        MATCHED_QTY: dtMatchedQty,
+        UNMATCHED_INTRADAY_QTY: dtUnmatchedQty,
+      } : { CLASSIFICATION: 'SWING_TRADE', MATCHED_QTY: 0, UNMATCHED_INTRADAY_QTY: 0 },
       QTY_BEFORE: before.QTY ?? null,
       FISCAL_COST_BEFORE_CENTS: before.TOTAL_COST_CENTS ?? null,
       AVG_FISCAL_COST_BEFORE_CENTS: before.AVG_COST_CENTS ?? null,
+      OPENING_COST_STATUS: before.COST_STATUS || 'UNKNOWN',
       COST_OF_SOLD_QTY_CENTS: r.COST_REMOVED_CENTS ?? null,
       REALIZED_RESULT_CENTS: null, // authoritative result never populated from non-certified cost (P6)
       SIMULATED_DERIVED_REALIZED_CENTS: derivedCost ? r.REALIZED : null,
       TRADE_CLASSIFICATION: sellClassification.get(r.EVENT_ID) || 'SWING_TRADE',
       CERTIFICATION_STATUS: derivedCost ? 'DERIVED_SIMULATION' : 'BLOCKED',
+      BLOCKER_CODES: [...new Set(blockerCodes)],
       BLOCKER: r.BLOCK_REASON || (derivedCost ? null : 'FISCAL_COST_UNKNOWN'),
+      SOURCE_REFS: (r.PROVENANCE && [r.PROVENANCE.SOURCE]) || [],
       SOURCE_PROVENANCE: r.PROVENANCE || null,
     };
   });
@@ -108,6 +145,7 @@ function salesMatrix(rawEvents, simulationLedger, sellClassification) {
     SALES_WITH_DERIVED_SIMULATED_COST: rows.filter((x) => x.CERTIFICATION_STATUS === 'DERIVED_SIMULATION').length,
     SALES_BLOCKED: rows.filter((x) => x.CERTIFICATION_STATUS === 'BLOCKED').length,
     SALES_WITH_CERTIFIED_COST: 0, // remains 0 until official cost evidence exists
+    SALES_CUSTODY_SIGNATURE: rows.filter((x) => x.BLOCKER_CODES.includes('LENDING_CUSTODY_UNPRICED')).length,
     ROWS: rows,
   };
 }
@@ -184,7 +222,23 @@ function buildOpeningV1({ rawEvents, anchors, registry, fiscalYear = 2026 }) {
   const yearEvents = rawEvents.filter((e) => e.DATE >= `${fiscalYear}-01-01` && e.DATE < `${fiscalYear + 1}-01-01`);
   const simulation = buildTaxLedger({ opening: derived, events: yearEvents, registry, fiscalYear });
   const dt = detectDayTrade(rawEvents, fiscalYear);
-  const matrix = salesMatrix(rawEvents, simulation, dt.sellClassification);
+  const dtGroups = buildDayTradeMatchGroups(rawEvents, fiscalYear);
+  const matrix = salesMatrix(rawEvents, simulation, dt.sellClassification, dtGroups.DAY_TRADE_MATCH_GROUPS);
+
+  // P17: multi-dimensional coverage; P20: document checklist from blocker codes.
+  const fiscalCoverage = buildFiscalCoverage({ opening: { OPENING_COVERAGE: coverage }, matrix, monthlyCloses: simulation.MONTHLY_CLOSES });
+  const blockerCounts = {};
+  const bump = (code, n = 1) => { blockerCounts[code] = (blockerCounts[code] || 0) + n; };
+  for (const r of matrix.ROWS) for (const c of r.BLOCKER_CODES) bump(c);
+  for (const r of rows) {
+    for (const b of r.BLOCKERS) bump(b === 'MISSING_OPENING_EVIDENCE' ? 'PRE_COVERAGE_HOLDING' : b, 0); // presence without inflation
+    if (r.BLOCKERS.includes('MISSING_OPENING_EVIDENCE') && r.OPENING_STATUS === 'UNKNOWN') bump('PRE_COVERAGE_HOLDING');
+    if (r.BLOCKERS.includes('NO_CERTIFIED_2025_YEAR_END_OPENING') && (r.OPENING_TOTAL_COST_CENTS ?? null) === null) bump('MISSING_OPENING_COST');
+  }
+  bump('MISSING_FEES', 1);
+  bump('MISSING_IRRF', 1);
+  bump('MISSING_PRIOR_LOSS', 1);
+  const documentChecklist = checklistFromBlockers(blockerCounts);
 
   const v1 = {
     ARTIFACT: 'OPENING_FISCAL_2026_V1',
@@ -201,7 +255,10 @@ function buildOpeningV1({ rawEvents, anchors, registry, fiscalYear = 2026 }) {
       DAY_TRADE_SELL_EVENTS: matrix.ROWS.filter((x) => x.TRADE_CLASSIFICATION === 'DAY_TRADE_CANDIDATE').length,
       SWING_TRADE_SELL_EVENTS: matrix.ROWS.filter((x) => x.TRADE_CLASSIFICATION === 'SWING_TRADE').length,
       DAYS: dt.DAY_TRADE_DAYS,
+      MATCH_GROUPS: dtGroups.DAY_TRADE_MATCH_GROUPS,
     },
+    FISCAL_COVERAGE: fiscalCoverage,
+    DOCUMENT_CHECKLIST: documentChecklist,
     EVIDENCE_INVENTORY: evidenceInventory(rawEvents, fiscalYear),
     CORPORATE_ACTION_BLOCKERS: corporateActionBlockers(rawEvents, matrix.ROWS),
     TRANSFER_POLICY: 'Transfers never realize results; cost chain unknown remains FISCAL_COST_UNKNOWN (no synthesis).',

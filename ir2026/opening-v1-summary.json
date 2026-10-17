@@ -29,6 +29,6 @@
   "IRRF_STATUS": "UNKNOWN",
   "PRIOR_LOSSES_STATUS": "UNKNOWN",
   "CORPORATE_ACTION_BLOCKER_ASSETS": 5,
-  "SHA256": "e39ec204b2ba6bdd6e8ac4627be9356992ed5e9207dd4f5fd7143bf7ba5c09c5",
+  "SHA256": "a814826e56efa2abdacbde5d9dbf6205f7f489b8caf16c23b53ea836f2ae26ba",
   "NOTE": "Real values stay under .qa-state (gitignored). This summary carries only counts, statuses and hashes."
 }
