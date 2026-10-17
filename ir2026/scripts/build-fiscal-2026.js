@@ -86,7 +86,10 @@ function buildDryRun(rawEvents, masterRows, registry = loadRegistry()) {
   const monthRows = Array.from({ length: 12 }, (_, i) => {
     const month = `2026-${String(i + 1).padStart(2, '0')}`;
     return { MONTH: month, CLOSES: ledger.MONTHLY_CLOSES.filter(c => c.YEAR_MONTH === month),
-      TAX_DUE: 'NOT_CALCULATED', COVERAGE: 'UNKNOWN' };
+      TAX_DUE: 'NOT_CALCULATED', COVERAGE: 'UNKNOWN',
+      // P27: ruleset snapshot for this close — future rule updates must not
+      // silently rewrite historical close semantics.
+      RULESET_VERSION: registry.REGISTRY_VERSION, RULESET_SHA256: registry.REGISTRY_SHA256 };
   });
   const current = masterRows.map(row => {
     const openingRow = opening.ROWS.find(o => o.ASSET === row.asset_identity);
