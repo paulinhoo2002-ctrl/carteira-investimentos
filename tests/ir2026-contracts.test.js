@@ -96,12 +96,19 @@ test('official 2026 review + V3 registry verification are coherent', () => {
   const reviewed = new Set(review.REVIEWS.map((r) => r[0]));
   // every rule still needing verification must have a prior review entry
   for (const id of pending) assert.ok(reviewed.has(id), `missing review entry for still-pending ${id}`);
-  // rules verified in the 2026-10-17 official pass must cite official sources
-  const verified = registry.RULES.filter((r) => ['VERIFIED_OFFICIAL_SOURCE', 'VERIFIED_SECONDARY_SUPPORT'].includes(r.STATUS));
-  assert.ok(verified.length >= 15, 'official verification pass must have verified the core rules');
-  for (const r of verified) {
+  // rules verified in the 2026-10-17 official pass must cite official sources.
+  // P6: OFFICIAL and SECONDARY are distinct tiers — secondary support may cite
+  // its source but can NEVER satisfy a gate that requires official authority.
+  const official = registry.RULES.filter((r) => r.STATUS === 'VERIFIED_OFFICIAL_SOURCE');
+  const secondary = registry.RULES.filter((r) => r.STATUS === 'VERIFIED_SECONDARY_SUPPORT');
+  assert.ok(official.length >= 15, 'official verification pass must have verified the core rules');
+  for (const r of [...official, ...secondary]) {
     assert.ok(/^https?:\/\//.test(r.SOURCE_URL || ''), `${r.RULE_ID} must cite official URL`);
     assert.ok(r.SOURCE_TITLE && r.VERIFICATION_DATE, r.RULE_ID);
+  }
+  for (const r of secondary) {
+    assert.strictEqual(rulesMod.officialRule(registry, r.RULE_ID, '2026-10-17'), null,
+      `${r.RULE_ID}: secondary support must never pass the official gate`);
   }
   // rule-level gate now passes for verified swing/FII rules…
   assert.strictEqual(rulesMod.taxDueCalculationAllowed(registry, ['RULE_RV_SWING_RATE'], '2026-10-17'), true);
