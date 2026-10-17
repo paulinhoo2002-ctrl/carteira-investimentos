@@ -202,6 +202,19 @@ test('P14: a future rule change cannot silently rewrite a recorded monthly close
   assert.equal(recomputed.PROVISIONAL_TAX_CENTS, 2000); // recomputation is the explicit path
 });
 
+test('P25: esc() regression — no literal backslash-u entity text, no raw specials in output', () => {
+  const src = fs.readFileSync(path.join(__dirname, '../ir2026/ui/product.js'), 'utf8');
+  const fnSrc = src.match(/function esc\(s\) \{[\s\S]*?\n\}/)[0];
+  const esc = new Function(fnSrc + '; return esc;')();
+  const specials = '<>&' + String.fromCharCode(34) + String.fromCharCode(39);
+  const out = esc(specials);
+  assert.ok(!/\\\\u0026|\\\\u00/.test(out), 'esc must not emit literal backslash-u entity text');
+  // after stripping entity ampersands, no raw <,>,&,",\' may survive
+  assert.ok(!/[<>"']/.test(out.replace(new RegExp(String.fromCharCode(38), 'g'), '')), 'raw specials must be escaped');
+  assert.ok(out.includes(String.fromCharCode(38) + 'lt;'), 'less-than must become entity');
+  assert.ok(out.includes(String.fromCharCode(38) + 'amp;'), 'ampersand must become entity');
+});
+
 // ---------------------------------------------------------------------------
 // P30/P31 — domain boundaries.
 // ---------------------------------------------------------------------------

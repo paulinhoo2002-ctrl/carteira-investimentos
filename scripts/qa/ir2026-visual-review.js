@@ -43,10 +43,19 @@ async function main() {
           text: text.substring(0, 300),
         };
       });
+      // P26: axe accessibility on the rendered IRPF panel (target 0 critical / 0 serious)
+      let axe = null;
+      try {
+        await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') });
+        axe = await page.evaluate(async () => {
+          const r = await window.axe.run(document, { resultTypes: ['violations'] });
+          return { violations: r.violations.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.length })) };
+        });
+      } catch (e) { axe = { error: String(e && e.message ? e.message : e) }; }
       // Take screenshot
       const name = `irpf-${theme}-${vp.w}.png`;
       await page.screenshot({ path: path.join(OUT, name), fullPage: false });
-      results.push({ theme, viewport: vp.w, ...readiness });
+      results.push({ theme, viewport: vp.w, ...readiness, axe });
       await ctx.close();
     }
   }
@@ -63,7 +72,15 @@ async function main() {
       console.log(`  has R$ 0,00: ${r.hasR$0}`);
       console.log(`  has Package naming: ${r.hasPackage}`);
     }
+    if (r.axe && Array.isArray(r.axe.violations)) {
+      const crit = r.axe.violations.filter((v) => v.impact === 'critical');
+      const ser = r.axe.violations.filter((v) => v.impact === 'serious');
+      console.log(`  axe critical: ${crit.length} serious: ${ser.length}${crit.length + ser.length ? ' :: ' + [...crit, ...ser].map((v) => `${v.id}(${v.impact}, ${v.nodes})`).join(', ') : ''}`);
+    } else if (r.axe && r.axe.error) {
+      console.log(`  axe ERROR: ${r.axe.error}`);
+    }
   }
+  fs.writeFileSync(path.join(OUT, 'axe-report.json'), JSON.stringify(results.map((r) => ({ theme: r.theme, viewport: r.viewport, axe: r.axe })), null, 2));
   console.log(`\nScreenshots saved to: ${OUT}`);
 }
 
