@@ -8,6 +8,7 @@ const { chromium } = require('playwright-core');
 const { startLocalHttpServer } = require('./local-http-server');
 
 const PROJECT = 'demo-carteira-qa-emulator';
+const AUTH = 'http://127.0.0.1:9099';
 const EMAIL = 'qa.synthetic@example.invalid';
 const CHROME = process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const QUERY = '?qaAuthEmulator=1&qaFirestoreEmulator=1&protectedReadOnlyQa=1';
@@ -37,6 +38,30 @@ async function seedAccessDocument() {
     blockedEmails: { arrayValue: { values: [] } },
     allowedDomains: { arrayValue: { values: [] } },
   } });
+}
+
+// Emulator-documented email verification flow (same as the auth-demo
+// security suite): accounts:update with a bare {emailVerified:true} is a
+// silent NO-OP on the Auth emulator — the working path is
+// sendOobCode(VERIFY_EMAIL) -> oobCodes listing -> accounts:update {oobCode};
+// a fresh sign-in then mints email_verified=true in the token claims.
+async function markEmailVerified(email, idToken) {
+  const send = await fetch(`${AUTH}/identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=demo-api-key`, {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ requestType: 'VERIFY_EMAIL', idToken }),
+    signal: AbortSignal.timeout(5000),
+  });
+  assert.equal(send.ok, true, `sendOobCode failed: HTTP ${send.status} ${await send.text()}`);
+  const listRes = await fetch(`${AUTH}/emulator/v1/projects/${PROJECT}/oobCodes`, { signal: AbortSignal.timeout(5000) });
+  assert.equal(listRes.ok, true, `oobCodes listing failed: HTTP ${listRes.status}`);
+  const entry = ((await listRes.json()).oobCodes || []).find((c) => c.email === email);
+  assert.ok(entry, `no VERIFY_EMAIL oobCode for ${email}`);
+  const update = await fetch(`${AUTH}/identitytoolkit.googleapis.com/v1/accounts:update?key=demo-api-key`, {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ oobCode: entry.oobCode }),
+    signal: AbortSignal.timeout(5000),
+  });
+  assert.equal(update.ok, true, `accounts:update (oobCode) failed: HTTP ${update.status} ${await update.text()}`);
 }
 
 async function newPage({ query = QUERY, hostname = '127.0.0.1', viewport = VIEWPORTS[1], invalidSession = false, unavailableEmulators = false } = {}) {
@@ -124,8 +149,18 @@ test('V311: real Firebase Auth + Firestore emulator session renders protected ro
     assert.equal(await app.page.evaluate(() => FB.app.options.projectId), PROJECT);
 
     const passphrase = `qa-${randomUUID()}-ephemeral`;
+    const idToken = await app.page.evaluate(async ({ email, passphrase }) => {
+      const credential = await FB.auth.createUserWithEmailAndPassword(email, passphrase);
+      return credential.user.getIdToken();
+    }, { email: EMAIL, passphrase });
+    // Phase 2 security contract: REAL access requires a verified email
+    // (unauthenticated/unverified => fail-closed, never REAL). Verify the
+    // synthetic account through the documented emulator flow, then sign in
+    // again so the fresh token claims email_verified=true.
+    await markEmailVerified(EMAIL, idToken);
     await app.page.evaluate(async ({ email, passphrase }) => {
-      await FB.auth.createUserWithEmailAndPassword(email, passphrase);
+      await FB.auth.signOut();
+      await FB.auth.signInWithEmailAndPassword(email, passphrase);
     }, { email: EMAIL, passphrase });
     await waitForAccess(app.page);
 
