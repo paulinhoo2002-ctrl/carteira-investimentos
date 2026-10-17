@@ -47,7 +47,15 @@ Estado deste documento: módulos certificados; integração `index.html` + QA br
 
 ## Privacidade demo (P31) — guardas estendidas em `assertDemoSafety`
 
-Além de UID real/tickers/valores (Fase 1), agora rejeita: `movimentacao-2026*`, `posicao-2026*`, `PosicaoDetalhada`, `package1_v2`, `package2_v2`, projeto de produção `carteira-de-investimento-16725`, `_backups`, `.qa-state`. Testado positivo (fixture ok) e negativo (injeções rejeitadas).
+Além disso, o guard de privacidade do demo é 100% GENÉRICO desde o fix de privacidade:
+nenhum identificador real é embutido no módulo. O guard exige o marcador de
+proveniência `SYNTHETIC_DEMO_V1` na raiz do fixture, namespace sintético `DEMO`
+em todo valor ticker-like, ausência (ou marca DEMO) em campos de identidade
+(uid/userId/owner*), rejeita tokens com formato de UID (28 alfanum) e hashes
+64-hex, caminhos de documentos hospedados, campos `package1_v2`/`package2_v2`,
+caminhos `.qa-state`/`_backups` e formas de nomes de arquivo de exportação
+privada; identificadores de projeto de produção entram APENAS via boundary de
+configuração (`forbiddenProjectIds`). Testes usam somente valores sintéticos.
 
 ## Portas do emulador auth-demo
 

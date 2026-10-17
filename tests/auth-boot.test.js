@@ -212,14 +212,20 @@ test('P24: settings classified; unknown stays local (fail closed)', () => {
 
 // ===== P31: demo privacy guards =====
 
-test('P31: demo fixture/state pass privacy guard; real artifacts rejected', () => {
+test('P31: demo fixture/state pass privacy guard; generic guards reject synthetic fake injections', () => {
   assert.ok(assertDemoSafety(generateDemoPortfolio()));
   assert.ok(assertDemoSafety(generateDemoIrpfState()));
-  assert.throws(() => assertDemoSafety({ doc: 'package1_v2' }), /real artifact/);
-  assert.throws(() => assertDemoSafety({ file: 'movimentacao-2026-10-10-18-50-38.xlsx' }), /real artifact/);
-  assert.throws(() => assertDemoSafety({ project: 'carteira-de-investimento-16725' }), /real artifact/);
-  assert.throws(() => assertDemoSafety({ file: 'PosicaoDetalhada.xlsx' }), /real artifact/);
-  assert.throws(() => assertDemoSafety({ path: 'C:/x/_backups/y' }), /real artifact/);
+  const base = () => JSON.parse(JSON.stringify(generateDemoPortfolio()));
+  let c = base(); c.doc = 'package1_v2';
+  assert.throws(() => assertDemoSafety(c), /production package/);
+  c = base(); c.file = 'movimentacao-2026-01-01-00-00-00.xlsx';
+  assert.throws(() => assertDemoSafety(c), /private export/);
+  c = base(); c.project = 'fake-prod-project-999999';
+  assert.throws(() => assertDemoSafety(c, { forbiddenProjectIds: ['fake-prod-project-999999'] }), /production project/);
+  c = base(); c.file2 = 'PosicaoDetalhadaSintetica.xlsx';
+  assert.throws(() => assertDemoSafety(c), /private export/);
+  c = base(); c.path = 'C:/x/_backups/y';
+  assert.throws(() => assertDemoSafety(c), /private evidence/);
 });
 
 // ===== P15: demo local persistence + reset =====

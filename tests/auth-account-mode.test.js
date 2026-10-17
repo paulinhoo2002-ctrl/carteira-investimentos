@@ -190,17 +190,47 @@ test('B32: demo IRPF state passes safety check', () => {
   assert.ok(assertDemoSafety(irpf));
 });
 
-test('B32: safety check detects real UID injection', () => {
-  assert.throws(() => assertDemoSafety({ uid: 'yaypxiiv7Ye7pwpDZ0nqhG3Yj7E3' }), /real UID/);
+test('B32: safety check requires the synthetic provenance marker', () => {
+  const clone = JSON.parse(JSON.stringify(generateDemoPortfolio()));
+  delete clone.fixtureSource;
+  assert.throws(() => assertDemoSafety(clone), /provenance/);
 });
 
-test('B32: safety check detects real ticker injection', () => {
-  assert.throws(() => assertDemoSafety({ ticker: 'BBAS3' }), /real ticker/);
+test('B32: safety check rejects non-synthetic asset namespace (generic, no real tickers used)', () => {
+  const clone = JSON.parse(JSON.stringify(generateDemoPortfolio()));
+  clone.wallets[0].assets[0].ticker = 'XXXX3'; // synthetic fake, not a real ticker
+  assert.throws(() => assertDemoSafety(clone), /namespace/);
 });
 
-test('B32: safety check detects real financial value injection', () => {
-  assert.throws(() => assertDemoSafety({ value: 361023.63 }), /real financial/);
-  assert.throws(() => assertDemoSafety({ value: 569316.83 }), /real financial/);
+test('B32: safety check rejects UID-shaped identity generically (fake tokens)', () => {
+  const clone = JSON.parse(JSON.stringify(generateDemoPortfolio()));
+  clone.someIdentity = 'a'.repeat(28); // fake UID-shaped token
+  assert.throws(() => assertDemoSafety(clone), /UID-shaped/);
+  const clone2 = JSON.parse(JSON.stringify(generateDemoPortfolio()));
+  clone2.ownerUid = 'real-owner-style-value'; // no DEMO marker — must be rejected
+  assert.throws(() => assertDemoSafety(clone2), /identity field/);
+});
+
+test('B32: safety check rejects hosted paths and production artifacts (synthetic fakes)', () => {
+  const base = () => JSON.parse(JSON.stringify(generateDemoPortfolio()));
+  let c = base(); c.docPath = 'projects/fake-project/databases/(default)/documents/portfolios/aaaaaaaaaaaaaaaaaaaa';
+  assert.throws(() => assertDemoSafety(c), /document path/);
+  c = base(); c.pkg = 'package1_v2';
+  assert.throws(() => assertDemoSafety(c), /production package/);
+  c = base(); c.evidence = 'x/.qa-state/y';
+  assert.throws(() => assertDemoSafety(c), /private evidence/);
+  c = base(); c.backup = 'C:/x/_backups/y';
+  assert.throws(() => assertDemoSafety(c), /private evidence/);
+  c = base(); c.exportFile = 'movimentacao-2026-01-01-00-00-00.xlsx';
+  assert.throws(() => assertDemoSafety(c), /private export/);
+  c = base(); c.exportFile2 = 'PosicaoDetalhadaSintetica.xlsx';
+  assert.throws(() => assertDemoSafety(c), /private export/);
+});
+
+test('B32: safety check rejects production project id only via configuration boundary', () => {
+  const clone = JSON.parse(JSON.stringify(generateDemoPortfolio()));
+  clone.project = 'fake-prod-project-999999';
+  assert.throws(() => assertDemoSafety(clone, { forbiddenProjectIds: ['fake-prod-project-999999'] }), /production project/);
 });
 
 // ===== B7: NO PREMATURE REAL FETCH =====

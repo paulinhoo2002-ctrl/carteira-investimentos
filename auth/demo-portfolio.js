@@ -11,6 +11,10 @@
   if (root) root.DemoPortfolio = api;
 })(typeof globalThis === 'object' ? globalThis : this, function createDemoPortfolio(){
 
+  // Synthetic fixture provenance marker — required at the root of every
+  // demo fixture; the privacy guard enforces it (P3 contract).
+  const DEMO_FIXTURE_SOURCE = 'SYNTHETIC_DEMO_V1';
+
   function generateDemoPortfolio() {
     return {
       activeWalletId: 'demo-wallet-001',
@@ -56,6 +60,7 @@
       divGoal: { monthlyTarget: 500, walletId: 'demo-wallet-001' },
       settings: { theme: 'dark', currency: 'BRL', locale: 'pt-BR' },
       rentabilidade: { benchmark: 'IBOV', period: '12m' },
+      fixtureSource: DEMO_FIXTURE_SOURCE,
       updatedAt: new Date().toISOString(),
       updatedAtLocal: new Date().toISOString(),
     };
@@ -64,6 +69,7 @@
   /** Generate a synthetic IRPF demo state (clearly different from real blocked state). */
   function generateDemoIrpfState() {
     return {
+      fixtureSource: DEMO_FIXTURE_SOURCE,
       status: 'DEMONSTRATIVO',
       label: 'Dados fictícios',
       taxDue: 'Não calculado (demo)',
@@ -75,31 +81,58 @@
     };
   }
 
-  /** Verify no real UID, real asset data, or real portfolio hash appears. */
-  function assertDemoSafety(data) {
-    const json = JSON.stringify(data);
-    const FORBIDDEN_UID = 'yaypxiiv7Ye7pwpDZ0nqhG3Yj7E3';
-    const FORBIDDEN_TICKERS = ['BBAS3','BRCO11','BTLG11','CMIG4','FATN11','GARE11','GGRC11','HGLG11',
-      'HGRU11','IRIM11','ITUB4','KNHF11','KNRI11','KNUQ11','MCCI11','PETR4','PMLL11','PVBI11','RBRY11',
-      'SAPR11','SUZB3','TEPP11','TGAR11','TRXF11','VALE3','VGHF11','VGIP11','VISC11','VRTA11','XPLG11','XPML11'];
-    if (json.includes(FORBIDDEN_UID)) throw new Error('DEMO SAFETY: real UID detected');
-    for (const t of FORBIDDEN_TICKERS) {
-      if (json.includes(t)) throw new Error(`DEMO SAFETY: real ticker ${t} detected`);
+  /**
+   * Generic demo privacy guard — NO real identifiers are embedded here.
+   * Safety comes from invariants, not from denylists of private values:
+   *   1. synthetic provenance marker (SYNTHETIC_DEMO_V1) required at root;
+   *   2. every ticker-like value must carry the DEMO synthetic namespace;
+   *   3. identity fields (uid/userId/owner*) must be absent or DEMO-marked;
+   *   4. UID-shaped tokens (28 alnum) and 64-hex hash-like tokens rejected;
+   *   5. hosted document path shapes rejected;
+   *   6. production artifact shapes rejected (package fields, private
+   *      evidence paths, private export filename SHAPES);
+   *   7. production project identifiers arrive ONLY via the configuration
+   *      boundary (config.forbiddenProjectIds) — never hardcoded.
+   */
+  function assertDemoSafety(data, config) {
+    if (!data || typeof data !== 'object') throw new Error('DEMO SAFETY: fixture must be an object');
+    if (data.fixtureSource !== DEMO_FIXTURE_SOURCE) {
+      throw new Error('DEMO SAFETY: missing synthetic provenance marker ' + DEMO_FIXTURE_SOURCE);
     }
-    if (json.includes('361023')) throw new Error('DEMO SAFETY: real financial value detected');
-    if (json.includes('569316')) throw new Error('DEMO SAFETY: real financial value detected');
-    // P31 — real artifact leakage guard: production doc ids, hosted project,
-    // private filenames and evidence directories never enter demo state.
-    const FORBIDDEN_PATTERNS = [
-      'movimentacao-2026', 'posicao-2026', 'PosicaoDetalhada',
-      'package1_v2', 'package2_v2', 'carteira-de-investimento-16725',
-      '_backups', '.qa-state',
-    ];
-    for (const p of FORBIDDEN_PATTERNS) {
-      if (json.includes(p)) throw new Error(`DEMO SAFETY: real artifact pattern ${p} detected`);
+    const walk = (node) => {
+      if (!node || typeof node !== 'object') return;
+      if (Array.isArray(node)) { node.forEach(walk); return; }
+      for (const [key, value] of Object.entries(node)) {
+        const k = key.toLowerCase();
+        if (/^(ticker|asset|ativo)$/.test(k) && typeof value === 'string' && !/DEMO/i.test(value)) {
+          throw new Error('DEMO SAFETY: non-synthetic asset namespace for "' + key + '"');
+        }
+        if (/^(uid|userid|owneruid|ownerid)$/.test(k)) {
+          if (value !== null && value !== undefined && !/DEMO/i.test(String(value))) {
+            throw new Error('DEMO SAFETY: identity field "' + key + '" must be absent or DEMO-marked');
+          }
+        }
+        walk(value);
+      }
+    };
+    walk(data);
+    const json = JSON.stringify(data);
+    if (/\b[A-Za-z0-9]{28}\b/.test(json)) throw new Error('DEMO SAFETY: UID-shaped identity token detected');
+    if (/\b[0-9a-fA-F]{64}\b/.test(json)) throw new Error('DEMO SAFETY: hosted hash-like token detected');
+    if (/projects\/[^/]+\/databases/.test(json) || /\/(portfolios|users|authorizedUsers)\/[A-Za-z0-9]{10,}/.test(json)) {
+      throw new Error('DEMO SAFETY: hosted document path detected');
+    }
+    if (/package1_v2|package2_v2/.test(json)) throw new Error('DEMO SAFETY: production package field detected');
+    if (/\.qa-state|_backups/.test(json)) throw new Error('DEMO SAFETY: private evidence path detected');
+    if (/(movimentacao|posicao|extrato)-\d{4}-\d{2}/i.test(json) || /posicao\s*detalhada/i.test(json)) {
+      throw new Error('DEMO SAFETY: private export filename shape detected');
+    }
+    const projectIds = (config && config.forbiddenProjectIds) || [];
+    for (const pid of projectIds) {
+      if (pid && json.includes(pid)) throw new Error('DEMO SAFETY: production project identifier detected');
     }
     return true;
   }
 
-  return { generateDemoPortfolio, generateDemoIrpfState, assertDemoSafety };
+  return { DEMO_FIXTURE_SOURCE, generateDemoPortfolio, generateDemoIrpfState, assertDemoSafety };
 });
