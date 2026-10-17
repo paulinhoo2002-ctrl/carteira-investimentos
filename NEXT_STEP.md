@@ -1,3 +1,10 @@
+## Cleanroom release gate (2026-10-17)
+
+- A branch `release/legacy-final-cleanroom` parte do SHA exato de `origin/main` e aplica somente a árvore final sanitizada da PR #500, sem herdar os commits dessa PR.
+- `SITE_FEATURE_FREEZE=YES`: novas funcionalidades e arquitetura ficam no backlog até a revisão do backlog.
+- Próximo gate: revisão final do diff/privacy scan, publicação normal da branch, PR substituta, CI, squash autorizado desta missão, CI da main e validação do deploy automático, smoke, visual e Axe. Não executar deploy manual.
+- O histórico remoto anterior da PR #500 mantém conteúdo pré-sanitização; não foi reescrito e a PR só deve ser fechada após a substituta ser integrada.
+
 # Next Steps — Carteira de Investimentos Legacy
 
 ## Immediate — V274 release hardening and visual baseline closeout
@@ -60,3 +67,18 @@ Every phase must pass:
 - `NO_FAKE_HISTORY_CREATED` — No synthetic backfill ever
 - `ENGINE_AVAILABLE != DATA_READY` — A tested engine does not prove real-wallet data readiness.
 - `TWR_XIRR_AVAILABLE=false` — Until wallet-scoped, trustworthy history and cash flows exist.
+
+## IR2026 — Abertura e produto fiscal
+
+- A abertura analítica é local e não substitui a visão conservadora do produto.
+  Evidência ausente permanece DERIVED, PARTIAL ou UNKNOWN; nenhuma posição é
+  promovida sem fonte adequada.
+- Retenções, taxas e prejuízos sem fonte suficiente permanecem desconhecidos.
+  `TAX_PAYABLE=NOT_CALCULATED` enquanto os gates fiscais não forem atendidos.
+- Resumos versionados contêm apenas estados gerais. Posições, operações,
+  quantidades, valores e proveniência privada ficam em `.qa-state/`, ignorado.
+- A engine local oferece precedência, ingestão dry-run, propostas de promoção,
+  taxas, IRRF, perdas, day-trade, cobertura e classificação de blockers.
+- Próximo gate: validar documentos oficiais do exercício anterior, evidências
+  de IRRF e taxas, além de resolver eventos ambíguos. Nenhuma importação ou
+  escrita real está autorizada por este registro.

@@ -166,11 +166,17 @@ const LOSS_BUCKETS = ['RV_STOCK_SWING', 'RV_STOCK_DAY_TRADE', 'RV_FII', 'RV_ETF_
 function classifyAssetClass(ticker, hints) {
   const t = String(ticker || '').toUpperCase();
   const product = String((hints && hints.product) || '').toUpperCase();
+  const movement = String((hints && hints.movement) || '').toUpperCase();
   if (/^CDB/.test(t)) return { assetClass: 'FIXED_INCOME_CDB', basis: 'PREFIX:CDB' };
   if (/^CRA/.test(t)) return { assetClass: 'FIXED_INCOME_CRA', basis: 'PREFIX:CRA' };
   if (/^DEB/.test(t)) return { assetClass: 'FIXED_INCOME_DEB', basis: 'PREFIX:DEB' };
   if (/^LIG/.test(t)) return { assetClass: 'FIXED_INCOME_LIG', basis: 'PREFIX:LIG' };
   if (/^TESOURO|^SELIC|^IPCA|^LTHB|^NTNB/.test(t)) return { assetClass: 'CASH', basis: 'PREFIX:TESOURO' };
+  // P19: subscription-rights rows (product/movement text) are their own fiscal
+  // class — a rights ticker must NOT fall into the FII/stock pattern buckets.
+  if (/DIREITO|SUBSCRIP|SUBSCRI|RIGHTS/.test(`${product} ${movement}`)) {
+    return { assetClass: 'RIGHTS_SUBSCRIPTION', basis: 'HINT:RIGHTS' };
+  }
   if (/^BDR|^.*34$/.test(t) && /[34]$/.test(t) && !/^[A-Z]{4}(11|12|13)$/.test(t)) {
     // heuristic guard: only non-FII-pattern tickers ending 34 are BDRs
     if (!/^[A-Z]{4}1[1-9]$/.test(t)) return { assetClass: 'BDR', basis: 'HEURISTIC:SUFFIX34' };
@@ -210,6 +216,10 @@ function normalizeEventType(rawType, rawMovement) {
     case 'CORPORATE_ACTION':
       if (/LEIL/.test(raw)) return 'RIGHTS_TRANSFER';       // fraction auction (cash out of fractional rights)
       if (/BONIFICA/.test(raw)) return 'BONUS';
+      // Explicit subscription semantics from the raw movement text only
+      // (P5): no ticker heuristics, no value/cost inference — anything
+      // ambiguous stays UNKNOWN (fail-closed).
+      if (/SUBSCRI/.test(raw)) return 'SUBSCRIPTION';
       return 'UNKNOWN';
     case 'MARKET_EVENT':
       // quota update / ticker migration (e.g. IRIM11 → IRIM15); handler keeps

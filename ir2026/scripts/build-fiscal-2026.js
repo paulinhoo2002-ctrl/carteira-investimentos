@@ -7,11 +7,11 @@ const { buildOpeningFiscal } = require('../opening-fiscal');
 const { buildTaxLedger } = require('../ledger');
 const { checkInvariants } = require('../invariants');
 const { computeCertification } = require('../certification');
-const { loadRegistry } = require('../rules');
+const { loadRegistry, rulesNeedingExternalVerification } = require('../rules');
 const { sha256File, sha256Json } = require('../hash');
 
 const root = path.resolve(__dirname, '../..');
-const inventory = require('../sources/source-inventory.json');
+const { loadPrivateSourceInventory } = require('../private-source-inventory');
 const sourceDir = process.env.IR2026_SOURCE_DIR || path.resolve(root, '../v012-mega-12-lifetime-redesign/.qa-state/canonical-analysis');
 const package2Dir = process.env.IR2026_PACKAGE2_DIR || path.resolve(root, '../legacy-package2-2026-history');
 const outputDir = path.join(root, '.qa-state/ir2026');
@@ -51,7 +51,7 @@ function classifyEvent(raw, record) {
   return 'PARTIAL';
 }
 
-function buildDryRun(rawEvents, masterRows, registry = loadRegistry()) {
+function buildDryRun(rawEvents, masterRows, registry = loadRegistry(), asOf = '2026-06-30', historyStart = null) {
   if (!Array.isArray(rawEvents) || !Array.isArray(masterRows)) throw new TypeError('evidence arrays required');
   const masterIds = new Set();
   for (const row of masterRows) {
@@ -63,8 +63,8 @@ function buildDryRun(rawEvents, masterRows, registry = loadRegistry()) {
     if (!event.CANONICAL_ID || ids.has(event.CANONICAL_ID) || !/^\d{4}-\d{2}-\d{2}$/.test(event.DATE)) throw new Error('invalid or duplicate canonical event');
     ids.add(event.CANONICAL_ID);
   }
-  const scopeAnchors = Object.fromEntries(masterRows.map(row => [row.asset_identity, { QTY: null, AS_OF: '2026-10-10', ASSET_CLASS: row.asset_class }]));
-  const opening = conservativeOpening(buildOpeningFiscal({ rawEvents, anchors: scopeAnchors, fiscalYear, registry }), rawEvents);
+  const scopeAnchors = Object.fromEntries(masterRows.map(row => [row.asset_identity, { QTY: null, AS_OF: asOf, ASSET_CLASS: row.asset_class }]));
+  const opening = conservativeOpening(buildOpeningFiscal({ rawEvents, anchors: scopeAnchors, fiscalYear, registry, historyStart }), rawEvents);
   const yearEvents = rawEvents.filter(e => e.DATE >= '2026-01-01' && e.DATE < '2027-01-01');
   const ledger = buildTaxLedger({ opening, events: yearEvents, registry, fiscalYear });
   const invariants = checkInvariants({ opening, ledger, events: yearEvents });
@@ -86,14 +86,17 @@ function buildDryRun(rawEvents, masterRows, registry = loadRegistry()) {
   const monthRows = Array.from({ length: 12 }, (_, i) => {
     const month = `2026-${String(i + 1).padStart(2, '0')}`;
     return { MONTH: month, CLOSES: ledger.MONTHLY_CLOSES.filter(c => c.YEAR_MONTH === month),
-      TAX_DUE: 'NOT_CALCULATED', COVERAGE: 'UNKNOWN' };
+      TAX_DUE: 'NOT_CALCULATED', COVERAGE: 'UNKNOWN',
+      // P27: ruleset snapshot for this close — future rule updates must not
+      // silently rewrite historical close semantics.
+      RULESET_VERSION: registry.REGISTRY_VERSION, RULESET_SHA256: registry.REGISTRY_SHA256 };
   });
   const current = masterRows.map(row => {
     const openingRow = opening.ROWS.find(o => o.ASSET === row.asset_identity);
     const closing = ledger.STATES[row.asset_identity];
     const derivedQty = closing?.QTY ?? null;
     const delta = derivedQty === null ? null : Number((row.package1a_quantity - derivedQty).toFixed(8));
-    return { ASSET: row.asset_identity, AS_OF: '2026-10-10', CURRENT_QTY: row.package1a_quantity,
+    return { ASSET: row.asset_identity, AS_OF: asOf, CURRENT_QTY: row.package1a_quantity,
       CURRENT_AVG_COST_STATUS: row.average_cost_status, DERIVED_QTY: derivedQty, DELTA: delta,
       STATUS: derivedQty === null ? 'UNKNOWN' : 'PARTIAL',
       REASON: openingRow?.QTY_STATUS === 'CERTIFIED' ? 'SOURCE_DATE_OR_EVENT_COVERAGE_UNVERIFIED' : 'OPENING_2026_NOT_CERTIFIED',
@@ -101,12 +104,13 @@ function buildDryRun(rawEvents, masterRows, registry = loadRegistry()) {
   });
   const currentCertifiedFiscalUnknown = current.filter(row => row.CURRENT_AVG_COST_STATUS === 'CERTIFIED'
     && opening.ROWS.find(o => o.ASSET === row.ASSET)?.COST_STATUS !== 'CERTIFIED').map(row => row.ASSET);
-  const rulesToVerify = registry.RULES.filter(r => r.STATUS === 'NEEDS_CURRENT_LEGAL_SOURCE').map(r => ({
-    RULE_ID: r.RULE_ID, SUBJECT: r.SCOPE, ASSET_CLASS: r.ASSET_CLASS, DATE_SCOPE: [r.EFFECTIVE_FROM, r.EFFECTIVE_TO],
+  const pendingRuleIds = new Set(rulesNeedingExternalVerification(registry));
+  const rulesToVerify = registry.RULES.filter(r => pendingRuleIds.has(r.RULE_ID)).map(r => ({
+    RULE_ID: r.RULE_ID, STATUS: r.STATUS, SUBJECT: r.SCOPE, ASSET_CLASS: r.ASSET_CLASS, DATE_SCOPE: [r.EFFECTIVE_FROM, r.EFFECTIVE_TO],
     QUESTION_TO_VERIFY: r.NOTES, CURRENT_ENGINE_BEHAVIOR: 'TAX_DUE_NOT_CALCULATED', BLOCKS_OUTPUTS: ['IR_CALCULATION_READY'] }));
   const report = { FISCAL_YEAR: fiscalYear, SOURCE_BOUNDARY: '2019-2025 analytical; 2026 fiscal',
     OPENING: opening, LEDGER: ledger, MONTHLY_2026: monthRows, CERTIFICATION: certification,
-    CURRENT_POSITION_CROSSCHECK: { STATUS: 'PARTIAL', AS_OF: '2026-10-10',
+    CURRENT_POSITION_CROSSCHECK: { STATUS: 'PARTIAL', AS_OF: asOf,
       COUNTS: { PARTIAL: current.filter(r => r.STATUS === 'PARTIAL').length, UNKNOWN: current.filter(r => r.STATUS === 'UNKNOWN').length, EXACT: 0 }, ROWS: current,
       CURRENT_COST_CERTIFIED_BUT_FISCAL_UNKNOWN_ASSETS: currentCertifiedFiscalUnknown },
     EVENT_COUNTS: { TOTAL: yearEvents.length, SOURCE_EVIDENCE_CERTIFIED: yearEvents.filter(e => e.STATUS === 'CERTIFIED').length,
@@ -125,35 +129,38 @@ function buildDryRun(rawEvents, masterRows, registry = loadRegistry()) {
 }
 
 async function main() {
+  const inventory = loadPrivateSourceInventory(root);
   const source = inventory.SOURCES.find(s => s.SOURCE_ID === 'SRC-CANON-MOVEMENTS');
   if (!source || source.AUTHORITY_LEVEL !== 'DERIVED' || source.INDEPENDENT_EVIDENCE !== false) throw new Error('source inventory identity invalid');
   const sourcePath = path.join(sourceDir, path.basename(source.FILE));
-  const masterPath = path.join(package2Dir, 'package2-current-35-master-table-v2.json');
+  const masterSource = inventory.SOURCES.find(s => s.SOURCE_ID === 'SRC-PKG2-MASTER35');
+  if (!masterSource) throw new Error('Package2 master source missing');
+  const masterPath = path.join(package2Dir, path.basename(masterSource.FILE));
   const actualHash = await sha256File(sourcePath);
   if (actualHash !== source.SHA256) throw new Error('canonical source hash mismatch');
-  const masterSource = inventory.SOURCES.find(s => s.SOURCE_ID === 'SRC-PKG2-MASTER35');
   const masterHash = await sha256File(masterPath);
   if (!masterSource || masterSource.AUTHORITY_LEVEL !== 'DERIVED' || masterSource.INDEPENDENT_EVIDENCE !== false
     || masterHash !== masterSource.SHA256) throw new Error('Package2 master source hash mismatch');
   const rawEvents = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
   const masterRows = JSON.parse(fs.readFileSync(masterPath, 'utf8'));
-  if (rawEvents.length !== source.RAW_ROWS || masterRows.length !== 35) throw new Error('source record count mismatch');
-  const report = buildDryRun(rawEvents, masterRows);
+  if (rawEvents.length !== source.RAW_ROWS || masterRows.length !== masterSource.RAW_ROWS) throw new Error('source record count mismatch');
+  const report = buildDryRun(rawEvents, masterRows, loadRegistry(), masterSource.PERIOD_END, source.PERIOD_START);
   const manifest = { SOURCES: [
     { SOURCE_ID: source.SOURCE_ID, SOURCE_PATH: sourcePath, SOURCE_TYPE: source.SOURCE_TYPE, SHA256: actualHash,
       AS_OF: source.PERIOD_END, PERIOD_START: source.PERIOD_START, PERIOD_END: source.PERIOD_END,
       LINEAGE: 'DERIVED_FROM_SRC-MOV-PRIMARY', AUTHORITY_LEVEL: 'DERIVED', FISCAL_USE_ALLOWED: true, INDEPENDENT_EVIDENCE: false },
     { SOURCE_ID: 'SRC-PKG2-MASTER35', SOURCE_PATH: masterPath, SOURCE_TYPE: 'DERIVED_ANALYTICAL_REPLAY', SHA256: masterHash,
-      AS_OF: '2026-10-10', PERIOD_START: '2019-11-01', PERIOD_END: '2026-10-10',
+      AS_OF: masterSource.PERIOD_END, PERIOD_START: masterSource.PERIOD_START, PERIOD_END: masterSource.PERIOD_END,
       LINEAGE: 'PACKAGE2_FROM_CANONICAL_AND_OFFICIAL_POSITION', AUTHORITY_LEVEL: 'DERIVED', FISCAL_USE_ALLOWED: false, INDEPENDENT_EVIDENCE: false },
   ], INPUT_HASHES: report.INPUT_HASHES, OUTPUT_HASHES: report.HASHES };
   fs.mkdirSync(outputDir, { recursive: true });
   fs.writeFileSync(path.join(outputDir, 'dry-run.json'), JSON.stringify(report, null, 2));
   fs.writeFileSync(path.join(outputDir, 'source-manifest.json'), JSON.stringify(manifest, null, 2));
-  console.log(JSON.stringify({ FISCAL_YEAR: fiscalYear, EVENT_COUNT: report.EVENT_COUNTS.TOTAL,
-    OPENING_ASSETS: report.OPENING.COUNTS.ASSETS, EVENT_STATUS: report.EVENT_COUNTS.BY_FISCAL_STATUS,
-    HASHES: report.HASHES, SIZES: report.SIZES, CERTIFICATION: Object.fromEntries(Object.entries(report.CERTIFICATION.LAYERS).map(([k, v]) => [k, v.STATUS])),
-    OUTPUT: '.qa-state/ir2026 (private, ignored)' }));
+  console.log(JSON.stringify({
+    FISCAL_YEAR: fiscalYear,
+    TAX_DUE_STATUS: report.CERTIFICATION.STATUS,
+    OUTPUT: '.qa-state/ir2026 (private, ignored)',
+  }));
 }
 
 if (require.main === module) main().catch(error => { console.error('IR2026_DRY_RUN_FAILED=' + error.message); process.exitCode = 1; });
