@@ -8668,6 +8668,11 @@ document.write([
 <script src="official-document-pipeline.js"></script>
 <script src="public-events-store.js"></script>
 <script src="public-events-runtime.js"></script>
+<script src="auth/account-mode.js"></script>
+<script src="auth/data-source.js"></script>
+<script src="auth/demo-portfolio.js"></script>
+<script src="auth/boot.js"></script>
+<script src="auth/boot-ui.js"></script>
 <script src="canonical-fingerprint-engine.js?v=phase4h-canonical-fp-v1"></script>
 <script src="report-asset-row.js"></script>
 <script src="legacy/reports-readonly-source.js"></script>
@@ -11174,19 +11179,36 @@ function initFirebase(){
         render();
         const ok = await loadAccessControl(FB.user);
         await recordAccessAttempt(FB.user, ok, FB.access.reason);
+        // Phase 2: protected offline cached session wins before any mode routing
+        if(navigator.onLine===false && isV250OfflineCachedSession()){
+          FB.access.loading = false;
+          FB.access.loaded = false;
+          FB.access.allowed = false;
+          FB.access.reason = 'Sessão local somente leitura enquanto estiver offline.';
+          render();
+          return;
+        }
+        // Phase 2: single authoritative account-mode decision (auth/boot contract)
+        FB.accountMode = await resolveAccountModeCompat(FB.user, ok);
+        if(FB.accountMode === 'BLOCKED'){
+          stopCloudSync(false);
+          FB.access.loading = false;
+          FB.access.loaded = true;
+          FB.access.allowed = false;
+          FB.access.reason = '';
+          render();
+          return;
+        }
+        if(FB.accountMode === 'DEMO'){
+          enterDemoMode();
+          return;
+        }
         if(!ok){
-          if(navigator.onLine===false && isV250OfflineCachedSession()){
-            FB.access.loading = false;
-            FB.access.loaded = false;
-            FB.access.allowed = false;
-            FB.access.reason = 'Sessão local somente leitura enquanto estiver offline.';
-            render();
-            return;
-          }
           clearReconnectReloadGuard();
           stopCloudSync(false);
           try{ await FB.auth.signOut(); }catch(e){}
           FB.user = null;
+          FB.accountMode = 'LOGIN_REQUIRED';
           FB.access.loading = false;
           toast('⛔ Seu e-mail não está autorizado para acessar este site.','#f87171');
           render();
@@ -11216,6 +11238,9 @@ function initFirebase(){
         }
         startCloudSync({readOnlyOnly: isProtectedReadOnlyQaBoot() || !isEditOwner()});
       }else{
+        // Phase 2: mode reset + in-memory real state clear (no real flash after logout)
+        if(FB.accountMode === 'REAL' || FB.accountMode === 'BLOCKED') clearRealStateInMemory();
+        FB.accountMode = 'LOGIN_REQUIRED';
         FB.cloudStateModel=CloudSyncState.initial();
         FB.access.loading = false;
         FB.access.loaded = false;
@@ -11306,6 +11331,71 @@ async function recordAccessAttempt(user, allowed, reason=''){
 function portfolioRef(){
   if(!FB.db || !FB.user) return null;
   return FB.db.collection('portfolios').doc(FB.user.uid);
+}
+// ===== Phase 2: account-mode compatibility adapter + demo wiring =====
+// Registry (authorizedUsers/{uid}, future rules) is authoritative; in
+// production (registry rules not deployed) the legacy access control
+// (meta/access + admin allowlist) feeds the resolver so the current owner
+// keeps loading normally. Unauthorized authenticated users become DEMO.
+async function resolveAccountModeCompat(user, accessOk){
+  if(!window.AccountMode || !user) return accessOk ? 'REAL' : 'LOGIN_REQUIRED';
+  let authorization = null;
+  try{
+    const snap = await FB.db.collection('authorizedUsers').doc(user.uid).get();
+    if(snap.exists){
+      const d = snap.data() || {};
+      authorization = { enabled: d.enabled !== false, blocked: d.blocked === true, role: String(d.role || 'user') };
+    }
+  }catch(e){
+    // permission-denied in production (registry rules not deployed) → legacy path
+  }
+  if(!authorization){
+    const email = normalizeEmail(user && user.email);
+    if(isAccessAdmin(email)) authorization = { enabled: true, blocked: false, role: 'owner' };
+    else if(accessOk) authorization = { enabled: true, blocked: false, role: 'user' };
+  }
+  return AccountMode.resolveAccountMode({ authUser: user, emailVerified: !!(user && user.emailVerified), authorization });
+}
+function enterDemoMode(){
+  stopCloudSync(false); // real listener never survives into DEMO
+  FB.accountMode = 'DEMO';
+  FB.cloudLoaded = false;
+  FB.package2 = null;
+  FB.lastCloudError = null;
+  FB.access.loading = false;
+  FB.access.loaded = true;
+  FB.access.allowed = true;
+  FB.access.reason = '';
+  FB.demoSource = window.PortfolioDataSource ? PortfolioDataSource.createLocalDemoDataSource('demo_portfolio_v1') : null;
+  if(window.DemoPortfolio){
+    const demo = DemoPortfolio.generateDemoPortfolio();
+    const wallet = { ...(demo.wallets[0] || {}) };
+    wallet.aportes = demo.aportes || [];
+    wallet.proventos = demo.proventos || [];
+    S.wallets = [normalizeWalletEntry(wallet, 'Carteira Demonstração')];
+    S.activeWalletId = String((S.wallets[0] && S.wallets[0].id) || '');
+    syncStateFromWallet(S.wallets[0]);
+    if(demo.settings && typeof demo.settings==='object') S.settings = { ...(S.settings||{}), ...demo.settings };
+    if(demo.dashboard && typeof demo.dashboard==='object') S.dashboard = { ...(S.dashboard||{}), ...demo.dashboard };
+  }
+  render();
+}
+function resetDemoPortfolio(){
+  if(FB.accountMode !== 'DEMO') return;
+  if(FB.demoSource && typeof FB.demoSource.reset === 'function'){
+    try{ FB.demoSource.reset(); }catch(e){}
+  }
+  enterDemoMode();
+  toast('🧪 Demonstração restaurada para os dados fictícios padrão.');
+}
+function clearRealStateInMemory(){
+  S.assets = [];
+  S.wallets = [];
+  S.aportes = [];
+  S.proventos = [];
+  S.rfEvents = [];
+  FB.package2 = null;
+  FB.cloudLoaded = false;
 }
 function sanitizeFirestoreValue(value, seen=new WeakSet()){
   if(value===undefined || typeof value==='function' || typeof value==='symbol') return undefined;
@@ -11625,6 +11715,7 @@ async function applyCloudData(d){
 }
 function startCloudSync({readOnlyOnly=false}={}){
   if(isLocalTestMode() || isAuthoritativeLocalRecoveryBoot()) return;
+  if(FB.accountMode && FB.accountMode!=='REAL') return;
   if(isProtectedReadOnlyQaBoot() && !readOnlyOnly) return;
   if(readOnlyOnly && isEditOwner()) return;
   if(!readOnlyOnly && !isEditOwner()) return;
@@ -11709,6 +11800,7 @@ function stopCloudSync(doRender=true){
 function queueCloudSave(){
   if(isProtectedReadOnlyQaBoot() || isAuthoritativeLocalRecoveryBoot()) return;
   if(isLocalTestMode() || !isEditOwner()) return;
+  if(FB.accountMode && FB.accountMode!=='REAL') return;
   // Local bootstrap/migration state must never outrank the authoritative
   // authenticated cloud snapshot. Cloud writes become eligible only after
   // the first snapshot has hydrated the active wallet.
@@ -11725,6 +11817,10 @@ async function uploadLocalToCloud(show=true, options={}){
   if(isLocalTestMode()){
     if(show) toast('🧪 Modo de teste local: sincronização desativada.');
     return;
+  }
+  if(FB.accountMode && FB.accountMode!=='REAL'){
+    if(show) toast('🧪 Modo demonstração: alterações ficam apenas na demonstração.');
+    return {pass:false,reason:'DEMO_MODE_NO_CLOUD_WRITES'};
   }
   if(!isEditOwner()){
     if(show) toast('Esta aba está em modo somente leitura para evitar perda de dados.','#fbbf24');
@@ -11851,6 +11947,9 @@ function cloudStatus(){
 function authBox(){
   if(isLocalTestMode()) return `<span class="note-pill" style="background:rgba(251,191,36,.08);color:#fde68a;border-color:rgba(251,191,36,.22)">Teste local</span>`;
   if(isV250OfflineCachedSession()) return `<span class="note-pill" role="status" style="background:rgba(251,191,36,.08);color:#fde68a;border-color:rgba(251,191,36,.22)">Offline · leitura</span>`;
+  if(FB.accountMode === 'DEMO'){
+    return `<span class="note-pill" role="status" style="background:rgba(110,231,183,.10);color:#6ee7b7;border-color:rgba(110,231,183,.25)">Modo demonstração · Dados fictícios</span><button class="btn bgh" style="font-size:10px;padding:4px 8px;min-height:26px;margin-left:6px" onclick="resetDemoPortfolio()" title="Restaurar demonstração">Restaurar</button>`;
+  }
   if(!FB.ready) return '';
   if(!FB.user) return `<button class="btn bgh hdr-mobile-btn" style="font-size:11px;padding:6px 10px;min-height:30px;line-height:1;border-color:#24324a;color:#a5b4fc;background:#111827" onclick="signInGoogle()"><span class="hdr-mobile-icon">🔑</span><span class="hdr-mobile-label">Entrar Google</span></button>`;
   const name=esc(FB.user.displayName||'Conta Google');
@@ -11862,13 +11961,16 @@ function authBox(){
   </div>`;
 }
 function accessGateBox(){
+  if(FB.accountMode === 'BLOCKED' && window.AuthBootUi){
+    return `<div style="min-height:calc(100vh - 86px);display:grid;place-items:center;padding:14px 16px 20px">${AuthBootUi.renderBlockedHtml()}</div>`;
+  }
   const loading = !FB.authResolved || FB.access.loading;
   const reason = FB.access.reason || 'Faça login com um e-mail aprovado para acessar a carteira.';
   const stateLabel = loading ? 'Verificando acesso' : (FB.user ? 'Acesso em validação' : 'Acesso restrito');
-  const title = loading ? 'Verificando acesso...' : (FB.user ? 'Seu e-mail não está autorizado' : 'Entre com Google para continuar');
+  const title = loading ? 'Verificando sua conta...' : (FB.user ? 'Seu e-mail não está autorizado' : 'Entre com Google para continuar');
   const chip = FB.user ? `<span class="note-pill" style="background:#111827;color:#c7d2fe;border-color:rgba(99,102,241,.22)">${esc(FB.user.email || '')}</span>` : '';
   return `
-    <div style="min-height:calc(100vh - 86px);display:grid;place-items:center;padding:14px 16px 20px">
+    <div${loading ? ' role="status" aria-live="polite"' : ''} style="min-height:calc(100vh - 86px);display:grid;place-items:center;padding:14px 16px 20px">
       <div style="width:min(460px,100%);background:linear-gradient(180deg,#0d1320 0%,#0a1020 100%);border:1px solid #1d2940;border-radius:20px;box-shadow:0 16px 42px rgba(0,0,0,.36);overflow:hidden;position:relative">
         <div style="height:3px;background:linear-gradient(90deg,#7c8dff 0%,#6ee7b7 100%);box-shadow:0 0 24px rgba(124,141,255,.18)"></div>
         <div style="padding:20px 22px 12px">
@@ -23125,6 +23227,38 @@ function irpfTab(){
 
 function ir2026ReadinessSection(){
   if(typeof IR2026Readiness==='undefined') return '';
+  // P7 DEMO: synthetic fiscal state only — the owner's real IR2026 readiness
+  // (61 sales, 2025 evidence blockers, opening coverage) is NEVER rendered in DEMO.
+  if(FB.accountMode === 'DEMO' && window.DemoPortfolio && DemoPortfolio.generateDemoIrpfState){
+    const d = DemoPortfolio.generateDemoIrpfState();
+    const card = (label, detail, tone) => `
+      <div class="irpf-summary-card ds-kpi ${tone}">
+        <div class="analysis-summary-kicker ds-kpi__label">${esc(label)}</div>
+        <div class="analysis-summary-value ds-kpi__value">${esc(detail)}</div>
+      </div>`;
+    return `
+    <div class="irpf-shell ir2026-readiness">
+      <div class="irpf-head">
+        <div>
+          <div class="irpf-title">APURAÇÃO DO IR 2026</div>
+          <div class="irpf-sub">Modo demonstração · Dados fictícios para demonstração. Nenhum dado fiscal real é exibido.</div>
+        </div>
+        <span class="irpf-badge warn">DADOS FICTÍCIOS</span>
+      </div>
+      <div class="irpf-summary">
+        ${card('Imposto (demo)', esc(d.taxDue), '')}
+        ${card('Abertura fiscal (demo)', `${d.openingQty.certified} certificadas · ${d.openingQty.partial} parciais (fictício)`, 'warn')}
+        ${card('Vendas analisadas (demo)', `${d.sales.certified} de ${d.sales.analyzed} certificadas (fictício)`, 'warn')}
+        ${card('Regras (demo)', `${d.rules.certified} de ${d.rules.total} certificadas (fictício)`, 'warn')}
+      </div>
+      <div class="irpf-section">
+        <h2 class="irpf-section-title">Estado sintético da demonstração</h2>
+        <ul class="ir2026-blockers">
+          <li><span class="irpf-badge warn">DEMO</span> Painel inteiramente fictício — ${esc(d.explanation)}</li>
+        </ul>
+      </div>
+    </div>`;
+  }
   const contract=IR2026Readiness.buildReadinessContract();
   return IR2026Readiness.renderReadinessPanel(contract, esc);
 }
@@ -28780,9 +28914,37 @@ function restoreQuoteUi(){
   requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({left:x,top:y,behavior:'auto'})));
 }
 function disarmQuoteUi(){ quoteUiArmed=false; quoteUiSnapshot=null; }
+// P8: persistent VISIBLE demo badge. The header authBox container is hidden in
+// some shell states (hdr-right display:none) — a fixed overlay guarantees the
+// badge stays visible across all routes while DEMO, and is removed otherwise.
+function syncDemoBadgeOverlay(){
+  let el=document.getElementById('auth-demo-badge');
+  if(FB.accountMode==='DEMO'){
+    if(!el){
+      el=document.createElement('div');
+      el.id='auth-demo-badge';
+      el.setAttribute('role','status');
+      el.style.cssText='position:fixed;right:10px;bottom:10px;z-index:9999;display:flex;align-items:center;gap:6px;background:rgba(6,15,28,.92);border:1px solid rgba(110,231,183,.35);border-radius:999px;padding:6px 10px;box-shadow:0 6px 18px rgba(0,0,0,.35)';
+      const label=document.createElement('span');
+      label.style.cssText='font-size:10px;font-weight:800;color:#6ee7b7';
+      label.textContent='Modo demonstração · Dados fictícios';
+      const btn=document.createElement('button');
+      btn.type='button';
+      btn.textContent='Restaurar';
+      btn.title='Restaurar demonstração';
+      btn.setAttribute('aria-label','Restaurar demonstração');
+      btn.style.cssText='font-size:9px;font-weight:800;border:1px solid rgba(110,231,183,.35);background:transparent;color:#6ee7b7;border-radius:999px;padding:3px 8px;cursor:pointer;min-height:24px';
+      btn.addEventListener('click',resetDemoPortfolio);
+      el.appendChild(label);
+      el.appendChild(btn);
+      document.body.appendChild(el);
+    }
+  }else if(el){ el.remove(); }
+}
 function render(){
   const root=document.getElementById('root');
   if(!root) return;
+  try{ syncDemoBadgeOverlay(); }catch(e){}
   try{
     S._dashboardHighlightsCache=null;
     if(S._rmpTrace) console.log('[rmP] render() chamado');
