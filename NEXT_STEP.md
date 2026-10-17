@@ -60,3 +60,17 @@ Every phase must pass:
 - `NO_FAKE_HISTORY_CREATED` — No synthetic backfill ever
 - `ENGINE_AVAILABLE != DATA_READY` — A tested engine does not prove real-wallet data readiness.
 - `TWR_XIRR_AVAILABLE=false` — Until wallet-scoped, trustworthy history and cash flows exist.
+
+## IR2026 — Opening fiscal v1 (2026-10-17, local branch codex/legacy-ir2026-fiscal-opening)
+
+- `OPENING_FISCAL_2026_V1` construído por replay DERIVED determinístico (engine certificada):
+  279 ativos no escopo; 32 held candidates — DERIVED 7 / PARTIAL 20 / UNKNOWN 5;
+  custo com valor derivado 84,38% (limpo 21,88%). Nada CERTIFIED (sem documento oficial 31/12/2025).
+- Matriz forense das 61 vendas 2026: 11 DERIVED_SIMULATION (resultado simulado, não autoritativo),
+  50 BLOCKED (24 opening incerta, 26 AMOUNT ausente no export — BBAS3/VALE3/PETR4/CMIG4/SUZB3).
+- Day trade determinístico: 4 vendas candidate / 57 swing. IRRF=UNKNOWN, taxas=MISSING_ITEMIZED,
+  perdas anteriores=UNKNOWN. 5 assets com corporate-action blocker pré-2026.
+- Artefato privado: `.qa-state/ir2026/opening-evidence/opening-fiscal-2026-v1.json` (SHA e39ec204…).
+- Resumo público não sensível: `ir2026/opening-v1-summary.json`. View conservativa do dry-run intacta.
+- PRÓXIMO GATE HUMANO: obter informe de rendimentos 2025 / posição com custo por ativo de 31/12/2025 +
+  informe de prejuízos acumulados + IRRF por operação; então promover DERIVED→CERTIFIED por precedência de evidência.
