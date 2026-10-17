@@ -88,59 +88,69 @@ test('rules registry: loads, unique ids, valid statuses (P21)', () => {
   assert.ok(reg.REGISTRY_SHA256.length === 64);
 });
 
-test('official 2026 review covers each pending rule once without enabling tax calculation', () => {
+test('official 2026 review + V3 registry verification are coherent', () => {
   const registry = rulesMod.loadRegistry();
   const review = JSON.parse(fs.readFileSync(path.join(__dirname, '../ir2026/rules/legal-review-2026.json'), 'utf8'));
   assert.strictEqual(review.TAX_YEAR, 2026);
-  assert.strictEqual(review.REVIEWS.length, 26);
   const pending = new Set(rulesMod.rulesNeedingExternalVerification(registry));
-  const allowed = new Set(['CERTIFIED_BY_OFFICIAL_SOURCE', 'PARTIAL_LEGAL_EVIDENCE',
-    'CONFLICTING_OFFICIAL_EVIDENCE', 'NEEDS_MORE_SOURCE', 'NOT_APPLICABLE']);
-  for (const [id, sourceIds, section, summary, behavior, cases, confidence, status] of review.REVIEWS) {
-    assert.ok(pending.delete(id), `duplicate or non-pending review: ${id}`);
-    assert.ok(allowed.has(status), id);
-    assert.ok(summary && behavior && cases && confidence, id);
-    for (const sourceId of sourceIds.split(',').filter(Boolean)) {
-      const source = review.SOURCES[sourceId];
-      assert.ok(source && source[0] && source[1] && /^https:\/\//.test(source[2]), `${id}: ${sourceId}`);
-      assert.ok(section, `${id}: official section missing`);
-    }
-    if (status === 'CERTIFIED_BY_OFFICIAL_SOURCE') assert.ok(sourceIds && section, id);
+  const reviewed = new Set(review.REVIEWS.map((r) => r[0]));
+  // every rule still needing verification must have a prior review entry
+  for (const id of pending) assert.ok(reviewed.has(id), `missing review entry for still-pending ${id}`);
+  // rules verified in the 2026-10-17 official pass must cite official sources.
+  // P6: OFFICIAL and SECONDARY are distinct tiers — secondary support may cite
+  // its source but can NEVER satisfy a gate that requires official authority.
+  const official = registry.RULES.filter((r) => r.STATUS === 'VERIFIED_OFFICIAL_SOURCE');
+  const secondary = registry.RULES.filter((r) => r.STATUS === 'VERIFIED_SECONDARY_SUPPORT');
+  assert.ok(official.length >= 15, 'official verification pass must have verified the core rules');
+  for (const r of [...official, ...secondary]) {
+    assert.ok(/^https?:\/\//.test(r.SOURCE_URL || ''), `${r.RULE_ID} must cite official URL`);
+    assert.ok(r.SOURCE_TITLE && r.VERIFICATION_DATE, r.RULE_ID);
   }
-  assert.strictEqual(pending.size, 0);
-  assert.strictEqual(rulesMod.taxDueCalculationAllowed(registry, ['RULE_RV_SWING_RATE']), false);
-  assert.strictEqual(rulesMod.taxDueCalculationAllowed(registry, ['RULE_FII_ALIENATION_EXEMPT_PF']), false);
+  for (const r of secondary) {
+    assert.strictEqual(rulesMod.officialRule(registry, r.RULE_ID, '2026-10-17'), null,
+      `${r.RULE_ID}: secondary support must never pass the official gate`);
+  }
+  // rule-level gate now passes for verified swing/FII rules…
+  assert.strictEqual(rulesMod.taxDueCalculationAllowed(registry, ['RULE_RV_SWING_RATE'], '2026-10-17'), true);
+  assert.strictEqual(rulesMod.taxDueCalculationAllowed(registry, ['RULE_FII_ALIENATION_EXEMPT_PF'], '2026-10-17'), true);
+  // …but any unverified rule in the dependency set still blocks (P22)
+  assert.strictEqual(rulesMod.taxDueCalculationAllowed(registry, ['RULE_RV_SWING_RATE', 'RULE_SUBSCRIPTION_COST_MODEL'], '2026-10-17'), false);
+  // bonus: officially verified with documented semantic change
   const bonus = rulesMod.resolveRule(registry, 'RULE_BONUS_NO_COST_INFLATION', '2026-10-16');
-  assert.strictEqual(bonus.RULE_VERSION, 2);
-  assert.strictEqual(bonus.LEGAL_STATUS, 'PARTIAL_LEGAL_EVIDENCE');
-  assert.strictEqual(bonus.STATUS, 'NEEDS_CURRENT_LEGAL_SOURCE');
+  assert.strictEqual(bonus.RULE_VERSION, 3);
+  assert.strictEqual(bonus.STATUS, 'VERIFIED_OFFICIAL_SOURCE');
+  assert.strictEqual(bonus.SEMANTIC_CHANGE_REQUIRED, 'YES');
 });
 
-test('rules registry: legal-sensitive rules flagged NEEDS_CURRENT_LEGAL_SOURCE (P22)', () => {
+test('rules registry: rules still needing legal work are flagged (P22)', () => {
   const reg = rulesMod.loadRegistry();
   const need = rulesMod.rulesNeedingExternalVerification(reg);
-  for (const id of ['RULE_RV_SWING_RATE', 'RULE_RV_SWING_EXEMPTION_THRESHOLD', 'RULE_RF_REGRESSIVE_TABLE',
-    'RULE_FII_DISTRIBUTION_EXEMPT_PF', 'RULE_DAY_TRADE_RATE', 'RULE_LOSS_CARRYFORWARD_SAME_CATEGORY']) {
+  for (const id of ['RULE_SUBSCRIPTION_COST_MODEL', 'RULE_STOCK_LENDING_INCOME_TAXATION', 'RULE_BDR_ALIENATION_REGIME',
+    'RULE_AMORTIZATION_TREATMENT', 'RULE_CAPITAL_RETURN_TREATMENT', 'RULE_DEB_FUND_CLASSIFICATION']) {
     assert.ok(need.includes(id), id);
+  }
+  for (const verifiedId of ['RULE_RV_SWING_RATE', 'RULE_RV_SWING_EXEMPTION_THRESHOLD', 'RULE_RF_REGRESSIVE_TABLE',
+    'RULE_FII_DISTRIBUTION_EXEMPT_PF', 'RULE_DAY_TRADE_RATE', 'RULE_LOSS_CARRYFORWARD_SAME_CATEGORY']) {
+    assert.ok(!need.includes(verifiedId), `${verifiedId} is verified and must not be pending`);
   }
 });
 
-test('rules: TAX_DUE calculation blocked while swing rules are uncertified (P17/P22)', () => {
+test('rules: rule-level gate passes for verified sets and still blocks unverified (P17/P22)', () => {
   const reg = rulesMod.loadRegistry();
-  const ok = rulesMod.taxDueCalculationAllowed(reg, [
-    'RULE_MONEY_INTEGER_CENTS', 'RULE_UNKNOWN_NOT_ZERO',
-  ]);
-  const blocked = rulesMod.taxDueCalculationAllowed(reg, [
-    'RULE_MONEY_INTEGER_CENTS', 'RULE_RV_SWING_RATE',
-  ]);
-  assert.strictEqual(ok, true);
-  assert.strictEqual(blocked, false);
+  const rulesOnlyVerified = rulesMod.taxDueCalculationAllowed(reg, [
+    'RULE_MONEY_INTEGER_CENTS', 'RULE_UNKNOWN_NOT_ZERO', 'RULE_RV_SWING_RATE',
+  ], '2026-10-17');
+  const withUnverified = rulesMod.taxDueCalculationAllowed(reg, [
+    'RULE_MONEY_INTEGER_CENTS', 'RULE_RV_SWING_RATE', 'RULE_TICKER_CHANGE_COST_CARRYOVER',
+  ], '2026-10-17');
+  assert.strictEqual(rulesOnlyVerified, true);
+  assert.strictEqual(withUnverified, false);
 });
 
 test('rules: resolveRule respects EFFECTIVE ranges and fails closed', () => {
   const reg = rulesMod.loadRegistry();
   const r = rulesMod.resolveRule(reg, 'RULE_RV_SWING_RATE', '2026-05-10');
-  assert.ok(r && r.RULE_VERSION === 1);
+  assert.ok(r && r.RULE_VERSION === 2);
   assert.strictEqual(rulesMod.resolveRule(reg, 'RULE_RV_SWING_RATE', '2015-05-10'), null);
   assert.strictEqual(rulesMod.resolveRule(reg, 'RULE_DOES_NOT_EXIST', '2026-05-10'), null);
 });

@@ -102,6 +102,15 @@ function buildOpeningFiscal({ rawEvents, anchors, fiscalYear, registry }) {
       if (!anchorCheck.MATCH) { qtyStatus = 'PARTIAL'; blockers.push('ANCHOR_QTY_MISMATCH'); }
     }
 
+    // P19: subscription-rights positions are pending dedicated fiscal
+    // treatment (RULE_SUBSCRIPTION_COST_MODEL needs interpretation). A rights
+    // row can never carry a CERTIFIED zero cost inherited from empty
+    // statement fields — cost stays UNKNOWN until per-event evidence.
+    const assetClass = st ? st.ASSET_CLASS : ((classByAsset[asset] || {}).ASSET_CLASS || null);
+    const yearTypes = new Set(yearEvents.filter((e) => e.ASSET === asset).map((e) => e.TYPE));
+    const isRightsPosition = assetClass === 'RIGHTS_SUBSCRIPTION'
+      && (qty > 0 || yearTypes.has('SUBSCRIPTION') || yearTypes.has('RIGHTS_TRANSFER'));
+
     rows.push({
       ASSET: asset,
       ASSET_CLASS: st ? st.ASSET_CLASS : ((classByAsset[asset] ? classByAsset[asset].ASSET_CLASS : (anchor ? anchor.ASSET_CLASS : 'OTHER'))),
@@ -111,16 +120,21 @@ function buildOpeningFiscal({ rawEvents, anchors, fiscalYear, registry }) {
       OPENING_AVG_COST_CENTS: qty && totalCost !== null ? Math.round(totalCost / qty) : null,
       OPENING_RF_PRINCIPAL_CENTS: st && st.RF_PRINCIPAL_CENTS !== undefined ? st.RF_PRINCIPAL_CENTS : null,
       QTY_STATUS: qtyStatus,
-      COST_STATUS: costStatus,
+      COST_STATUS: isRightsPosition && costStatus === 'CERTIFIED' ? 'UNKNOWN' : costStatus,
+      PENDING_FISCAL_TREATMENT: isRightsPosition ? 'RIGHTS_POSITION_PENDING_FISCAL_TREATMENT' : null,
       SOURCE: source,
       SOURCE_DATE: sourceDate,
       AUTHORITY_LEVEL: authority,
       EVIDENCE_PRECEDENCE_LEVEL: level,
       FLAGS: flags,
-      BLOCKERS: blockers,
+      BLOCKERS: isRightsPosition ? [...blockers, 'RIGHTS_FISCAL_TREATMENT_PENDING'] : blockers,
       ANCHOR_CHECK: anchorCheck,
       OPEN_LOAN_QTY: st ? st.OPEN_LOAN_QTY : 0,
     });
+    if (isRightsPosition && rows[rows.length - 1].COST_STATUS === 'UNKNOWN') {
+      rows[rows.length - 1].OPENING_TOTAL_COST_CENTS = null;
+      rows[rows.length - 1].OPENING_AVG_COST_CENTS = null;
+    }
   }
 
   return {

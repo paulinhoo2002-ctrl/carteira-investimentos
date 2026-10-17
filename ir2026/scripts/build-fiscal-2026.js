@@ -7,7 +7,7 @@ const { buildOpeningFiscal } = require('../opening-fiscal');
 const { buildTaxLedger } = require('../ledger');
 const { checkInvariants } = require('../invariants');
 const { computeCertification } = require('../certification');
-const { loadRegistry } = require('../rules');
+const { loadRegistry, rulesNeedingExternalVerification } = require('../rules');
 const { sha256File, sha256Json } = require('../hash');
 
 const root = path.resolve(__dirname, '../..');
@@ -86,7 +86,10 @@ function buildDryRun(rawEvents, masterRows, registry = loadRegistry()) {
   const monthRows = Array.from({ length: 12 }, (_, i) => {
     const month = `2026-${String(i + 1).padStart(2, '0')}`;
     return { MONTH: month, CLOSES: ledger.MONTHLY_CLOSES.filter(c => c.YEAR_MONTH === month),
-      TAX_DUE: 'NOT_CALCULATED', COVERAGE: 'UNKNOWN' };
+      TAX_DUE: 'NOT_CALCULATED', COVERAGE: 'UNKNOWN',
+      // P27: ruleset snapshot for this close — future rule updates must not
+      // silently rewrite historical close semantics.
+      RULESET_VERSION: registry.REGISTRY_VERSION, RULESET_SHA256: registry.REGISTRY_SHA256 };
   });
   const current = masterRows.map(row => {
     const openingRow = opening.ROWS.find(o => o.ASSET === row.asset_identity);
@@ -101,8 +104,9 @@ function buildDryRun(rawEvents, masterRows, registry = loadRegistry()) {
   });
   const currentCertifiedFiscalUnknown = current.filter(row => row.CURRENT_AVG_COST_STATUS === 'CERTIFIED'
     && opening.ROWS.find(o => o.ASSET === row.ASSET)?.COST_STATUS !== 'CERTIFIED').map(row => row.ASSET);
-  const rulesToVerify = registry.RULES.filter(r => r.STATUS === 'NEEDS_CURRENT_LEGAL_SOURCE').map(r => ({
-    RULE_ID: r.RULE_ID, SUBJECT: r.SCOPE, ASSET_CLASS: r.ASSET_CLASS, DATE_SCOPE: [r.EFFECTIVE_FROM, r.EFFECTIVE_TO],
+  const pendingRuleIds = new Set(rulesNeedingExternalVerification(registry));
+  const rulesToVerify = registry.RULES.filter(r => pendingRuleIds.has(r.RULE_ID)).map(r => ({
+    RULE_ID: r.RULE_ID, STATUS: r.STATUS, SUBJECT: r.SCOPE, ASSET_CLASS: r.ASSET_CLASS, DATE_SCOPE: [r.EFFECTIVE_FROM, r.EFFECTIVE_TO],
     QUESTION_TO_VERIFY: r.NOTES, CURRENT_ENGINE_BEHAVIOR: 'TAX_DUE_NOT_CALCULATED', BLOCKS_OUTPUTS: ['IR_CALCULATION_READY'] }));
   const report = { FISCAL_YEAR: fiscalYear, SOURCE_BOUNDARY: '2019-2025 analytical; 2026 fiscal',
     OPENING: opening, LEDGER: ledger, MONTHLY_2026: monthRows, CERTIFICATION: certification,

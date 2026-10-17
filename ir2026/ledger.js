@@ -66,14 +66,21 @@ function buildTaxLedger({ opening, events, registry, fiscalYear }) {
     records.push(rec);
     const ym = ev.YEAR_MONTH;
 
-    if (SELL_LIKE.has(rec.TYPE) && rec.BUCKET) {
-      const b = (realizedByMonthBucket[ym] = realizedByMonthBucket[ym] || {});
-      const mb = (b[rec.BUCKET] = b[rec.BUCKET] || { SALES_GROSS_CENTS: 0, GAIN_CENTS: 0, LOSS_CENTS: 0, UNKNOWN_BLOCKERS: 0, EVENTS: 0 });
-      mb.EVENTS += 1;
-      if (rec.PROCESSING === 'BLOCKED_UNKNOWN') { mb.UNKNOWN_BLOCKERS += 1; }
-      else {
-        mb.SALES_GROSS_CENTS += rec.GROSS_CENTS || 0;
-        if (rec.REALIZED >= 0) mb.GAIN_CENTS += rec.REALIZED; else mb.LOSS_CENTS += -rec.REALIZED;
+    if (SELL_LIKE.has(rec.TYPE)) {
+      // P17: blocked sells must still appear in their month/bucket with
+      // UNKNOWN_BLOCKERS — invisible blockers would fake full coverage.
+      // Blocked sells contribute no gross/gain (missing amounts are never priced).
+      const st = states[ev.ASSET];
+      const bucket = rec.BUCKET || (st ? saleBucket(st.ASSET_CLASS, ev.CORP_DAY_TRADE === true) : null);
+      if (bucket) {
+        const b = (realizedByMonthBucket[ym] = realizedByMonthBucket[ym] || {});
+        const mb = (b[bucket] = b[bucket] || { SALES_GROSS_CENTS: 0, GAIN_CENTS: 0, LOSS_CENTS: 0, UNKNOWN_BLOCKERS: 0, EVENTS: 0 });
+        mb.EVENTS += 1;
+        if (rec.PROCESSING === 'BLOCKED_UNKNOWN') { mb.UNKNOWN_BLOCKERS += 1; }
+        else {
+          mb.SALES_GROSS_CENTS += rec.GROSS_CENTS || 0;
+          if (rec.REALIZED >= 0) mb.GAIN_CENTS += rec.REALIZED; else mb.LOSS_CENTS += -rec.REALIZED;
+        }
       }
     }
 
@@ -136,13 +143,20 @@ function buildTaxLedger({ opening, events, registry, fiscalYear }) {
         REALIZED_GAIN_CENTS: mb.GAIN_CENTS,
         REALIZED_LOSS_CENTS: mb.LOSS_CENTS,
         WITHHOLDING_CENTS: null,
-        WITHHOLDING_STATUS: 'UNKNOWN',
+        WITHHOLDING_STATUS: 'UNKNOWN',          // P9/P20: no withholding evidence in the export
+        FEES_CENTS: null,                        // P8: itemized fees absent from the movement export
+        FEES_STATUS: 'MISSING_FEES',
         TAXABLE_BASE_CENTS: monthNet, // netted base; exemption/rate rules NOT applied
         EXEMPTION_STATUS: 'NOT_ASSESSED_RULES_UNCERTIFIED',
         TAX_DUE: 'NOT_CALCULATED',   // P17: never definitive until rules certified
+        OPENING_LOSS_CARRY_CENTS: closingKnown - monthLoss,
+        OPENING_LOSS_CARRY_STATUS: ll.OPENING_STATUS,
+        LOSS_USED_CENTS: 0,                      // P19: compensation stays zero while prior losses are UNKNOWN
+        LOSS_USED_STATUS: ll.OPENING_STATUS === 'UNKNOWN' ? 'UNKNOWN_PRIOR_LOSSES' : 'CERTIFIED',
         CARRY_FORWARD_LOSSES_CENTS: closingKnown,
         CARRY_FORWARD_STATUS: ll.CLOSING_STATUS,
         UNKNOWN_BLOCKERS: mb.UNKNOWN_BLOCKERS,
+        STATUS: mb.UNKNOWN_BLOCKERS === 0 ? 'SIMULATION_ONLY' : (mb.UNKNOWN_BLOCKERS === mb.EVENTS ? 'BLOCKED' : 'PARTIAL'),
         SOURCE_COVERAGE: mb.EVENTS ? (mb.EVENTS - mb.UNKNOWN_BLOCKERS) / mb.EVENTS : null,
       });
     }
