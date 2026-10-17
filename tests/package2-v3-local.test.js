@@ -9,9 +9,9 @@ const { baseIdentity, fieldIdentity, planPromotion, simulateRollback } = require
 const project = 'carteira-de-investimento-16725';
 const uid = 'SYNTH_OWNER_001';
 const hash = 'a'.repeat(64);
-const time = '2026-10-17T12:00:00.000Z';
+const time = '2026-06-30T12:00:00.000Z';
 
-function field(amount_cents, status = 'PARTIAL', as_of = '2026-10-17', authority_scope = 'CURRENT_POSITION') {
+function field(amount_cents, status = 'PARTIAL', as_of = '2026-06-30', authority_scope = 'CURRENT_POSITION') {
   return {
     amount_cents, status, as_of, authority_scope,
     source_id: amount_cents === null ? null : 'SYNTH_STATEMENT',
@@ -19,7 +19,7 @@ function field(amount_cents, status = 'PARTIAL', as_of = '2026-10-17', authority
   };
 }
 
-function makeSnapshot(as_of = '2026-10-17') {
+function makeSnapshot(as_of = '2026-06-30') {
   return snapshot({
     as_of, source_bundle_hash: hash, custodian_id: 'SYNTH_CUSTODIAN', coverage: 'PARTIAL', income_status: 'PARTIAL',
     position: {
@@ -34,14 +34,14 @@ function makeSnapshot(as_of = '2026-10-17') {
 
 function makeCandidate() {
   let snapshots = {};
-  for (const date of ['2026-10-10', '2026-10-14', '2026-10-17']) snapshots = mergeSnapshots(snapshots, makeSnapshot(date));
+  for (const date of ['2026-02-28', '2026-06-30', '2026-09-15']) snapshots = mergeSnapshots(snapshots, makeSnapshot(date));
   const latest_snapshot_id = makeSnapshot().snapshot_id;
   const kinds = [
     'received_certified', 'received_partial', 'candidate_total', 'legacy_reported', 'transferred_jcp',
     'rf_interest', 'loan_reimbursement', 'redemption', 'unknown',
   ];
   const income = Object.fromEntries(kinds.map(kind => [kind, { ...field(null, 'UNKNOWN'), event_count: null }]));
-  income.candidate_total = { ...field(350, 'PARTIAL', '2026-10-17', 'SOURCE_CANDIDATE_ONLY'), event_count: 3 };
+  income.candidate_total = { ...field(350, 'PARTIAL', '2026-06-30', 'SOURCE_CANDIDATE_ONLY'), event_count: 3 };
   income.legacy_unknown_included = true;
   return buildPackage2V3({
     snapshots, latest_snapshot_id, income,
@@ -101,7 +101,7 @@ test('V3 serialization keeps fiscal, global, and uncertified income out of the r
   assert.equal(Object.hasOwn(canonical.snapshots[id].position.rv_market, 'current_avg_cost'), false);
   assert.equal(Object.hasOwn(latestReadModel(withExtras), 'fiscal_cost'), false);
   assert.throws(() => snapshot({ ...makeSnapshot(), as_of: '2026-02-30' }), /INVALID_AS_OF/);
-  assert.throws(() => snapshot({ ...makeSnapshot(), current_result: field(-500, 'CERTIFIED', '2026-10-17', 'CURRENT_POSITION_RESULT') }), /INVALID_RESULT_STATUS/);
+  assert.throws(() => snapshot({ ...makeSnapshot(), current_result: field(-500, 'CERTIFIED', '2026-06-30', 'CURRENT_POSITION_RESULT') }), /INVALID_RESULT_STATUS/);
   assert.throws(() => snapshot({ ...makeSnapshot(), global_total: { amount_cents: 100 } }), /FISCAL_OR_GLOBAL_LEAK/);
   assert.throws(() => snapshot({ ...makeSnapshot(), coverage: 'COMPLETE' }), /INCOMPLETE_CERTIFIED_POSITION/);
   const base = makeSnapshot();
@@ -118,9 +118,9 @@ test('V3 serialization keeps fiscal, global, and uncertified income out of the r
 test('V3 preserves dated snapshots and rejects mutation of an existing identity', () => {
   const payload = makeCandidate();
   assert.equal(Object.keys(payload.snapshots).length, 3);
-  const original = payload.snapshots[makeSnapshot('2026-10-10').snapshot_id];
-  assert.equal(original.as_of, '2026-10-10');
-  const changed = makeSnapshot('2026-10-10');
+  const original = payload.snapshots[makeSnapshot('2026-06-30').snapshot_id];
+  assert.equal(original.as_of, '2026-06-30');
+  const changed = makeSnapshot('2026-06-30');
   changed.position.rv_market.amount_cents = 999;
   assert.throws(() => mergeSnapshots(payload.snapshots, changed), /IMMUTABLE_SNAPSHOT_CONFLICT/);
   assert.equal(original.position.rv_market.amount_cents, 12000);
@@ -153,7 +153,7 @@ test('future writer preconditions abort on identity, concurrent, and candidate d
     [{ ...before, project_id: 'other-project' }, expected, /WRONG_PROJECT/],
     [{ ...before, uid: 'OTHER_SYNTH_OWNER' }, expected, /WRONG_UID/],
     [{ ...before, document_path: 'portfolios/OTHER_SYNTH_OWNER' }, expected, /WRONG_DOCUMENT_PATH/],
-    [{ ...before, update_time: '2026-10-17T12:00:01.000Z' }, expected, /STALE_DOCUMENT/],
+    [{ ...before, update_time: '2026-06-30T12:00:01.000Z' }, expected, /STALE_DOCUMENT/],
     [{ ...before, fields: { ...before.fields, legacy_setting: 'changed' } }, expected, /BASE_DOCUMENT_DRIFT/],
     [{ ...before, fields: { ...before.fields, package1_v2: { changed: true } } }, expected, /PACKAGE1_DRIFT/],
     [{ ...before, fields: { ...before.fields, package2_v2: { changed: true } } }, expected, /PACKAGE2_DRIFT/],

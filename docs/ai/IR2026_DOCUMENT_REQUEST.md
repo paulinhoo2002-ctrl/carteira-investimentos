@@ -1,78 +1,53 @@
-# IR2026 — Pedido de documentos externos (gerado do checklist de blockers)
+# IR2026 — Evidências necessárias para certificação
 
-Prioridades derivadas da matriz fiscal 2026 (61 vendas, 32 held candidates).
-Cada documento resolve blockers específicos e **promove** o status fiscal
-via engine de precedência (níveis 1–4 certificam; nada é promovido sem estes).
+Esta lista descreve categorias de documentos. Não contém posições, operações,
+identificadores de ativos, quantidades ou valores de uma carteira.
 
-## PRIORIDADE 1 — Posição de 31/12/2025 com custo por ativo
+## Prioridade 1 — Posição de encerramento do exercício anterior
 
-- **DOCUMENTO**: Informe de rendimentos 2025 da corretora (seção "Posição /
-  Ativos" com **custo de aquisição**) OU extrato de posição emitido com coluna
-  de custo, datado 31/12/2025.
-- **WHY_NEEDED**: é a única evidência nível 1 que transforma a abertura
-  DERIVED/PARTIAL/UNKNOWN em CERTIFIED (hoje: 0 CERTIFIED de 32).
-- **PERIOD**: 31/12/2025 (exato; snapshots de outra data não servem de abertura).
-- **EXPECTED_FIELDS**: ticker, quantidade, custo total de aquisição (ou custo
-  médio), corretora/custódia.
-- **BLOCKERS_RESOLVED**: MISSING_OPENING_COST, MISSING_OPENING_QTY,
-  PRE_COVERAGE_HOLDING (5 assets: incl. posições anteriores a nov/2019),
-  e desbloqueia resultado realizado das 50 vendas bloqueadas por opening.
-- **PRIORIDADE**: 1 (desbloqueia ~R$32k de vendas bloqueadas + certifica as demais).
+- **Documento**: informe de rendimentos ou extrato oficial de posição com custo
+  de aquisição por ativo, emitido pela instituição custodiante.
+- **Período**: encerramento do exercício imediatamente anterior ao ano fiscal
+  analisado.
+- **Campos esperados**: ativo, quantidade, custo total ou custo médio,
+  custodiante e data de referência.
+- **Uso**: comprovar a abertura fiscal. Sem documento suficiente, a abertura
+  continua DERIVED, PARTIAL ou UNKNOWN; nunca é promovida automaticamente.
 
-## PRIORIDADE 2 — Prejuízos acumulados anteriores
+## Prioridade 2 — Prejuízos acumulados
 
-- **DOCUMENTO**: Informe/tabela de prejuízos a compensar (geralmente no mesmo
-  informe de rendimentos ou na declaração IRPF 2026 exercício 2025),
-  **separado por operação comum (swing) e day trade**.
-- **WHY_NEEDED**: carry-forward 2026 fica UNKNOWN sem isto; imposto devido
-  permanece bloqueado/parcial onde houver compensação.
-- **PERIOD**: saldo em 31/12/2025 por bucket.
-- **EXPECTED_FIELDS**: bucket (comum/day trade/FII), saldo de prejuízo.
-- **BLOCKERS_RESOLVED**: MISSING_PRIOR_LOSS (toda a cadeia de TAX_DUE).
-- **PRIORIDADE**: 2.
+- **Documento**: informe ou declaração que demonstre saldos a compensar,
+  discriminados por categoria fiscal aplicável.
+- **Período**: saldo de encerramento do exercício anterior.
+- **Campos esperados**: categoria, saldo e proveniência documental.
+- **Uso**: manter o carry-forward como UNKNOWN até a evidência ser validada.
 
-## PRIORIDADE 3 — IRRF 2026 por operação/mês
+## Prioridade 3 — IRRF
 
-- **DOCUMENTO**: Extrato de IR/impostos da corretora por mês de 2026 (ou
-  informe parcial "ano atual"), com IRRF de operações comuns E day trade.
-- **WHY_NEEDED**: hoje IRRF_STATUS=UNKNOWN (0 linhas no export de movimentação;
-  ausência nunca é tratada como zero).
-- **PERIOD**: 01/2026 até o mês mais recente.
-- **EXPECTED_FIELDS**: mês, ativo/operação, valor IRRF, classe (comum/day trade).
-- **BLOCKERS_RESOLVED**: MISSING_IRRF (reconciliação mensal automática no
-  engine: statement vs eventos; mismatch vira CONFLICT, nunca auto-ajuste).
-- **PRIORIDADE**: 3.
+- **Documento**: extrato tributário da instituição, por operação ou período.
+- **Período**: exercício fiscal em análise até a data mais recente coberta.
+- **Campos esperados**: data, operação, categoria e valor retido.
+- **Uso**: ausência de linha não comprova IRRF igual a zero.
 
-## PRIORIDADE 4 — Taxas itemizadas / notas de corretagem
+## Prioridade 4 — Taxas e notas de corretagem
 
-- **DOCUMENTO**: Notas de corretagem de 2026 (PDF) ou extrato de taxas com
-  corretagem + emolumentos + taxa B3 por operação.
-- **WHY_NEEDED**: o export traz apenas valores de liquidação; taxas por
-  operação estão ausentes (MISSING_FEES em todas as 61 vendas). O engine já
-  aloca taxas itemizadas ou rateia total por valor bruto (regra determinística
-  documentada).
-- **PERIOD**: 01/2026 em diante.
-- **EXPECTED_FIELDS**: operação, corretagem, emolumentos, taxa de liquidação.
-- **BLOCKERS_RESOLVED**: MISSING_FEES.
-- **PRIORIDADE**: 4.
+- **Documento**: notas ou extrato com taxas itemizadas por operação.
+- **Campos esperados**: identificador da operação, corretagem, emolumentos e
+  demais encargos discriminados pela fonte.
+- **Uso**: valores não itemizados permanecem ausentes; o sistema não os inventa.
 
-## PRIORIDADE 5 — Confirmação das vendas sem valor (26 linhas)
+## Prioridade 5 — Eventos sem valor ou natureza confirmada
 
-- **DOCUMENTO**: confirmação da corretora (ou nota de corretagem) para as
-  movimentações de 2026 sem valor no export — assinatura de custódia/
-  empréstimo (mesmo dia, mesma quantidade, "Transferência - Liquidação" +
-  "Empréstimo"). Ativos: BBAS3 (15), VALE3 (6), PETR4 (3), CMIG4 (1), SUZB3 (1).
-- **WHY_NEEDED**: sem confirmação, permanecem LENDING_CUSTODY_UNPRICED /
-  MISSING_SALE_AMOUNT (nunca precificadas por preço de mercado).
-- **EXPECTED_FIELDS**: natureza da movimentação (venda real X custódia/
-  empréstimo) e, se venda real, o valor de liquidação.
-- **BLOCKERS_RESOLVED**: MISSING_SALE_AMOUNT + LENDING_CUSTODY_UNPRICED.
-- **PRIORIDADE**: 5.
+- **Documento**: confirmação da instituição ou nota que esclareça se cada
+  evento é uma operação econômica, custódia, empréstimo ou outro movimento.
+- **Campos esperados**: identidade do evento, natureza, data e valor quando
+  informado pela fonte.
+- **Uso**: eventos ambíguos permanecem UNKNOWN e não são promovidos por
+  aproximação.
 
----
+## Entrega e processamento
 
-**Como entregar**: colocar os arquivos em uma pasta local e apontar o caminho.
-O entrypoint `node ir2026/scripts/ingest-dry-run.js <arquivo.json|pasta>` faz
-hash → detecção de tipo por conteúdo → matching → propostas de promoção →
-conflitos → delta de cobertura, **sem escrever nada**. Promoções só são
-aplicadas após revisão humana dos conflitos.
+Manter os documentos em armazenamento local privado, fora do Git. O comando
+`node ir2026/scripts/ingest-dry-run.js <arquivo.json|pasta>` executa detecção,
+normalização, matching e propostas em modo dry-run. A saída não altera a
+carteira; qualquer promoção futura exige revisão explícita de conflitos.

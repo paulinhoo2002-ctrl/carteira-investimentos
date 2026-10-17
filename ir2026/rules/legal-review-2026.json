@@ -1,7 +1,7 @@
 {
   "REVIEW_VERSION": 2,
   "TAX_YEAR": 2026,
-  "LAST_VERIFIED_DATE": "2026-10-17",
+  "LAST_VERIFIED_DATE": null,
   "NOTE": "Join RULE_ID to rules-2026.json for subject, asset class, current status and effective dates. Source dates are publication dates, not 2026 applicability proof. Research status is distinct from operational rule STATUS. No item below authorizes TAX_DUE.",
   "SOURCES": {
     "IN1585": [

@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const { darfSafety, assessMonth } = require('../ir2026/fiscal-product');
 const { loadRegistry } = require('../ir2026/rules');
 
-const verified = { registry: loadRegistry(), ruleIds: ['RULE_RV_SWING_RATE'], asOf: '2026-10-17' };
+const verified = { registry: loadRegistry(), ruleIds: ['RULE_RV_SWING_RATE'], asOf: '2026-06-30' };
 const assessment = assessMonth({ registry: verified.registry, bucket: 'RV_STOCK_SWING', asOf: verified.asOf,
   monthGrossCents: 2100000, monthNetCents: 10000, dataStatus: 'CERTIFIED' });
 const complete = { ...verified, ruleIds: assessment.RULES.map((r) => r.RULE_ID), assessment };

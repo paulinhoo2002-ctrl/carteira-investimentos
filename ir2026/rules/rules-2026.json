@@ -138,7 +138,7 @@
       "SOURCE_PUBLICATION_DATE": null,
       "VERIFICATION_DATE": "2026-10-17",
       "CALCULATION_METHOD": "corretagem/emolumentos/taxas: somam ao custo na compra, deduzem da receita na venda (quando evidenciados)",
-      "NOTES": "Custos operacionais dedutiveis confirmados. Export atual: valores de liquidacao, taxas NAO itemizadas (RULE_FEES_UNKNOWN_PRESERVED)."
+      "NOTES": "Custos operacionais dedutiveis confirmados. Taxas sem evidencia itemizada permanecem desconhecidas (RULE_FEES_UNKNOWN_PRESERVED)."
     },
     {
       "RULE_ID": "RULE_SPLIT_TOTAL_COST_PRESERVED",
@@ -171,7 +171,7 @@
       "VERIFICATION_DATE": "2026-10-17",
       "SEMANTIC_CHANGE_REQUIRED": "YES",
       "CALCULATION_METHOD": "bonificacao: custo fiscal atribuido pelo VALOR CAPITALIZADO (evidencia obrigatoria); sem valor evidenciado => qty-only + CORPORATE_PARTIAL",
-      "NOTES": "ID preservado por lineage; semantica CORRIGIDA: bonificacao TEM custo fiscal. Engine aceita CORP_COST evidenciado; sem evidencia fica parcial. Zero eventos BONUS em 2026 nos dados atuais."
+      "NOTES": "ID preservado por lineage; semantica CORRIGIDA: bonificacao TEM custo fiscal. Engine aceita CORP_COST evidenciado; sem evidencia fica parcial. A presença de eventos deve ser avaliada pela fonte disponível."
     },
     {
       "RULE_ID": "RULE_SUBSCRIPTION_COST_MODEL",
@@ -216,7 +216,7 @@
       "SOURCE_URL": "https://www.b3.com.br",
       "SOURCE_PUBLICATION_DATE": null,
       "VERIFICATION_DATE": "2026-10-17",
-      "NOTES": "Padrao de mercado confirmado por fonte institucional (B3); texto legal dedicado pendente. Historico lending incompleto (410 out / 0 retornos codificados)."
+      "NOTES": "Padrao de mercado confirmado por fonte institucional (B3); texto legal dedicado pendente. A cobertura de empréstimos depende da evidência de eventos de retorno."
     },
     {
       "RULE_ID": "RULE_STOCK_LENDING_INCOME_TAXATION",
@@ -418,7 +418,7 @@
       "SOURCE_URL": "https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2016/lei/l13259.htm",
       "SOURCE_PUBLICATION_DATE": "2016-03-16",
       "VERIFICATION_DATE": "2026-10-17",
-      "NOTES": "BDR nao e operacao a vista em bolsa brasileira; regime (ganho de capital vs fundos) por confirmar. Zero BDRs vendidos em 2026 nos dados atuais."
+      "NOTES": "BDR nao e operacao a vista em bolsa brasileira; regime (ganho de capital vs fundos) por confirmar. A aplicação depende da fonte e do enquadramento do instrumento."
     },
     {
       "RULE_ID": "RULE_RF_REGRESSIVE_TABLE",

@@ -91,15 +91,14 @@ test('P22: dry-run is deterministic for the same synthetic document', () => {
   fs.rmSync(tmp, { recursive: true, force: true });
 });
 
-test('P23: public summary carries no financial values, only counts/statuses/hashes', () => {
+test('P23: public summary exposes only generic certification status', () => {
   const summaryPath = path.resolve(__dirname, '../ir2026/opening-v1-summary.json');
   assert.ok(fs.existsSync(summaryPath), 'safe summary must exist');
   const raw = fs.readFileSync(summaryPath, 'utf8');
   const parsed = JSON.parse(raw);
-  assert.equal(parsed.NOTE.includes('counts, statuses and hashes'), true);
-  // no cents/monetary fields in the public summary
-  const forbidden = Object.keys(parsed).concat(...Object.values(parsed).filter((v) => typeof v === 'object').map((v) => Object.keys(v)));
-  assert.ok(!forbidden.some((k) => /CENTS|VALUE|R\$/i.test(k)), 'no monetary field names in public summary');
+  assert.deepEqual(Object.keys(parsed).sort(), ['ARTIFACT', 'DETERMINISTIC', 'DETAILS', 'FISCAL_YEAR', 'OFFICIAL_YEAR_END_EVIDENCE', 'OPENING_STATUS', 'TAX_PAYABLE_STATUS'].sort());
+  assert.equal(parsed.DETAILS, 'PRIVATE_LOCAL_ONLY');
+  assert.doesNotMatch(raw, /(?:ASSET_COUNT|HELD_CANDIDATES|SALES_2026|COST_COVERAGE|SHA256|R\$|[A-Z]{4}[0-9]{1,2})/i);
 });
 
 test('P23: private artifacts stay outside git tracking', () => {

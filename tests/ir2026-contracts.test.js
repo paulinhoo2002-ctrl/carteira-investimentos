@@ -43,7 +43,7 @@ test('classifyAssetClass: FII pattern, debênture fund, stock, BDR', () => {
     contracts.classifyAssetClass('SNID11', { product: 'SNID11 - SUNO INFRA DEBÊNTURES' }).assetClass,
     'FIXED_INCOME_DEB'
   );
-  assert.strictEqual(contracts.classifyAssetClass('VALE3').assetClass, 'BRAZIL_STOCK');
+  assert.strictEqual(contracts.classifyAssetClass('DEMO2').assetClass, 'BRAZIL_STOCK');
   assert.strictEqual(contracts.classifyAssetClass('AAPL34').assetClass, 'BDR');
   assert.strictEqual(contracts.classifyAssetClass('BOVA11').assetClass, 'FII'); // pattern FII — 4 letras + 11
 });
@@ -96,7 +96,7 @@ test('official 2026 review + V3 registry verification are coherent', () => {
   const reviewed = new Set(review.REVIEWS.map((r) => r[0]));
   // every rule still needing verification must have a prior review entry
   for (const id of pending) assert.ok(reviewed.has(id), `missing review entry for still-pending ${id}`);
-  // rules verified in the 2026-10-17 official pass must cite official sources.
+  // rules verified in the 2026-06-30 official pass must cite official sources.
   // P6: OFFICIAL and SECONDARY are distinct tiers — secondary support may cite
   // its source but can NEVER satisfy a gate that requires official authority.
   const official = registry.RULES.filter((r) => r.STATUS === 'VERIFIED_OFFICIAL_SOURCE');
@@ -107,16 +107,16 @@ test('official 2026 review + V3 registry verification are coherent', () => {
     assert.ok(r.SOURCE_TITLE && r.VERIFICATION_DATE, r.RULE_ID);
   }
   for (const r of secondary) {
-    assert.strictEqual(rulesMod.officialRule(registry, r.RULE_ID, '2026-10-17'), null,
+    assert.strictEqual(rulesMod.officialRule(registry, r.RULE_ID, '2026-06-30'), null,
       `${r.RULE_ID}: secondary support must never pass the official gate`);
   }
   // rule-level gate now passes for verified swing/FII rules…
-  assert.strictEqual(rulesMod.taxDueCalculationAllowed(registry, ['RULE_RV_SWING_RATE'], '2026-10-17'), true);
-  assert.strictEqual(rulesMod.taxDueCalculationAllowed(registry, ['RULE_FII_ALIENATION_EXEMPT_PF'], '2026-10-17'), true);
+  assert.strictEqual(rulesMod.taxDueCalculationAllowed(registry, ['RULE_RV_SWING_RATE'], '2026-06-30'), true);
+  assert.strictEqual(rulesMod.taxDueCalculationAllowed(registry, ['RULE_FII_ALIENATION_EXEMPT_PF'], '2026-06-30'), true);
   // …but any unverified rule in the dependency set still blocks (P22)
-  assert.strictEqual(rulesMod.taxDueCalculationAllowed(registry, ['RULE_RV_SWING_RATE', 'RULE_SUBSCRIPTION_COST_MODEL'], '2026-10-17'), false);
+  assert.strictEqual(rulesMod.taxDueCalculationAllowed(registry, ['RULE_RV_SWING_RATE', 'RULE_SUBSCRIPTION_COST_MODEL'], '2026-06-30'), false);
   // bonus: officially verified with documented semantic change
-  const bonus = rulesMod.resolveRule(registry, 'RULE_BONUS_NO_COST_INFLATION', '2026-10-16');
+  const bonus = rulesMod.resolveRule(registry, 'RULE_BONUS_NO_COST_INFLATION', '2026-06-29');
   assert.strictEqual(bonus.RULE_VERSION, 3);
   assert.strictEqual(bonus.STATUS, 'VERIFIED_OFFICIAL_SOURCE');
   assert.strictEqual(bonus.SEMANTIC_CHANGE_REQUIRED, 'YES');
@@ -139,10 +139,10 @@ test('rules: rule-level gate passes for verified sets and still blocks unverifie
   const reg = rulesMod.loadRegistry();
   const rulesOnlyVerified = rulesMod.taxDueCalculationAllowed(reg, [
     'RULE_MONEY_INTEGER_CENTS', 'RULE_UNKNOWN_NOT_ZERO', 'RULE_RV_SWING_RATE',
-  ], '2026-10-17');
+  ], '2026-06-30');
   const withUnverified = rulesMod.taxDueCalculationAllowed(reg, [
     'RULE_MONEY_INTEGER_CENTS', 'RULE_RV_SWING_RATE', 'RULE_TICKER_CHANGE_COST_CARRYOVER',
-  ], '2026-10-17');
+  ], '2026-06-30');
   assert.strictEqual(rulesOnlyVerified, true);
   assert.strictEqual(withUnverified, false);
 });
@@ -158,7 +158,10 @@ test('rules: resolveRule respects EFFECTIVE ranges and fails closed', () => {
 test('source inventory: derived artifacts are not independent evidence (P2)', () => {
   const inv = JSON.parse(fs.readFileSync(path.join(__dirname, '../ir2026/sources/source-inventory.json'), 'utf8'));
   assert.strictEqual(inv.FISCAL_START_YEAR, 2026);
-  assert.ok(inv.SOURCES.length >= 10);
+  assert.ok(inv.SOURCES.length >= 5);
+  for (const source of inv.SOURCES) {
+    assert.deepStrictEqual(Object.keys(source).sort(), ['AUTHORITY_LEVEL', 'FISCAL_USE_ALLOWED', 'INDEPENDENT_EVIDENCE', 'SOURCE_ID', 'SOURCE_TYPE'].sort());
+  }
   for (const s of inv.SOURCES) {
     assert.ok(s.SOURCE_ID && s.SOURCE_TYPE, s.SOURCE_ID);
     assert.ok(contracts.SOURCE_TYPES.includes(s.SOURCE_TYPE), s.SOURCE_TYPE);

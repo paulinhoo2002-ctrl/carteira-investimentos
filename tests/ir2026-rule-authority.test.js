@@ -8,7 +8,7 @@ const { loadRegistry, officialRule, getTaxRate, getExemption, taxDueCalculationA
 const { assessMonth } = require('../ir2026/fiscal-product');
 const { renderSummaryCards } = require('../ir2026/ui/product');
 
-const asOf = '2026-10-17';
+const asOf = '2026-06-30';
 const registry = loadRegistry();
 const copy = () => structuredClone(registry);
 const rule = (r, id) => r.RULES.find((item) => item.RULE_ID === id);

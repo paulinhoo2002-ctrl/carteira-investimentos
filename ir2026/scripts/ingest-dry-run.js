@@ -26,7 +26,7 @@ const openingPath = path.join(root, '.qa-state/ir2026/opening-evidence/opening-f
 
 function loadDocuments(args) {
   const docs = [];
-  for (const arg of args) {
+  for (const [index, arg] of args.entries()) {
     const raw = fs.readFileSync(arg, 'utf8');
     const parsed = JSON.parse(raw);
     const list = Array.isArray(parsed) ? parsed : [parsed];
@@ -45,7 +45,7 @@ function main() {
   const before = opening ? opening.OPENING_COVERAGE : null;
 
   const results = [];
-  for (const doc of loadDocuments(args)) {
+  for (const [index, doc] of loadDocuments(args).entries()) {
     const ingested = ingestDocument({
       name: doc.name || path.basename(doc.PATH),
       rows: doc.rows || [],
@@ -53,7 +53,7 @@ function main() {
       asOf: doc.asOf,
       contentHash: doc.CONTENT_SHA256,
     });
-    const entry = { DOCUMENT: doc.name || path.basename(doc.PATH), SHA256: doc.CONTENT_SHA256, ACCEPTED: ingested.ACCEPTED, REASON: ingested.REASON || null };
+    const entry = { DOCUMENT_ID: 'DOC_' + String(index + 1).padStart(3, '0'), ACCEPTED: ingested.ACCEPTED, REASON: ingested.REASON || null };
     if (ingested.ACCEPTED) {
       entry.DOCUMENT_TYPE = ingested.DOCUMENT_TYPE;
       entry.RECORDS = ingested.RECORD_COUNT;

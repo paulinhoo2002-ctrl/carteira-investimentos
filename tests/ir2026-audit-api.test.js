@@ -16,7 +16,7 @@ test('explainFiscalValue returns an explanation object when saleId is found', ()
     ROWS: [
       {
         SALE_ID: 'sale1',
-        ASSET: 'PETR4',
+        ASSET: 'DEMO3',
         DATE: '2026-06-01',
         SOURCE_REFS: ['src1'],
         SOURCE_PROVENANCE: 'provenance1',
@@ -28,7 +28,7 @@ test('explainFiscalValue returns an explanation object when saleId is found', ()
   };
   const openingRows = [
     {
-      ASSET: 'PETR4',
+      ASSET: 'DEMO3',
       OPENING_STATUS: 'PARTIAL',
       SOURCE: 'source1',
     },
@@ -42,7 +42,7 @@ test('explainFiscalValue returns an explanation object when saleId is found', ()
   const result = explainFiscalValue({ matrix, openingRows, registry, saleId: 'sale1' });
   assert.notStrictEqual(result, null);
   assert.strictEqual(result.VALUE_ID, 'SALE_REALIZED:sale1');
-  assert.strictEqual(result.ASSET, 'PETR4');
+  assert.strictEqual(result.ASSET, 'DEMO3');
   assert.strictEqual(result.DATE, '2026-06-01');
   assert.deepStrictEqual(result.SOURCES, ['src1']);
   assert.strictEqual(result.SOURCE_PROVENANCE, 'provenance1');
@@ -63,7 +63,7 @@ test('explainFiscalValue returns null for engine behavior when certification sta
     ROWS: [
       {
         SALE_ID: 'sale2',
-        ASSET: 'PETR4',
+        ASSET: 'DEMO3',
         DATE: '2026-06-01',
         SOURCE_REFS: ['src1'],
         SOURCE_PROVENANCE: 'provenance1',

@@ -4,7 +4,7 @@
 // P9/P11/P12/P15).
 //
 // Two views, one engine:
-//   DERIVED view   — full-window replay (2019-11 → 31/12/2025) with engine
+//   DERIVED view   — full-window replay over the configured source window with engine
 //                    statuses per asset. Values are DERIVED, never CERTIFIED:
 //                    no official 31/12/2025 position/cost document exists.
 //   SIMULATION     — 2026 ledger replayed on the derived opening. Realized
@@ -49,7 +49,7 @@ function evidenceInventory(rawEvents, fiscalYear) {
     PRIOR_LOSSES: {
       STATUS: 'UNKNOWN',
       BUCKETS: ['RV_STOCK_SWING', 'RV_STOCK_DAY_TRADE', 'RV_FII', 'RV_ETF_BDR'],
-      NOTE: 'Coverage starts 2019-11-01 and no prior-year IR declaration evidence exists; carry-forward balances into 2026 cannot be derived from incomplete history. Tax payable stays provisional/blocked.',
+      NOTE: 'Historical source coverage is incomplete and no prior-year IR declaration evidence exists; carry-forward balances cannot be derived. Tax payable stays provisional/blocked.',
     },
   };
 }
@@ -150,11 +150,11 @@ function salesMatrix(rawEvents, simulationLedger, sellClassification, dayTradeGr
   };
 }
 
-function buildOpeningV1({ rawEvents, anchors, registry, fiscalYear = 2026 }) {
+function buildOpeningV1({ rawEvents, anchors, registry, fiscalYear = 2026, historyStart = null }) {
   if (!Array.isArray(rawEvents)) throw new TypeError('canonical events required');
   // Derived view: engine replay, statuses as computed (CERTIFIED/PARTIAL/UNKNOWN
   // reflect flag cleanliness of the replay, NOT official evidence).
-  const derived = buildOpeningFiscal({ rawEvents, anchors, fiscalYear, registry });
+  const derived = buildOpeningFiscal({ rawEvents, anchors, fiscalYear, registry, historyStart });
   const rows = derived.ROWS.map((row) => {
     // Mission P3/P4 classification: replay statuses are engine semantics
     // (clean-flag replay), never official evidence. Map to evidence classes:
@@ -189,7 +189,7 @@ function buildOpeningV1({ rawEvents, anchors, registry, fiscalYear = 2026 }) {
         ...(COST_BLOCKER_FLAGS.some((f) => flags[f]) ? ['NO_CERTIFIED_2025_YEAR_END_OPENING'] : []),
       ])],
       COVERAGE_NOTES: flags.PRE_COVERAGE_NEGATIVE
-        ? 'Held before export coverage (2019-11): opening evidence missing; never zero, never synthetic.'
+        ? 'Held before available export coverage: opening evidence missing; never zero, never synthetic.'
         : (row.OPENING_QTY > 0 ? 'Full-window replay from zero; derived, not official evidence.' : null),
       ANCHOR_CHECK: row.ANCHOR_CHECK,
     };

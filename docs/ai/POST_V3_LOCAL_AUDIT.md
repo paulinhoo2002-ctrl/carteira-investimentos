@@ -23,7 +23,7 @@ simulação, não integração visual ou persistência hospedada.
 | `tests/ir2026-audit-api.test.js` | IR2026_REQUIRED | Testes sintéticos da explicação fiscal. |
 | `tests/ir2026-darf-guard.test.js` | IR2026_REQUIRED | Testes sintéticos do guard; booleanos injetados não certificam fontes. |
 | `tests/ir2026-monthly-state-machine.test.js` | IR2026_REQUIRED | Testes sintéticos de fechamento mensal. |
-| `P7_26_legal_rules_closure.csv` | UNKNOWN | Planilha legal separada; origem e autorização de publicação não comprovadas. |
+| `<PRIVATE_QA_STATE>/rules-closure.csv` | UNKNOWN | Planilha legal separada; origem e autorização de publicação não comprovadas. |
 | `FINAL_REPORT.txt` | TEMP | Relatório de checkpoint anterior, não é fonte de código. |
 | `test.js` | TEMP | Teste trivial isolado, fora da suíte oficial. |
 
@@ -47,7 +47,7 @@ na pasta local ignorada `.qa-state`.
    fornecidos pelo caller. Os testes verificam a tabela booleana, não a
    proveniência dos três gates fiscais. Manter sem integração produtiva.
 4. `ir2026/ui/product.js:31-49` apresenta um resultado certificado como
-   `R$ 0,00` por ausência de certificado. Ausência não comprova zero. A UI
+   `—` quando não há certificado. Ausência não comprova zero. A UI
    precisa exibir indisponibilidade e cobertura antes de ser ligada.
 5. `scripts/qa/ir2026-visual-review.js` procura o painel de prontidão já
    existente e registra parte de seu texto. Isso não valida o renderer novo;

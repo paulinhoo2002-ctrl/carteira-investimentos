@@ -10,6 +10,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { spawnSync } = require('node:child_process');
 
 const { BLOCKERS, INFO_FLAGS, isBlockerCode, isInfoFlag } = require('../ir2026/blockers');
 const { loadRegistry, resolveRule, officialRule, getTaxRate, taxDueCalculationAllowed } = require('../ir2026/rules');
@@ -20,8 +21,27 @@ const { buildOpeningFiscal } = require('../ir2026/opening-fiscal');
 const ENGINE_DIRS = ['ir2026', 'ir2026/ui'];
 const ENGINE_FILES = ENGINE_DIRS.flatMap((d) => fs.readdirSync(path.join(__dirname, '..', d))
   .filter((f) => f.endsWith('.js')).map((f) => path.join(__dirname, '..', d, f)));
-const asOf = '2026-10-17';
+const asOf = '2026-06-30';
 const registry = loadRegistry();
+
+test('local evidence runners can be imported without private source files', () => {
+  const probe = `
+    const fs = require('node:fs');
+    const path = require('node:path');
+    const originalExistsSync = fs.existsSync;
+    fs.existsSync = (file, ...args) => {
+      if (String(file).endsWith(path.join('.qa-state', 'ir2026', 'source-inventory.local.json'))) {
+        throw new Error('private inventory accessed during module import');
+      }
+      return originalExistsSync(file, ...args);
+    };
+    require('./ir2026/scripts/build-fiscal-2026');
+    require('./ir2026/scripts/build-opening-v1');
+    require('./ir2026/scripts/build-opening-evidence');
+  `;
+  const result = spawnSync(process.execPath, ['-e', probe], { cwd: path.join(__dirname, '..'), encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr || result.error?.message);
+});
 
 // ---------------------------------------------------------------------------
 // P21 — blocker taxonomy is complete: every code the engine emits exists.
@@ -112,24 +132,24 @@ test('P4/P8: loss-bucket and effective-date API equivalents resolve from the reg
 // P19 — subscription rights never inherit certified/zero cost.
 // ---------------------------------------------------------------------------
 test('P19: rights rows are classified RIGHTS_SUBSCRIPTION from product/movement hints', () => {
-  assert.deepEqual(classifyAssetClass('BTLG12', { product: 'DIREITOS DE SUBSCRIÇÃO BTLG11' }),
+  assert.deepEqual(classifyAssetClass('TEST12', { product: 'DIREITOS DE SUBSCRIÇÃO TEST11' }),
     { assetClass: 'RIGHTS_SUBSCRIPTION', basis: 'HINT:RIGHTS' });
-  assert.deepEqual(classifyAssetClass('BTLG12', { product: 'BTLG11', movement: 'Subscrição' }),
+  assert.deepEqual(classifyAssetClass('TEST12', { product: 'TEST11', movement: 'Subscrição' }),
     { assetClass: 'RIGHTS_SUBSCRIPTION', basis: 'HINT:RIGHTS' });
   // without the hint the ticker alone stays on the FII pattern (documented ceiling:
   // ticker shape cannot distinguish rights from units — hint or evidence required)
-  assert.equal(classifyAssetClass('BTLG12', {}).assetClass, 'FII');
+  assert.equal(classifyAssetClass('TEST12', {}).assetClass, 'FII');
 });
 
 test('P19: rights position carries RIGHTS_POSITION_PENDING_FISCAL_TREATMENT and never a certified cost', () => {
   // rights bought pre-year with evidenced amount: statement-zero must not certify cost
   const raw = [
-    { CANONICAL_ID: 'R1', DATE: '2025-12-15', TICKER: 'BTLG12', PRODUCT: 'DIREITOS BTLG11', TYPE: 'BUY',
+    { CANONICAL_ID: 'R1', DATE: '2025-12-15', TICKER: 'TEST12', PRODUCT: 'DIREITOS TEST11', TYPE: 'BUY',
       DIRECTION: 'Credito', QUANTITY: 10, UNIT_PRICE: 2.5, AMOUNT: 25, STATUS: 'CERTIFIED', PROVENANCE: 'synthetic' },
   ];
-  const anchors = { BTLG12: { QTY: 10, AS_OF: '2026-10-17' } };
+  const anchors = { TEST12: { QTY: 10, AS_OF: '2026-06-30' } };
   const opening = buildOpeningFiscal({ rawEvents: raw, anchors, fiscalYear: 2026, registry });
-  const row = opening.ROWS.find((x) => x.ASSET === 'BTLG12');
+  const row = opening.ROWS.find((x) => x.ASSET === 'TEST12');
   assert.ok(row, 'rights asset in scope via anchor');
   assert.equal(row.ASSET_CLASS, 'RIGHTS_SUBSCRIPTION');
   assert.equal(row.PENDING_FISCAL_TREATMENT, 'RIGHTS_POSITION_PENDING_FISCAL_TREATMENT');
@@ -141,11 +161,11 @@ test('P19: rights position carries RIGHTS_POSITION_PENDING_FISCAL_TREATMENT and 
   // rights born during the fiscal year: opening row keeps NOT_APPLICABLE (no
   // position at Jan-1) but is still marked pending, with zero qty honestly zero
   const raw2 = [
-    { CANONICAL_ID: 'R2', DATE: '2026-03-10', TICKER: 'BTLG12', PRODUCT: 'DIREITOS BTLG11', TYPE: 'CORPORATE_ACTION',
+    { CANONICAL_ID: 'R2', DATE: '2026-03-10', TICKER: 'TEST12', PRODUCT: 'DIREITOS TEST11', TYPE: 'CORPORATE_ACTION',
       MOVEMENT_RAW: 'Leilão de frações', DIRECTION: 'Credito', QUANTITY: 5, STATUS: 'PARTIAL', PROVENANCE: 'synthetic' },
   ];
   const opening2 = buildOpeningFiscal({ rawEvents: raw2, anchors: {}, fiscalYear: 2026, registry });
-  const row2 = opening2.ROWS.find((x) => x.ASSET === 'BTLG12');
+  const row2 = opening2.ROWS.find((x) => x.ASSET === 'TEST12');
   assert.equal(row2.PENDING_FISCAL_TREATMENT, 'RIGHTS_POSITION_PENDING_FISCAL_TREATMENT');
   assert.equal(row2.OPENING_QTY, 0);
   assert.ok(row2.BLOCKERS.includes('RIGHTS_FISCAL_TREATMENT_PENDING'));
@@ -172,14 +192,14 @@ test('P7: ambiguous subscription-like text stays UNKNOWN — no fuzzy promotion'
   assert.equal(normalizeEventType('TRANSFER_CANDIDATE', 'Subscrição'), 'UNKNOWN'); // direction inferred -> UNKNOWN
 });
 
-test('P6: BTLG12 rights row via SUBSCRIPTION year event keeps pending treatment and zero cost never certifies', () => {
+test('P6: TEST12 rights row via SUBSCRIPTION year event keeps pending treatment and zero cost never certifies', () => {
   const raw = [
-    { CANONICAL_ID: 'S1', DATE: '2026-06-01', TICKER: 'BTLG12', PRODUCT: 'DIREITOS DE SUBSCRIÇÃO BTLG11',
+    { CANONICAL_ID: 'S1', DATE: '2026-06-01', TICKER: 'TEST12', PRODUCT: 'DIREITOS DE SUBSCRIÇÃO TEST11',
       TYPE: 'CORPORATE_ACTION', MOVEMENT_RAW: 'Exercício de direito de subscrição', DIRECTION: 'Credito',
       QUANTITY: 8, STATUS: 'PARTIAL', PROVENANCE: 'synthetic' },
   ];
   const opening = buildOpeningFiscal({ rawEvents: raw, anchors: {}, fiscalYear: 2026, registry });
-  const row = opening.ROWS.find((x) => x.ASSET === 'BTLG12');
+  const row = opening.ROWS.find((x) => x.ASSET === 'TEST12');
   assert.ok(row, 'rights asset in scope via year event');
   assert.equal(row.ASSET_CLASS, 'RIGHTS_SUBSCRIPTION');
   assert.equal(row.PENDING_FISCAL_TREATMENT, 'RIGHTS_POSITION_PENDING_FISCAL_TREATMENT');

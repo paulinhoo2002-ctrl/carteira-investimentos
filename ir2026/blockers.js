@@ -82,7 +82,7 @@ const BLOCKERS = Object.freeze({
     SEVERITY: 'HIGH', AFFECTS: ['SALE_RESULT'],
   },
   PRE_COVERAGE_HOLDING: {
-    TITLE: 'Posição anterior à cobertura do export (2019-11)',
+    TITLE: 'Posição anterior à cobertura disponível',
     RESOLVED_BY: ['YEAR_END_POSITION', 'ANNUAL_BROKER_REPORT'],
     SEVERITY: 'HIGH', AFFECTS: ['OPENING', 'FISCAL_COST'],
   },

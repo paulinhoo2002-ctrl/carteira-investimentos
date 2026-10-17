@@ -3,7 +3,7 @@
 // IR2026 — Opening fiscal checkpoint builder (P4/P5)
 //
 // For every asset relevant entering FISCAL_START_YEAR: replay pre-year
-// events from the canonical historical stream (2019-11 → boundary), then
+// events from the configured historical evidence window, then
 // classify QTY_STATUS / COST_STATUS with explicit evidence precedence.
 // Never forces UNKNOWN into zero; never invents a synthetic opening purchase.
 // ============================================================================
@@ -15,7 +15,7 @@ const { isRfAssetClass } = require('./contracts');
 
 const QTY_FLAGS = ['HAD_TRANSFER', 'HAD_UNKNOWN_EVENT', 'HAD_CORPORATE_PARTIAL', 'COST_UNKNOWN_TRANSFER'];
 
-function buildOpeningFiscal({ rawEvents, anchors, fiscalYear, registry }) {
+function buildOpeningFiscal({ rawEvents, anchors, fiscalYear, registry, historyStart = null }) {
   const fy = fiscalYear || 2026;
   const boundary = `${fy}-01-01`;
   const anchorsByAsset = anchors || {};
@@ -140,7 +140,7 @@ function buildOpeningFiscal({ rawEvents, anchors, fiscalYear, registry }) {
   return {
     FISCAL_YEAR: fy,
     BOUNDARY: boundary,
-    HISTORICAL_ANALYTICAL_PERIOD: { START: '2019-11-01', END: `${fy - 1}-12-31` },
+    HISTORICAL_ANALYTICAL_PERIOD: { START: historyStart, END: `${fy - 1}-12-31` },
     ROWS: rows,
     SHA256: sha256Json(rows),
     COUNTS: {
