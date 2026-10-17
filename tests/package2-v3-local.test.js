@@ -85,6 +85,34 @@ test('V3 keeps confirmed zero, UNKNOWN, partial, and fiscal scope separate', () 
   assert.equal(model.readiness.INCOME_2026, 'PARTIAL');
   assert.equal(model.global_total.amount_cents, null);
   assert.equal(model.ir2026.status, 'BLOCKED');
+  const partialIncome = makeCandidate();
+  partialIncome.income.received_certified = { ...field(0, 'CERTIFIED'), event_count: 0 };
+  assert.equal(latestReadModel(partialIncome).readiness.INCOME_2026, 'PARTIAL');
+});
+
+test('V3 serialization keeps fiscal, global, and uncertified income out of the read model', () => {
+  const candidate = makeCandidate();
+  const id = candidate.latest_snapshot_id;
+  const withExtras = structuredClone(candidate);
+  withExtras.snapshots[id].fiscal_cost = field(900, 'CERTIFIED');
+  withExtras.snapshots[id].position.rv_market.current_avg_cost = field(900, 'CERTIFIED');
+  const canonical = buildPackage2V3(withExtras);
+  assert.equal(Object.hasOwn(canonical.snapshots[id], 'fiscal_cost'), false);
+  assert.equal(Object.hasOwn(canonical.snapshots[id].position.rv_market, 'current_avg_cost'), false);
+  assert.equal(Object.hasOwn(latestReadModel(withExtras), 'fiscal_cost'), false);
+  assert.throws(() => snapshot({ ...makeSnapshot(), as_of: '2026-02-30' }), /INVALID_AS_OF/);
+  assert.throws(() => snapshot({ ...makeSnapshot(), current_result: field(-500, 'CERTIFIED', '2026-10-17', 'CURRENT_POSITION_RESULT') }), /INVALID_RESULT_STATUS/);
+  assert.throws(() => snapshot({ ...makeSnapshot(), global_total: { amount_cents: 100 } }), /FISCAL_OR_GLOBAL_LEAK/);
+  assert.throws(() => snapshot({ ...makeSnapshot(), coverage: 'COMPLETE' }), /INCOMPLETE_CERTIFIED_POSITION/);
+  const base = makeSnapshot();
+  const complete = snapshot({ ...base, coverage: 'COMPLETE', position: Object.fromEntries(
+    Object.entries(base.position).map(([key, value]) => [key, { ...value, status: 'CERTIFIED' }])
+  ) });
+  const completePayload = buildPackage2V3({ ...candidate, snapshots: { [complete.snapshot_id]: complete } });
+  assert.equal(latestReadModel(completePayload).readiness.CURRENT_POSITION, 'READY');
+  const promotedIncome = structuredClone(candidate);
+  promotedIncome.income.candidate_total.status = 'CERTIFIED';
+  assert.throws(() => buildPackage2V3(promotedIncome), /PARTIAL_INCOME_STATUS/);
 });
 
 test('V3 preserves dated snapshots and rejects mutation of an existing identity', () => {
@@ -97,6 +125,10 @@ test('V3 preserves dated snapshots and rejects mutation of an existing identity'
   assert.throws(() => mergeSnapshots(payload.snapshots, changed), /IMMUTABLE_SNAPSHOT_CONFLICT/);
   assert.equal(original.position.rv_market.amount_cents, 12000);
   assert.throws(() => snapshot({ ...makeSnapshot(), fiscal: true }), /FISCAL_OR_GLOBAL_LEAK/);
+  assert.throws(() => snapshot({ ...makeSnapshot(), schema_version: 4 }), /UNSUPPORTED_PACKAGE2_VERSION/);
+  assert.throws(() => buildPackage2V3({ ...payload, schema_version: 4 }), /UNSUPPORTED_PACKAGE2_VERSION/);
+  const reversed = Object.fromEntries(Object.entries(payload.snapshots).reverse());
+  assert.equal(sha256Json(buildPackage2V3({ ...payload, snapshots: reversed })), sha256Json(payload));
 });
 
 test('dry run inserts only package2_v3, then exact repeat is a no-op', () => {

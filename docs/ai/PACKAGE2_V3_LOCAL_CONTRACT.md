@@ -27,6 +27,8 @@ gravação hospedada, nem altera `package1_v2` ou `package2_v2`.
   IR2026 permanece `BLOCKED` até evidência fiscal própria.
 - `blockers[].impact_flags` identifica separadamente impacto em posição,
   resultado atual, renda, global, fiscal e imposto.
+- A versão 3 normaliza somente os campos permitidos. Uma versão futura é
+  rejeitada explicitamente: nenhum campo V4 pode ser reinterpretado como V3.
 
 O produto pode ler o total Inter e o resultado do extrato com seus estados,
 mostrar renda candidata como parcial e informar “em reconciliação” onde não

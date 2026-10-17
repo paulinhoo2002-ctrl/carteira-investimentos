@@ -14,6 +14,8 @@ const INCOME_KINDS = [
 
 function requireDate(value) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new Error('INVALID_AS_OF');
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value) throw new Error('INVALID_AS_OF');
   return value;
 }
 
@@ -42,6 +44,7 @@ function financialField(field) {
 
 function snapshot(input) {
   if (!input || typeof input !== 'object') throw new Error('INVALID_SNAPSHOT');
+  if (input.schema_version !== undefined && input.schema_version !== 3) throw new Error('UNSUPPORTED_PACKAGE2_VERSION');
   const asOf = requireDate(input.as_of);
   const bundleHash = requireHash(input.source_bundle_hash);
   if (!input.custodian_id || input.custodian_id === 'GLOBAL') throw new Error('INVALID_CUSTODIAN');
@@ -53,10 +56,16 @@ function snapshot(input) {
     total_net: financialField(input.position?.total_net),
   };
   const result = financialField(input.current_result);
+  if (Object.values(position).some(field => !['CERTIFIED', 'PARTIAL', 'UNKNOWN'].includes(field.status))) {
+    throw new Error('INVALID_POSITION_STATUS');
+  }
+  if (input.coverage === 'COMPLETE' && Object.values(position).some(field => field.status !== 'CERTIFIED')) {
+    throw new Error('INCOMPLETE_CERTIFIED_POSITION');
+  }
   if (result.authority_scope !== 'CURRENT_POSITION_RESULT' || input.result_method !== 'MARKET_MINUS_REPORTED_CURRENT_COST') {
     throw new Error('INVALID_RESULT_SEMANTICS');
   }
-  if (result.status !== 'PROVEN_FOR_STATEMENT') throw new Error('RESULT_NOT_STATEMENT_PROVEN');
+  if (!['PROVEN_FOR_STATEMENT', 'UNKNOWN'].includes(result.status)) throw new Error('INVALID_RESULT_STATUS');
   if (input.fiscal === true || input.global_total) throw new Error('FISCAL_OR_GLOBAL_LEAK');
   for (const field of [...Object.values(position), result]) {
     if (field.as_of !== asOf) throw new Error('FIELD_AS_OF_MISMATCH');
@@ -89,23 +98,29 @@ function income(input) {
   const fields = {};
   for (const kind of INCOME_KINDS) {
     const value = financialField(input[kind]);
+    if (!['CERTIFIED', 'PARTIAL', 'UNKNOWN'].includes(value.status)) throw new Error('INVALID_INCOME_FIELD_STATUS');
     const count = input[kind].event_count;
     if (count !== null && (!Number.isSafeInteger(count) || count < 0)) throw new Error('INVALID_EVENT_COUNT');
     fields[kind] = { ...value, event_count: count };
   }
-  if (fields.received_certified.amount_cents !== null && fields.received_certified.status !== 'CERTIFIED') {
+  if (!['CERTIFIED', 'UNKNOWN'].includes(fields.received_certified.status)) {
     throw new Error('UNCERTIFIED_RECEIVED');
   }
-  if (fields.received_partial.amount_cents !== null && fields.received_partial.status !== 'PARTIAL') {
+  if (['received_partial', 'candidate_total', 'legacy_reported'].some(kind =>
+      !['PARTIAL', 'UNKNOWN'].includes(fields[kind].status))) {
     throw new Error('PARTIAL_INCOME_STATUS');
   }
   return { ...fields, legacy_unknown_included: input.legacy_unknown_included === true };
 }
 
-function buildPackage2V3({ snapshots, latest_snapshot_id, income: incomeInput, blockers = [] }) {
+function buildPackage2V3({ schema_version = 3, snapshots, latest_snapshot_id, income: incomeInput, blockers = [] }) {
+  if (schema_version !== 3) throw new Error('UNSUPPORTED_PACKAGE2_VERSION');
   if (!snapshots || typeof snapshots !== 'object' || !snapshots[latest_snapshot_id]) throw new Error('MISSING_LATEST_SNAPSHOT');
+  const normalized = {};
   for (const [id, value] of Object.entries(snapshots)) {
-    if (snapshot(value).snapshot_id !== id) throw new Error('INVALID_SNAPSHOT_ID');
+    const item = snapshot(value);
+    if (item.snapshot_id !== id) throw new Error('INVALID_SNAPSHOT_ID');
+    normalized[id] = item;
   }
   if (!Array.isArray(blockers) || blockers.some(item => !item?.reason_code || !item?.impact_flags ||
       IMPACT_FLAGS.some(flag => typeof item.impact_flags[flag] !== 'boolean') ||
@@ -115,7 +130,7 @@ function buildPackage2V3({ snapshots, latest_snapshot_id, income: incomeInput, b
   return {
     schema_version: 3,
     latest_snapshot_id,
-    snapshots: { ...snapshots },
+    snapshots: normalized,
     income: income(incomeInput),
     blockers: blockers.map(({ reason_code, impact_flags }) => ({ reason_code, impact_flags: { ...impact_flags } })),
   };
@@ -123,7 +138,8 @@ function buildPackage2V3({ snapshots, latest_snapshot_id, income: incomeInput, b
 
 function latestReadModel(payload) {
   if (payload?.schema_version !== 3) throw new Error('UNSUPPORTED_PACKAGE2_VERSION');
-  const current = payload.snapshots?.[payload.latest_snapshot_id];
+  const canonical = buildPackage2V3(payload);
+  const current = canonical.snapshots[canonical.latest_snapshot_id];
   if (!current) throw new Error('MISSING_LATEST_SNAPSHOT');
   return {
     current_position: current.position,
@@ -131,15 +147,15 @@ function latestReadModel(payload) {
     as_of: current.as_of,
     custodian_id: current.custodian_id,
     coverage: current.coverage,
-    income: payload.income,
+    income: canonical.income,
     global_total: { amount_cents: null, status: 'ARITHMETIC_ONLY' },
     ir2026: { status: 'BLOCKED', reason_code: 'FISCAL_EVIDENCE_NOT_CERTIFIED' },
     readiness: {
-      CURRENT_POSITION: current.coverage === 'UNKNOWN' ? 'BLOCKED' : 'PARTIAL',
+      CURRENT_POSITION: current.coverage === 'UNKNOWN' ? 'BLOCKED' : current.coverage === 'COMPLETE' ? 'READY' : 'PARTIAL',
       CURRENT_RESULT: current.current_result.status === 'PROVEN_FOR_STATEMENT' ? 'READY' : 'BLOCKED',
-      INCOME_2026: payload.income.received_certified.amount_cents !== null ? 'READY'
-        : payload.income.received_partial.amount_cents !== null || payload.income.candidate_total.amount_cents !== null ? 'PARTIAL' : 'BLOCKED',
-      HISTORICAL_INCOME: payload.income.legacy_reported.amount_cents !== null ? 'PARTIAL' : 'BLOCKED',
+      INCOME_2026: current.income_status === 'CERTIFIED' && canonical.income.received_certified.amount_cents !== null ? 'READY'
+        : canonical.income.received_partial.amount_cents !== null || canonical.income.candidate_total.amount_cents !== null ? 'PARTIAL' : 'BLOCKED',
+      HISTORICAL_INCOME: canonical.income.legacy_reported.amount_cents !== null ? 'PARTIAL' : 'BLOCKED',
       GLOBAL_TOTAL: 'BLOCKED',
       IR2026: 'BLOCKED',
     },
