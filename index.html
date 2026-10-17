@@ -1802,6 +1802,8 @@ tbody tr{transition:background .1s}tbody tr:hover{background:color-mix(in srgb, 
 .assets-premium-shell .asset-actions .asset-action:hover,.assets-premium-shell .asset-actions .asset-action:focus-visible{background:var(--surface);border-color:var(--accent);color:var(--text)}
 .assets-premium-shell .asset-actions .asset-action.danger{color:var(--negative);border-color:color-mix(in srgb,var(--negative) 35%,var(--border))}
 .asset-action-menu{position:relative}
+.asset-action-menu-trigger{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:6px;border:1px solid var(--border);border-radius:9px;background:transparent;color:var(--muted);font-size:16px;font-weight:800;letter-spacing:1px;line-height:1;cursor:pointer}
+.asset-action-menu-trigger:hover,.asset-action-menu-trigger:focus-visible{background:var(--surface);border-color:var(--accent);color:var(--text)}
 .asset-action-menu-panel{display:none;position:absolute;right:0;top:calc(100% + 5px);z-index:20;min-width:150px;padding:6px;border:1px solid var(--border);border-radius:10px;background:var(--panel);box-shadow:0 12px 28px rgba(2,6,23,.24)}
 .asset-action-menu-panel.open{display:flex;flex-direction:column;gap:3px}
 .asset-action-menu-panel button{min-height:44px;padding:8px 10px;border:0;border-radius:7px;background:transparent;color:var(--text);text-align:left;font-weight:700;cursor:pointer}
@@ -6606,7 +6608,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     margin-bottom: 20px;
   }
   .assets-table-wrap { overflow-x: auto; }
-  .assets-table-wrap:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .assets-table-wrap:focus,.assets-table-wrap:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
   .asset-mobile-cards { display: none; }
   .assets-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 1560px; }
   .assets-table th {
@@ -32227,15 +32229,21 @@ if(typeof document!=='undefined' && typeof window!=='undefined' && !window.__ass
 }
 function assetActionMenuHtml(asset, isRF, context='default'){
   const id=String(asset.id||'');
+  const menuId=`asset-action-menu-${id.replace(/[^a-zA-Z0-9_-]/g,'-')}-${String(context).replace(/[^a-zA-Z0-9_-]/g,'-')}`;
   const primary=isRF
     ? `<button type="button" class="btn bsv asset-action" onclick='openRfMovementEditor(${JSON.stringify(rfAssetEventId(asset))}, "aporte")'>Movimentar</button>`
     : `<button type="button" class="btn bsv asset-action" onclick='openAssetQuickMovement(${JSON.stringify(id)}, "compra")'>Comprar</button>`;
   const secondary=isRF
     ? `<button type="button" class="btn bgh asset-action" onclick='openRfMovementEditor(${JSON.stringify(rfAssetEventId(asset))}, "resgate_parcial")'>Resgatar</button>`
     : `<button type="button" class="btn bgh asset-action" onclick='openAssetQuickMovement(${JSON.stringify(id)}, "venda")'>Vender</button>`;
-  return `<div class="asset-actions" data-asset-actions="${esc(id)}">
-    <button type="button" class="asset-detail-link" onclick='openAssetDetail(${JSON.stringify(id)})'>Detalhes</button>${primary}${secondary}
-    <button type="button" class="btn bgh asset-action" aria-label="Editar ${esc(asset.ticker||asset.name||'ativo')}" onclick='edA(${JSON.stringify(id)})'>✎ Editar</button>
+  return `<div class="asset-actions asset-action-menu" data-asset-actions="${esc(id)}">
+    <button type="button" class="asset-action-menu-trigger" aria-label="Mais ações para ${esc(asset.ticker||asset.name||'ativo')}" aria-haspopup="menu" aria-controls="${esc(menuId)}" aria-expanded="false" onclick='toggleAssetActionMenu(${JSON.stringify(menuId)}, event)'>•••</button>
+    <div class="asset-action-menu-panel" id="${esc(menuId)}" role="menu" aria-label="Ações para ${esc(asset.ticker||asset.name||'ativo')}">
+      <button type="button" role="menuitem" onclick='openAssetDetail(${JSON.stringify(id)})'>Detalhes</button>
+      ${primary.replace('<button ', '<button role="menuitem" ')}
+      ${secondary.replace('<button ', '<button role="menuitem" ')}
+      <button type="button" role="menuitem" aria-label="Editar ${esc(asset.ticker||asset.name||'ativo')}" onclick='edA(${JSON.stringify(id)})'>Editar</button>
+    </div>
   </div>`;
 }
 function assetEditModal(){
@@ -32382,6 +32390,7 @@ function ativos(){
     const typeReturn = typeResult != null && typeInvested > 0 ? (typeResult / typeInvested) * 100 : null;
     const typeWeight = typeResult != null && portfolioTotal > 0 ? (typeTotalValue / portfolioTotal) * 100 : null;
     const typeCount = typeDisplayAssets.length;
+    const categoryOpen = assetFiltersActive && typeDisplayAssets.length > 0;
 
     const resultTone = typeResult == null ? '' : typeResult >= 0 ? 'positive-text' : 'negative-text';
     const resultPrefix = typeResult != null && typeResult >= 0 ? '+' : '';
@@ -32458,7 +32467,7 @@ function ativos(){
         <td class="num">${dyDisplay}</td>
         <td class="num" title="Sem estimativa mensal validada">—</td>
         <td>
-          ${assetActionMenuHtml(a, isRF, 'v328')}
+          ${assetActionMenuHtml(a, isRF, 'desktop')}
         </td>
       </tr>`;
     }).join('');
@@ -32536,7 +32545,7 @@ function ativos(){
           <div class="asset-premium-card-row"><span>DY</span><strong>${dyDisplay}</strong></div>
           <div class="asset-premium-card-row"><span>Estimativa mensal</span><strong title="Sem estimativa mensal validada">—</strong></div>
           <div class="asset-premium-card-row"><span>Fonte / atualização</span><strong>${esc(sourceInfo)}</strong></div>
-          <div class="asset-premium-card-actions">${assetActionMenuHtml(a, isRF, 'v328')}</div>
+          <div class="asset-premium-card-actions">${assetActionMenuHtml(a, isRF, 'mobile')}</div>
         </div>
       </details>`;
     }).join('');
@@ -32601,7 +32610,7 @@ function ativos(){
 
     // Use details/summary for test compatibility (V84 expects .ag with summary)
     // Also include mobile cards for the V84 mobile test
-    return `<details class="accordion-category ag" data-asset-group="${esc(type)}" open>
+    return `<details class="accordion-category ag" data-asset-group="${esc(type)}"${categoryOpen ? ' open' : ''}>
       <summary class="accordion-header" >${headerHtml}</summary>
       <div class="accordion-body ag-body open">
         ${tableHtml}

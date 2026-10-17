@@ -132,6 +132,12 @@ async function setThemeAndRoute(page, theme, route) {
   await page.waitForFunction(route => S.tab === route, route);
 }
 
+async function openFirstAssetCategory(page) {
+  const category = page.locator('.assets-premium-shell details.ag').first();
+  if (!(await category.getAttribute('open'))) await category.locator(':scope > summary').click();
+  return category;
+}
+
 async function inspectLayout(page) {
   return page.evaluate(() => {
     const visible = element => {
@@ -296,6 +302,7 @@ test('V330 daily-use visual evidence captures premium screens with synthetic dat
       await runtime.page.setViewportSize({ width: item.width, height: item.height });
       await applyV289VisualFixture(runtime.page, 'baseline');
       await setThemeAndRoute(runtime.page, 'dark', item.route);
+      if (item.route === 'ativos') await openFirstAssetCategory(runtime.page);
       const layout = await inspectLayout(runtime.page);
       assert.equal(layout.pageOverflow, false, `${item.route} overflows at ${item.width}x${item.height}`);
       assert.deepEqual(layout.clipped, [], `${item.route} clips controls at ${item.width}x${item.height}`);
@@ -600,6 +607,7 @@ test('Ativos tabela rola por teclado sem ampliar a pagina e preserva cards mobil
   try {
     await applyV289VisualFixture(runtime.page, 'baseline');
     await setThemeAndRoute(runtime.page, 'dark', 'ativos');
+    await openFirstAssetCategory(runtime.page);
     const table = runtime.page.locator('.assets-table-wrap').first();
     await table.focus();
     const before = await table.evaluate(element => ({
@@ -630,6 +638,7 @@ test('Ativos tabela rola por teclado sem ampliar a pagina e preserva cards mobil
     await runtime.page.setViewportSize({ width: 390, height: 844 });
     await applyV289VisualFixture(runtime.page, 'baseline');
     await setThemeAndRoute(runtime.page, 'dark', 'ativos');
+    await openFirstAssetCategory(runtime.page);
     const mobile = await runtime.page.evaluate(() => ({
       tableVisible: getComputedStyle(document.querySelector('.assets-table-wrap')).display !== 'none',
       cards: document.querySelectorAll('.asset-mobile-cards > *').length,
@@ -652,6 +661,7 @@ test('Ativos cards respondem ao toque sem disparar acoes financeiras', async () 
   try {
     await applyV289VisualFixture(runtime.page, 'baseline');
     await setThemeAndRoute(runtime.page, 'dark', 'ativos');
+    await openFirstAssetCategory(runtime.page);
     const summary = runtime.page.locator('.asset-premium-card-summary').first();
     await summary.tap();
     assert.equal(await summary.evaluate(element => element.parentElement?.open), true);
@@ -660,6 +670,41 @@ test('Ativos cards respondem ao toque sem disparar acoes financeiras', async () 
     await assertSyntheticReadOnlyRuntime(runtime);
     assert.deepEqual(runtime.pageErrors, []);
     assert.deepEqual(runtime.firebaseRequests, []);
+  } finally {
+    await closeRuntime(runtime);
+  }
+});
+
+test('Ativos inicia por categoria e concentra acoes contextuais em um menu acessivel', async () => {
+  const runtime = await createRuntime({ width: 1366, height: 768 });
+  try {
+    await applyV289VisualFixture(runtime.page, 'baseline');
+    await setThemeAndRoute(runtime.page, 'dark', 'ativos');
+    const categories = runtime.page.locator('.assets-premium-shell details.ag');
+    assert.ok(await categories.count() > 0, 'Ativos deve manter categorias');
+    assert.equal(await runtime.page.locator('.assets-premium-shell details.ag[open]').count(), 0, 'a leitura inicial deve começar recolhida');
+    assert.deepEqual(await runtime.page.evaluate(() => {
+      const ids = [...document.querySelectorAll('#root [id]')].map(element => element.id);
+      return ids.filter((id, index) => ids.indexOf(id) !== index);
+    }), [], 'Ativos não pode repetir ids entre representações desktop e mobile');
+
+    const searchedTicker = await runtime.page.evaluate(() => String(S.assets[0]?.ticker || ''));
+    await runtime.page.locator('#assets-premium-search').fill(searchedTicker);
+    await runtime.page.waitForFunction(ticker => S.assetsSearch === ticker.toLowerCase() && document.querySelector('details.ag[open]')?.open === true, searchedTicker);
+    assert.equal(await runtime.page.locator('details.ag[open]').count(), 1, 'a busca deve revelar somente a categoria compatível');
+
+    const menuTrigger = runtime.page.locator('.assets-premium-shell .asset-action-menu-trigger:visible').first();
+    await menuTrigger.click();
+    const menuId = await menuTrigger.getAttribute('aria-controls');
+    const menu = runtime.page.locator(`#${menuId}`);
+    assert.equal(await menu.getAttribute('role'), 'menu');
+    assert.deepEqual(await menu.getByRole('menuitem').allInnerTexts(), ['Detalhes', 'Comprar', 'Vender', 'Editar']);
+    assert.equal(await menuTrigger.getAttribute('aria-expanded'), 'true');
+    await runtime.page.keyboard.press('Escape');
+    assert.equal(await menuTrigger.getAttribute('aria-expanded'), 'false');
+    await assertSyntheticReadOnlyRuntime(runtime);
+    assert.deepEqual(runtime.pageErrors, []);
+    assert.deepEqual(runtime.consoleErrors, []);
   } finally {
     await closeRuntime(runtime);
   }
