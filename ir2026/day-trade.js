@@ -54,4 +54,72 @@ function detectDayTrade(rawEvents, fiscalYear) {
   };
 }
 
-module.exports = { detectDayTrade };
+module.exports = { detectDayTrade, buildDayTradeMatchGroups };
+
+// ---------------------------------------------------------------------------
+// P11 — exact day-trade match groups: same asset, same day, buy/sell offset,
+// partial quantities, multiple fills. FIFO within the day (deterministic).
+// UNMATCHED_INTRADAY_QTY is sell quantity on a day-trade day that exceeds
+// same-day buys (swing remainder held from prior days).
+// ---------------------------------------------------------------------------
+function buildDayTradeMatchGroups(rawEvents, fiscalYear) {
+  const fy = fiscalYear || 0;
+  const days = new Map(); // DATE|ASSET -> {BUYS:[], SELLS:[]}
+  for (const raw of rawEvents || []) {
+    if (!raw || !raw.DATE || !raw.TICKER) continue;
+    if (raw.TYPE !== 'BUY' && raw.TYPE !== 'SELL') continue;
+    if (fy && (raw.DATE < `${fy}-01-01` || raw.DATE >= `${fy + 1}-01-01`)) continue;
+    const key = `${raw.DATE}|${raw.TICKER}`;
+    if (!days.has(key)) days.set(key, { DATE: raw.DATE, ASSET: raw.TICKER, BUYS: [], SELLS: [] });
+    (raw.TYPE === 'BUY' ? days.get(key).BUYS : days.get(key).SELLS).push(raw);
+  }
+  const groups = [];
+  for (const day of [...days.values()].sort((a, b) => (a.DATE + a.ASSET) < (b.DATE + b.ASSET) ? -1 : 1)) {
+    if (!day.BUYS.length || !day.SELLS.length) continue; // pure swing day
+    const buys = [...day.BUYS].sort((a, b) => String(a.CANONICAL_ID) < String(b.CANONICAL_ID) ? -1 : 1);
+    const sells = [...day.SELLS].sort((a, b) => String(a.CANONICAL_ID) < String(b.CANONICAL_ID) ? -1 : 1);
+    let bi = 0;
+    let buyRemain = buys[0] ? buys[0].QUANTITY || 0 : 0;
+    const matches = [];
+    for (const sell of sells) {
+      let sellRemain = sell.QUANTITY || 0;
+      while (sellRemain > 0 && bi < buys.length) {
+        const take = Math.min(sellRemain, buyRemain);
+        if (take > 0) {
+          matches.push({
+            BUY_EVENT_ID: buys[bi].CANONICAL_ID,
+            SELL_EVENT_ID: sell.CANONICAL_ID,
+            MATCHED_QTY: take,
+            BUY_AMOUNT: buys[bi].AMOUNT ?? null,
+            SELL_AMOUNT: sell.AMOUNT ?? null,
+          });
+          sellRemain -= take;
+          buyRemain -= take;
+        }
+        if (buyRemain <= 0) {
+          bi += 1;
+          if (bi < buys.length) buyRemain = buys[bi].QUANTITY || 0;
+          else break;
+        }
+      }
+      if (sellRemain > 0) matches.push({ SELL_EVENT_ID: sell.CANONICAL_ID, UNMATCHED_INTRADAY_QTY: sellRemain, SELL_AMOUNT: sell.AMOUNT ?? null, NOTE: 'Swing remainder: sold more than same-day buys' });
+    }
+    if (buyRemain > 0 && bi < buys.length) {
+      matches.push({ BUY_EVENT_ID: buys[bi].CANONICAL_ID, UNMATCHED_INTRADAY_QTY: buyRemain, NOTE: 'Buy remainder stays in position (no day-trade sell counterpart)' });
+    }
+    const matchedTotal = matches.reduce((s, m) => s + (m.MATCHED_QTY || 0), 0);
+    const unmatchedSell = matches.reduce((s, m) => s + (m.UNMATCHED_INTRADAY_QTY && m.SELL_EVENT_ID ? m.UNMATCHED_INTRADAY_QTY : 0), 0);
+    groups.push({
+      DATE: day.DATE,
+      ASSET: day.ASSET,
+      BUY_EVENT_IDS: buys.map((b) => b.CANONICAL_ID),
+      SELL_EVENT_IDS: sells.map((s) => s.CANONICAL_ID),
+      MATCHED_QTY: matchedTotal,
+      UNMATCHED_INTRADAY_QTY: unmatchedSell,
+      MATCHES: matches,
+      STATUS: unmatchedSell > 0 ? 'DAY_TRADE_PARTIAL_WITH_SWING_REMAINDER' : 'DAY_TRADE_EXACT',
+      GRANULARITY: 'DAILY',
+    });
+  }
+  return { FISCAL_YEAR: fy || null, DAY_TRADE_MATCH_GROUPS: groups };
+}
