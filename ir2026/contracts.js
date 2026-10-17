@@ -216,6 +216,10 @@ function normalizeEventType(rawType, rawMovement) {
     case 'CORPORATE_ACTION':
       if (/LEIL/.test(raw)) return 'RIGHTS_TRANSFER';       // fraction auction (cash out of fractional rights)
       if (/BONIFICA/.test(raw)) return 'BONUS';
+      // Explicit subscription semantics from the raw movement text only
+      // (P5): no ticker heuristics, no value/cost inference — anything
+      // ambiguous stays UNKNOWN (fail-closed).
+      if (/SUBSCRI/.test(raw)) return 'SUBSCRIPTION';
       return 'UNKNOWN';
     case 'MARKET_EVENT':
       // quota update / ticker migration (e.g. IRIM11 → IRIM15); handler keeps

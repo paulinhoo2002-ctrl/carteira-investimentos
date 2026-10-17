@@ -152,7 +152,58 @@ test('P19: rights position carries RIGHTS_POSITION_PENDING_FISCAL_TREATMENT and 
 });
 
 // ---------------------------------------------------------------------------
-// P30/P31/P32 — domain boundaries.
+// P5/P6/P7 — subscription normalization reachability and fail-closed ambiguity.
+// ---------------------------------------------------------------------------
+const { normalizeEventType } = require('../ir2026/contracts');
+
+test('P5: explicit subscription movement text normalizes to SUBSCRIPTION', () => {
+  assert.equal(normalizeEventType('CORPORATE_ACTION', 'Subscrição de ações'), 'SUBSCRIPTION');
+  assert.equal(normalizeEventType('CORPORATE_ACTION', 'EXERCÍCIO DE DIREITOS DE SUBSCRIÇÃO'), 'SUBSCRIPTION');
+  assert.equal(normalizeEventType('CORPORATE_ACTION', 'Subscription'), 'SUBSCRIPTION');
+  // precedence: fraction auction of rights is a RIGHTS_TRANSFER (sale), not a subscription
+  assert.equal(normalizeEventType('CORPORATE_ACTION', 'Leilão de direitos de subscrição'), 'RIGHTS_TRANSFER');
+  assert.equal(normalizeEventType('CORPORATE_ACTION', 'Bonificação de ações'), 'BONUS');
+});
+
+test('P7: ambiguous subscription-like text stays UNKNOWN — no fuzzy promotion', () => {
+  assert.equal(normalizeEventType('CORPORATE_ACTION', 'Direitos'), 'UNKNOWN');
+  assert.equal(normalizeEventType('CORPORATE_ACTION', 'Atualização de posição'), 'UNKNOWN');
+  assert.equal(normalizeEventType('CORPORATE_ACTION', null), 'UNKNOWN');
+  assert.equal(normalizeEventType('TRANSFER_CANDIDATE', 'Subscrição'), 'UNKNOWN'); // direction inferred -> UNKNOWN
+});
+
+test('P6: BTLG12 rights row via SUBSCRIPTION year event keeps pending treatment and zero cost never certifies', () => {
+  const raw = [
+    { CANONICAL_ID: 'S1', DATE: '2026-06-01', TICKER: 'BTLG12', PRODUCT: 'DIREITOS DE SUBSCRIÇÃO BTLG11',
+      TYPE: 'CORPORATE_ACTION', MOVEMENT_RAW: 'Exercício de direito de subscrição', DIRECTION: 'Credito',
+      QUANTITY: 8, STATUS: 'PARTIAL', PROVENANCE: 'synthetic' },
+  ];
+  const opening = buildOpeningFiscal({ rawEvents: raw, anchors: {}, fiscalYear: 2026, registry });
+  const row = opening.ROWS.find((x) => x.ASSET === 'BTLG12');
+  assert.ok(row, 'rights asset in scope via year event');
+  assert.equal(row.ASSET_CLASS, 'RIGHTS_SUBSCRIPTION');
+  assert.equal(row.PENDING_FISCAL_TREATMENT, 'RIGHTS_POSITION_PENDING_FISCAL_TREATMENT');
+  assert.notEqual(row.COST_STATUS, 'CERTIFIED'); // zero statement fields never certify fiscal cost
+  assert.ok(row.BLOCKERS.includes('RIGHTS_FISCAL_TREATMENT_PENDING'));
+});
+
+test('P14: a future rule change cannot silently rewrite a recorded monthly close', () => {
+  const input = { bucket: 'RV_STOCK_SWING', asOf, monthGrossCents: 2100000, monthNetCents: 10000, dataStatus: 'PARTIAL' };
+  const recorded = assessMonth({ ...input, registry });
+  // later, the law changes and the registry gains a new rate — only an
+  // EXPLICIT recomputation sees it; the recorded close keeps its own hash
+  const future = structuredClone(registry);
+  future.RULES.find((r) => r.RULE_ID === 'RULE_RV_SWING_RATE').RATE_BPS = 2000;
+  future.REGISTRY_VERSION = 99;
+  const recomputed = assessMonth({ ...input, registry: future });
+  assert.equal(recorded.RULESET_HASH, assessMonth({ ...input, registry }).RULESET_HASH); // deterministic
+  assert.notEqual(recomputed.RULESET_HASH, recorded.RULESET_HASH); // ruleset change is visible
+  assert.equal(recorded.PROVISIONAL_TAX_CENTS, 1500); // recorded close untouched
+  assert.equal(recomputed.PROVISIONAL_TAX_CENTS, 2000); // recomputation is the explicit path
+});
+
+// ---------------------------------------------------------------------------
+// P30/P31 — domain boundaries.
 // ---------------------------------------------------------------------------
 test('P30/P31: ir2026 is a standalone domain — no finance/persistence/package2 imports', () => {
   for (const file of ENGINE_FILES) {
