@@ -1,3 +1,9 @@
+## Cleanroom release governance (2026-10-17)
+
+- SITE_FEATURE_FREEZE=YES: não iniciar novas funcionalidades nem nova arquitetura até a revisão do backlog; itens remanescentes ficam no backlog.
+- A recuperação de privacidade da PR #500 usa uma branch cleanroom baseada no main e reproduz sua árvore final sanitizada. O histórico antigo da #500 continua preservado e contém commits anteriores à sanitização; ele não foi reescrito.
+- SITE_TECHNICALLY_COMPLETE permanece pendente até checks da PR substituta, CI do main, deploy automático READY, smoke de produção, QA visual e Axe.
+
 ## MEGA 08 — integração local pós-PR #496 (2026-10-12)
 
 - #496 foi confirmada MERGED no SHA a6b1d349170b973528b2bf64f1eddcbfe9bc1e5b; origin/main aponta para o mesmo commit.

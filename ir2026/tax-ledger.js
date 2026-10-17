@@ -19,7 +19,7 @@ const { toCents, toQty, sha256Json } = require('./hash');
 // Event normalization (canonical UPPERCASE row → fiscal event)
 // ---------------------------------------------------------------------------
 function normalizeEvent(raw) {
-  const cls = classifyAssetClass(raw.TICKER, { product: raw.PRODUCT });
+  const cls = classifyAssetClass(raw.TICKER, { product: raw.PRODUCT, movement: raw.MOVEMENT_RAW });
   return {
     EVENT_ID: raw.CANONICAL_ID,
     EVENT_SHA256: raw.EVENT_FINGERPRINT || null,
