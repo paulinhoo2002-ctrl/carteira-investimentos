@@ -1,46 +1,335 @@
 {
-  "REVIEW_VERSION": 1,
-  "TAX_YEAR": 2026,
-  "LAST_VERIFIED_DATE": "2026-10-16",
-  "NOTE": "Join RULE_ID to rules-2026.json for subject, asset class, current status and effective dates. Source dates are publication dates, not 2026 applicability proof. Research status is distinct from operational rule STATUS. No item below authorizes TAX_DUE.",
-  "SOURCES": {
-    "IN1585": ["IN RFB 1.585/2015 (consolidada)", "2015-09-02", "https://normas.receita.fazenda.gov.br/sijut2consulta/link.action?idAto=67494"],
-    "BOLSA": ["Receita Federal, Bolsa de Valores", "2024-05-07", "https://www.gov.br/receitafederal/pt-br/assuntos/meu-imposto-de-renda/pagamento/renda-variavel/bolsa-de-valores-1"],
-    "REVAR": ["Receita Federal, Manual do ReVar", "NOT_VERIFIED", "https://www.gov.br/receitafederal/pt-br/assuntos/meu-imposto-de-renda/pagamento/renda-variavel/manual/manual-de-utilizacao-do-revar-renda-variavel"],
-    "COMP": ["Receita Federal, Compensações", "2024-05-06", "https://www.gov.br/receitafederal/pt-br/assuntos/meu-imposto-de-renda/pagamento/renda-variavel/bolsa-de-valores-1/compensacoes"],
-    "FUNDOS": ["Receita Federal, Fundos de Investimento no Brasil", "2024-05-02", "https://www.gov.br/receitafederal/pt-br/assuntos/meu-imposto-de-renda/pagamento/renda-variavel/fundos-de-investimento-no-brasil"],
-    "L11033": ["Lei 11.033/2004 (compilada)", "2004-12-22", "https://www.planalto.gov.br/ccivil_03/_ato2004-2006/2004/lei/l11033compilado.htm"],
-    "L15270": ["Lei 15.270/2025", "2025-11-27", "https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2025/lei/l15270.htm"],
-    "IN1700": ["IN RFB 1.700/2017 (consolidada; alteração IN 2.315/2026)", "2017-03-16", "https://normas.receita.fazenda.gov.br/sijut2consulta/link.action?idAto=81268"],
-    "RFTAB": ["Receita Federal, Tabelas 2026", "NOT_VERIFIED", "https://www.gov.br/receitafederal/pt-br/assuntos/meu-imposto-de-renda/tabelas/2026"],
-    "L12431": ["Lei 12.431/2011 (compilada)", "2011-06-27", "https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2011/lei/l12431compilado.htm"]
-  },
-  "REVIEWS": [
-    ["RULE_COST_BASIS_WEIGHTED_AVERAGE", "IN1585", "art. 58 caput", "Média ponderada no mercado à vista; classe e abertura precisam de prova.", "Média por ativo; bloquear custo inicial desconhecido.", "duas compras; abertura ausente; classe errada", "MEDIUM", "PARTIAL_LEGAL_EVIDENCE"],
-    ["RULE_SALE_COST_REMOVAL_AVERAGE", "IN1585,REVAR", "art. 58 caput; custo unitário ReVar", "Venda parcial usa custo médio anterior.", "Não alterar média por venda; bloquear custo ausente.", "venda parcial; custo ausente", "MEDIUM", "PARTIAL_LEGAL_EVIDENCE"],
-    ["RULE_FEES_INCLUDED_IN_COST", "BOLSA,IN1585", "Deduções; art. 56 §3º", "Despesas pagas somam à compra ou reduzem venda.", "Usar só taxa comprovada; ausência não é zero.", "taxa compra; venda; ausente", "HIGH", "PARTIAL_LEGAL_EVIDENCE"],
-    ["RULE_SPLIT_TOTAL_COST_PRESERVED", "IN1585", "art. 58 §7º II", "Acréscimo por desdobramento tem custo zero; grupamento requer base própria.", "Alterar quantidade com proporção comprovada.", "split; grupamento; fração", "MEDIUM", "PARTIAL_LEGAL_EVIDENCE"],
-    ["RULE_BONUS_NO_COST_INFLATION", "IN1585", "art. 58 §§1º-2º", "Bonificação de ações por lucros/reservas tem custo atribuído; exceção histórica de custo zero.", "Não preservar automaticamente custo total; exigir valor capitalizado.", "valor capitalizado; ausente; exceção", "HIGH", "PARTIAL_LEGAL_EVIDENCE"],
-    ["RULE_SUBSCRIPTION_COST_MODEL", "", "", "Exercício, cessão e expiração ainda carecem de regra específica suficiente.", "Bloquear até natureza e pagamento documentados.", "exercício; cessão; expiração", "LOW", "NEEDS_MORE_SOURCE"],
-    ["RULE_TRANSFER_NO_REALIZED_RESULT", "", "", "Transferência do mesmo titular precisa de prova de titularidade e custo.", "Não presumir alienação nem transportar custo sem prova.", "mesmo titular; terceiro; custo ausente", "LOW", "NEEDS_MORE_SOURCE"],
-    ["RULE_STOCK_LENDING_NO_OWNERSHIP_CHANGE", "", "", "Titularidade fiscal e cadeia de empréstimo exigem fonte específica.", "Não duplicar posse; cadeia incompleta desconhecida.", "ida; retorno; retorno faltante", "LOW", "NEEDS_MORE_SOURCE"],
-    ["RULE_STOCK_LENDING_INCOME_TAXATION", "IN1585", "seção empréstimo de títulos", "Remuneração segue tratamento de aplicação financeira conforme papel e prazo.", "Separar remuneração de posição; IRRF só evidenciado.", "renda; prazo; retenção ausente", "MEDIUM", "PARTIAL_LEGAL_EVIDENCE"],
-    ["RULE_FII_DISTRIBUTION_EXEMPT_PF", "L11033,FUNDOS", "Lei art. 3º III e condições; Receita FII", "Isenção a PF é condicional; regra genérica de tributação tem exceções legais.", "Não marcar isento sem condições do fundo/cotista.", "condições; participação 10%; sem cobertura", "MEDIUM", "PARTIAL_LEGAL_EVIDENCE"],
-    ["RULE_FII_ALIENATION_EXEMPT_PF", "FUNDOS,REVAR", "Receita FII; ReVar FII/Fiagro", "Ganho na venda de FII em bolsa é tributado a 20%; ID sugere isenção indevida.", "Não aplicar isenção de ações; corrigir nome antes de cálculo.", "ganho; perda; limiar ações não aplicado", "HIGH", "PARTIAL_LEGAL_EVIDENCE"],
-    ["RULE_DIVIDEND_IRRF", "L15270", "art. 6º-A e transição", "Desde 2026 há retenção condicional por pagadora/beneficiário/mês, com transição.", "Não inferir por evento isolado; exigir data e fonte.", "limiar; pagamentos múltiplos; transição", "HIGH", "PARTIAL_LEGAL_EVIDENCE"],
-    ["RULE_JCP_IRRF", "IN1700", "art. 75 §7º, redação IN 2.315/2026", "JCP pago/creditado em 2026 tem IRRF 17,5%; 15% é redação anterior.", "Não inferir retenção sem comprovante.", "pagamento; crédito; retenção ausente", "HIGH", "PARTIAL_LEGAL_EVIDENCE"],
-    ["RULE_RV_SWING_MONTHLY_AGGREGATION", "IN1585,REVAR", "art. 56 §§3º,5º", "Ganho e imposto apurados mensalmente; categorias separadas.", "Agrupar por competência e bucket; expor bloqueios.", "dois meses; comum/day; desconhecido", "HIGH", "PARTIAL_LEGAL_EVIDENCE"],
-    ["RULE_RV_SWING_EXEMPTION_THRESHOLD", "IN1585", "art. 59", "Isenção de ações à vista depende de vendas mensais e exceções.", "Aplicar apenas com classe/valor mensal completos.", "limite; acima; FII/ETF excluídos", "MEDIUM", "PARTIAL_LEGAL_EVIDENCE"],
-    ["RULE_RV_SWING_RATE", "IN1585,BOLSA", "art. 57; alíquotas", "Operações comuns: 15% sobre ganho sujeito a base/isenção/compensação.", "Não calcular sem todas as dependências certificadas.", "ganho; perda; isenção; IRRF", "HIGH", "PARTIAL_LEGAL_EVIDENCE"],
-    ["RULE_DAY_TRADE_RATE", "BOLSA,REVAR", "alíquotas; conceito day trade", "Day trade: 20%, apuração separada e par intradiário.", "Flag isolada não certifica day trade.", "par; venda isolada; bucket perda", "HIGH", "PARTIAL_LEGAL_EVIDENCE"],
-    ["RULE_LOSS_CARRYFORWARD_SAME_CATEGORY", "COMP,REVAR", "compensações; prejuízos anteriores", "Perda comum compensa comum do mês/futuro; day trade separado.", "Abertura anterior UNKNOWN até declaração; FII separado.", "mesmo/cross bucket; abertura sem prova", "HIGH", "PARTIAL_LEGAL_EVIDENCE"],
-    ["RULE_ETF_BDR_ALIENATION_TAXED", "BOLSA,REVAR", "operações abrangidas; grupos ReVar", "Classe e regime de ETF/BDR não estão completamente resolvidos pela fonte geral.", "Exigir identificação oficial; sufixo 11 não prova FII.", "BOVA11; BDR; FII; incerto", "LOW", "NEEDS_MORE_SOURCE"],
-    ["RULE_RF_REGRESSIVE_TABLE", "RFTAB,L12431", "tabelas 2026; Lei art. 2º", "Tabela geral não cobre indistintamente CDB, CRA, DEB, LIG e incentivados.", "Selecionar regime pelo instrumento e emissão.", "CDB prazos; CRA; LIG; DEB incentivada", "MEDIUM", "PARTIAL_LEGAL_EVIDENCE"],
-    ["RULE_RF_IRRF_AT_SOURCE", "RFTAB,IN1585", "tabelas; aplicações financeiras", "Retenção depende do instrumento, evento e regime.", "Registrar apenas IRRF evidenciado; separar principal.", "resgate; isento; retenção ausente", "MEDIUM", "PARTIAL_LEGAL_EVIDENCE"],
-    ["RULE_RF_NO_CROSS_COMPENSATION", "", "", "Falta fonte específica para perdas e compensação por instrumento RF.", "Bloquear cruzamento; não presumir perda zero.", "perda RF; ganho RV; abertura", "LOW", "NEEDS_MORE_SOURCE"],
-    ["RULE_AMORTIZATION_TREATMENT", "", "", "Pode ser rendimento, principal ou custo conforme instrumento; falta ato específico.", "Exigir natureza e documento; não classificar tudo como renda.", "FII; debênture; principal; ausente", "LOW", "NEEDS_MORE_SOURCE"],
-    ["RULE_TICKER_CHANGE_COST_CARRYOVER", "IN1585", "art. 58 §6º", "Fusão/incorporação/cisão alocam custo na proporção aprovada; mera troca de ticker não coberta.", "Exigir documento e proporção.", "fusão; ticker; cisão", "MEDIUM", "PARTIAL_LEGAL_EVIDENCE"],
-    ["RULE_DEB_FUND_CLASSIFICATION", "L12431", "art. 3º", "Regime de fundo de infraestrutura depende de tipo jurídico e requisitos.", "Exigir CNPJ/regulamento; ticker não prova classe.", "fundo; FII; sem documento", "LOW", "NEEDS_MORE_SOURCE"],
-    ["RULE_CAPITAL_RETURN_TREATMENT", "IN1585", "art. 58 §8º", "Restituição de capital em dinheiro reduz custo das ações; outras classes exigem prova.", "Reduzir custo só com evento/valor comprovados.", "ação; ausente; FII não presumido", "MEDIUM", "PARTIAL_LEGAL_EVIDENCE"]
+ "REVIEW_VERSION": 1,
+ "TAX_YEAR": 2026,
+ "LAST_VERIFIED_DATE": "2026-10-16",
+ "NOTE": "Join RULE_ID to rules-2026.json for subject, asset class, current status and effective dates. Source dates are publication dates, not 2026 applicability proof. Research status is distinct from operational rule STATUS. No item below authorizes TAX_DUE.",
+ "SOURCES": {
+  "IN1585": [
+   "IN RFB 1.585/2015 (consolidada)",
+   "2015-09-02",
+   "https://normas.receita.fazenda.gov.br/sijut2consulta/link.action?idAto=67494"
+  ],
+  "BOLSA": [
+   "Receita Federal, Bolsa de Valores",
+   "2024-05-07",
+   "https://www.gov.br/receitafederal/pt-br/assuntos/meu-imposto-de-renda/pagamento/renda-variavel/bolsa-de-valores-1"
+  ],
+  "REVAR": [
+   "Receita Federal, Manual do ReVar",
+   "NOT_VERIFIED",
+   "https://www.gov.br/receitafederal/pt-br/assuntos/meu-imposto-de-renda/pagamento/renda-variavel/manual/manual-de-utilizacao-do-revar-renda-variavel"
+  ],
+  "COMP": [
+   "Receita Federal, Compensações",
+   "2024-05-06",
+   "https://www.gov.br/receitafederal/pt-br/assuntos/meu-imposto-de-renda/pagamento/renda-variavel/bolsa-de-valores-1/compensacoes"
+  ],
+  "FUNDOS": [
+   "Receita Federal, Fundos de Investimento no Brasil",
+   "2024-05-02",
+   "https://www.gov.br/receitafederal/pt-br/assuntos/meu-imposto-de-renda/pagamento/renda-variavel/fundos-de-investimento-no-brasil"
+  ],
+  "L11033": [
+   "Lei 11.033/2004 (compilada)",
+   "2004-12-22",
+   "https://www.planalto.gov.br/ccivil_03/_ato2004-2006/2004/lei/l11033compilado.htm"
+  ],
+  "L15270": [
+   "Lei 15.270/2025",
+   "2025-11-27",
+   "https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2025/lei/l15270.htm"
+  ],
+  "IN1700": [
+   "IN RFB 1.700/2017 (consolidada; alteração IN 2.315/2026)",
+   "2017-03-16",
+   "https://normas.receita.fazenda.gov.br/sijut2consulta/link.action?idAto=81268"
+  ],
+  "RFTAB": [
+   "Receita Federal, Tabelas 2026",
+   "NOT_VERIFIED",
+   "https://www.gov.br/receitafederal/pt-br/assuntos/meu-imposto-de-renda/tabelas/2026"
+  ],
+  "L12431": [
+   "Lei 12.431/2011 (compilada)",
+   "2011-06-27",
+   "https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2011/lei/l12431compilado.htm"
+  ],
+  "L13259": [
+   "Lei 13.259/2016 (planalto)",
+   "2016-03-16",
+   "https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2016/lei/l13259.htm"
   ]
+ },
+ "REVIEWS": [
+  [
+   "RULE_COST_BASIS_WEIGHTED_AVERAGE",
+   "IN1585",
+   "art. 58 caput",
+   "Média ponderada no mercado à vista; classe e abertura precisam de prova.",
+   "Média por ativo; bloquear custo inicial desconhecido.",
+   "duas compras; abertura ausente; classe errada",
+   "MEDIUM",
+   "PARTIAL_LEGAL_EVIDENCE"
+  ],
+  [
+   "RULE_SALE_COST_REMOVAL_AVERAGE",
+   "IN1585,REVAR",
+   "art. 58 caput; custo unitário ReVar",
+   "Venda parcial usa custo médio anterior.",
+   "Não alterar média por venda; bloquear custo ausente.",
+   "venda parcial; custo ausente",
+   "MEDIUM",
+   "PARTIAL_LEGAL_EVIDENCE"
+  ],
+  [
+   "RULE_FEES_INCLUDED_IN_COST",
+   "BOLSA,IN1585",
+   "Deduções; art. 56 §3º",
+   "Despesas pagas somam à compra ou reduzem venda.",
+   "Usar só taxa comprovada; ausência não é zero.",
+   "taxa compra; venda; ausente",
+   "HIGH",
+   "PARTIAL_LEGAL_EVIDENCE"
+  ],
+  [
+   "RULE_SPLIT_TOTAL_COST_PRESERVED",
+   "IN1585",
+   "art. 58 §7º II",
+   "Acréscimo por desdobramento tem custo zero; grupamento requer base própria.",
+   "Alterar quantidade com proporção comprovada.",
+   "split; grupamento; fração",
+   "MEDIUM",
+   "PARTIAL_LEGAL_EVIDENCE"
+  ],
+  [
+   "RULE_BONUS_NO_COST_INFLATION",
+   "IN1585",
+   "art. 58 §§1º-2º",
+   "Bonificação de ações por lucros/reservas tem custo atribuído; exceção histórica de custo zero.",
+   "Não preservar automaticamente custo total; exigir valor capitalizado.",
+   "valor capitalizado; ausente; exceção",
+   "HIGH",
+   "PARTIAL_LEGAL_EVIDENCE"
+  ],
+  [
+   "RULE_SUBSCRIPTION_COST_MODEL",
+   "",
+   "",
+   "Exercício, cessão e expiração ainda carecem de regra específica suficiente.",
+   "Bloquear até natureza e pagamento documentados.",
+   "exercício; cessão; expiração",
+   "LOW",
+   "NEEDS_MORE_SOURCE"
+  ],
+  [
+   "RULE_TRANSFER_NO_REALIZED_RESULT",
+   "",
+   "",
+   "Transferência do mesmo titular precisa de prova de titularidade e custo.",
+   "Não presumir alienação nem transportar custo sem prova.",
+   "mesmo titular; terceiro; custo ausente",
+   "LOW",
+   "NEEDS_MORE_SOURCE"
+  ],
+  [
+   "RULE_STOCK_LENDING_NO_OWNERSHIP_CHANGE",
+   "",
+   "",
+   "Titularidade fiscal e cadeia de empréstimo exigem fonte específica.",
+   "Não duplicar posse; cadeia incompleta desconhecida.",
+   "ida; retorno; retorno faltante",
+   "LOW",
+   "NEEDS_MORE_SOURCE"
+  ],
+  [
+   "RULE_STOCK_LENDING_INCOME_TAXATION",
+   "IN1585",
+   "seção empréstimo de títulos",
+   "Remuneração segue tratamento de aplicação financeira conforme papel e prazo.",
+   "Separar remuneração de posição; IRRF só evidenciado.",
+   "renda; prazo; retenção ausente",
+   "MEDIUM",
+   "PARTIAL_LEGAL_EVIDENCE"
+  ],
+  [
+   "RULE_FII_DISTRIBUTION_EXEMPT_PF",
+   "L11033,FUNDOS",
+   "Lei art. 3º III e condições; Receita FII",
+   "Isenção a PF é condicional; regra genérica de tributação tem exceções legais.",
+   "Não marcar isento sem condições do fundo/cotista.",
+   "condições; participação 10%; sem cobertura",
+   "MEDIUM",
+   "PARTIAL_LEGAL_EVIDENCE"
+  ],
+  [
+   "RULE_FII_ALIENATION_EXEMPT_PF",
+   "FUNDOS,REVAR",
+   "Receita FII; ReVar FII/Fiagro",
+   "Ganho na venda de FII em bolsa é tributado a 20%; ID sugere isenção indevida.",
+   "Não aplicar isenção de ações; corrigir nome antes de cálculo.",
+   "ganho; perda; limiar ações não aplicado",
+   "HIGH",
+   "PARTIAL_LEGAL_EVIDENCE"
+  ],
+  [
+   "RULE_DIVIDEND_IRRF",
+   "L15270",
+   "art. 6º-A e transição",
+   "Desde 2026 há retenção condicional por pagadora/beneficiário/mês, com transição.",
+   "Não inferir por evento isolado; exigir data e fonte.",
+   "limiar; pagamentos múltiplos; transição",
+   "HIGH",
+   "PARTIAL_LEGAL_EVIDENCE"
+  ],
+  [
+   "RULE_JCP_IRRF",
+   "IN1700",
+   "art. 75 §7º, redação IN 2.315/2026",
+   "JCP pago/creditado em 2026 tem IRRF 17,5%; 15% é redação anterior.",
+   "Não inferir retenção sem comprovante.",
+   "pagamento; crédito; retenção ausente",
+   "HIGH",
+   "PARTIAL_LEGAL_EVIDENCE"
+  ],
+  [
+   "RULE_RV_SWING_MONTHLY_AGGREGATION",
+   "IN1585,REVAR",
+   "art. 56 §§3º,5º",
+   "Ganho e imposto apurados mensalmente; categorias separadas.",
+   "Agrupar por competência e bucket; expor bloqueios.",
+   "dois meses; comum/day; desconhecido",
+   "HIGH",
+   "PARTIAL_LEGAL_EVIDENCE"
+  ],
+  [
+   "RULE_RV_SWING_EXEMPTION_THRESHOLD",
+   "IN1585",
+   "art. 59",
+   "Isenção de ações à vista depende de vendas mensais e exceções.",
+   "Aplicar apenas com classe/valor mensal completos.",
+   "limite; acima; FII/ETF excluídos",
+   "MEDIUM",
+   "PARTIAL_LEGAL_EVIDENCE"
+  ],
+  [
+   "RULE_RV_SWING_RATE",
+   "IN1585,BOLSA",
+   "art. 57; alíquotas",
+   "Operações comuns: 15% sobre ganho sujeito a base/isenção/compensação.",
+   "Não calcular sem todas as dependências certificadas.",
+   "ganho; perda; isenção; IRRF",
+   "HIGH",
+   "PARTIAL_LEGAL_EVIDENCE"
+  ],
+  [
+   "RULE_DAY_TRADE_RATE",
+   "BOLSA,REVAR",
+   "alíquotas; conceito day trade",
+   "Day trade: 20%, apuração separada e par intradiário.",
+   "Flag isolada não certifica day trade.",
+   "par; venda isolada; bucket perda",
+   "HIGH",
+   "PARTIAL_LEGAL_EVIDENCE"
+  ],
+  [
+   "RULE_LOSS_CARRYFORWARD_SAME_CATEGORY",
+   "COMP,REVAR",
+   "compensações; prejuízos anteriores",
+   "Perda comum compensa comum do mês/futuro; day trade separado.",
+   "Abertura anterior UNKNOWN até declaração; FII separado.",
+   "mesmo/cross bucket; abertura sem prova",
+   "HIGH",
+   "PARTIAL_LEGAL_EVIDENCE"
+  ],
+  [
+   "RULE_ETF_BDR_ALIENATION_TAXED",
+   "BOLSA,REVAR",
+   "operações abrangidas; grupos ReVar",
+   "Classe e regime de ETF/BDR não estão completamente resolvidos pela fonte geral.",
+   "Exigir identificação oficial; sufixo 11 não prova FII.",
+   "BOVA11; BDR; FII; incerto",
+   "LOW",
+   "NEEDS_MORE_SOURCE"
+  ],
+  [
+   "RULE_RF_REGRESSIVE_TABLE",
+   "RFTAB,L12431",
+   "tabelas 2026; Lei art. 2º",
+   "Tabela geral não cobre indistintamente CDB, CRA, DEB, LIG e incentivados.",
+   "Selecionar regime pelo instrumento e emissão.",
+   "CDB prazos; CRA; LIG; DEB incentivada",
+   "MEDIUM",
+   "PARTIAL_LEGAL_EVIDENCE"
+  ],
+  [
+   "RULE_RF_IRRF_AT_SOURCE",
+   "RFTAB,IN1585",
+   "tabelas; aplicações financeiras",
+   "Retenção depende do instrumento, evento e regime.",
+   "Registrar apenas IRRF evidenciado; separar principal.",
+   "resgate; isento; retenção ausente",
+   "MEDIUM",
+   "PARTIAL_LEGAL_EVIDENCE"
+  ],
+  [
+   "RULE_RF_NO_CROSS_COMPENSATION",
+   "",
+   "",
+   "Falta fonte específica para perdas e compensação por instrumento RF.",
+   "Bloquear cruzamento; não presumir perda zero.",
+   "perda RF; ganho RV; abertura",
+   "LOW",
+   "NEEDS_MORE_SOURCE"
+  ],
+  [
+   "RULE_AMORTIZATION_TREATMENT",
+   "",
+   "",
+   "Pode ser rendimento, principal ou custo conforme instrumento; falta ato específico.",
+   "Exigir natureza e documento; não classificar tudo como renda.",
+   "FII; debênture; principal; ausente",
+   "LOW",
+   "NEEDS_MORE_SOURCE"
+  ],
+  [
+   "RULE_TICKER_CHANGE_COST_CARRYOVER",
+   "IN1585",
+   "art. 58 §6º",
+   "Fusão/incorporação/cisão alocam custo na proporção aprovada; mera troca de ticker não coberta.",
+   "Exigir documento e proporção.",
+   "fusão; ticker; cisão",
+   "MEDIUM",
+   "PARTIAL_LEGAL_EVIDENCE"
+  ],
+  [
+   "RULE_DEB_FUND_CLASSIFICATION",
+   "L12431",
+   "art. 3º",
+   "Regime de fundo de infraestrutura depende de tipo jurídico e requisitos.",
+   "Exigir CNPJ/regulamento; ticker não prova classe.",
+   "fundo; FII; sem documento",
+   "LOW",
+   "NEEDS_MORE_SOURCE"
+  ],
+  [
+   "RULE_CAPITAL_RETURN_TREATMENT",
+   "IN1585",
+   "art. 58 §8º",
+   "Restituição de capital em dinheiro reduz custo das ações; outras classes exigem prova.",
+   "Reduzir custo só com evento/valor comprovados.",
+   "ação; ausente; FII não presumido",
+   "MEDIUM",
+   "PARTIAL_LEGAL_EVIDENCE"
+  ],
+  [
+   "RULE_BDR_ALIENATION_REGIME",
+   "L13259",
+   "ganho de capital; BDRs",
+   "BDR citado no ganho de capital (Lei 13.259/2016); regime exato PF 2026 requer leitura dedicada.",
+   "Sem venda de BDR em 2026 nos dados; manter NEEDS_LEGAL_INTERPRETATION.",
+   "BDR; ganho de capital; 2026",
+   "LOW",
+   "NEEDS_MORE_SOURCE"
+  ]
+ ]
 }
