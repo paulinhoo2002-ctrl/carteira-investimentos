@@ -1,4 +1,9 @@
-# Trabalho aberto
+# Trabalho atual
+
+Use [`LEGACY_BACKLOG.md`](LEGACY_BACKLOG.md) como fila operacional única. Os registros abaixo são históricos e não representam ações ativas sem confirmação em `PROJECT_STATE.md` e `NEXT_STEP.md`.
+
+---
+# Registros históricos de trabalho aberto
 
 ## V278O — sanitização publicável validada localmente (2026-09-28)
 

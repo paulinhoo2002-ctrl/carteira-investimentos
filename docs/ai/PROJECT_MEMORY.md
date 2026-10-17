@@ -1,3 +1,51 @@
+# Carteira LEGACY — memória operacional durável
+
+## Identidade do projeto
+
+- Projeto: Carteira de Investimentos LEGACY.
+- Repositório canônico: `paulinhoo2002-ctrl/carteira-investimentos`.
+- Checkout canônico local: `C:\Projetos\carteira-investimentos`.
+- Produção: Vercel project `carteira-investimentos`, project ID `prj_a4SYCPWPqm0c2oaNF7iLEKf6wX47`, domínio `carteira-investimentos-delta.vercel.app`.
+- `carteira-2.0` é outro projeto e nunca pode ser misturado ou publicado pelo fluxo LEGACY.
+
+## Arquitetura e autoridade
+
+- A aplicação LEGACY mantém o shell e os fluxos principais em JavaScript/CSS legados. O host React Modern segue somente leitura; não substituir o legado sem paridade e autorização próprias.
+- `finance-core.js` é a autoridade de cálculos financeiros; `persistence-core.js` centraliza persistência. Firebase Auth e Firestore usam escopo de proprietário. Regras, imports, restore, chaves e backups têm contratos próprios.
+- Package1 introduziu um envelope versionado sob o documento de carteira e precedência explícita para snapshot oficial versus detalhe parcial. A presença do contrato não permite completar dados, duplicar posições nem inferir cobertura.
+- Package2 V3 define snapshots imutáveis e um read model/dry-run local. `PACKAGE2_V3_HOSTED_PROMOTED=NO`; não assumir que V3 está ativo no Firestore.
+- IR2026 separa abertura fiscal, ledger, fechamentos e autoridade legal. O motor está pronto no código, mas a evidência real ainda não autoriza imposto devido.
+
+## Regras financeiras e de privacidade
+
+- Preservar `UNKNOWN != ZERO`, `MISSING != ZERO`, `PARTIAL != COMPLETE`, `EXPECTED != RECEIVED`, além da diferença entre observado, derivado, estimado, declarado e recebido.
+- Não criar ativos de compensação, custos fiscais por inferência, rendimentos retroativos ou patrimônio global por soma de escopos incompatíveis.
+- Dados financeiros reais, documentos fonte, snapshots, hashes de origem, identificadores de conta e evidência autenticada permanecem locais/privados por padrão.
+- Sanear o diferencial de cada release. Uma branch cleanroom pode impedir que histórico sensível de outra branch entre em `main`, mas não remove o histórico remoto antigo.
+
+## Governança de release e manutenção
+
+- Release squash sanitizada de 17/10/2026: PR #501, commit integrado `6619c9ed6286bd1b446ec90d07432ace000e4e03`. PR #500 foi fechada sem merge e substituída.
+- A partir dessa release, o produto opera em `MAINTENANCE_AND_DATA_CERTIFICATION_MODE` com feature freeze. Provar defeito antes de editar; preferir correção pequena; não reabrir arquitetura concluída sem razão concreta.
+- `PROJECT_STATE.md` é a verdade corrente; `NEXT_STEP.md` contém uma ação oficial; `LEGACY_BACKLOG.md` é o backlog ativo. Os históricos anteriores foram preservados em `docs/ai/archive/`.
+- Vercel `READY` e smoke autenticado não certificam imposto, dados históricos, patrimônio global, restauração independente ou Axe autenticado direto.
+- Writes hospedados, import real, restore real, Auth/Rules, merge e deploy exigem autorização explícita para ação e escopo.
+
+## Marcos de trabalho concluídos
+
+- **Fundação:** separação de contratos de cálculo, persistência, UI e validação; sem reconstrução integral do produto.
+- **Backup/recuperação:** manifesto, verificação e prévia de restore endurecidos; recuperação independente completa continua sem certificação.
+- **Package1:** snapshot oficial separado de detalhe parcial; custo FIFO derivado não é custo médio certificado.
+- **Package2:** V3 local com proveniência, cobertura e dry-run; não promovido a hospedagem.
+- **Privacidade e Auth:** autenticação de produção exercitada em smoke read-only; recuperação administrativa continua aberta.
+- **IR2026 e hardening fiscal:** pipeline e registro de autoridade disponíveis; dados e regras ainda não certificam cálculo de imposto.
+- **Cleanroom:** PR #501 publicou diferencial sanitizado sem herdar commits pré-sanitização da #500.
+
+## Pendências conhecidas
+
+Veja [`LEGACY_BACKLOG.md`](LEGACY_BACKLOG.md), [`LEGACY_DATA_READINESS.md`](LEGACY_DATA_READINESS.md) e [`ADMIN_RECOVERY_RISK.md`](ADMIN_RECOVERY_RISK.md). Estado corrente e limitações estão em [`PROJECT_STATE.md`](PROJECT_STATE.md).
+
+---
 ## MEGA 08 — integração pós-#496 (2026-10-12)
 
 - #496 foi verificada no GitHub como MERGED; merge_commit_sha=a6b1d349170b973528b2bf64f1eddcbfe9bc1e5b e origin/main foi atualizado por fetch normal para esse SHA.

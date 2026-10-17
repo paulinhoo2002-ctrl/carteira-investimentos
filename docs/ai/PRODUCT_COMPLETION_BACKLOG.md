@@ -1,3 +1,4 @@
+> Histórico de conclusão do produto. A partir da release de 17/10/2026, use [`LEGACY_BACKLOG.md`](LEGACY_BACKLOG.md) para o trabalho ativo; itens abaixo são evidência histórica e não substituem os gates atuais.
 # Backlog de conclusão funcional do produto
 
 Backlog originado na auditoria V280 e atualizado após PR #432/V284 e V285 em 2026-09-29. Readiness financeira real continua condicionada a evidência de carteira. Este documento não autoriza escrita financeira/fiscal real, restore, deploy ou mudança de dependência. Prioridade P0–P5, sem pontuação arbitrária; operações financeiras/protegidas continuam exigindo confirmação explícita no produto e dados sintéticos nos testes.
