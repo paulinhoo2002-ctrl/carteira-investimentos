@@ -55,6 +55,21 @@ haver documento oficial. A view DERIVED nunca a substitui.
 3. Extrato/relatório de IRRF por operação/mês.
 4. Taxas de corretagem/B3 itemizadas por operação.
 
+## Módulos de evidência (mega productization 2026-10-17)
+
+- `blockers.js` — taxonomia de blockers (códigos estáveis + checklist P20).
+- `precedence.js` — níveis de evidência 1–7; só 1–4 certificam; nunca downgrade; heurística nunca promove.
+- `matcher.js` — matching determinístico de tickers (EXACT/NORMALIZED_EXACT/ALIAS_CERTIFIED/AMBIGUOUS/NO_MATCH).
+- `ingest.js` — detecção de documento por CONTEÚDO (sem depender de filename), normalização com provenance por linha.
+- `promotion.js` — pipeline de promoção de abertura (propostas; conflitos nunca auto-resolvidos).
+- `fees.js` — alocação de taxas (itemizada ou pro-rata por valor bruto, método registrado).
+- `irrf.js` — IRRF por bucket (swing/day trade/other); statement≠eventos vira CONFLICT.
+- `losses.js` — carry-forward por bucket com estados iniciais CERTIFIED/PARTIAL/UNKNOWN.
+- `day-trade.js` — detecção mesmo-dia + match groups com FIFO, parciais e remainder.
+- `coverage.js` — métricas de cobertura multidimensionais (count E valor).
+- `scripts/ingest-dry-run.js` — entrypoint `IR2026_INGEST_NEW_EVIDENCE` (dry-run, NUNCA escreve).
+- `docs/ai/IR2026_DOCUMENT_REQUEST.md` — pedido de documentos priorizado para o humano.
+
 ## Cobertura atual (metadados, sem valores)
 
 Ver `opening-v1-summary.json` (gerado pelo runner). Held candidates 32:

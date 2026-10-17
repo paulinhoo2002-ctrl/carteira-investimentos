@@ -74,3 +74,15 @@ Every phase must pass:
 - Resumo público não sensível: `ir2026/opening-v1-summary.json`. View conservativa do dry-run intacta.
 - PRÓXIMO GATE HUMANO: obter informe de rendimentos 2025 / posição com custo por ativo de 31/12/2025 +
   informe de prejuízos acumulados + IRRF por operação; então promover DERIVED→CERTIFIED por precedência de evidência.
+
+## IR2026 — Mega productization (2026-10-17, mesmo branch)
+
+- Engines de evidência prontos: precedência (níveis 1–7), ingestão por conteúdo,
+  promoção de abertura (propostas+conflitos), fees, IRRF por bucket, perdas por bucket,
+  day-trade match groups, coverage multidimensional, taxonomia de blockers + checklist.
+- Matriz 61 vendas productizada (SALE_ID, blocker codes estáveis, assinatura
+  LENDING_CUSTODY_UNPRICED nas 26+ vendas sem valor = custódia/empréstimo, não venda econômica).
+- Monthly close agora expõe vendas bloqueadas (cobertura honesta) + fees/IRRF/loss-used fail-closed.
+- Entrypr de ingestão: `node ir2026/scripts/ingest-dry-run.js <doc.json>` — dry-run sem escrita.
+- IR2026_TESTS=151/151. Pedido de documentos priorizado: docs/ai/IR2026_DOCUMENT_REQUEST.md.
+- Permanece: OPENING_CERTIFIED=0 (sem doc oficial), TAX_PAYABLE=NOT_CALCULATED (regras não certificadas).

@@ -24,6 +24,25 @@ as missões IR2026/auth-demo (P22 da missão LEGACY_IR2026_FISCAL_OPENING).
 - Não há segundo owner, não há runbook de recuperação, não há credenciais de
   emergência em cofre.
 
+## ADMIN_RECOVERY_V1 — design (proposal only)
+
+Design mínimo que elimina lockout permanente de e-mail único:
+
+1. `PRIMARY_OWNER` = conta atual (paulinhoo2002@gmail.com), MFA obrigatório.
+2. `SECONDARY_RECOVERY_OWNER` = segunda conta Google pessoal do dono com papéis:
+   GCP/Firebase `Owner` (ou no mínimo `datastore.viewer` + export), Vercel `Owner`,
+   GitHub `Owner` (ou org com ≥2 owners). Nomeada em runbook, nunca no repo.
+3. `RECOVERY_RUNBOOK` (versão local criptografada, fora do Git): passos de
+   acesso de emergência, rota GCP support com evidências de domínio,
+   checklist de revogação de acessos comprometidos.
+4. `BACKUP_PRECONDITION` = nenhum cambio de IAM antes do primeiro export
+   completo + restore verificado (suite backup-restore).
+5. Invariantes: registry de autorização permanece fail-closed; nenhum
+   processo de recuperação escreve dados financeiros; auditoria de qualquer
+   uso do SECONDARY_RECOVERY_OWNER.
+
+Status: **DESIGN_ONLY**. Nada implementado; nenhuma escrita de produção.
+
 ## SAFE_RECOVERY_DESIGN_PROPOSAL (a executar só sob autorização explícita)
 
 1. **Backup antes de tudo**: export completo do Firestore (via app/console)
