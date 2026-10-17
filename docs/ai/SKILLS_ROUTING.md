@@ -148,30 +148,28 @@ SKILL_GAPS_FOUND=
 
 ---
 
-## PROJECT STATE CONSTANTS
+## PROJECT STATE AND MAINTENANCE ROUTING
 
-```
-CURRENT_PHASE=FUNCTIONAL_COMPLETION
-VISUAL_PHASE=DEFERRED
-VISUAL_CANON_V2=FROZEN_REFERENCE
-P0=P0_RENTABILIDADE_HISTORICAL_SERIES
-```
+`OPERATING_MODE=MAINTENANCE_AND_DATA_CERTIFICATION_MODE`
+`FEATURE_FREEZE=YES`
 
-**Current transient project state (P0 status, next action) is owned by `docs/ai/PROJECT_STATE.md` and `docs/ai/NEXT_STEP.md`. This routing file defines durable skill-selection constraints only.**
+Current state belongs to `docs/ai/PROJECT_STATE.md`; one official next action belongs to `docs/ai/NEXT_STEP.md`; active work belongs to `docs/ai/LEGACY_BACKLOG.md`. This file defines durable skill-selection constraints only. Do not copy transient project state into routing rules.
 
-Do not embed transient project-state constants here. Reference:
-- `CURRENT_PROJECT_STATE_AUTHORITY=docs/ai/PROJECT_STATE.md`
-- `NEXT_ACTION_AUTHORITY=docs/ai/NEXT_STEP.md`
+After release, select skills by concrete task:
 
-The V283 work resolved the historical return truth path:
-- `P0_ENGINE_LAYER=RESOLVED` (V281 engine fails closed)
-- `P0_LEGACY_LAYER=RESOLVED` (V283 adapter connects legacy UI to engine)
-- `P0_END_TO_END=RESOLVED` (current_price leakage eliminated, synthetic benchmark removed)
-- `REAL_DATA_READINESS=UNAVAILABLE_AS_INPUTS_REQUIRE`
-- `FAIL_CLOSED_ON_INSUFFICIENT_EVIDENCE=true`
+| Task | Minimal route |
+| --- | --- |
+| Production incident | `systematic-debugging`, then only the relevant domain skill |
+| Financial evidence and reconciliation | `carteira-auditoria-real`, `carteira-finance-core-review` when present; preserve read-only/dry-run boundaries |
+| IR2026 evidence ingestion | `carteira-migracao-segura`, `source-driven-development`; never infer missing evidence |
+| Privacy review | `web-security-review` or project privacy contract; review the release differential and keep inherited debt distinct |
+| Visual QA | `browser-harness` or `playwright`, `web-quality-audit` when available; no redesign unless requested |
+| Release | `verification-before-completion`, `caveman-review`, plus required project release checks |
+| Documentation/governance | `good-docs-writing` when available, `caveman-review`; use a small docs-only branch |
+
+For routine maintenance, do not invoke overnight or mega-mission patterns automatically. Re-evaluate routing only when task category changes.
 
 ---
-
 ## FINANCIAL INVARIANTS (Non-Negotiable)
 
 ```

@@ -279,6 +279,12 @@ O estado factual de branch, SHA, PRs e fases deve ser consultado no Git e em
 `docs/ai/PROJECT_MEMORY.md` / `docs/project-phases-roadmap.md`. Este bootstrap
 não conserva snapshots históricos de fases.
 
+## Modo operacional pós-release (2026-10-17)
+
+O projeto está em `MAINTENANCE_AND_DATA_CERTIFICATION_MODE`, com feature freeze. Antes de mudar código, prove que o problema existe, classifique sua severidade e escolha o patch mínimo com regressão relacionada. Não reabra arquitetura concluída sem necessidade concreta. O estado atual está em `docs/ai/PROJECT_STATE.md`, a próxima ação em `docs/ai/NEXT_STEP.md`, e o backlog operacional único em `docs/ai/LEGACY_BACKLOG.md`.
+
+`SITE_TECHNICALLY_COMPLETE=YES` e produção saudável descrevem a release técnica; não significam dados fiscais reais certificados, patrimônio global reconciliado, Package2 V3 hospedado ou Axe autenticado em produção.
+
 ## Modularização futura da `index.html`
 
 Regra para quando essa modularização vier a ser autorizada:

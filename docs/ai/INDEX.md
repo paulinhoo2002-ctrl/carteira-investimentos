@@ -7,6 +7,9 @@ Start an agent session in this order:
 3. `docs/ai/PROJECT_STATE.md`
 4. `docs/ai/NEXT_STEP.md`
 5. `docs/ai/CURRENT_PROJECT_MAP.md`
+6. docs/ai/LEGACY_FINAL_RELEASE_2026-10-17.md for the latest release record
+7. docs/ai/LEGACY_SYSTEM_STATUS.md, LEGACY_BACKLOG.md, and LEGACY_DATA_READINESS.md for current product gates
+
 
 Then read only task-specific contracts. `docs/ai/archive/` is reference-only;
 canonical current documents override historical reports. Do not recursively
@@ -15,10 +18,12 @@ scan archives, local imports, or every worktree by default.
 ## Current and operational documents
 
 - State and continuity: `PROJECT_STATE.md`, `NEXT_STEP.md`, `PROJECT_MEMORY.md`,
-  `CURRENT_PROJECT_MAP.md`, `OPEN_WORK.md`.
+  `CURRENT_PROJECT_MAP.md`, `OPEN_WORK.md`, `LEGACY_SYSTEM_STATUS.md`,
+  `LEGACY_BACKLOG.md`, `LEGACY_DATA_READINESS.md`, and `LEGACY_FINAL_RELEASE_2026-10-17.md`.
 - Architecture and product: `ARCHITECTURE.md`, `ARCHITECTURE_MAP.md`,
   `PRODUCT_CONTRACTS.md`, `FINANCIAL_RULES.md`, `FINANCIAL_SEMANTICS.md`,
-  `V280_PRODUCT_COMPLETION_AUDIT.md`, `PRODUCT_COMPLETION_BACKLOG.md`,
+  `V280_PRODUCT_COMPLETION_AUDIT.md`, `PRODUCT_COMPLETION_BACKLOG.md` (historical),
+  `LEGACY_BACKLOG.md` (authoritative active backlog),
   `PRODUCT_COMPLETION_MATRIX.md`.
 - Data and imports: `DATA_SOURCES_AND_PROVIDERS.md`,
   `MONTHLY_IMPORT_RUNBOOK.md`, `BROKERAGE_NOTE_IMPORT.md`,

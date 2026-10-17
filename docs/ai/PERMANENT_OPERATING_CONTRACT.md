@@ -48,3 +48,12 @@
 ## 7. Handoff mínimo verificável
 
 `MISSION`, `PROJECT_IDENTITY_GATE`, `MODEL_AVAILABLE`, `MODEL_USED`, `SKILLS_DISCOVERED`, `SKILLS_USED`, `BRANCH`, `HEAD`, `FILES_CHANGED`, `TESTS`, `CI`, `VERCEL`, `BLOCKERS`, `GO_NO_GO`, `PRODUCTION_READY`, `NEXT_HUMAN_GATE`, `RESUME_FROM_PHASE`, `NEXT_COMMAND`, `MERGE=false`, `REAL_FINANCIAL_WRITES=0` (quando aplicável). Nunca transformar relatório de agente em evidência suficiente sem checar o repositório/ambiente.
+
+## 8. Operação pós-release e gates diferenciais
+
+- Após a release LEGACY de 17/10/2026, operar em `MAINTENANCE_AND_DATA_CERTIFICATION_MODE`. `FEATURE_FREEZE=YES`; não iniciar novas fundações sem necessidade reproduzível.
+- Provar o defeito ou a necessidade antes da mudança. Classificar severidade, aplicar patch mínimo e rodar regressões diretamente relacionadas. Não usar uma dívida preexistente não relacionada para bloquear uma release sanitizada; registrar risco residual no backlog.
+- Avaliar privacidade/segurança no diferencial da release, sem tratar achados herdados como novos. Nunca ocultar achado nem copiar informação privada ao documentá-lo.
+- `CODE_READY != DATA_CERTIFIED`. `IR2026_REAL_DATA_READY=NO` e `TAX_PAYABLE_STATUS=NOT_CALCULATED` até os gates de fonte, cobertura e autoridade passarem.
+- Package2 V3 continua read-only local até existir prova de identidade, leitura exata, diff, backup, concorrência, rollback e autorização explícita para a escrita delimitada.
+- Use `PROJECT_STATE.md` para estado verificado, `NEXT_STEP.md` para a próxima ação e `LEGACY_BACKLOG.md` como fila operacional única. Históricos arquivados são referência, não instruções atuais.
