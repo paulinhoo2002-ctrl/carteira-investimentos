@@ -8,6 +8,7 @@ test('V198 Renda Fixa expõe proveniência progressiva sem alterar o valor', () 
   assert.match(source, /function fixedIncomeProvenanceDetails\(meta\)/);
   assert.match(source, /selectedField: selection\?\.selectedField/);
   assert.match(source, /<details class="premium-rf-provenance-details">/);
+  assert.match(source, /\.premium-rf-provenance-details summary\{[^}]*min-height:44px/);
   assert.match(source, /Como foi avaliado/);
   assert.match(source, /Data de avaliação/);
   assert.match(source, /MANUAL_AUTHORITATIVE:'Manual autoritativa'/);

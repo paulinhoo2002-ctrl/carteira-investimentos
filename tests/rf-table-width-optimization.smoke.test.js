@@ -135,6 +135,7 @@ for (const viewport of viewports) {
           }),
           firstSummary: cards[0]?.querySelector('summary')?.innerText || '',
           summaryHeight: cards[0]?.querySelector('summary')?.getBoundingClientRect().height || 0,
+          provenanceSummaryHeight: document.querySelector('.premium-rf-provenance-details summary')?.getBoundingClientRect().height || 0,
           metrics,
         };
       });
@@ -148,6 +149,7 @@ for (const viewport of viewports) {
         assert.ok(snapshot.adaptiveCount > 0, `sem cards RF em ${viewport.label}`);
         assert.ok(snapshot.adaptiveCardBounds.every(rect => rect.left >= 0 && rect.right <= viewport.width && !rect.clipped), `card fora da viewport ou com corte interno em ${viewport.label}`);
         assert.ok(snapshot.summaryHeight >= 44, `alvo do expansor < 44px em ${viewport.label}`);
+        assert.ok(snapshot.provenanceSummaryHeight >= 44, `alvo de proveniência < 44px em ${viewport.label}`);
         assert.match(snapshot.firstSummary, /Valor atual/);
         assert.match(snapshot.firstSummary, /Resultado da posição/);
         assert.match(snapshot.firstSummary, /Rentabilidade da posição/);
