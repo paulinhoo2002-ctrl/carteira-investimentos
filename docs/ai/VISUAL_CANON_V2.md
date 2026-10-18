@@ -1,5 +1,7 @@
 # Visual Canon V2 — LEGACY Product System
 
+Para comportamento responsivo, progressive disclosure, matriz de QA e acessibilidade, consulte o contrato complementar [`VISUAL_UX_RESPONSIVE_CONTRACT.md`](VISUAL_UX_RESPONSIVE_CONTRACT.md).
+
 `VISUAL_DIRECTION=PREMIUM_DARK_EXECUTIVE`
 
 `UI_WORK_MUST_READ_VISUAL_CANON=true`

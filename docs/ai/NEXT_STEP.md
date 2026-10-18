@@ -1,10 +1,11 @@
 # Próximo passo oficial
 
-OPERATING_MODE=MAINTENANCE_AND_DATA_CERTIFICATION_MODE
+OPERATING_MODE=VISUAL_REFINEMENT_AND_DATA_CERTIFICATION
+VISUAL_PHASE=ACTIVE_FOR_PR_503
 
 ## Ação atual
 
-Nenhuma mudança de fundação está autorizada ou necessária. Aguarde evidência fiscal confiável para a abertura de 2026 e prossiga em leitura local, dry-run e revisão dos documentos listados em [`IR2026_DOCUMENT_REQUEST.md`](IR2026_DOCUMENT_REQUEST.md). Não grave resultados na carteira.
+Concluir a linha visual oficial da PR #503 conforme [`VISUAL_UX_RESPONSIVE_CONTRACT.md`](VISUAL_UX_RESPONSIVE_CONTRACT.md): resolver defeitos reproduzíveis, validar rotas/viewports/temas e revisar capturas privadas. O escopo é de apresentação e não revoga o feature freeze geral nem as proteções financeiras. Em paralelo, aguarde evidência fiscal confiável para a abertura de 2026 e prossiga em leitura local, dry-run e revisão dos documentos listados em [`IR2026_DOCUMENT_REQUEST.md`](IR2026_DOCUMENT_REQUEST.md). Não grave resultados na carteira. Ao encerrar ou integrar a PR #503, reavalie o estado e retorne à certificação de dados se não houver outra autorização.
 
 ## Prioridades
 

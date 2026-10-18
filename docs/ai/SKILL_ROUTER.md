@@ -138,6 +138,8 @@ recomendação; catálogo NVIDIA não comprova acesso a endpoint.
 
 ## TRACKS DE UI (MUTUAMENTE EXCLUSIVOS DURANTE A MESMA FASE)
 
+Todos os tracks seguem [`VISUAL_UX_RESPONSIVE_CONTRACT.md`](VISUAL_UX_RESPONSIVE_CONTRACT.md) para viewport, tipografia, progressive disclosure e acessibilidade. O `PROJECT_STATE.md` identifica se há uma fase visual limitada ativa; revalide seu branch/PR antes de usar Skills de UI.
+
 | TRACK | SKILL | QUANDO USAR |
 |-------|-------|-------------|
 | **Nova direção visual** | `frontend-design` | Nova composição estética, rebranding, linguagem visual do zero |

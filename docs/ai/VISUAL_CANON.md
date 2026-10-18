@@ -2,6 +2,8 @@
 
 > **Current consolidated system:** [`VISUAL_CANON_V2.md`](VISUAL_CANON_V2.md).
 >
+> **Permanent UX, responsive, accessibility and QA behavior:** [`VISUAL_UX_RESPONSIVE_CONTRACT.md`](VISUAL_UX_RESPONSIVE_CONTRACT.md).
+>
 > **Evidence, screen-by-screen audit, and implementation sequence:** [`V279B_VISUAL_PRODUCT_AUDIT.md`](V279B_VISUAL_PRODUCT_AUDIT.md).
 
 V2 supersedes this document's earlier high-level guidance where it is more

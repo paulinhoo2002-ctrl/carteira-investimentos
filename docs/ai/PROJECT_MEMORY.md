@@ -1936,3 +1936,9 @@ Em 27/08/2026, `index.html` foi encontrado totalmente sobrescrito por um fragmen
 - V398: Regressões concluídas (todos os testes passam).
 - V394: BLOCKED_ENVIRONMENT mantido.
 - Nenhuma escrita financeira real, importação ou restauração (REAL_WRITES=0, REAL_IMPORT=false, REAL_RESTORE=false).
+
+## Visual UX responsiva — contrato permanente (2026-10-18)
+
+- [`VISUAL_UX_RESPONSIVE_CONTRACT.md`](VISUAL_UX_RESPONSIVE_CONTRACT.md) é a fonte canônica de comportamento responsivo, progressive disclosure, tipografia, acessibilidade e matriz de QA; `VISUAL_CANON_V2.md` continua responsável pela linguagem visual e padrões de componente.
+- A fase visual autorizada está limitada à PR #503 e à branch `feat/legacy-slim-ui-refinement-2026-10-17`; confira o estado remoto antes de continuar. O feature freeze geral e as fronteiras financeiras permanecem ativos.
+- Ativos usa categorias recolhidas, resumo primeiro e ações contextuais; esse padrão pode orientar outras telas sem remover capacidades.

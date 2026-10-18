@@ -10,6 +10,10 @@ metadata:
 
 # Design System
 
+## Carteira LEGACY
+
+Ao trabalhar nos tokens ou componentes LEGACY, siga `docs/ai/VISUAL_UX_RESPONSIVE_CONTRACT.md`: use tokens semânticos, escala de espaçamento de 4px, pesos de interface até 700 como padrão e valide claro/escuro. A matriz de viewports, estratégia de tabelas e limites financeiros desse contrato são requisitos; não substitua o canon do produto por um sistema genérico.
+
 Token architecture, component specifications, systematic design, slide generation.
 
 ## When to Use
