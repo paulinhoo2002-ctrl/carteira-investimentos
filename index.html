@@ -33008,6 +33008,12 @@ function aporteSortControl(){
 function aporteInvestmentStats(rows=S.aportes||[]){
   const sourceRows=Array.isArray(rows)?rows:[];
   const unknownMovementCount=sourceRows.filter(row=>aporteMovementKind(row)==='desconhecido').length;
+  const investmentAssetTypes=['ação','acao','fii','etf'];
+  const unknownInvestmentCount=sourceRows.filter(row=>{
+    if(aporteMovementKind(row)!=='desconhecido') return false;
+    const type=normalizeType(row?.type||row?.asset_type||'', '').trim().toLowerCase();
+    return investmentAssetTypes.includes(type);
+  }).length;
   const included=sourceRows.filter(row=>['compra','renda-fixa'].includes(aporteMovementKind(row))).map(row=>{
     const raw=row.totalValue??row.value;
     const hasRaw=row.totalValue!==undefined && row.totalValue!==null || row.value!==undefined && row.value!==null;
@@ -33041,10 +33047,10 @@ function aporteInvestmentStats(rows=S.aportes||[]){
   const months=[...monthly.values()].sort((a,b)=>a.key.localeCompare(b.key));
   const total=known.reduce((sum,item)=>sum+item.value,0);
   const latest=[...known].sort((a,b)=>(b.date?.getTime()||0)-(a.date?.getTime()||0)).slice(0,5);
-  return {rows:known,total,average:months.length?total/months.length:0,largest:Math.max(0,...known.map(item=>item.value)),months,classes:[...byClass.entries()].sort((a,b)=>b[1]-a[1]),latest,missingValueCount,unknownDateCount,unknownMovementCount};
+  return {rows:known,total,average:months.length?total/months.length:0,largest:Math.max(0,...known.map(item=>item.value)),months,classes:[...byClass.entries()].sort((a,b)=>b[1]-a[1]),latest,missingValueCount,unknownDateCount,unknownMovementCount,unknownInvestmentCount};
 }
 function aporteInvestmentMetric(stats,key){
-  const uncertain=stats.missingValueCount>0 || stats.unknownMovementCount>0 || (key!=='total' && stats.unknownDateCount>0);
+  const uncertain=stats.missingValueCount>0 || stats.unknownInvestmentCount>0 || (key!=='total' && stats.unknownDateCount>0);
   if(uncertain) return stats.rows.length ? 'Parcial' : 'Indisponível';
   if(key==='months') return String(stats.months.length);
   return fmt(stats[key]);
@@ -33098,7 +33104,7 @@ function apTab(){
     <div class="aporte-executive-heading"><div class="st">Resumo de aportes em investimentos</div><div class="mu">Compras e aplicações de renda fixa; vendas e proventos ficam fora.</div></div>
     ${summaryCards}
   </section>`:'';
-  const helpText=S.aportes.length?`<div class="mu" style="font-size:11px;margin:-2px 0 12px;color:#7489a4">Capital investido = compras - vendas. Não representa o valor de venda atual da carteira.</div>`:'';
+  const helpText=S.aportes.length?`<div class="mu" style="font-size:11px;margin:-2px 0 12px;color:#7489a4">Total de investimento registrado = compras + aplicações de renda fixa. Vendas e proventos ficam fora; não representa o valor atual da carteira.${contributionStats.unknownInvestmentCount?' Movimentações de ativos sem tipo de operação classificado podem deixar os totais parciais.':''}</div>`:'';
   const reserveSummary=reserve.total>0?`<div class="cards" style="margin:0 0 12px">
     <div class="card"><div class="cl">Reserva bolsa</div><div class="cv" style="color:#60a5fa">${fmt(reserve.bolsa)}</div><div class="cs">Oportunidade</div></div>
     <div class="card"><div class="cl">Reserva pessoal</div><div class="cv" style="color:#34d399">${fmt(reserve.pessoal)}</div><div class="cs">Uso particular</div></div>

@@ -131,12 +131,12 @@ test('investment summary keeps confirmed zero as numeric zero when complete', ()
   assert.equal(context.aporteInvestmentMetric(stats, 'total'), 'BRL 0.00');
 });
 
-test('unknown movement classification prevents a confirmed-zero contribution summary', () => {
+test('unrelated unclassified transfer does not change a confirmed-zero investment summary', () => {
   const context = createContext();
-  const stats = context.aporteInvestmentStats([{ operation: 'transferencia-nao-mapeada', totalValue: 50 }]);
+  const stats = context.aporteInvestmentStats([{ operation: 'transferencia-nao-mapeada', type: 'Transferência', totalValue: 50 }]);
 
   assert.equal(stats.unknownMovementCount, 1);
-  assert.equal(context.aporteInvestmentMetric(stats, 'total'), 'Indisponível');
+  assert.equal(context.aporteInvestmentMetric(stats, 'total'), 'BRL 0.00');
 });
 
 test('summary helper absence or failure is unavailable, never false category zeroes', () => {
@@ -204,4 +204,44 @@ test('UI labels movement scope and renders helper failure as unavailable', () =>
   assert.ok(html.includes('movimentações filtradas antes da paginação'));
   assert.ok(html.includes('resumo por tipo indisponível'));
   assert.ok(!html.includes('buys:0,sells:0,contributions:0,others:0'));
+});
+
+test('unrelated unknown movement does not make complete investment totals partial', () => {
+  const context = createContext();
+  const stats = context.aporteInvestmentStats([
+    { operation: 'compra', type: 'Ação', totalValue: 100, date: '2026-01-10' },
+    { operation: 'custom-cash-transfer', type: 'Transferência', totalValue: 50, date: '2026-01-11' }
+  ]);
+
+  assert.equal(stats.unknownMovementCount, 1);
+  assert.equal(stats.unknownInvestmentCount, 0);
+  assert.equal(context.aporteInvestmentMetric(stats, 'total'), 'BRL 100.00');
+});
+
+test('unclassified movement for an investment asset makes contribution totals explicitly partial', () => {
+  const context = createContext();
+  const stats = context.aporteInvestmentStats([
+    { operation: 'compra', type: 'Ação', totalValue: 100, date: '2026-01-10' },
+    { type: 'Ação', ticker: 'SYN1', qty: 1, price: 25, date: '2026-01-11' }
+  ]);
+
+  assert.equal(stats.unknownInvestmentCount, 1);
+  assert.equal(context.aporteInvestmentMetric(stats, 'total'), 'Parcial');
+  const unknownOnly = context.aporteInvestmentStats([{ type: 'ETF', ticker: 'SYN2', qty: 1, price: 25 }]);
+  assert.equal(context.aporteInvestmentMetric(unknownOnly, 'total'), 'Indisponível');
+  assert.ok(html.includes('Movimentações de ativos sem tipo de operação classificado podem deixar os totais parciais'));
+});
+
+test('legacy stock, FII and ETF rows without an operation remain unknown instead of inferred buys', () => {
+  const context = createContext();
+  for (const type of ['Ação', 'FII', 'ETF']) {
+    assert.equal(context.aporteMovementKind({ type, ticker: 'SYN1', qty: 1, price: 10 }), 'desconhecido');
+  }
+});
+
+test('help text matches the purchases plus fixed-income applications contract', () => {
+  assert.ok(html.includes('Total de investimento registrado = compras + aplicações de renda fixa'));
+  assert.ok(html.includes('Vendas e proventos ficam fora'));
+  assert.ok(html.includes('Movimentações de ativos sem tipo de operação classificado podem deixar os totais parciais'));
+  assert.ok(!html.includes('Capital investido = compras - vendas.'));
 });
