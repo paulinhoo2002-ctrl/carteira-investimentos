@@ -1,5 +1,16 @@
 # Carteira LEGACY — memória operacional durável
 
+## Roteamento permanente de Skills — 2026-10-17
+
+Este registro atual substitui afirmações anteriores sobre roteadores; blocos
+abaixo preservam histórico e não definem a seleção vigente.
+
+- `SKILL_ROUTER=MANDATORY`; fonte canônica: `.agents/SKILL_ROUTER.md`.
+- `SKILL_DISCOVERY=PROJECT_LOCAL_FIRST`: o seletor enumera `.agents/skills/*/SKILL.md`; Skills adicionais só são elegíveis quando o runtime informa disponibilidade. O inventário versionado é portátil; overlays do host são apenas observações locais.
+- `CHAT_MEMORY_REQUIRED=NO` e `MODEL_SPECIFIC_ROUTING=NO` para classificar e selecionar Skills. Agentes novos usam os contratos e exemplos sem histórico; modelo/agente são decisões independentes. A memória canônica continua necessária para continuidade do projeto conforme `AGENTS.md`.
+- `docs/ai/SKILLS_ROUTING.md` e `docs/ai/SKILL_ROUTER.md` são pontes de compatibilidade. Categorias mínimas e regras estão no roteador; rotas executáveis estão em `docs/ai/skills-routing.json` e `scripts/qa/select-skills.js`.
+- Nenhuma Skill concede autorização. `UNKNOWN != ZERO`, proteção de dados, identidade do projeto e gates humanos prevalecem.
+
 ## Identidade do projeto
 
 - Projeto: Carteira de Investimentos LEGACY.

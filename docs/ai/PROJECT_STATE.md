@@ -1,7 +1,9 @@
 # Estado atual da Carteira LEGACY
 
+> Nesta branch de governança, o roteador canônico de Skills está em `.agents/SKILL_ROUTER.md`; o seletor usa o inventário local versionado e não depende de chat ou modelo. Esta proposta ainda não está integrada em `main`.
+
 DATE=2026-10-18
-MAIN_HEAD=1abb3280502966d3fb5cae4b32cb9dc1a7d5db3b
+MAIN_HEAD=c49175efb18fac247840e08c8b57339bc8f09afd
 VISUAL_PHASE=ACTIVE_FOR_PR_503
 VISUAL_CONTRACT=docs/ai/VISUAL_UX_RESPONSIVE_CONTRACT.md
 PRODUCTION=READY

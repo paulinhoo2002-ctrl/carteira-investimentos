@@ -1,38 +1,49 @@
 {
-  "version": 1,
+  "version": 2,
   "processContract": ["Superpowers-first", "Ponytail-full", "Caveman"],
-  "modelRouting": {
-    "defaultCodex": "GPT-6 Luna Medium",
-    "codexEscalation": "GPT-6 Sol Medium",
-    "hermesCodingCandidates": ["Poolside Laguna XS 2.1", "GLM-5.3"],
-    "effortByTask": {
-      "financial": "HIGH",
-      "firebase": "HIGH",
-      "ui": "MEDIUM",
-      "browser": "MEDIUM",
-      "backup": "HIGH",
-      "security": "HIGH",
-      "documentation": "LOW",
-      "release": "MEDIUM",
-      "skillDiscovery": "LOW"
-    },
-    "escalationTriggers": ["protected semantics", "security architecture", "uncertain root cause after three reasoned attempts"],
-    "availabilityRule": "Verify in the active runtime; catalog presence is not endpoint availability"
-  },
+  "runtimeSkills": [
+    "superpowers:using-superpowers",
+    "superpowers:systematic-debugging",
+    "superpowers:verification-before-completion",
+    "firebase:firebase-security-rules-auditor",
+    "browser-harness:browser-harness",
+    "find-skills"
+  ],
   "runtimeAliases": {
+    "using-superpowers": ["superpowers:using-superpowers"],
+    "systematic-debugging": ["superpowers:systematic-debugging"],
+    "verification-before-completion": ["superpowers:verification-before-completion"],
     "firebase-security-rules-auditor": ["firebase:firebase-security-rules-auditor"],
+    "find-skills": ["find-skills"],
     "browser-harness": ["browser-harness:browser-harness"]
   },
+  "taskAliases": {
+    "financial": "FINANCE_CORE",
+    "firebase": "PRIVACY_SECURITY",
+    "ui": "UI_UX",
+    "browser": "BROWSER_QA",
+    "backup": "BACKUP_RECOVERY",
+    "security": "PRIVACY_SECURITY",
+    "documentation": "GOVERNANCE",
+    "release": "RELEASE",
+    "skillDiscovery": "SKILL_DISCOVERY"
+  },
   "routes": {
-    "financial": { "required": ["doubt-driven-development"], "optional": { "officialSource": "source-driven-development" } },
-    "firebase": { "required": ["firebase-security-rules-auditor"], "optional": { "financialBoundary": "doubt-driven-development" } },
-    "ui": { "required": ["interface-design"], "optional": { "accessibility": "web-quality-audit" } },
-    "browser": { "alternatives": [["browser-harness", "playwright"]], "optional": { "domDiagnostics": "browser-testing-with-devtools" } },
-    "backup": { "required": ["doubt-driven-development"], "optional": { "independentDiffReview": "caveman-review" } },
-    "security": { "required": ["firebase-security-rules-auditor"], "optional": { "officialSource": "source-driven-development" } },
-    "documentation": { "required": ["caveman-review"], "optional": { "architectureDiagram": "archify" } },
-    "release": { "required": ["verification-before-completion"], "optional": { "gitCloseout": "caveman-commit" } },
-    "skillDiscovery": { "required": ["find-skills"], "optional": {} }
+    "UI_UX": { "required": ["interface-design"], "optional": { "tokens": "design-system", "browserQA": "playwright" } },
+    "RESPONSIVE": { "required": ["interface-design", "playwright"], "optional": {} },
+    "BROWSER_QA": { "required": ["playwright"], "optional": { "devtools": "browser-testing-with-devtools" } },
+    "DESIGN_SYSTEM": { "required": ["design-system"], "optional": { "newVisualPattern": "interface-design" } },
+    "FINANCE_CORE": { "required": ["doubt-driven-development"], "optional": { "officialSource": "source-driven-development" } },
+    "FINANCIAL_RECONCILIATION": { "required": ["doubt-driven-development", "source-driven-development"], "optional": {} },
+    "IR2026": { "required": ["doubt-driven-development", "source-driven-development"], "optional": {} },
+    "PRIVACY_SECURITY": { "required": ["doubt-driven-development"], "optional": { "firestoreRules": "firebase-security-rules-auditor", "officialSource": "source-driven-development" } },
+    "RELEASE": { "required": ["caveman-review"], "optional": { "finalVerification": "verification-before-completion", "gitCloseout": "caveman-commit" } },
+    "GOVERNANCE": { "required": ["caveman-review"], "optional": { "architectureDiagram": "archify" } },
+    "ARCHITECTURE": { "required": ["doubt-driven-development"], "optional": { "architectureDiagram": "archify" } },
+    "WORKSPACE_CLEANUP": { "required": ["caveman-review"], "optional": {} },
+    "BACKUP_RECOVERY": { "required": ["doubt-driven-development", "caveman-review"], "optional": {} },
+    "PRODUCTION_INCIDENT": { "required": ["doubt-driven-development"], "optional": { "rootCause": "systematic-debugging" } },
+    "SKILL_DISCOVERY": { "required": ["find-skills"], "optional": {} }
   },
   "maxSpecialistSkills": 2,
   "authorization": "NEVER_GRANTED_BY_SELECTION"
