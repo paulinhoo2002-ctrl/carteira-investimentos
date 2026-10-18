@@ -57,13 +57,17 @@
     }).map(item=>item.row);
   };
   const summarizeTransactions=rows=>(Array.isArray(rows)?rows:[]).reduce((out,row)=>{
-    const type=typeOf(row); out.total+=1;
-    if(type.includes('compra')) out.buys+=1;
-    else if(type.includes('venda')) out.sells+=1;
-    else if(type.includes('aporte')||type.includes('entrada')) out.contributions+=1;
-    else out.others+=1;
+    const type=lower(row?.movementKind||row?.kind||row?.type||row?.operation||row?.op||row?.transactionType); out.total+=1;
+    if(type==='compra'||type==='buy') out.buys+=1;
+    else if(type==='venda'||type==='sell') out.sells+=1;
+    else if(type==='renda-fixa'||type==='renda fixa'||type==='tesouro direto') out.fixedIncomeApplications+=1;
+    else if(type==='aporte'||type==='entrada') out.contributions+=1;
+    else if(type==='provento'||type==='dividendo'||type==='dividendos'||type==='jcp'||type==='rendimento') out.dividends+=1;
+    else if(type.startsWith('reserva')) out.reserves+=1;
+    else if(type==='outro'||type==='neutro') out.others+=1;
+    else out.unknowns+=1;
     return out;
-  },{total:0,buys:0,sells:0,contributions:0,others:0});
+  },{total:0,buys:0,sells:0,fixedIncomeApplications:0,contributions:0,dividends:0,reserves:0,others:0,unknowns:0});
   const assetTransactions=(rows,identity={})=>{
     const id=text(identity.id), ticker=lower(identity.ticker), name=lower(identity.name||identity.assetName);
     return (Array.isArray(rows)?rows:[]).filter(row=>{

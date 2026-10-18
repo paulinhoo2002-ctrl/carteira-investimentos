@@ -18997,26 +18997,30 @@ function quickMovementModal(){
 }
 function aporteMovementKind(a){
   const op=String(a?.movementKind || a?.kind || a?.operation || a?.op || '').trim().toLowerCase();
-  const type=normalizeType(a?.type||a?.asset_type||'', '');
-  if(op.startsWith('reserva')) return op.includes('saida') ? 'reserva-saida' : 'reserva-entrada';
-  if(op==='outro' || op==='neutro' || type==='Outro') return 'outro';
+  const type=normalizeType(a?.type||a?.asset_type||'', '').trim().toLowerCase();
+  if(op.startsWith('reserva')) return op.includes('saida') || op.includes('saída') ? 'reserva-saida' : 'reserva-entrada';
+  if(op==='outro' || op==='neutro' || type==='outro') return 'outro';
   if(op==='provento' || op==='dividendo' || op==='dividendos' || op==='jcp' || op==='rendimento') return 'provento';
-  if(op==='renda-fixa' || type==='Renda Fixa' || type==='Tesouro Direto') return 'renda-fixa';
+  if(op==='renda-fixa' || op==='renda fixa' || op==='tesouro direto' || type==='renda fixa' || type==='tesouro direto') return 'renda-fixa';
   if(op==='venda' || op==='sell') return 'venda';
-  return 'compra';
+  if(op==='compra' || op==='buy' || op==='purchase') return 'compra';
+  if(op==='aporte' || op==='entrada') return 'aporte';
+  return 'desconhecido';
 }
 function isNeutralMovement(a){
   return aporteMovementKind(a)==='outro';
 }
 function aporteMovementLabel(a){
   const kind=aporteMovementKind(a);
+  if(kind==='compra') return 'Compra';
   if(kind==='venda') return 'Venda';
   if(kind==='provento') return 'Provento';
   if(kind==='renda-fixa') return 'Renda Fixa';
+  if(kind==='aporte') return 'Aporte';
   if(kind==='outro') return 'Outro';
   if(kind==='reserva-saida') return 'Saída';
   if(kind==='reserva-entrada') return 'Entrada';
-  return 'Compra';
+  return 'Não classificado';
 }
 function aporteMovementTone(a){
   const kind=aporteMovementKind(a);
@@ -32864,7 +32868,7 @@ function filteredAporteRows(rows=aporteExtractRows()){
   const helperSearch=globalThis.V213TransactionTrust?.searchTransactions?.(rows,q)||rows;
   const helperSearchIds=new Set(helperSearch.map(row=>row._v213Index ?? row.id));
   return rows.filter((row,index)=>{
-    if(filter!=='todos' && row.kind!==filter) return false;
+    if(filter!=='todos' && (filter==='reserva' ? !row.kind.startsWith('reserva-') : row.kind!==filter)) return false;
     if(!q) return true;
     const numberText=[row.total,row.qty,row.price]
       .map(v=>`${Number(v||0).toFixed(2)} ${fmt(Number(v||0))}`)
@@ -32994,7 +32998,7 @@ function aporteViewModeTabs(){
   return `<div class="aporte-view-tabs">${modes.map(([id,label])=>`<button class="aporte-view-tab ${S.aportesViewMode===id?'on':''}" onclick="setAportesViewMode('${id}')">${label}</button>`).join('')}</div>`;
 }
 function aporteFilterTabs(){
-  const filters=[['todos','Todos'],['compra','Compra'],['venda','Venda'],['provento','Provento'],['renda-fixa','Renda Fixa'],['outro','Outro']];
+  const filters=[['todos','Todos'],['compra','Compra'],['venda','Venda'],['provento','Provento'],['renda-fixa','Renda Fixa'],['aporte','Aporte'],['reserva','Reserva'],['outro','Outro'],['desconhecido','Não classificado']];
   return `<div class="aporte-filter-row"><span class="aporte-filter-label">Filtrar</span>${filters.map(([id,label])=>`<button class="aporte-filter-chip ${S.aportesFilter===id?'on':''}" onclick="setAportesFilter('${id}')">${label}</button>`).join('')}</div>`;
 }
 function aporteSortControl(){
@@ -33002,16 +33006,37 @@ function aporteSortControl(){
   return `<label class="aporte-sort-control"><span>Ordenar</span><select aria-label="Ordenar histórico de movimentações" onchange="setAportesSort(this.value)">${options.map(([value,label])=>`<option value="${value}" ${S.aportesSort===value?'selected':''}>${label}</option>`).join('')}</select></label>`;
 }
 function aporteInvestmentStats(rows=S.aportes||[]){
-  const included=rows.filter(row=>['compra','renda-fixa'].includes(aporteMovementKind(row))).map(row=>{
-    const qty=Math.abs(Number(row.qty)||0),price=Number(row.price)||0;
-    const value=Math.abs(Number(row.totalValue??row.value??(qty*price))||0);
+  const sourceRows=Array.isArray(rows)?rows:[];
+  const unknownMovementCount=sourceRows.filter(row=>aporteMovementKind(row)==='desconhecido').length;
+  const investmentAssetTypes=['ação','acao','fii','etf'];
+  const unknownInvestmentCount=sourceRows.filter(row=>{
+    if(aporteMovementKind(row)!=='desconhecido') return false;
+    const type=normalizeType(row?.type||row?.asset_type||'', '').trim().toLowerCase();
+    return investmentAssetTypes.includes(type);
+  }).length;
+  const included=sourceRows.filter(row=>['compra','renda-fixa'].includes(aporteMovementKind(row))).map(row=>{
+    const raw=row.totalValue??row.value;
+    const hasRaw=row.totalValue!==undefined && row.totalValue!==null || row.value!==undefined && row.value!==null;
+    let value=null;
+    if(hasRaw){
+      const parsed=Number(raw);
+      if(String(raw).trim()!=='' && Number.isFinite(parsed)) value=Math.abs(parsed);
+    }else{
+      const hasQuantity=row.qty!==undefined && row.qty!==null && String(row.qty).trim()!=='';
+      const hasPrice=row.price!==undefined && row.price!==null && String(row.price).trim()!=='';
+      const quantity=Number(row.qty), price=Number(row.price);
+      if(hasQuantity && hasPrice && Number.isFinite(quantity) && Number.isFinite(price)) value=Math.abs(quantity*price);
+    }
     const date=parseAnyDate(row.date||row.rf_application_date||row.fixed_application_date);
     const type=normalizeType(row.type||row.asset_type||'',aporteMovementKind(row)==='renda-fixa'?'Renda Fixa':'Ação');
     return {row,value,date,type,label:aporteMovementLabel(row)};
-  }).filter(item=>item.value>0);
+  });
+  const known=included.filter(item=>item.value!==null);
+  const missingValueCount=included.length-known.length;
+  const unknownDateCount=known.filter(item=>!item.date).length;
   const monthly=new Map();
   const byClass=new Map();
-  included.forEach(item=>{
+  known.forEach(item=>{
     if(item.date){
       const key=`${item.date.getFullYear()}-${String(item.date.getMonth()+1).padStart(2,'0')}`;
       const current=monthly.get(key)||{key,label:item.date.toLocaleDateString('pt-BR',{month:'short',year:'numeric'}),value:0};
@@ -33020,9 +33045,29 @@ function aporteInvestmentStats(rows=S.aportes||[]){
     byClass.set(item.type,(byClass.get(item.type)||0)+item.value);
   });
   const months=[...monthly.values()].sort((a,b)=>a.key.localeCompare(b.key));
-  const total=included.reduce((sum,item)=>sum+item.value,0);
-  const latest=[...included].sort((a,b)=>(b.date?.getTime()||0)-(a.date?.getTime()||0)).slice(0,5);
-  return {rows:included,total,average:months.length?total/months.length:0,largest:Math.max(0,...included.map(item=>item.value)),months,classes:[...byClass.entries()].sort((a,b)=>b[1]-a[1]),latest};
+  const total=known.reduce((sum,item)=>sum+item.value,0);
+  const latest=[...known].sort((a,b)=>(b.date?.getTime()||0)-(a.date?.getTime()||0)).slice(0,5);
+  return {rows:known,total,average:months.length?total/months.length:0,largest:Math.max(0,...known.map(item=>item.value)),months,classes:[...byClass.entries()].sort((a,b)=>b[1]-a[1]),latest,missingValueCount,unknownDateCount,unknownMovementCount,unknownInvestmentCount};
+}
+function aporteInvestmentMetric(stats,key){
+  const uncertain=stats.missingValueCount>0 || stats.unknownInvestmentCount>0 || (key!=='total' && stats.unknownDateCount>0);
+  if(uncertain) return stats.rows.length ? 'Parcial' : 'Indisponível';
+  if(key==='months') return String(stats.months.length);
+  return fmt(stats[key]);
+}
+function summarizeAporteMovements(rows){
+  const helper=globalThis.V213TransactionTrust?.summarizeTransactions;
+  if(typeof helper!=='function') return null;
+  try{
+    const summary=helper(rows.map(row=>({...row,movementKind:row.kind})));
+    const buckets=['buys','sells','fixedIncomeApplications','contributions','dividends','reserves','others','unknowns'];
+    if(!summary || summary.total!==rows.length || buckets.some(key=>!Number.isInteger(summary[key])||summary[key]<0) || buckets.reduce((sum,key)=>sum+summary[key],0)!==rows.length) return null;
+    return summary;
+  }catch(_){ return null; }
+}
+function aporteMovementSummaryText(summary,rowCount){
+  if(!summary) return `${rowCount} movimentações filtradas antes da paginação · resumo por tipo indisponível`;
+  return `${summary.total} movimentações filtradas antes da paginação · ${summary.buys} compras · ${summary.fixedIncomeApplications} aplicações de renda fixa · ${summary.sells} vendas · ${summary.contributions} aportes · ${summary.dividends} proventos · ${summary.reserves} movimentos de reserva · ${summary.others} outros · ${summary.unknowns} não classificados`;
 }
 function apTab(){
   const isReserveRow=a=>{
@@ -33050,16 +33095,16 @@ function apTab(){
   const reserve=reserveStats();
   const contributionStats=aporteInvestmentStats(S.aportes);
   const summaryCards=S.aportes.length?`<div class="aporte-contribution-grid">
-    <div class="card"><div class="cl">Total aportado</div><div class="cv" style="color:#34d399">${fmt(contributionStats.total)}</div><div class="cs">Compras e renda fixa</div></div>
-    <div class="card"><div class="cl">Média mensal</div><div class="cv" style="color:#60a5fa">${fmt(contributionStats.average)}</div><div class="cs">Meses com aporte</div></div>
-    <div class="card"><div class="cl">Maior aporte</div><div class="cv" style="color:#a78bfa">${fmt(contributionStats.largest)}</div><div class="cs">Maior entrada registrada</div></div>
-    <div class="card"><div class="cl">Meses com aportes</div><div class="cv" style="color:#e2eaf6">${contributionStats.months.length}</div><div class="cs">Histórico disponível</div></div>
+    <div class="card"><div class="cl">Total investido em compras e aplicações</div><div class="cv" style="color:#34d399">${aporteInvestmentMetric(contributionStats,'total')}</div><div class="cs">Vendas e proventos ficam fora</div></div>
+    <div class="card"><div class="cl">Média mensal</div><div class="cv" style="color:#60a5fa">${aporteInvestmentMetric(contributionStats,'average')}</div><div class="cs">Meses com aporte</div></div>
+    <div class="card"><div class="cl">Maior entrada</div><div class="cv" style="color:#a78bfa">${aporteInvestmentMetric(contributionStats,'largest')}</div><div class="cs">Compra ou aplicação de renda fixa</div></div>
+    <div class="card"><div class="cl">Meses com aportes</div><div class="cv" style="color:#e2eaf6">${aporteInvestmentMetric(contributionStats,'months')}</div><div class="cs">${contributionStats.unknownDateCount?'Há datas sem informação':''}</div></div>
   </div>`:'';
   const executiveSummary=S.aportes.length?`<section class="aporte-executive-summary" aria-label="Resumo financeiro dos aportes">
-    <div class="aporte-executive-heading"><div class="st">Resumo dos aportes</div><div class="mu">Leitura rápida dos aportes registrados</div></div>
+    <div class="aporte-executive-heading"><div class="st">Resumo de aportes em investimentos</div><div class="mu">Compras e aplicações de renda fixa; vendas e proventos ficam fora.</div></div>
     ${summaryCards}
   </section>`:'';
-  const helpText=S.aportes.length?`<div class="mu" style="font-size:11px;margin:-2px 0 12px;color:#7489a4">Capital investido = compras - vendas. Não representa o valor de venda atual da carteira.</div>`:'';
+  const helpText=S.aportes.length?`<div class="mu" style="font-size:11px;margin:-2px 0 12px;color:#7489a4">Total de investimento registrado = compras + aplicações de renda fixa. Vendas e proventos ficam fora; não representa o valor atual da carteira.${contributionStats.unknownInvestmentCount?' Movimentações de ativos sem tipo de operação classificado podem deixar os totais parciais.':''}</div>`:'';
   const reserveSummary=reserve.total>0?`<div class="cards" style="margin:0 0 12px">
     <div class="card"><div class="cl">Reserva bolsa</div><div class="cv" style="color:#60a5fa">${fmt(reserve.bolsa)}</div><div class="cs">Oportunidade</div></div>
     <div class="card"><div class="cl">Reserva pessoal</div><div class="cv" style="color:#34d399">${fmt(reserve.pessoal)}</div><div class="cs">Uso particular</div></div>
@@ -33198,7 +33243,7 @@ function apTab(){
   </details>`:'';
   const allRows=aporteExtractRows();
   const extractRows=sortedAporteRows(filteredAporteRows(allRows));
-  const movementSummary=globalThis.V213TransactionTrust?.summarizeTransactions?.(extractRows)||{total:extractRows.length,buys:0,sells:0,contributions:0,others:0};
+  const movementSummary=summarizeAporteMovements(extractRows);
   const mode=['extrato','ativo','categorias','resumo'].includes(S.aportesViewMode) ? S.aportesViewMode : 'extrato';
   S.aportesViewMode=mode;
   const categoriesContent=S.aportes.length
@@ -33224,7 +33269,7 @@ function apTab(){
           <input id="aporte-premium-search" value="${esc(S.apSearch||'')}" oninput="setAporteSearch(this.value)" placeholder="Buscar ticker, nome, tipo, setor, data, observação ou valor" aria-label="Buscar aportes por ticker, nome, tipo, setor, data, observação ou valor" spellcheck="false" autocomplete="off">
           ${q?`<button class="btn bgh" style="padding:4px 8px;font-size:12px" onclick="clearAporteSearch()">Limpar</button>`:''}
         </div>
-        <div class="aporte-trust-summary" aria-label="Resumo das movimentações">${movementSummary.total} movimentações · ${movementSummary.buys} compras · ${movementSummary.sells} vendas · ${movementSummary.contributions} aportes</div>
+        <div class="aporte-trust-summary" aria-label="Resumo das movimentações filtradas">${esc(aporteMovementSummaryText(movementSummary,extractRows.length))}</div>
       </div>`;
   const importsPanel=`<details class="card aportes-imports-panel">
           <summary>Importar movimentações</summary>
@@ -37953,7 +37998,7 @@ function setAportesViewMode(mode){
   render();
 }
 function setAportesFilter(filter){
-  S.aportesFilter=['todos','compra','venda','provento','renda-fixa','outro'].includes(filter) ? filter : 'todos';
+  S.aportesFilter=['todos','compra','venda','provento','renda-fixa','aporte','reserva','outro','desconhecido'].includes(filter) ? filter : 'todos';
   S.aportesPage=1;
   render();
 }
