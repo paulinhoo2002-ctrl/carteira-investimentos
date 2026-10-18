@@ -108,16 +108,22 @@ for (const viewport of viewports) {
 
       // Ativos: o resumo inicia fechado e as ações vivem no menu contextual.
       await page.evaluate(() => go('ativos'));
-      const category = page.locator('.assets-premium-shell details.ag').first();
+      const category = page.locator('.assets-premium-shell details.ag').filter({
+        has: page.locator('.asset-mobile-cards details.asset-premium-card'),
+      }).first();
+      await category.waitFor({ state: 'visible', timeout: 5000 });
       const categorySummary = category.locator(':scope > summary');
       await categorySummary.waitFor({ state: 'visible', timeout: 5000 });
       assert.equal(await category.getAttribute('open'), null, `categoria deveria iniciar recolhida em ${viewport.label}`);
       await categorySummary.click();
-      await page.waitForFunction(() => document.querySelector('.assets-premium-shell details.ag')?.open === true);
+      await page.waitForFunction(categoryElement => categoryElement?.open === true, await category.elementHandle());
       if (viewport.width <= 767) {
-        const assetDetail = category.locator('.asset-premium-card').first();
-        await assetDetail.locator('summary').click();
-        await page.waitForFunction(() => document.querySelector('.assets-premium-shell details.ag[open] .asset-premium-card[open]')?.open === true);
+        const assetDetail = category.locator('.asset-mobile-cards details.asset-premium-card:visible').first();
+        await assetDetail.waitFor({ state: 'visible', timeout: 5000 });
+        const assetSummary = assetDetail.locator(':scope > summary');
+        await assetSummary.waitFor({ state: 'visible', timeout: 5000 });
+        await assetSummary.click();
+        await page.waitForFunction(card => card?.open === true, await assetDetail.elementHandle());
       }
 
       const actionTrigger = page.locator('.assets-premium-shell .asset-action-menu-trigger:visible').first();
