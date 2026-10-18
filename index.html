@@ -31250,6 +31250,30 @@ function rendaFixaTab(){
 
     const eventCards=rfEventHistoryCards(data.tableRows);
 
+    const responsiveCards=trustRows.length ? trustRows.map(row=>`
+      <details class="rf-responsive-card">
+        <summary aria-label="Detalhes de ${esc(row.name||row.ticker)}">
+          <span class="rf-responsive-card-heading"><strong>${esc(row.ticker)}</strong><span>${esc(row.category)}${row.issuer?` · ${esc(row.issuer)}`:''}</span></span>
+          <span class="rf-responsive-card-summary-values">
+            <span><small>Atual</small><strong>${row.explicit===false?'—':fmt(row.current)}</strong></span>
+            <span><small>Resultado total</small><strong>${Number.isFinite(row.resultWithEvents)?fmt(row.resultWithEvents):'—'}</strong></span>
+            <span><small>Rentab.</small><strong>${Number.isFinite(row.pct)?fmtP(row.pct):'—'}</strong></span>
+            <span><small>Vencimento</small><strong>${row.due?row.due.toLocaleDateString('pt-BR'):'—'}</strong></span>
+          </span>
+          <span class="rf-responsive-card-disclosure" aria-hidden="true">＋</span>
+        </summary>
+        <dl class="rf-responsive-card-details">
+          <div><dt>Valor aplicado</dt><dd>${fmt(row.applied)}</dd></div>
+          <div><dt>Rendimentos recebidos</dt><dd>${fmt(row.receivedNet)}</dd></div>
+          <div><dt>Resultado de mercado</dt><dd>${row.explicit===false?'—':fmt(row.profit)}</dd></div>
+          <div><dt>Rentabilidade</dt><dd>${Number.isFinite(row.pct)?fmtP(row.pct):'—'}</dd></div>
+          <div><dt>Taxa</dt><dd>${esc(row.rate||'—')}</dd></div>
+          <div><dt>Vencimento</dt><dd>${row.due?row.due.toLocaleDateString('pt-BR'):'—'}</dd></div>
+          <div><dt>Resultado total</dt><dd>${Number.isFinite(row.resultWithEvents)?fmt(row.resultWithEvents):'—'}</dd></div>
+          <div><dt>Situação</dt><dd>${esc(row.issues.length?row.issues[0].label:'OK')}</dd></div>
+        </dl>
+      </details>`).join('') : '<div class="rf-empty">Nenhum título cadastrado.</div>';
+
     const tableRows=trustRows.length ? trustRows.map(row=>`
       <tr>
         <td class="rf-strong">${esc(row.ticker)}</td>
@@ -31377,7 +31401,7 @@ function rendaFixaTab(){
     </div>
     </details>
 
-    <details class="sec ds-panel ds-panel--readonly" style="margin-top:2px">
+    <details class="sec ds-panel ds-panel--readonly" data-testid="rf-position-detail" style="margin-top:2px">
       <summary>
         <div>
           <div class="sec-title">Detalhamento dos títulos</div>
@@ -31386,6 +31410,7 @@ function rendaFixaTab(){
         <div class="sec-meta">${data.tableRows.length} títulos · clique para abrir</div>
       </summary>
       <div class="sec-body">
+        <div class="rf-responsive-cards" aria-label="Detalhamento dos títulos de renda fixa">${responsiveCards}</div>
         <div class="rf-table-wrap">
           <table class="rf-table">
             <thead>
@@ -38861,6 +38886,29 @@ html[data-theme="light"] .div-type-badge.jcp{color:#8a5a00}
 html[data-theme="light"] .div-type-badge.renda-fixa{color:#6b3fa0}
 html[data-theme="light"] .div-rf-money-item span{color:#334155}
 .assets-premium-shell .ag-k{font-size:12px;white-space:normal;overflow:visible;text-overflow:clip}
+.rf-responsive-cards{display:none}
+.rf-responsive-card{min-width:0;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+.rf-responsive-card>summary{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;min-height:44px;padding:12px;cursor:pointer;list-style:none;color:var(--text)}
+.rf-responsive-card>summary::-webkit-details-marker{display:none}
+.rf-responsive-card>summary:focus-visible{outline:2px solid var(--focus,var(--accent));outline-offset:2px}
+.rf-responsive-card-heading{display:grid;gap:3px;min-width:0}
+.rf-responsive-card-heading strong{font-size:14px;overflow-wrap:anywhere}
+.rf-responsive-card-heading span{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.rf-responsive-card-summary-values{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;min-width:0}
+.rf-responsive-card-summary-values>span{display:grid;gap:3px;min-width:0}
+.rf-responsive-card-summary-values small{font-size:12px;color:var(--muted)}
+.rf-responsive-card-summary-values strong{font-size:13px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.rf-responsive-card-disclosure{grid-column:2;grid-row:1;color:var(--muted);font-size:18px;line-height:1}
+.rf-responsive-card[open] .rf-responsive-card-disclosure{transform:rotate(45deg)}
+.rf-responsive-card-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0;padding:0 12px 12px}
+.rf-responsive-card-details>div{display:grid;gap:3px;min-width:0}
+.rf-responsive-card-details dt{font-size:12px;color:var(--muted)}
+.rf-responsive-card-details dd{margin:0;color:var(--text);font-size:13px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+@media(max-width:1024px){
+  .premium-rf-page .rf-responsive-cards{display:grid;gap:8px}
+  .premium-rf-page .rf-table-wrap{display:none}
+}
+@media(max-width:420px){.rf-responsive-card-summary-values{grid-template-columns:repeat(2,minmax(0,1fr))}.rf-responsive-card-details{grid-template-columns:minmax(0,1fr)}}
 </style>
 <script>
 window.addEventListener('v262:diagnostics-ready',()=>{
