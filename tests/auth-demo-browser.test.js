@@ -20,9 +20,9 @@ const fs = require('fs');
 const PORT = Number(process.env.AUTH_DEMO_QA_PORT || 4187);
 const BASE = `http://127.0.0.1:${PORT}`;
 const SHOTS = path.join(__dirname, '..', '.qa-state', 'auth-demo-browser');
-const AXE = path.join(__dirname, '..', 'node_modules', 'axe-core', 'axe.min.js');
+const AXE = require.resolve('axe-core/axe.min.js');
 const VIEWPORTS = [[390, 844], [768, 1024], [1366, 768], [1920, 1080]];
-const DEMO_ROUTES = ['dashboard', 'patrimonio', 'ativos', 'renda-fixa', 'dividendos', 'rentabilidade', 'irpf'];
+const DEMO_ROUTES = ['dashboard', 'ativos', 'aportes', 'renda-fixa', 'dividendos', 'rentabilidade', 'ajudar', 'metas', 'relatorios', 'irpf', 'settings'];
 // Environmental SDK/network noise (CDN load, auth-domain mismatch on localhost)
 // — filtered with justification; anything else counts as a fatal app error.
 const ENV_NOISE = /firebase|googleapis|gstatic|Failed to load resource|net::|ERR_|unsafe-inline|Content Security/i;
@@ -87,6 +87,14 @@ async function runAxe(label) {
   return { critical: bad.filter((v) => v.impact === 'critical').length, serious: bad.filter((v) => v.impact === 'serious').length, all: bad };
 }
 
+async function revealDemoAsset(ticker) {
+  const category = page.locator('details.accordion-category').filter({
+    has: page.locator('.asset-name', { hasText: ticker }),
+  });
+  await category.locator(':scope > summary.accordion-header').click();
+  await page.locator('.assets-table .asset-name').filter({ hasText: ticker }).waitFor({ state: 'visible' });
+}
+
 async function setTheme(theme) { await page.evaluate((t) => { try { applyTheme(t); } catch (e) { /* keep */ } }, theme); }
 
 before(async () => {
@@ -145,7 +153,7 @@ test('P13: fresh boot never flashes portfolio before the gate (REAL_DATA_FLASH_B
 
 // ===== P6/P7/P14 DEMO routes + IRPF synthetic + network audit =====
 
-test('P6/P7: DEMO renders all 7 routes with badge, synthetic data, synthetic IRPF, zero real portfolio requests', async () => {
+test('P6/P7: DEMO renders all 11 required routes with badge, synthetic data, synthetic IRPF, zero real portfolio requests', async () => {
   await freshPage([1366, 768]);
   await page.evaluate(() => { FB.accountMode = undefined; enterDemoMode(); });
   await page.waitForFunction(() => {
@@ -155,12 +163,13 @@ test('P6/P7: DEMO renders all 7 routes with badge, synthetic data, synthetic IRP
   for (const route of DEMO_ROUTES) {
     await page.evaluate((r) => { go(r); }, route);
     await sleep(250);
-    const text = await bodyText();
     const badge = await page.evaluate(() => {
       const el = document.getElementById('auth-demo-badge');
       return !!el && (el.textContent || '').includes('Modo demonstração') && el.getBoundingClientRect().width > 0;
     });
     assert.ok(badge, `badge missing on route ${route}`);
+    if (route === 'ativos') await revealDemoAsset('DEMO3');
+    const text = await bodyText();
     if (route === 'dashboard' || route === 'ativos') {
       assert.ok(text.includes('DEMO'), `synthetic tickers missing on ${route}`);
     }
@@ -191,16 +200,18 @@ test('P8: Restaurar demonstração resets to deterministic fixture with no Fires
     S.assets.push({ id: 99, ticker: 'DEMOX', type: 'Ação', qty: 1, avg_price: 1, current_price: 1 });
     go('ativos');
   });
+  await revealDemoAsset('DEMOX');
   await page.waitForFunction(() => document.body.innerText.includes('DEMOX'));
   const before = firestoreRequests;
-  await page.click('#auth-demo-badge button');
+  await page.getByRole('button', { name: 'Restaurar demonstração', exact: true }).click();
   await sleep(300);
-  const text = await bodyText();
-  assert.ok(!text.includes('DEMOX'), 'mutation survived reset');
   const count = await page.evaluate(() => S.assets.length);
   assert.strictEqual(count, 9, 'fixture default asset count');
   const stillDemo = await page.evaluate(() => S.assets.some((a) => a && a.ticker === 'DEMOX'));
   assert.ok(!stillDemo, 'DEMOX still in state after reset');
+  await page.evaluate(() => go('ativos'));
+  await revealDemoAsset('DEMO3');
+  assert.ok(!(await bodyText()).includes('DEMOX'), 'mutation remained visible after reset');
   assert.strictEqual(firestoreRequests - before, 0, 'reset caused Firestore requests');
 });
 
@@ -295,6 +306,7 @@ test('P19: Axe critical=0 serious=0 on LOGIN/AUTH_LOADING/DEMO dashboard/DEMO IR
       const total = res.critical + res.serious;
       if (total > worst.critical + worst.serious) { worst.critical = res.critical; worst.serious = res.serious; worst.where = `${stateName}:${theme}`; }
       assert.ok(res.critical === 0, `axe critical on ${stateName}:${theme}: ` + res.all.map((v) => v.id + ':' + v.impact).slice(0, 5).join(','));
+      assert.ok(res.serious === 0, `axe serious on ${stateName}:${theme}: ` + res.all.filter((v) => v.impact === 'serious').map((v) => `${v.id}:${v.nodes.map((n) => `${n.target.join(' ')} ${n.failureSummary}`).join('; ')}`).slice(0, 5).join(' | '));
     }
   }
   assert.strictEqual(worst.critical, 0, 'axe critical: ' + worst.where);
