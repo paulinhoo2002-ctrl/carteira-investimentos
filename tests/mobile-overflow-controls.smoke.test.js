@@ -106,95 +106,80 @@ for (const viewport of viewports) {
         `conteúdo de Revisão não renderizado em ${viewport.label}`);
       assert.equal(await pageOverflow(), 0, `pageOverflow em dividendos ${viewport.label}`);
 
-      // Ativos: acoes (Comprar/Vender/Mais e Movimentar/Resgatar) visiveis e sem sobreposicao
+      // Ativos: o resumo inicia fechado e as ações vivem no menu contextual.
       await page.evaluate(() => go('ativos'));
-      await page.waitForSelector('.ag', { state: 'visible', timeout: 5000 });
-      await page.locator('.ag').first().locator(':scope > summary').click();
-      await page.waitForTimeout(150);
-      const ativ = await page.evaluate(() => {
-        const vw = window.innerWidth;
-        const visible = element => {
-          const box = element.getBoundingClientRect();
-          const style = getComputedStyle(element);
-          return style.display !== 'none' && style.visibility !== 'hidden' && box.width > 0 && box.height > 0;
-        };
-        const mobile = vw <= 767;
-        const openGroup = document.querySelector('.ag[open]');
-        if (mobile) {
-          const cards = [...(openGroup?.querySelectorAll(':scope > .ag-body .asset-premium-card') || [])].filter(visible);
-          return {
-            mobile: true,
-            cards: cards.length,
-            actions: cards.slice(0, 1).map(card => [...card.querySelectorAll('.asset-premium-card-actions button')].filter(visible).map(button => {
-              const r = button.getBoundingClientRect();
-              return { text: button.textContent.trim(), left: r.left, right: r.right, height: r.height, fullyInViewport: r.left >= -1 && r.right <= vw + 1 };
-            })),
-            pageWidth: Math.max(document.scrollingElement.scrollWidth, document.body?.scrollWidth || 0),
-          };
-        }
-        const tables = [...document.querySelectorAll('.ag[open] table')].filter(table => visible(table) && table.querySelector('tbody tr')).map(table => {
-          const firstRow = table.querySelector('tbody tr');
-          const actions = firstRow.querySelector('.asset-actions');
-          const buttons = [...actions.querySelectorAll('button')].filter(visible).map(btn => {
-            const r = btn.getBoundingClientRect();
-            const text = btn.textContent.trim();
-            return { text, accessibleName: btn.getAttribute('aria-label') || text, left: r.left, right: r.right, top: r.top, bottom: r.bottom, height: r.height, fullyInViewport: r.left >= -1 && r.right <= vw + 1 };
-          });
-          let overlap = false;
-          for (let i = 0; i < buttons.length; i++) {
-            for (let j = i + 1; j < buttons.length; j++) {
-              const a = buttons[i], b = buttons[j];
-              const xOverlap = a.left < b.right && b.left < a.right;
-              const yOverlap = a.top < b.bottom && b.top < a.bottom;
-              if (xOverlap && yOverlap) overlap = true;
-            }
-          }
-          const scrollContainer = table.closest('.assets-table-wrap') || table;
-          const internallyScrollable = scrollContainer.scrollWidth > scrollContainer.clientWidth + 1;
-          const originalScrollLeft = scrollContainer.scrollLeft;
-          let actionsReachableWithInternalScroll = buttons.every(b => b.fullyInViewport);
-          if (internallyScrollable) {
-            scrollContainer.scrollLeft = scrollContainer.scrollWidth - scrollContainer.clientWidth;
-            actionsReachableWithInternalScroll = [...actions.querySelectorAll('button')]
-              .filter(visible)
-              .every(button => {
-                const rect = button.getBoundingClientRect();
-                const wrapRect = scrollContainer.getBoundingClientRect();
-                return rect.left >= wrapRect.left - 1 && rect.right <= wrapRect.right + 1;
-              });
-            scrollContainer.scrollLeft = originalScrollLeft;
-          }
-          return {
-            cls: `${scrollContainer.className} ${table.className}`,
-            buttons,
-            buttonsOverlap: overlap,
-            actionsVisible: buttons.every(b => b.fullyInViewport),
-            internallyScrollable,
-            actionsReachableWithInternalScroll,
-          };
-        });
-        return { mobile: false, tables, anyTable: tables.length > 0 };
+      const category = page.locator('.assets-premium-shell details.ag').filter({
+        has: page.locator('.asset-mobile-cards details.asset-premium-card'),
+      }).first();
+      await category.waitFor({ state: 'visible', timeout: 5000 });
+      const categorySummary = category.locator(':scope > summary');
+      await categorySummary.waitFor({ state: 'visible', timeout: 5000 });
+      assert.equal(await category.getAttribute('open'), null, `categoria deveria iniciar recolhida em ${viewport.label}`);
+      await categorySummary.click();
+      await page.waitForFunction(categoryElement => categoryElement?.open === true, await category.elementHandle());
+      if (viewport.width <= 767) {
+        const assetDetail = category.locator('.asset-mobile-cards details.asset-premium-card:visible').first();
+        await assetDetail.waitFor({ state: 'visible', timeout: 5000 });
+        const assetSummary = assetDetail.locator(':scope > summary');
+        await assetSummary.waitFor({ state: 'visible', timeout: 5000 });
+        await assetSummary.click();
+        await page.waitForFunction(card => card?.open === true, await assetDetail.elementHandle());
+      }
+
+      const actionTrigger = page.locator('.assets-premium-shell').getByRole('button', { name: /Mais ações para/i }).first();
+      await actionTrigger.waitFor({ state: 'visible', timeout: 5000 });
+      const triggerBox = await actionTrigger.boundingBox();
+      assert.ok(triggerBox && triggerBox.width >= 44 && triggerBox.height >= 44, `menu contextual menor que 44px em ${viewport.label}`);
+      assert.match(await actionTrigger.getAttribute('aria-label'), /Mais ações para/i, `menu sem nome acessível em ${viewport.label}`);
+      assert.equal(await actionTrigger.evaluate(button => button.matches('.asset-action-trigger')), true, `seletor canônico ausente em ${viewport.label}`);
+      const idleStyle = await actionTrigger.evaluate(button => {
+        const style = getComputedStyle(button);
+        return { width: style.borderTopWidth, color: style.borderTopColor, background: style.backgroundColor, borderRadius: style.borderRadius };
       });
-      if (ativ.mobile) {
-        assert.ok(ativ.cards > 0, `nenhum card rico de ativo visivel em ${viewport.label}`);
-        const mobileActions = ativ.actions[0] || [];
-        assert.ok(mobileActions.length >= 3, `acoes Comprar/Vender/Editar ausentes em ${viewport.label}`);
-        assert.ok(mobileActions.every(button => button.fullyInViewport), `acao de ativo cortada em ${viewport.label}`);
-        assert.ok(mobileActions.every(button => button.height >= 44), `acao menor que 44px em ${viewport.label}`);
-        assert.equal(ativ.pageWidth - viewport.width, 0, `pageOverflow em cards de ativos ${viewport.label}`);
-      } else {
-      assert.ok(ativ.anyTable, `nenhuma tabela de ativos visivel em ${viewport.label}`);
-      for (const table of ativ.tables) {
-        assert.ok(table.buttons.length >= 2, `acoes ausentes em ${viewport.label} (${table.cls})`);
-        assert.ok(table.buttons.every(button => button.accessibleName), `acao sem nome acessivel em ${viewport.label} (${table.cls})`);
-        assert.ok(
-          table.actionsVisible || (table.internallyScrollable && table.actionsReachableWithInternalScroll),
-          `acoes cortadas em ${viewport.label} (${table.cls})`,
-        );
-        assert.equal(table.buttonsOverlap, false, `acoes sobrepostas em ${viewport.label} (${table.cls})`);
-        for (const button of table.buttons) assert.ok(button.height >= 44, `acao menor que 44px em ${viewport.label}: ${button.text} (${Math.round(button.height)}px)`);
+      assert.notEqual(idleStyle.width, '0px', `borda visual ausente em ${viewport.label}`);
+      if (viewport.width > 430) {
+        await actionTrigger.hover();
+        await page.waitForTimeout(200); // Aguarda a transição CSS do botão.
+        const hoverStyle = await actionTrigger.evaluate(button => {
+          const style = getComputedStyle(button);
+          return { color: style.borderTopColor, background: style.backgroundColor, hovered: button.matches(':hover') };
+        });
+        assert.ok(hoverStyle.hovered && (hoverStyle.color !== idleStyle.color || hoverStyle.background !== idleStyle.background), `hover não altera estilo visual em ${viewport.label}`);
       }
-      }
+
+      // Ponteiro abre o menu e mantém as operações existentes sob demanda.
+      await actionTrigger.click();
+      const menuId = await actionTrigger.getAttribute('aria-controls');
+      const menu = page.locator(`#${menuId}`);
+      assert.equal(await actionTrigger.getAttribute('aria-expanded'), 'true', `ponteiro não abriu o menu em ${viewport.label}`);
+      assert.equal(await menu.getAttribute('role'), 'menu', `menu sem semântica em ${viewport.label}`);
+      assert.deepEqual(await menu.getByRole('menuitem').allInnerTexts(), ['Detalhes', 'Comprar', 'Vender', 'Editar'], `ações incompletas em ${viewport.label}`);
+      await page.keyboard.press('Escape');
+
+      // Teclado abre o mesmo caminho e preserva um foco visível no controle.
+      await actionTrigger.focus();
+      const focus = await actionTrigger.evaluate(element => {
+        const style = getComputedStyle(element);
+        return { outlineStyle: style.outlineStyle, outlineWidth: parseFloat(style.outlineWidth) || 0 };
+      });
+      assert.ok(focus.outlineStyle !== 'none' && focus.outlineWidth > 0, `foco do menu não está visível em ${viewport.label}`);
+      await page.waitForTimeout(200);
+      const focusedBorderColor = await actionTrigger.evaluate(button => getComputedStyle(button).borderTopColor);
+      assert.notEqual(focusedBorderColor, idleStyle.color, `focus-visible não aplica a borda de destaque em ${viewport.label}`);
+      await page.keyboard.press('Enter');
+      assert.equal(await actionTrigger.getAttribute('aria-expanded'), 'true', `teclado não abriu o menu em ${viewport.label}`);
+
+      const assetPath = await page.evaluate(() => {
+        const ids = [...document.querySelectorAll('#root [id]')].map(element => element.id);
+        const detail = document.querySelector('.asset-premium-card, .assets-table tbody tr');
+        return {
+          duplicateIds: ids.filter((id, index) => ids.indexOf(id) !== index),
+          detailReachable: Boolean(detail),
+        };
+      });
+      assert.equal(assetPath.detailReachable, true, `linha ou detalhe de ativo ausente em ${viewport.label}`);
+      assert.deepEqual(assetPath.duplicateIds, [], `IDs duplicados no menu em ${viewport.label}`);
+      await page.keyboard.press('Escape');
       assert.equal(await pageOverflow(), 0, `pageOverflow em ativos ${viewport.label}`);
 
       await context.close();

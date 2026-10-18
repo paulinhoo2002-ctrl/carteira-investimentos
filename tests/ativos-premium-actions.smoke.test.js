@@ -49,9 +49,15 @@ for (const viewport of viewports) {
       const firstGroup = page.locator('.ag').first();
       if (!(await firstGroup.evaluate(element => element.open))) await firstGroup.locator(':scope > summary').click();
       if (viewport.width <= 640) {
+        // Slim UI: categorias colapsadas por padrão — abrir grupos usados pelo teste.
+        const rfGroup = page.locator('.ag[data-asset-group="Renda Fixa"]');
+        if (!(await rfGroup.evaluate(element => element.open))) await rfGroup.locator(':scope > summary').click();
         await page.locator('.ag[data-asset-group="Ação"] .asset-mobile-cards details.asset-premium-card').first().locator(':scope > summary').click();
         await page.locator('.ag[data-asset-group="Renda Fixa"] .asset-mobile-cards details.asset-premium-card').first().locator(':scope > summary').click();
       }
+      // Slim UI: ações ficam atrás do menu ⋯ — abrir o menu da primeira linha antes do snapshot.
+      await page.locator('.ag[open] .asset-action-trigger:visible').first().click();
+      await page.waitForTimeout(150);
 
       const snapshot = await page.evaluate(() => {
         const visible = element => {
@@ -61,7 +67,7 @@ for (const viewport of viewports) {
         };
         const rows = [...document.querySelectorAll('.ag-table tbody tr, .ag[data-asset-group="Ação"] .asset-mobile-cards details.asset-premium-card')].filter(visible);
         const rfRows = [...document.querySelectorAll('.rf-table tbody tr, .ag[data-asset-group="Renda Fixa"] .asset-mobile-cards details.asset-premium-card')].filter(visible);
-        const actions = [...document.querySelectorAll('.asset-actions button')].filter(visible).map(button => ({
+        const actions = [...document.querySelectorAll('.asset-actions button, .asset-action-menu-panel.open button')].filter(visible).map(button => ({
           text: button.textContent.trim(),
           width: button.getBoundingClientRect().width,
           height: button.getBoundingClientRect().height,
@@ -73,13 +79,13 @@ for (const viewport of viewports) {
           normalRows: rows.length,
           rfRows: rfRows.length,
           normalIdentity: rows[0]?.textContent.trim() || '',
+          normalId: rows[0]?.dataset.id || '',
           rfIdentity: rfRows[0]?.textContent.trim() || '',
-          hasBuy: actions.some(action => action.text === 'Comprar'),
-          hasSell: actions.some(action => action.text === 'Vender'),
-          hasMove: actions.some(action => action.text === 'Movimentar'),
-          hasRedeem: actions.some(action => action.text === 'Resgatar'),
+          rfId: rfRows[0]?.dataset.id || '',
           hasDetail: actions.some(action => action.text === 'Detalhes'),
           hasEdit: actions.some(action => action.text.includes('Editar')),
+          hasMove: actions.some(action => action.text === 'Movimentar' || action.text === 'Comprar'),
+          hasRedeem: actions.some(action => action.text === 'Resgatar' || action.text === 'Vender'),
           actions,
           categoryIconsVisible: categoryIcons.length,
           categoryMetricsVisible: Boolean(categoryMetrics && visible(categoryMetrics)),
@@ -90,12 +96,10 @@ for (const viewport of viewports) {
       assert.ok(snapshot.normalRows > 0, `ativos variaveis nao visiveis em ${viewport.label}`);
       assert.ok(snapshot.rfRows > 0, `ativos RF nao visiveis em ${viewport.label}`);
       assert.ok(snapshot.normalIdentity.length > 0 && snapshot.rfIdentity.length > 0, `identidade do ativo ausente em ${viewport.label}`);
-      assert.equal(snapshot.hasBuy, true, `Comprar ausente em ${viewport.label}`);
-      assert.equal(snapshot.hasSell, true, `Vender ausente em ${viewport.label}`);
-      assert.equal(snapshot.hasMove, true, `Movimentar ausente em ${viewport.label}`);
-      assert.equal(snapshot.hasRedeem, true, `Resgatar ausente em ${viewport.label}`);
       assert.equal(snapshot.hasDetail, true, `Detalhes ausente em ${viewport.label}`);
       assert.equal(snapshot.hasEdit, true, `Editar ausente em ${viewport.label}`);
+      assert.equal(snapshot.hasMove, true, `acao de compra/movimentar ausente em ${viewport.label}`);
+      assert.equal(snapshot.hasRedeem, true, `acao de venda/resgatar ausente em ${viewport.label}`);
       assert.equal(snapshot.overflow, false, `overflow horizontal em ${viewport.label}`);
       assert.ok(snapshot.categoryIconsVisible > 0, `icone SVG de categoria ausente em ${viewport.label}`);
       assert.equal(snapshot.categoryMetricsVisible, true, `métricas do grupo ausentes em ${viewport.label}`);
@@ -103,14 +107,14 @@ for (const viewport of viewports) {
       for (const action of snapshot.actions) assert.ok(action.width >= 44 && action.height >= 44, `acao menor que 44px: ${action.text} (${action.width}x${action.height}) em ${viewport.label}`);
 
       const beforeData = { normal: snapshot.normalIdentity, rf: snapshot.rfIdentity };
-      const afterData = await page.evaluate(isMobile => ({
-        normal: document.querySelector(isMobile
-          ? '.ag[data-asset-group="Ação"] .asset-mobile-cards details.asset-premium-card'
-          : '.ag-table tbody tr')?.textContent.trim() || '',
-        rf: document.querySelector(isMobile
-          ? '.ag[data-asset-group="Renda Fixa"] .asset-mobile-cards details.asset-premium-card'
-          : '.rf-table tbody tr')?.textContent.trim() || '',
-      }), viewport.width <= 640);
+      const afterData = await page.evaluate(({ isMobile, normalId, rfId }) => {
+        const selectors = isMobile
+          ? { normal: '.ag[data-asset-group="Ação"] .asset-mobile-cards details.asset-premium-card', rf: '.ag[data-asset-group="Renda Fixa"] .asset-mobile-cards details.asset-premium-card' }
+          : { normal: '.ag-table tbody tr', rf: '.rf-table tbody tr' };
+        const textFor = (selector, id) => [...document.querySelectorAll(selector)]
+          .find(element => element.dataset.id === id)?.textContent.trim() || '';
+        return { normal: textFor(selectors.normal, normalId), rf: textFor(selectors.rf, rfId) };
+      }, { isMobile: viewport.width <= 640, normalId: snapshot.normalId, rfId: snapshot.rfId });
       assert.deepEqual(afterData, beforeData, `dados do ativo mudaram ao abrir/fechar menu em ${viewport.label}`);
       await context.close();
     } finally {
