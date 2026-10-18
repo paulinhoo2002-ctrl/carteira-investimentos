@@ -203,7 +203,6 @@ test('economic evidence is limited to REAL Trend products and synthetic local fi
     rfPosNorm:value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim(),
     assetRfName:asset=>asset.name,
     rfAssetEventId:item=>item.id,
-    FixedIncomeEconomicResultEvidence:{'synthetic-id':{events:[{id:'private'}]}},
     FixedIncomeEconomicResultTestEvidence:{'synthetic-id':{events:[{id:'synthetic'}]}},
   };
   vm.createContext(context);
@@ -215,6 +214,13 @@ test('economic evidence is limited to REAL Trend products and synthetic local fi
   context.FB.accountMode='BLOCKED';
   assert.equal(vm.runInContext('rfEconomicEvidenceForAsset(trendAsset)',context),null);
   context.FB.accountMode='REAL';
-  assert.equal(vm.runInContext('rfEconomicEvidenceForAsset(trendAsset).events[0].id',context),'private');
+  context.FB.user={uid:'owner'};
+  context.FB.access={allowed:true};
+  context.FB.cloudLoaded=true;
+  context.S={assets:[trendAsset],rfEvents:[],aportes:[],proventos:[]};
+  context.rfValues=()=>({hasExplicitCurrent:true,current:100,currentState:{state:'valid'}});
+  context.assetRfCurrentValueMeta=()=>({authority:'MANUAL_AUTHORITATIVE'});
+  context.FixedIncomeEconomicEvidenceProvider={buildEvidence:()=>({events:[{id:'runtime'}]})};
+  assert.equal(vm.runInContext('rfEconomicEvidenceForAsset(trendAsset).events[0].id',context),'runtime');
   assert.equal(vm.runInContext('rfEconomicEvidenceForAsset(movidaAsset)',context),null);
 });

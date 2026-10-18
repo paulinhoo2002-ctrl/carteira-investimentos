@@ -15,7 +15,7 @@
     "pretest:visual-regression": "npm run build:modern",
     "test:visual-regression": "node --test tests/v289-visual-regression.test.js tests/v333-dividend-month-coverage.browser.test.js tests/rf-table-width-optimization.smoke.test.js",
     "verify:release": "npm test && npm run test:modern && npm run qa:all && npm run test:visual-regression",
-    "test:finance": "node --test tests/finance-core.test.js tests/v333-dividend-month-coverage.test.js tests/v333-passive-income-coverage.test.js tests/rf-semantic-safety.test.js tests/fixed-income-economic-result-engine.test.js tests/fixed-income-economic-result-adapter.test.js",
+    "test:finance": "node --test tests/finance-core.test.js tests/v333-dividend-month-coverage.test.js tests/v333-passive-income-coverage.test.js tests/rf-semantic-safety.test.js tests/fixed-income-economic-result-engine.test.js tests/fixed-income-economic-result-adapter.test.js tests/fixed-income-economic-evidence-provider.test.js",
     "test:rf-semantic-browser": "node --test tests/fixed-income-total-return-ui.browser.test.js",
     "test:ir2026": "node --test tests/ir2026-*.test.js",
     "test:persistence": "node --test tests/persistence-core.test.js",
