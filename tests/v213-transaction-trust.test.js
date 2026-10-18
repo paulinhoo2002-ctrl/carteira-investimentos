@@ -34,7 +34,8 @@ test('sorts dates descending and keeps missing dates at the end', () => {
 
 test('summarizes categories without mixing their monetary meaning', () => {
   assert.deepEqual(V213TransactionTrust.summarizeTransactions(rows), {
-    total: 4, buys: 1, sells: 1, contributions: 1, others: 1
+    total: 4, buys: 1, sells: 1, fixedIncomeApplications: 0, contributions: 1,
+    dividends: 1, reserves: 0, others: 0, unknowns: 0
   });
 });
 
