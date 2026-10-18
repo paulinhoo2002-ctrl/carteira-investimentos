@@ -6,6 +6,10 @@ description: "Use when the task requires automating a real browser from the term
 
 # Playwright CLI Skill
 
+## Carteira LEGACY
+
+Para QA visual LEGACY, use `docs/ai/VISUAL_UX_RESPONSIVE_CONTRACT.md`: valide rotas e larguras relevantes em claro/escuro, overflow do documento, conteúdo/ações alcançáveis, foco e teclado. Prefira roles, nomes acessíveis e estados estáveis; entenda ações progressivas como alcançáveis sob demanda, não sempre visíveis. Guarde screenshots sintéticos em estado local ignorado e nunca publique evidência com dados financeiros reais.
+
 Drive a real browser from the terminal using `playwright-cli`. Prefer the bundled wrapper script so the CLI works even when it is not globally installed.
 Treat this skill as CLI-first automation. Do not pivot to `@playwright/test` unless the user explicitly asks for test files.
 

@@ -7,7 +7,7 @@ runtime. Discover actual Skills before each substantial mission. Model and Skill
 routing is owned by `docs/ai/SKILLS_ROUTING.md`; mandatory behavior is owned by
 `AGENTS.md`. Codex, Hermes and OpenCode may have different installed Skills.
 
-**⚠️ NOTE**: The `.agents/skills` directory is **partially tracked** by Git (see `.gitignore`). 17 approved project-local skills are versioned. Heavy skills (browser-harness-main, impeccable, archify-main) and meta/backup skills are excluded and must be re-synced from `C:/Projetos/skills/` or upstream sources. See `docs/ai/PROJECT_CONTINUITY_POLICY.md` for continuity requirements.
+**NOTE**: Skill availability depends on the active runtime and the approved project subset under `.agents/skills/`; verify the physical installation and Git tracking instead of assuming either. Heavy optional packages may be excluded and need a local re-sync from their documented source. This manifest records provenance and routing metadata; it does not install Skills or authorize work. See `docs/ai/PROJECT_CONTINUITY_POLICY.md`.
 
 ---
 
@@ -143,79 +143,79 @@ routing is owned by `docs/ai/SKILLS_ROUTING.md`; mandatory behavior is owned by
 
 ---
 
-## UI / UX SKILLS (Visual Phase Deferred)
+## UI / UX SKILLS (Use Only Within an Authorized Visual Scope)
 
 ### interface-design
 - **Category**: UI_UX / DESIGN_SYSTEM
 - **Source**: C:/Projetos/skills/interface-design
 - **Purpose**: Craft-first interface design for dashboards, admin panels, tools. Covers visual hierarchy, accessibility, responsive layouts, interaction flows.
-- **Recommended use**: UI design/review/refinement when visual phase is authorized. Dashboard layouts, component patterns, accessibility audit.
-- **Avoid when**: VISUAL_PHASE=DEFERRED (current state). Backend-only work. Financial logic.
+- **Recommended use**: UI design/review/refinement when the user authorizes visual work or `PROJECT_STATE.md` records a bounded active visual phase. Dashboard layouts, component patterns, accessibility audit.
+- **Avoid when**: No visual authorization/active scope. Backend-only work. Financial logic.
 - **Dependencies**: caveman, using-superpowers, design-system (optional)
 - **Side effects**: May produce design specs requiring implementation.
 - **Risk level**: LOW
 - **Routing priority**: Primary for UI_VISUAL (when authorized)
-- **Canonical status**: DOMAIN (deferred)
+- **Canonical status**: DOMAIN (gated; follow `VISUAL_UX_RESPONSIVE_CONTRACT.md`)
 
 ### frontend-design
 - **Category**: UI_UX / DESIGN_SYSTEM
 - **Source**: C:/Projetos/skills/frontend-design
 - **Purpose**: Distinctive, intentional visual design — typography, palette, layout, aesthetic risk. Anti-template.
 - **Recommended use**: New UI direction, brand-aligned visual identity, landing pages, marketing surfaces when authorized.
-- **Avoid when**: VISUAL_PHASE=DEFERRED. Minor adjustments covered by interface-design. Financial dashboards (use interface-design).
+- **Avoid when**: No visual authorization/active scope. Minor adjustments covered by interface-design. Financial dashboards (use interface-design).
 - **Dependencies**: caveman, using-superpowers
 - **Side effects**: Opinionated aesthetic choices.
 - **Risk level**: LOW
 - **Routing priority**: Secondary for UI_VISUAL (when authorized)
-- **Canonical status**: DOMAIN (deferred)
+- **Canonical status**: DOMAIN (gated)
 
 ### design-system
 - **Category**: DESIGN_SYSTEM / UI_UX
 - **Source**: C:/Projetos/skills/design-system
 - **Purpose**: Token architecture (primitive→semantic→component), component specs, CSS variables, slide generation.
 - **Recommended use**: Design token creation, component state definitions, Tailwind theme config, systematic design handoff.
-- **Avoid when**: VISUAL_PHASE=DEFERRED. No design system work needed.
+- **Avoid when**: No visual authorization/active scope. No design system work needed.
 - **Dependencies**: caveman, using-superpowers, brand (optional), ui-styling (optional)
 - **Side effects**: Generates token files, CSS variables.
 - **Risk level**: LOW
 - **Routing priority**: Supporting for UI_VISUAL
-- **Canonical status**: DOMAIN (deferred)
+- **Canonical status**: DOMAIN (gated)
 
 ### ui-styling
 - **Category**: UI_UX / DESIGN_SYSTEM
 - **Source**: C:/Projetos/skills/ui-styling
 - **Purpose**: shadcn/ui + Tailwind CSS + Canvas visual designs. Accessible components, responsive layouts, dark mode.
 - **Recommended use**: Building UI with React/Next.js/Vite, implementing design systems, accessible components.
-- **Avoid when**: VISUAL_PHASE=DEFERRED. Non-React stacks. Legacy index.html codebase.
+- **Avoid when**: No visual authorization/active scope. Non-React stacks. Legacy index.html codebase.
 - **Dependencies**: caveman, using-superpowers, design-system
 - **Side effects**: May add Tailwind/shadcn dependencies.
 - **Risk level**: MEDIUM (dependencies)
 - **Routing priority**: Implementation for UI_VISUAL (when authorized, React)
-- **Canonical status**: OPTIONAL (deferred)
+- **Canonical status**: OPTIONAL (stack/scope gated)
 
 ### ui-ux-pro-max
 - **Category**: UI_UX / DESIGN_SYSTEM
 - **Source**: C:/Projetos/skills/ui-ux-pro-max
 - **Purpose**: Comprehensive UX patterns, design system generation, anti-pattern detection, 1000+ rules across 10 domains.
 - **Recommended use**: New project/page design system generation, deep UX audit, complex product type patterns.
-- **Avoid when**: VISUAL_PHASE=DEFERRED. Minor tweaks (use interface-design). Financial truth work.
+- **Avoid when**: No visual authorization/active scope. Minor tweaks (use interface-design). Financial truth work.
 - **Dependencies**: caveman, using-superpowers, Python 3
 - **Side effects**: Large rule set; use --design-system first, then --domain for specifics.
 - **Risk level**: LOW
 - **Routing priority**: Heavy-lift for UI_VISUAL (when authorized)
-- **Canonical status**: DOMAIN (deferred)
+- **Canonical status**: DOMAIN (gated)
 
 ### impeccable
 - **Category**: UI_UX / REVIEW
 - **Source**: C:/Projetos/skills/impeccable
 - **Purpose**: Production-grade frontend interface design, audit, polish. 20+ sub-commands (craft, shape, audit, polish, bolder, quieter, etc.).
 - **Recommended use**: Final quality pass before shipping, UX design review, technical quality checks, visual polish when authorized.
-- **Avoid when**: VISUAL_PHASE=DEFERRED. Early exploration. Financial logic review.
+- **Avoid when**: No visual authorization/active scope. Early exploration. Financial logic review.
 - **Dependencies**: caveman, using-superpowers, project context (PRODUCT.md/DESIGN.md)
 - **Side effects**: Runs context/palette scripts; may generate design artifacts.
 - **Risk level**: LOW
 - **Routing priority**: Final polish for UI_VISUAL / CODE_REVIEW
-- **Canonical status**: DOMAIN (deferred)
+- **Canonical status**: DOMAIN (gated)
 
 ---
 

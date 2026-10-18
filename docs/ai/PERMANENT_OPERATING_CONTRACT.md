@@ -57,3 +57,8 @@
 - `CODE_READY != DATA_CERTIFIED`. `IR2026_REAL_DATA_READY=NO` e `TAX_PAYABLE_STATUS=NOT_CALCULATED` até os gates de fonte, cobertura e autoridade passarem.
 - Package2 V3 continua read-only local até existir prova de identidade, leitura exata, diff, backup, concorrência, rollback e autorização explícita para a escrita delimitada.
 - Use `PROJECT_STATE.md` para estado verificado, `NEXT_STEP.md` para a próxima ação e `LEGACY_BACKLOG.md` como fila operacional única. Históricos arquivados são referência, não instruções atuais.
+
+## 9. Interface visual e responsividade
+
+- Regras duráveis de UX visual, progressive disclosure, responsividade, tipografia, acessibilidade e QA ficam em [`VISUAL_UX_RESPONSIVE_CONTRACT.md`](VISUAL_UX_RESPONSIVE_CONTRACT.md), fonte canônica para todas as rotas LEGACY.
+- O trabalho visual continua limitado por `FEATURE_FREEZE` e autorização específica de fase/PR. O estado e a linha oficial ativos devem ser confirmados em `PROJECT_STATE.md` e no GitHub; a existência do contrato não autoriza redesign, mudança financeira, merge ou deploy.

@@ -5,6 +5,10 @@ description: Craft-first interface design for dashboards, admin panels, SaaS app
 
 # Interface Design
 
+## Carteira LEGACY
+
+Antes de propor ou alterar uma tela LEGACY, consulte `docs/ai/VISUAL_UX_RESPONSIVE_CONTRACT.md` e `docs/ai/VISUAL_CANON_V2.md`; confirme a fase visual ativa e limite-se ao escopo autorizado. Preserve resumo primeiro, detalhes sob demanda, os padrões aprovados de Ativos e a semântica financeira canônica. Mudanças em finanças, persistência, Auth ou Firebase precisam de autorização separada.
+
 Build product interfaces with the craft of a top design team — Linear, Vercel, Stripe, Apple. The difference between those and generic output is not talent. It is that every decision was *decided*, the hierarchy is unmistakable, and a hundred small details are correct at once. This skill is how you get there.
 
 ## Scope

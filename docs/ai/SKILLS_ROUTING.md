@@ -101,7 +101,7 @@ minimal routes used by the selector.
 | **BUG_FIX**<br>any bug, test failure, unexpected behavior | caveman<br>using-superpowers<br>doubt-driven-development<br>systematic-debugging<br>test-driven-development<br>verification-before-completion | source-driven-development (if external data/API)<br>cavecrew (if independent) | ui-ux-pro-max<br>frontend-design<br>banner-design<br>brand<br>slides | Root cause identified<br>Test RED→GREEN confirmed<br>Verification gates pass |
 | **IMPORT_PIPELINE**<br>B3, Inter, XP, BTG imports, validation, preview, deduplication, confirmation | caveman<br>using-superpowers<br>doubt-driven-development<br>source-driven-development<br>test-driven-development<br>verification-before-completion<br>caveman-review<br>caveman-commit | systematic-debugging (if issues)<br>cavecrew (if independent parsers) | ui-ux-pro-max<br>frontend-design<br>interface-design<br>design-system<br>ui-styling<br>impeccable<br>banner-design<br>brand<br>slides | No fabricated data<br>Preview before write<br>Confirmation gate<br>Deduplication verified |
 | **BROWSER_QA**<br>browser validation, responsive QA, console/network issues, interaction regression | caveman<br>using-superpowers<br>browser-harness-main | browser-testing-with-devtools (if DevTools MCP needed)<br>playwright (if CLI automation preferred) | ui-ux-pro-max<br>frontend-design<br>interface-design<br>design-system<br>ui-styling<br>impeccable<br>banner-design<br>brand<br>slides<br>interview-me | Don't run all 3 browser skills redundantly<br>Select ONE primary<br>Clean console (0 errors)<br>Viewports: 390, 430, 768, 1366, 1440, 1536, 1920 |
-| **UI_VISUAL**<br>only when VISUAL_PHASE=AUTHORIZED<br>visual redesign, new UI direction, brand-aligned visuals | caveman<br>using-superpowers<br>interface-design | frontend-design (if new aesthetic direction)<br>design-system (if token work)<br>ui-ux-pro-max (if heavy design system gen)<br>ui-styling (if React/Tailwind impl)<br>impeccable (final polish)<br>browser-harness-main (verification) | banner-design<br>brand (unless brand work)<br>slides<br>interview-me | VISUAL_PHASE must be AUTHORIZED<br>VISUAL_CANON_V2 must be active<br>No financial logic changes |
+| **UI_VISUAL**<br>only when user-authorized or `PROJECT_STATE.md` records a bounded active visual phase<br>visual redesign, new UI direction, brand-aligned visuals | caveman<br>using-superpowers<br>interface-design | frontend-design (if new aesthetic direction)<br>design-system (if token work)<br>ui-ux-pro-max (if heavy design system gen)<br>ui-styling (if React/Tailwind impl)<br>impeccable (final polish)<br>browser-harness-main (verification) | banner-design<br>brand (unless brand work)<br>slides<br>interview-me | Check `VISUAL_UX_RESPONSIVE_CONTRACT.md` and current PR/HEAD<br>VISUAL_CANON_V2 active<br>No financial logic changes |
 | **CODE_REVIEW**<br>pre-PR, release review, receiving external review | caveman<br>using-superpowers<br>caveman-review<br>impeccable<br>verification-before-completion<br>requesting-code-review | interface-design (if UI changes)<br>browser-harness-main (if UI)<br>doubt-driven-development (if financial)<br>source-driven-development (if financial) | frontend-design<br>ui-ux-pro-max<br>banner-design<br>brand<br>slides<br>interview-me | All verification gates pass<br>No MISLEADING_FINANCIAL_METRIC<br>No BROKEN_CORE_WORKFLOW |
 | **GIT_CLOSEOUT**<br>commit preparation, branch closeout, safe staging | caveman<br>using-superpowers<br>caveman-commit<br>verification-before-completion | caveman-review (self-review) | All UI skills<br>All financial skills (unless committing financial fix) | No `git add .`<br>No `git add -A`<br>No force push<br>No history rewrite<br>Explicit staging only |
 | **LONG_HERMES**<br>multi-step autonomous missions with gates | caveman<br>using-superpowers<br>caveman-compress<br>writing-plans | cavecrew (ONLY if genuinely independent)<br>executing-plans or subagent-driven-development | ui-ux-pro-max (unless visual authorized)<br>banner-design<br>brand<br>slides | Plan written to .hermes/plans/<br>Gates at each phase<br>No cavecrew on shared financial truth path |
@@ -188,13 +188,13 @@ FIXED_RATE != DATED_BENCHMARK_SERIES
 
 ## VISUAL PHASE GATE
 
-**UI_VISUAL missions are FORBIDDEN unless:**
+**UI_VISUAL missions require all of these:**
 
-- `VISUAL_PHASE=AUTHORIZED` (explicit user authorization)
-- `VISUAL_CANON_V2` is active (not FROZEN_REFERENCE)
-- Mission explicitly requests visual work
+- Explicit user scope or a bounded active phase recorded in `PROJECT_STATE.md`.
+- `VISUAL_CANON_V2` is active and `VISUAL_UX_RESPONSIVE_CONTRACT.md` is followed.
+- Financial, persistence, auth and hosted-data boundaries remain unchanged unless separately authorized.
 
-Current state: **VISUAL_PHASE=DEFERRED** → All UI_VISUAL skills are FORBIDDEN.
+State snapshot (2026-10-18): **VISUAL_PHASE=ACTIVE_FOR_PR_503** for branch `feat/legacy-slim-ui-refinement-2026-10-17`. Revalidate the live PR and HEAD; this snapshot does not authorize work outside PR #503.
 
 ---
 

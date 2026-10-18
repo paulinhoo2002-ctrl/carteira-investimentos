@@ -205,7 +205,7 @@ SKILL_GAPS_FOUND=
 
 Do not invoke every installed skill. Select minimum relevant set per `docs/ai/SKILLS_ROUTING.md`.
 
-**Note**: Skills are sourced from `C:/Projetos/skills/` (read-only, not in this repo). The local vendored copy at `.agents/skills/` is gitignored and must be re-synced after fresh clone. See `docs/ai/PROJECT_SKILLS_MANIFEST.md` for inventory.
+**Note**: Skills can come from the runtime catalog or the approved subset under `.agents/skills/`; tracking varies by file. Confirm actual installation and `git ls-files` before relying on a skill in a fresh clone. See `docs/ai/PROJECT_SKILLS_MANIFEST.md` for provenance and `docs/ai/SKILLS_ROUTING.md` for selection.
 
 ---
 
@@ -213,11 +213,9 @@ Do not invoke every installed skill. Select minimum relevant set per `docs/ai/SK
 
 ```
 FUNCTIONAL_COMPLETION_FIRST=true
-VISUAL_PHASE=DEFERRED
-VISUAL_CANON_V2=FROZEN_REFERENCE
 ```
 
-**Current transient implementation status (P0, phase, next action) is owned by `docs/ai/PROJECT_STATE.md` and `docs/ai/NEXT_STEP.md`. This policy defines durable governance only.**
+**Current transient implementation status, including whether a bounded visual phase is active, is owned by `docs/ai/PROJECT_STATE.md` and `docs/ai/NEXT_STEP.md`. Do not copy a fixed visual-phase value into this durable policy. Interface work follows `docs/ai/VISUAL_UX_RESPONSIVE_CONTRACT.md` and `docs/ai/VISUAL_CANON_V2.md`.**
 
 Do not embed obsolete transient status here. The V283 work (adapter + engine) resolved the historical return truth path:
 - `P0_ENGINE_LAYER=RESOLVED` (V281 engine fails closed)
