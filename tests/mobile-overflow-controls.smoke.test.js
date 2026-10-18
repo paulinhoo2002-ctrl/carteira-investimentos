@@ -131,6 +131,21 @@ for (const viewport of viewports) {
       const triggerBox = await actionTrigger.boundingBox();
       assert.ok(triggerBox && triggerBox.width >= 44 && triggerBox.height >= 44, `menu contextual menor que 44px em ${viewport.label}`);
       assert.match(await actionTrigger.getAttribute('aria-label'), /Mais ações para/i, `menu sem nome acessível em ${viewport.label}`);
+      assert.equal(await actionTrigger.evaluate(button => button.matches('.asset-action-trigger')), true, `seletor canônico ausente em ${viewport.label}`);
+      const idleStyle = await actionTrigger.evaluate(button => {
+        const style = getComputedStyle(button);
+        return { width: style.borderTopWidth, color: style.borderTopColor, background: style.backgroundColor, borderRadius: style.borderRadius };
+      });
+      assert.notEqual(idleStyle.width, '0px', `borda visual ausente em ${viewport.label}`);
+      if (viewport.width > 430) {
+        await actionTrigger.hover();
+        await page.waitForTimeout(200); // Aguarda a transição CSS do botão.
+        const hoverStyle = await actionTrigger.evaluate(button => {
+          const style = getComputedStyle(button);
+          return { color: style.borderTopColor, background: style.backgroundColor, hovered: button.matches(':hover') };
+        });
+        assert.ok(hoverStyle.hovered && (hoverStyle.color !== idleStyle.color || hoverStyle.background !== idleStyle.background), `hover não altera estilo visual em ${viewport.label}`);
+      }
 
       // Ponteiro abre o menu e mantém as operações existentes sob demanda.
       await actionTrigger.click();
@@ -148,6 +163,9 @@ for (const viewport of viewports) {
         return { outlineStyle: style.outlineStyle, outlineWidth: parseFloat(style.outlineWidth) || 0 };
       });
       assert.ok(focus.outlineStyle !== 'none' && focus.outlineWidth > 0, `foco do menu não está visível em ${viewport.label}`);
+      await page.waitForTimeout(200);
+      const focusedBorderColor = await actionTrigger.evaluate(button => getComputedStyle(button).borderTopColor);
+      assert.notEqual(focusedBorderColor, idleStyle.color, `focus-visible não aplica a borda de destaque em ${viewport.label}`);
       await page.keyboard.press('Enter');
       assert.equal(await actionTrigger.getAttribute('aria-expanded'), 'true', `teclado não abriu o menu em ${viewport.label}`);
 
