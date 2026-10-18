@@ -29,7 +29,7 @@ const viewports = [
   { width: 1920, height: 1080, label: '1920x1080' },
 ];
 
-const EXPECTED_HEADERS = ['Ticker', 'Tipo', 'Aplicado', 'Atual', 'Resultado de mercado', 'Rendimentos recebidos', 'Resultado total', 'Rentab.', 'Vencimento', 'Situação'];
+const EXPECTED_HEADERS = ['Ticker', 'Tipo', 'Aplicado', 'Atual', 'Resultado da posição', 'Rendimentos recebidos', 'Resultado econômico total', 'Rentabilidade total', 'Vencimento', 'Situação'];
 
 for (const viewport of viewports) {
   test(`RF table width - ${viewport.label}`, async () => {
@@ -79,7 +79,7 @@ for (const viewport of viewports) {
             const r = b.getBoundingClientRect();
             return { text: b.textContent.trim(), w: Math.round(r.width * 10) / 10, h: Math.round(r.height * 10) / 10, right: Math.round(r.right * 10) / 10 };
           }) : [];
-        const numericCells = tds.filter(td => td.classList.contains('rf-right'));
+        const numericCells = tds.filter(td => td.classList.contains('rf-right') && /\d/.test(td.querySelector('.rf-strong')?.textContent.trim() || td.textContent.trim()));
         const wrappedNumbers = tableVisible ? numericCells.filter(td => {
           const numericText = td.querySelector('.rf-strong')?.textContent.trim() || td.textContent.trim();
           const span = document.createElement('span');
@@ -147,7 +147,7 @@ for (const viewport of viewports) {
         const focusVisible = await summary.evaluate(element => document.activeElement === element && getComputedStyle(element).outlineStyle !== 'none' && parseFloat(getComputedStyle(element).outlineWidth) >= 2);
         assert.equal(focusVisible, true, `foco visivel ausente no expansor em ${viewport.label}`);
         const details = await firstCard.locator('.rf-responsive-card-details').innerText();
-        for (const label of ['Valor aplicado', 'Rendimentos recebidos', 'Resultado total', 'Rentabilidade', 'Vencimento']) {
+        for (const label of ['Capital aplicado informado', 'Rendimentos recebidos', 'Resultado econômico total', 'Rentabilidade total', 'Vencimento']) {
           assert.ok(details.includes(label), `${label} inacessivel no detalhe em ${viewport.label}`);
         }
         const detailBounds = await firstCard.locator('.rf-responsive-card-details').evaluate(element => ({
