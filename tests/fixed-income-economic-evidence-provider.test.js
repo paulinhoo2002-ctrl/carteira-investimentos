@@ -62,6 +62,15 @@ test('PROVIDER_NO_SYNTHETIC_BALANCING keeps unknown values absent instead of zer
   assert.equal(result.coverage.history.status, 'PARTIAL');
 });
 
+test('missing or zero receipt/tax amounts are not promoted from normalizer defaults', () => {
+  const coupon = event('coupon-zero-default', 'juros', { status: 'RECEIVED' });
+  const tax = event('tax-zero-default', 'ir', { status: 'PAID', relatedEventId: 'coupon-zero-default' });
+  const result = provider.buildEvidence({ asset: trend(), assets: [trend()], events: [coupon, tax], historyEvidence: proof() });
+  assert.equal(result.events.find(row => row.id === coupon.id).amount, null);
+  assert.equal(result.events.find(row => row.id === tax.id).amount, null);
+  assert.equal(result.coverage.history.status, 'PARTIAL');
+});
+
 test('PROVIDER_COMPLETE_HISTORY_REQUIRES_STABLE_IDS_AND_DATES', () => {
   const noId = event('', 'juros', { status: 'RECEIVED', netValue: 10 });
   const noDate = event('coupon-2', 'juros', { status: 'RECEIVED', date: '' , netValue: 10 });

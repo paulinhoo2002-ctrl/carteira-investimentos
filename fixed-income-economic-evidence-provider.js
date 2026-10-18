@@ -67,8 +67,8 @@
       && value.duplicatesResolved === true;
   }
 
-  function amountFor(row, category, type) {
-    if (typeof row?.amount === 'number' && Number.isFinite(row.amount) && row.amount >= 0) {
+  function amountFor(row, category) {
+    if (typeof row?.amount === 'number' && Number.isFinite(row.amount) && row.amount > 0) {
       if (category === 'receipt' && !['GROSS', 'NET'].includes(row.amountBasis)) return null;
       return { amount: row.amount, amountBasis: category === 'receipt' ? row.amountBasis : undefined };
     }
@@ -76,11 +76,10 @@
       return { amount: row.principalDelta };
     }
     if (category === 'tax') {
-      const taxValue = type === 'IR' ? row?.ir : row?.iof;
-      const value = [row?.amount, taxValue, row?.value, row?.grossValue].find(candidate => typeof candidate === 'number' && Number.isFinite(candidate));
-      return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? { amount: value } : null;
+      const value = row?.value;
+      return typeof value === 'number' && Number.isFinite(value) && value > 0 ? { amount: value } : null;
     }
-    if (category === 'receipt' && typeof row?.netValue === 'number' && Number.isFinite(row.netValue) && row.netValue >= 0) {
+    if (category === 'receipt' && typeof row?.netValue === 'number' && Number.isFinite(row.netValue) && row.netValue > 0) {
       return { amount: row.netValue, amountBasis: 'NET' };
     }
     return null;
@@ -168,7 +167,7 @@
 
       if (['IR', 'IOF'].includes(type)) {
         taxEvidencePresent = true;
-        const sourceAmount = amountFor(row, 'tax', type);
+        const sourceAmount = amountFor(row, 'tax');
         const status = row?.status === 'PAID' ? 'PAID' : 'UNKNOWN';
         if (!sourceAmount || !id || !validDate(date) || status !== 'PAID' || !row?.relatedEventId) {
           eventsSupported = false;
