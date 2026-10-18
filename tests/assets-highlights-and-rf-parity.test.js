@@ -68,9 +68,8 @@ function buildContext(assets){
   vm.runInNewContext(fmtP, ctx);
   const fmtN = extractFunctionBlock(INDEX_HTML, 'const fmtN =', 'const DEBUG');
   vm.runInNewContext(fmtN, ctx);
-  const esc = extractFunctionBlock(INDEX_HTML, 'const esc  = s => String(s ??', 'const noteDisplay');
-  // strip leading `const esc  =` do bloco e reavaliar como atribuição
-  vm.runInNewContext('var esc = ' + esc.replace(/^const esc\s*=\s*/, ''), ctx);
+  const esc = extractFunctionBlock(INDEX_HTML, 'const esc  = s => {', 'function maskSensitiveRenderedValues');
+  vm.runInNewContext(esc, ctx);
 
   // Helpers de normalização usados por assetAnalysisRows
   ctx.normalizeType = (value, fallback='Ação') => String(value ?? fallback).trim() || 'Ação';
