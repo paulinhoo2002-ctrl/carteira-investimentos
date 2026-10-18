@@ -8,7 +8,7 @@ const test = require('node:test');
 const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
 function evaluateDisplayHelpers(){
-  const start=source.indexOf('function rfEventEvidenceStatus(row){');
+  const start=source.indexOf('function rfEventEvidenceStatus(row,component=');
   const end=source.indexOf('function rfEventSeedActionHtml(row, totals){',start);
   assert.notEqual(start,-1);
   assert.notEqual(end,-1);
@@ -24,15 +24,16 @@ function evaluateDisplayHelpers(){
 
 test('missing event evidence stays unavailable instead of becoming zero',()=>{
   const helpers=evaluateDisplayHelpers();
-  assert.equal(helpers.rfEventEvidenceStatus({eventCount:0,receivedNet:0}),'Indisponível');
+  assert.equal(helpers.rfEventEvidenceStatus({eventCount:0,receivedNet:0,eventEvidenceCounts:{income:0}}),'Indisponível');
   assert.equal(helpers.rfEventEvidenceStatus({receivedNet:0}),'Indisponível');
-  assert.match(helpers.rfEventReceiptsSummaryHtml({eventCount:0,receivedNet:0}),/Indisponível/);
+  assert.match(helpers.rfEventReceiptsSummaryHtml({eventCount:0,receivedNet:0,eventEvidenceCounts:{income:0}}),/Indisponível/);
 });
 
 test('some recorded events remain partial and do not expose an unclassified aggregate',()=>{
   const helpers=evaluateDisplayHelpers();
   const row={
     eventCount:4,
+    eventEvidenceCounts:{income:1,tax:1,principal:2},
     receivedGross:3581.55,
     receivedIr:612.76,
     receivedNet:2968.79,
@@ -44,7 +45,9 @@ test('some recorded events remain partial and do not expose an unclassified aggr
     ]
   };
   const summary=helpers.rfEventReceiptsSummaryHtml(row);
-  assert.equal(helpers.rfEventEvidenceStatus(row),'Parcial');
+  assert.equal(helpers.rfEventEvidenceStatus(row,'income'),'Parcial');
+  assert.equal(helpers.rfEventEvidenceStatus(row,'tax'),'Parcial');
+  assert.equal(helpers.rfEventEvidenceStatus(row,'principal'),'Parcial');
   assert.match(summary,/Parcial/);
   assert.doesNotMatch(summary,/2\.968,79|3\.581,55|612,76|1\.000/);
   assert.doesNotMatch(summary,/Completo|Certificado/);
