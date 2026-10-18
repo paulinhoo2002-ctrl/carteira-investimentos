@@ -17,6 +17,7 @@ const ROUTE_VIEWPORTS = [
 ];
 const MATRIX_VIEWPORTS = [
   { width: 360, height: 800 },
+  { width: 412, height: 915 },
   { width: 430, height: 932 },
   { width: 768, height: 1024 },
   { width: 1024, height: 768 },
@@ -651,6 +652,124 @@ test('V2 tablet navigation stays in one reachable row without page overflow', as
   }
 });
 
+test('Ativos keeps primary category metrics readable and unclipped on tablet', async () => {
+  for (const width of [768, 1024]) {
+    const runtime = await createRuntime({ width, height: 1024 });
+    try {
+      await setThemeAndRoute(runtime.page, 'dark', 'ativos');
+      const category = runtime.page.locator('.assets-premium-shell details.ag').first();
+      await category.waitFor({ state: 'visible' });
+      const metrics = await category.locator(':scope > summary .acc-metric-label').evaluateAll(labels => labels.map(label => {
+        const value = label.parentElement.querySelector('.acc-metric-value');
+        const rect = label.getBoundingClientRect();
+        const summary = label.closest('summary').getBoundingClientRect();
+        const style = getComputedStyle(label);
+        const valueStyle = getComputedStyle(value);
+        return {
+          label: label.textContent.trim(),
+          visible: rect.width > 0 && rect.height > 0,
+          labelFontSize: parseFloat(style.fontSize),
+          valueFontSize: parseFloat(valueStyle.fontSize),
+          labelClipped: label.scrollWidth > label.clientWidth + 1,
+          valueClipped: value.scrollWidth > value.clientWidth + 1,
+          insideSummary: rect.left >= summary.left - 1 && rect.right <= summary.right + 1,
+        };
+      }));
+      for (const label of ['Atual', 'Resultado', 'Rentab.']) {
+        const metric = metrics.find(item => item.label === label);
+        assert.ok(metric?.visible, `${width}px: ${label} must appear in the category summary`);
+        assert.ok(metric.labelFontSize >= 12, `${width}px: ${label} label must be readable`);
+        assert.ok(metric.valueFontSize >= 12, `${width}px: ${label} value must be readable`);
+        assert.equal(metric.labelClipped, false, `${width}px: ${label} label must not be clipped`);
+        assert.equal(metric.valueClipped, false, `${width}px: ${label} value must not be clipped`);
+        assert.equal(metric.insideSummary, true, `${width}px: ${label} must stay inside its category card`);
+      }
+      if (!(await category.getAttribute('open'))) await category.locator(':scope > summary').click();
+      const table = category.locator('.assets-table-wrap table');
+      assert.ok(await table.isVisible(), `${width}px: expanding a category must reveal its detail table`);
+      const headers = (await table.locator('thead th').allTextContents()).map(label => label.trim().toLowerCase());
+      assert.ok(headers.includes('investido'), `${width}px: Investido must remain available in expanded details`);
+      assert.ok(headers.includes('% carteira'), `${width}px: portfolio weight must remain available in expanded details`);
+      assert.ok(await runtime.page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${width}px: Ativos must not overflow the viewport`);
+      await assertSyntheticReadOnlyRuntime(runtime);
+    } finally {
+      await closeRuntime(runtime);
+    }
+  }
+});
+
+test('tablet navigation exposes its scroll affordance and every route by keyboard', async () => {
+  for (const width of [768, 1024]) {
+    const runtime = await createRuntime({ width, height: 1024 });
+    try {
+      const nav = runtime.page.locator('.tabs-mobile');
+      const controls = runtime.page.locator('.tabs-mobile > .tab, .tabs-mobile > details > summary');
+      const count = await controls.count();
+      assert.ok(count > 0, `${width}px: main navigation must render`);
+      const initial = await nav.evaluate(element => ({
+        overflow: element.scrollWidth > element.clientWidth + 1,
+        scrollbarWidth: getComputedStyle(element).scrollbarWidth,
+        continuationHint: getComputedStyle(element, '::after').content,
+      }));
+      if (initial.overflow) {
+        assert.equal(initial.scrollbarWidth, 'thin', `${width}px: overflowing tablet navigation must show a scroll affordance`);
+        assert.equal(initial.continuationHint, '"›"', `${width}px: overflowing tablet navigation must show a visible continuation cue`);
+      }
+      await controls.first().focus();
+      for (let index = 0; index < count; index += 1) {
+        if (index > 0) await runtime.page.keyboard.press('Tab');
+        const control = runtime.page.locator('.tabs-mobile :focus');
+        assert.equal(await control.count(), 1, `${width}px: keyboard focus must remain on a navigation control`);
+        const reachable = await control.evaluate(element => {
+          const nav = element.closest('.tabs-mobile');
+          const navRect = nav.getBoundingClientRect();
+          const rect = element.getBoundingClientRect();
+          return {
+            inside: rect.left >= navRect.left - 1 && rect.right <= navRect.right + 1,
+            item: { left: rect.left, right: rect.right, width: rect.width },
+            nav: { left: navRect.left, right: navRect.right, width: navRect.width, scrollLeft: nav.scrollLeft, scrollWidth: nav.scrollWidth, clientWidth: nav.clientWidth },
+          };
+        });
+        assert.equal(reachable.inside, true, `${width}px: navigation item ${index + 1} must scroll into view when focused: ${JSON.stringify(reachable)}`);
+      }
+      const reportGroup = nav.locator(':scope > details.tab-menu');
+      const reportSummary = reportGroup.locator(':scope > summary');
+      await reportSummary.focus();
+      await runtime.page.keyboard.press('Enter');
+      await runtime.page.waitForFunction(() => document.querySelector('.tabs-mobile > details.tab-menu')?.open === true);
+      await runtime.page.waitForFunction(() => document.querySelector('.tabs-mobile > details.tab-menu > summary')?.getAttribute('aria-expanded') === 'true');
+      assert.equal(await reportSummary.getAttribute('aria-expanded'), 'true', `${width}px: Reports group must expose its expanded state`);
+      const reportAction = reportGroup.locator('.tab-menu-panel button').first();
+      assert.ok(await reportAction.isVisible(), `${width}px: keyboard must reveal nested routes`);
+      const reportRoute = (await reportAction.getAttribute('onclick')).match(/go\('([^']+)'\)/)?.[1];
+      assert.ok(reportRoute, `${width}px: nested navigation action must map to a route`);
+      await reportAction.focus();
+      await runtime.page.keyboard.press('Enter');
+      await runtime.page.waitForFunction(route => S.tab === route, reportRoute);
+      await reportSummary.click();
+      await runtime.page.waitForFunction(() => document.querySelector('.tabs-mobile > details.tab-menu')?.open === true);
+      await reportGroup.locator('.tab-menu-panel button').first().click();
+      await runtime.page.waitForFunction(route => S.tab === route, reportRoute);
+      assert.ok(await runtime.page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${width}px: selecting nested routes must not overflow the page`);
+      await assertSyntheticReadOnlyRuntime(runtime);
+    } finally {
+      await closeRuntime(runtime);
+    }
+  }
+});
+
+test('Relatórios scopes complete value coverage to positions in the current report', async () => {
+  const runtime = await createRuntime({ width: 390, height: 844 });
+  try {
+    await setThemeAndRoute(runtime.page, 'light', 'relatorios');
+    const coverage = await runtime.page.locator('.reports-intelligence-strip').innerText();
+    assert.match(coverage, /100% das posições deste recorte têm valor atual informado/i);
+    await assertSyntheticReadOnlyRuntime(runtime);
+  } finally {
+    await closeRuntime(runtime);
+  }
+});
+
 test('Relatórios mantém detalhes secundários fechados e abre exportação pela ação principal', async () => {
   const runtime = await createRuntime({ width: 390, height: 844 });
   try {
@@ -868,6 +987,37 @@ test('V289 changed routes pass axe in dark/light and respect reduced motion', as
     assert.deepEqual(runtime.pageErrors, [], `page errors: ${runtime.pageErrors.join(' | ')}`);
     assert.deepEqual(runtime.consoleErrors, [], `console errors: ${runtime.consoleErrors.join(' | ')}`);
     assert.deepEqual(runtime.localRequestFailures, [], `local request failures: ${runtime.localRequestFailures.join(' | ')}`);
+    await assertSyntheticReadOnlyRuntime(runtime);
+  } finally {
+    await closeRuntime(runtime);
+  }
+});
+
+test('Ativos, Lançamentos and Relatórios pass axe across mobile and tablet widths', async () => {
+  const runtime = await createRuntime({ width: 1366, height: 768 });
+  try {
+    for (const width of [390, 768, 1024, 1366]) {
+      await runtime.page.setViewportSize({ width, height: width < 500 ? 844 : 1024 });
+      for (const theme of THEMES) {
+        for (const route of ['ativos', 'aportes', 'relatorios']) {
+          await setThemeAndRoute(runtime.page, theme, route);
+          await runtime.page.waitForFunction(() => {
+            const probe = document.createElement('div');
+            probe.style.cssText = 'position:fixed;visibility:hidden;background:var(--bg)';
+            document.body.append(probe);
+            const expected = getComputedStyle(probe).backgroundColor;
+            probe.remove();
+            return getComputedStyle(document.body).backgroundColor === expected;
+          });
+          const result = await runtime.page.evaluate(async () => axe.run('#root .wrap', {
+            runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+          }));
+          assert.deepEqual(result.violations.map(item => ({ id:item.id, nodes:item.nodes.map(node => ({ target:node.target, failureSummary:node.failureSummary })) })), [], `${route}/${theme}/${width}px axe violations`);
+        }
+      }
+    }
+    assert.deepEqual(runtime.pageErrors, [], `page errors: ${runtime.pageErrors.join(' | ')}`);
+    assert.deepEqual(runtime.consoleErrors, [], `console errors: ${runtime.consoleErrors.join(' | ')}`);
     await assertSyntheticReadOnlyRuntime(runtime);
   } finally {
     await closeRuntime(runtime);

@@ -312,6 +312,14 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
 @media(min-width:621px) and (max-width:900px){.hdr{padding:8px 10px;gap:8px}.hdr-logo{min-width:0;flex:1 1 auto}.hdr-logo>div:last-child{min-width:0}.hdr-sub,.hdr-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hdr-right{min-width:0;max-width:52%;justify-content:flex-end;overflow:hidden}.hdr-right>*{min-width:0}.hdr-right .auth-box,.hdr-right .wallet-switch,.hdr-right .install-box{display:none}.tabs-mobile{max-width:100%;min-width:0;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;justify-content:flex-start;overscroll-behavior-x:contain;scrollbar-width:thin}.tabs-mobile .tab,.tabs-mobile .tab-menu{flex:0 0 auto;min-width:0;text-align:center}.tabs-mobile .tab{padding:9px 8px}.tabs-mobile .tab-menu-panel{position:fixed;left:8px;right:8px;top:108px;max-width:none;max-height:calc(100vh - 116px);overflow:auto}}
 @media(min-width:621px) and (max-width:900px){.tabs-mobile::-webkit-scrollbar{display:block;height:4px}.tabs-mobile::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}}
 @media(min-width:621px) and (max-width:900px){.tabs-mobile .tab-menu-panel button{white-space:normal;overflow-wrap:anywhere}}
+@media(min-width:621px) and (max-width:1180px){
+  .tabs-mobile{scrollbar-width:thin;scrollbar-color:var(--primary) var(--border);scroll-padding-inline:8px}
+  .tabs-mobile::-webkit-scrollbar{display:block;height:8px}
+  .tabs-mobile::-webkit-scrollbar-thumb{background:var(--primary);border-radius:6px}
+  .tabs-mobile::-webkit-scrollbar-track{background:var(--border)}
+  .tabs-mobile::after{content:'›';position:sticky;right:0;display:grid;place-items:center;flex:0 0 24px;margin-left:-24px;color:var(--primary);background:linear-gradient(90deg,transparent,var(--panel) 40%);font-size:20px;font-weight:800;pointer-events:none}
+  .tabs-mobile>.tab,.tabs-mobile>.tab-menu,.tabs-mobile>.tab-menu>summary{scroll-margin-inline:8px}
+}
 
 /* PHASE 11: visual master shell. Desktop navigation is the persistent sidebar;
    mobile keeps the existing compact navigation and bottom actions. */
@@ -7621,6 +7629,25 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 #assets-premium-table-desktop .assets-premium-table th:last-child,#assets-premium-table-desktop .assets-premium-table td:last-child{width:154px;min-width:154px;position:relative;z-index:2}
 @media(max-width:1100px) and (min-width:768px){
   .assets-premium-shell .ag-wrap{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(min-width:768px) and (max-width:1180px){
+  .assets-premium-shell .ag-wrap{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .assets-premium-shell details.ag>summary.accordion-header{
+    grid-template-columns:minmax(0,1fr) minmax(112px,auto) 44px;
+    grid-template-rows:auto auto;
+    align-items:center;
+    gap:8px 10px;
+    padding:10px 12px;
+  }
+  .assets-premium-shell details.ag>summary.accordion-header>.acc-info{grid-column:1;grid-row:1;min-width:0}
+  .assets-premium-shell details.ag>summary.accordion-header>div:nth-child(2),
+  .assets-premium-shell details.ag>summary.accordion-header>div:nth-child(6){display:none}
+  .assets-premium-shell details.ag>summary.accordion-header>div:nth-child(3){grid-column:2;grid-row:1;min-width:0;text-align:right}
+  .assets-premium-shell details.ag>summary.accordion-header>div:nth-child(4){grid-column:1;grid-row:2;min-width:0}
+  .assets-premium-shell details.ag>summary.accordion-header>div:nth-child(5){grid-column:2;grid-row:2;min-width:0;text-align:right}
+  .assets-premium-shell details.ag>summary.accordion-header>.acc-toggle{grid-column:3;grid-row:1;width:44px;height:44px}
+  .assets-premium-shell details.ag>summary.accordion-header .acc-metric-label{font-size:12px;line-height:1.2;letter-spacing:normal;white-space:normal;overflow:visible;text-overflow:clip}
+  .assets-premium-shell details.ag>summary.accordion-header .acc-metric-value{font-size:12px;line-height:1.25;font-variant-numeric:tabular-nums;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
 }
 @media(max-width:767px){
   .assets-premium-shell .assets-premium-title{font-size:19px}
@@ -28840,7 +28867,7 @@ function reportsTab(){
       </section>` : '';
   const auditTone=data.auditCount?'warn':'ok';
   const intelligenceStatus=intelligence?.sections?.performance?.status==='AVAILABLE'?'Disponível':intelligence?.sections?.performance?.status==='TRACKING_STARTED'?'Coletando histórico':'Indisponível';
-  const intelligenceCoverage=intelligence?.coverage?.value===null?'Cobertura não informada':`${intelligence.coverage.value.toFixed(0)}% dos valores reportados`;
+  const intelligenceCoverage=intelligence?.coverage?.value===null?'Cobertura não informada':`${intelligence.coverage.value.toFixed(0)}% das posições deste recorte têm valor atual informado`;
   const operationalReadiness=intelligence?.readiness;
   const healthStateLabel=status=>({AVAILABLE:'Disponível',PARTIAL:'Parcial',UNAVAILABLE:'Indisponível',TRACKING_STARTED:'Coletando histórico'}[status]||'UNKNOWN');
   const healthTiles=operationalReadiness?[
@@ -29242,7 +29269,7 @@ function desktopTabs(){
   </nav>`;
 }
 function mobileTabs(){
-  return `<nav class="tabs tabs-mobile" aria-label="Navegação principal da carteira">
+  return `<nav class="tabs tabs-mobile" aria-label="Navegação principal da carteira" onfocusin="event.target.scrollIntoView({block:'nearest',inline:'nearest'})">
     ${NAV_TABS.map(([k,l])=>navTabButton(k,l)).join('')}
     ${navTabGroup('Relatórios',REPORT_TABS,'mobile')}
   </nav>`;
@@ -38564,7 +38591,7 @@ function updateRfAssetSummary(selectElement) {
   min-width:0;
   margin:-3px 0 8px;
   color:var(--muted);
-  font-size:10px;
+  font-size:12px;
   line-height:1.3;
   font-variant-numeric:tabular-nums;
 }
