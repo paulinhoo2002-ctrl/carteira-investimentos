@@ -4,6 +4,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const test = require('node:test');
+const engine = require('../fixed-income-economic-result.js');
+const adapter = require('../fixed-income-economic-result-adapter.js');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
@@ -130,4 +132,89 @@ test('hide-values sanitizes raw rendered labels, rates, and holding quantities',
   assert.match(source.slice(start,end),/aria-label/);
   assert.match(source.slice(start,end),/data-chart-tooltip/);
   assert.match(source,/maskSensitiveRenderedValues\(root\)/);
+});
+
+test('economic-result presentation requires component coverage and masks values',()=>{
+  const start=source.indexOf('function rfEconomicMoneyText(result,metric,row){');
+  const end=source.indexOf('function rfPositionResultText(',start);
+  assert.notEqual(start,-1);
+  assert.notEqual(end,-1);
+  const context={
+    S:{hideValues:false},
+    fmt:value=>`R$ ${Number(value).toFixed(2)}`,
+    fmtP:value=>`${Number(value).toFixed(2)}%`,
+    FixedIncomeEconomicResultAdapter:{
+      canExposeTotal:result=>result?.status==='DERIVED_WITH_COMPLETE_HISTORY'&&result.coverage?.totalResult==='DERIVED'&&Number.isFinite(result.totalEconomicResult),
+      canExposeReturnPercent:result=>result?.status==='DERIVED_WITH_COMPLETE_HISTORY'&&result.coverage?.totalResult==='DERIVED'&&result.coverage?.totalReturnPercent==='DERIVED'&&Number.isFinite(result.totalReturnPercent),
+    },
+  };
+  vm.createContext(context);
+  vm.runInContext(`${source.slice(start,end)};({rfEconomicMoneyText,rfEconomicTotalText,rfEconomicReturnText})`,context);
+  const partial={status:'PARTIAL',coverage:{incomeNet:'PARTIAL',totalResult:'PARTIAL',totalReturnPercent:'PARTIAL'},incomeNet:null,totalEconomicResult:null,totalReturnPercent:null};
+  assert.equal(context.rfEconomicMoneyText(partial,'incomeNet'),'Parcial');
+  assert.equal(context.rfEconomicTotalText(partial),'Em consolidação');
+  assert.equal(context.rfEconomicReturnText(partial),'Em consolidação');
+  const complete={status:'DERIVED_WITH_COMPLETE_HISTORY',coverage:{incomeNet:'AVAILABLE',totalResult:'DERIVED',totalReturnPercent:'DERIVED'},incomeNet:125.5,totalEconomicResult:250.75,totalReturnPercent:12.5};
+  assert.equal(context.rfEconomicMoneyText(complete,'incomeNet'),'R$ 125.50');
+  assert.equal(context.rfEconomicTotalText(complete),'R$ 250.75');
+  assert.equal(context.rfEconomicReturnText(complete),'12.50%');
+  context.S.hideValues=true;
+  context.fmt=value=>context.S.hideValues?'R$ ••••':`R$ ${Number(value).toFixed(2)}`;
+  context.fmtP=value=>context.S.hideValues?'••••':`${Number(value).toFixed(2)}%`;
+  assert.equal(context.rfEconomicMoneyText(complete,'incomeNet'),'R$ ••••');
+  assert.equal(context.rfEconomicTotalText(complete),'R$ ••••');
+  assert.equal(context.rfEconomicReturnText(complete),'••••');
+});
+
+test('Trend DI II UI can show a derived total without inventing open-position result',()=>{
+  const start=source.indexOf('function rfEconomicMoneyText(result,metric,row){');
+  const end=source.indexOf('function rfPositionResultText(',start);
+  const history={status:'COMPLETE',periodStart:'2024-06-01',periodEnd:'2026-10-18',openingPosition:'NONE',allEventsRepresented:true,duplicatesResolved:true};
+  const result=adapter.calculate({
+    currentMarketValue:28024.01,
+    currentPositionKnown:true,
+    currentPositionCoverage:'COMPLETE',
+    evidence:{remainingCostBasis:null,contributions:[{id:'application-1',type:'APPLICATION',amount:73157.60,status:'CONFIRMED',occurredOn:'2024-06-01'}],events:[
+      {id:'redemption-1',type:'PARTIAL_REDEMPTION',amount:49237.86,amountBasis:'GROSS',status:'RECEIVED',occurredOn:'2025-06-01'},
+      {id:'tax-1',type:'IR',amount:272.43,status:'PAID',relatedEventId:'redemption-1',occurredOn:'2025-06-02'},
+    ],coverage:{currentPosition:'COMPLETE',costBasis:'UNKNOWN',contributions:'COMPLETE',income:'COMPLETE',taxes:'COMPLETE',capitalReturns:'COMPLETE',principal:'COMPLETE',history},returnPercentBasis:'CUMULATIVE_CONTRIBUTIONS_SIMPLE'},
+    engine:engine.calculateFixedIncomeEconomicResult,
+  });
+  const context={S:{hideValues:false},fmt:value=>`R$ ${Number(value).toFixed(2)}`,fmtP:value=>`${Number(value).toFixed(2)}%`,FixedIncomeEconomicResultAdapter:adapter};
+  vm.createContext(context);
+  vm.runInContext(`${source.slice(start,end)};({rfEconomicMoneyText,rfEconomicTotalText,rfEconomicReturnText})`,context);
+  assert.equal(result.totalEconomicResult,3831.84);
+  assert.equal(result.openPositionResult,null);
+  assert.equal(context.rfEconomicTotalText(result),'R$ 3831.84');
+  assert.equal(context.rfEconomicReturnText(result),'5.24%');
+  assert.equal(context.rfEconomicMoneyText(result,'openPositionResult'),'Indisponível');
+});
+
+test('economic evidence is limited to REAL Trend products and synthetic local fixtures',()=>{
+  const start=source.indexOf('function rfEconomicEvidenceForAsset(asset){');
+  const end=source.indexOf('function rfIntelligenceSnapshot(){',start);
+  assert.notEqual(start,-1);
+  assert.notEqual(end,-1);
+  const trendAsset={id:'synthetic-id',name:'Trend DI FIC RF Simples RL'};
+  const movidaAsset={id:'synthetic-id',name:'DEB MOVIDA - JUN/2029'};
+  const context={
+    isLocalTestMode:()=>true,
+    FB:{accountMode:'LOCAL'},
+    rfPosNorm:value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim(),
+    assetRfName:asset=>asset.name,
+    rfAssetEventId:item=>item.id,
+    FixedIncomeEconomicResultEvidence:{'synthetic-id':{events:[{id:'private'}]}},
+    FixedIncomeEconomicResultTestEvidence:{'synthetic-id':{events:[{id:'synthetic'}]}},
+  };
+  vm.createContext(context);
+  vm.runInContext(source.slice(start,end),context);
+  context.trendAsset=trendAsset;
+  context.movidaAsset=movidaAsset;
+  assert.equal(vm.runInContext('rfEconomicEvidenceForAsset(trendAsset).events[0].id',context),'synthetic');
+  assert.equal(vm.runInContext('rfEconomicEvidenceForAsset(movidaAsset)',context),null);
+  context.FB.accountMode='BLOCKED';
+  assert.equal(vm.runInContext('rfEconomicEvidenceForAsset(trendAsset)',context),null);
+  context.FB.accountMode='REAL';
+  assert.equal(vm.runInContext('rfEconomicEvidenceForAsset(trendAsset).events[0].id',context),'private');
+  assert.equal(vm.runInContext('rfEconomicEvidenceForAsset(movidaAsset)',context),null);
 });

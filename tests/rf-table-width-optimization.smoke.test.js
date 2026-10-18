@@ -163,7 +163,7 @@ for (const viewport of viewports) {
         const focusVisible = await summary.evaluate(element => document.activeElement === element && getComputedStyle(element).outlineStyle !== 'none' && parseFloat(getComputedStyle(element).outlineWidth) >= 2);
         assert.equal(focusVisible, true, `foco visivel ausente no expansor em ${viewport.label}`);
         const details = await firstCard.locator('.rf-responsive-card-details').innerText();
-        for (const label of ['Capital aplicado informado', 'Rendimentos recebidos', 'Resultado econômico total', 'Rentabilidade total', 'Vencimento']) {
+        for (const label of ['Capital aplicado informado', 'Rendimentos brutos recebidos', 'Rendimentos líquidos recebidos', 'Resultado econômico total', 'Rentabilidade total simples', 'Vencimento']) {
           assert.ok(details.includes(label), `${label} inacessivel no detalhe em ${viewport.label}`);
         }
         const detailBounds = await firstCard.locator('.rf-responsive-card-details').evaluate(element => ({

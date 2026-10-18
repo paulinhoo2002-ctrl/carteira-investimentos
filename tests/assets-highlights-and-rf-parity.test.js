@@ -55,7 +55,9 @@ function buildContext(assets){
   ctx.assetRfUnavailableValue = () => 0;
   ctx.rfCategoryLabel = () => 'CDB';
   ctx.rfBucketLabel = () => 'Sem vencimento';
-  ctx.rfIncomeByAsset = () => ({ grossValue:0, ir:0, iof:0, netValue:0, count:0 });
+  ctx.rfIncomeByAsset = () => ({ grossValue:0, ir:0, iof:0, netValue:0, count:0, eventEvidenceCounts:{ income:0, tax:0, principal:0 } });
+  // These legacy parity tests do not provide complete economic evidence.
+  ctx.rfEconomicEvidenceForAsset = () => null;
 
   // Helpers de formatação: extraídos do index.html.
   const fmtRaw = extractFunctionBlock(INDEX_HTML, 'const fmtRaw =', 'let valueVisibilityDepth');
@@ -320,9 +322,10 @@ test('RF: cada linha da tabela mantem todas as celulas dentro de um unico tr', (
     assert.equal(countMatches(rowHtml, /<tr\b/g), 1, `${ticker} deve abrir um unico <tr>`);
     assert.equal(countMatches(rowHtml, /<\/tr>/g), 1, `${ticker} deve fechar um unico </tr>`);
     assert.equal(countMatches(rowHtml, /<td\b/g), 10, `${ticker} deve manter as 10 celulas esperadas dentro do <tr>`);
-    assert.match(rowHtml, /Renda efetivamente recebida ainda não conciliada/, `${ticker} deve manter o estado de renda sem assumir zero`);
+    assert.match(rowHtml, /Rendimentos líquidos recebidos/, `${ticker} deve identificar a métrica de renda líquida`);
+    assert.match(rowHtml, /<div class="rf-strong">Indisponível<\/div>/, `${ticker} deve manter renda desconhecida sem assumir zero`);
     assert.match(rowHtml, /Resultado econômico total/);
-    assert.match(rowHtml, /Em consolidação/, `${ticker} não deve apresentar retorno total como certificado`);
+    assert.match(rowHtml, /(?:Em consolidação|Indisponível)/, `${ticker} não deve apresentar retorno total como certificado`);
     const lineEnd = rowHtml.lastIndexOf('</tr>');
     const afterLine = rowHtml.slice(lineEnd + '</tr>'.length);
     assert.equal(/<td\b/.test(afterLine), false, `${ticker} nao pode ter <td> orfao apos </tr>`);
