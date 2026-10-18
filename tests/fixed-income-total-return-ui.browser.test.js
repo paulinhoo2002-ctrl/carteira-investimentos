@@ -14,10 +14,14 @@ const executablePath = [
 ].filter(Boolean).find(candidate => { try { fs.accessSync(candidate); return true; } catch { return false; } });
 
 for (const viewport of [
+  { width: 360, height: 800 },
   { width: 390, height: 844 },
+  { width: 412, height: 915 },
+  { width: 430, height: 932 },
   { width: 768, height: 1024 },
   { width: 1024, height: 768 },
   { width: 1366, height: 768 },
+  { width: 1440, height: 900 },
   { width: 1920, height: 1080 },
 ]) {
   test(`RF semantic presentation stays readable and non-misleading at ${viewport.width}px`, async () => {
@@ -34,10 +38,16 @@ for (const viewport of [
       await page.goto(harness.url, { waitUntil: 'networkidle' });
       await page.evaluate(() => go('dashboard'));
       const dashboard = await page.locator('.premium-dashboard.canon-dashboard').innerText();
-      assert.match(dashboard, /Valorização dos ativos/i);
+      assert.match(dashboard, /Resultado sobre capital cadastrado/i);
       assert.match(dashboard, /Renda recebida no mês/i);
       assert.match(dashboard, /Resultado total: Em consolidação/i);
       assert.doesNotMatch(dashboard, /Ganho de capital \+/);
+      if (viewport.width <= 900) {
+        const labels = await page.locator('.premium-dashboard .premium-metric-label').evaluateAll(elements => elements.map(element => ({
+          clipped: element.scrollWidth > element.clientWidth || getComputedStyle(element).overflow === 'hidden' || getComputedStyle(element).whiteSpace === 'nowrap'
+        })));
+        assert.ok(labels.every(label => !label.clipped), 'rótulo de KPI cortado no Dashboard mobile/tablet');
+      }
 
       const ticker = await page.evaluate(() => {
         const asset = S.assets.find(item => normalizeType(item.type || '', '') === 'Renda Fixa');
@@ -61,6 +71,7 @@ for (const viewport of [
       const layout = await page.evaluate(() => ({
         overflow: document.documentElement.scrollWidth > window.innerWidth,
         cards: getComputedStyle(document.querySelector('.rf-responsive-cards')).display !== 'none',
+        summaryText: document.querySelector('.rf-responsive-card summary')?.innerText || '',
         table: getComputedStyle(document.querySelector('.rf-table-wrap')).display !== 'none',
       }));
       assert.equal(layout.overflow, false, `overflow horizontal em ${viewport.width}px`);
@@ -72,6 +83,11 @@ for (const viewport of [
         await card.locator('summary').focus();
         await page.keyboard.press('Space');
         assert.equal(await card.evaluate(node => node.open), true, 'detalhes da posição devem abrir por teclado');
+        const summaryText = await card.locator('summary').innerText();
+        assert.match(summaryText, /Valor atual/);
+        assert.match(summaryText, /Resultado da posição/);
+        assert.match(summaryText, /Rentabilidade da posição/);
+        assert.match(summaryText, /Vencimento/);
         const text = await card.innerText();
         assert.match(text, /Rendimentos recebidos\s+Parcial/);
         assert.match(text, /Impostos pagos\s+Parcial/);
@@ -92,6 +108,14 @@ for (const viewport of [
         const detailsText = await details.innerText();
         assert.match(detailsText, /Impostos pagos\s+Parcial/);
         assert.match(detailsText, /Principal devolvido\s+Parcial/);
+        const disclosureGeometry = await details.locator('dl').evaluate(node => {
+          const rect = node.getBoundingClientRect();
+          const wrap = node.closest('.rf-table-wrap').getBoundingClientRect();
+          return { left: rect.left, right: rect.right, wrapLeft: wrap.left, wrapRight: wrap.right, clipped: node.scrollWidth > node.clientWidth };
+        });
+        assert.ok(disclosureGeometry.left >= disclosureGeometry.wrapLeft - 1, 'detalhe econômico cortado à esquerda da tabela');
+        assert.ok(disclosureGeometry.right <= disclosureGeometry.wrapRight + 1, 'detalhe econômico cortado à direita da tabela');
+        assert.equal(disclosureGeometry.clipped, false, 'conteúdo do detalhe econômico cortado');
         for (const amount of ['987,65', '972,10', '123,45', '543,21', '12,34']) assert.equal(text.includes(amount), false, `agregado de evento não classificado exposto: ${amount}`);
       }
       assert.deepEqual(errors, []);

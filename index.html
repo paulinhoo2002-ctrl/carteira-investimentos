@@ -982,6 +982,7 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
   .premium-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
   .premium-metric{min-height:84px;padding:9px}
   .premium-metric-value{font-size:15px}
+  .premium-dashboard .premium-metric-label{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.2}
   .premium-dashboard-grid{gap:8px}
   .premium-panel{padding:10px}
   .dashboard-home-performance{padding:8px!important}
@@ -6581,7 +6582,8 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       @media(max-width:767px){
         .premium-rf-row-value{min-width:0;max-width:51%;font-size:11px}
         .premium-rf-row-results{gap:4px 8px}
-        .premium-rf-row-results .premium-rf-row-meta{font-size:9px}
+        .premium-rf-row-applied{display:none}
+        .premium-rf-row-results .premium-rf-row-meta{font-size:12px}
       }
 
   /* V328 ACCORDION CATEGORY - Adapted from index2027 */
@@ -7326,6 +7328,10 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     .ag-table .tw .asset-action{padding-left:6px;padding-right:6px;font-size:10px}
     .rf-table-wrap table{min-width:0;width:100%;table-layout:fixed}
     .rf-table-wrap table th,.rf-table-wrap table td{overflow:hidden;text-overflow:ellipsis}
+    .rf-table-wrap table td:last-child{position:relative;overflow:visible;text-overflow:clip;white-space:normal}
+    .rf-economic-status-details{position:relative}
+    .rf-economic-status-details[open]{z-index:3}
+    .rf-economic-status-details dl{position:absolute;right:0;min-width:220px;max-width:calc(100vw - 24px);z-index:5}
     #assets-premium-rf-table-desktop table,#assets-premium-rf-table-desktop .rf-table{min-width:0!important;width:100%;table-layout:fixed;font-size:10px}
     #assets-premium-rf-table-desktop table th,#assets-premium-rf-table-desktop table td{min-width:0!important;padding:6px 5px;overflow:visible;text-overflow:clip;white-space:normal}
     #assets-premium-rf-table-desktop table td:first-child{min-width:112px!important;white-space:normal}
@@ -31163,13 +31169,13 @@ function rendaFixaTab(){
       </div>
       <div class="premium-rf-row-value">
         <div class="premium-rf-row-financial"><span class="premium-rf-row-financial-label">Atual</span>${display.currentText}</div>
-        <div class="premium-rf-row-meta">Valor aplicado ${display.appliedText}</div>
+        <div class="premium-rf-row-meta premium-rf-row-applied">Valor aplicado ${display.appliedText}</div>
         <div class="premium-rf-row-meta"><span class="premium-rf-provenance ${esc(display.provenance?.tone||'muted')}">${esc(display.provenance?.label||'Valor informado')}</span> ${esc(display.currentNote)}</div>
         ${provenanceDetails?.rows?.length ? `<details class="premium-rf-provenance-details"><summary>Como foi avaliado</summary><div class="premium-rf-provenance-grid">${provenanceDetails.rows.map(([key,value])=>`<span>${esc(key)}</span><strong>${esc(value)}</strong>`).join('')}</div></details>` : ''}
         <div class="premium-rf-row-meta">Vencimento ${esc(display.maturityText)}</div>
         <div class="premium-rf-row-results">
-          <span class="premium-rf-row-meta ${display.resultClass}">Resultado ${display.kind==='fallback-applied' ? '—' : display.resultText}</span>
-          <span class="premium-rf-row-meta ${display.resultClass}">Rentab. ${display.rentabilityText}</span>
+          <span class="premium-rf-row-meta ${display.resultClass}">Resultado da posição ${display.kind==='fallback-applied' ? '—' : display.resultText}</span>
+          <span class="premium-rf-row-meta ${display.resultClass}">Rentabilidade da posição ${display.rentabilityText}</span>
         </div>
       </div>
       ${assetId ? `
@@ -31281,12 +31287,11 @@ function rendaFixaTab(){
     const responsiveCards=trustRows.length ? trustRows.map(row=>`
       <details class="rf-responsive-card">
         <summary aria-label="Detalhes de ${esc(row.name||row.ticker)}">
-          <span class="rf-responsive-card-heading"><strong>${esc(row.ticker)}</strong><span>${esc(row.category)}${row.issuer?` · ${esc(row.issuer)}`:''}</span></span>
+          <span class="rf-responsive-card-heading"><strong>${esc(row.ticker)}</strong><span>${esc(row.category)}${row.issuer?` · ${esc(row.issuer)}`:''} · Vencimento ${row.due?row.due.toLocaleDateString('pt-BR'):'não informado'}</span></span>
           <span class="rf-responsive-card-summary-values">
-            <span><small>Atual</small><strong>${row.explicit===false?'—':fmt(row.current)}</strong></span>
+            <span><small>Valor atual</small><strong>${row.explicit===false?'—':fmt(row.current)}</strong></span>
             <span><small>Resultado da posição</small><strong>${esc(rfPositionResultText(row))}</strong></span>
-            <span><small>Rentabilidade total</small><strong>Em consolidação</strong></span>
-            <span><small>Vencimento</small><strong>${row.due?row.due.toLocaleDateString('pt-BR'):'—'}</strong></span>
+            <span><small>Rentabilidade da posição</small><strong>${row.explicit&&row.appliedKnown&&Number.isFinite(row.pct)?fmtP(row.pct):'Indisponível'}</strong></span>
           </span>
           <span class="rf-responsive-card-disclosure" aria-hidden="true">＋</span>
         </summary>
@@ -31961,7 +31966,7 @@ function executiveKPIs(data){
     ${totalResultStatus}
     <div class="dashboard-executive-kpis">
       ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',patrimonyValue,`${investedContext} · ${patrimonyNote} · Data-base financeira não informada`,'#a78bfa','rgba(129,140,248,.16)')}
-      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Valorização dos ativos',resultValue,resultNote,resultTone,resultGlow)}
+      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado sobre capital cadastrado',resultValue,resultNote,resultTone,resultGlow)}
       ${dashboardMetricCard(dashboardMetricIcon('cash'),'Renda recebida no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida','#10b981','rgba(16,185,129,.14)')}
     </div>
   `;
@@ -31990,16 +31995,16 @@ function package2ExecutivePanel(){
   const fullScope=String(rs.coverage_status||'').toUpperCase()==='FULL_CERTIFIED_SCOPE';
   const gainTone=!rvValid||rvTotal>=0?'#34d399':'#f87171';
   const gainGlow=!rvValid||rvTotal>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)';
-  const gainValue=rvValid&&!hidden?fmt(rvTotal):'—';
+  const gainValue=rvValid&&!hidden?assetSignedMoneyText(rvTotal):'—';
   const gainScope=fullScope?'COMPLETA':'PARCIAL';
   const gainNote=rvValid?`${rs.rv_certified_count||0} posições certificadas · cobertura ${coveragePct}% · ${gainScope}`:'Base indisponível';
   const y2026=Number(income.y2026_total);
   const incomeValid=Number.isFinite(y2026);
-  const incomeValue=incomeValid&&!hidden?fmt(y2026):'—';
+  const incomeValue=incomeValid&&!hidden?assetSignedMoneyText(y2026):'—';
   const incomeNote=incomeValid?`Recebidos em 2026 · ${Number(income.y2026_events)||0} eventos`:'Base indisponível';
   return `
     <div class="dashboard-executive-kpis package2-kpis" data-package2="present">
-      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Valorização dos ativos',gainValue,`${gainNote} · valor indicativo, não é lucro realizado`,gainTone,gainGlow)}
+      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado certificado da RV',gainValue,`${gainNote} · valor indicativo, não é lucro realizado`,gainTone,gainGlow)}
       ${dashboardMetricCard(dashboardMetricIcon('cash'),'Renda recebida',incomeValue,incomeNote,'#10b981','rgba(16,185,129,.14)')}
       ${dashboardMetricCard(dashboardMetricIcon('info'),'Resultado total','Em consolidação','Combinação de escopos ainda não certificada','#94a3b8','rgba(148,163,184,.12)')}
     </div>`;

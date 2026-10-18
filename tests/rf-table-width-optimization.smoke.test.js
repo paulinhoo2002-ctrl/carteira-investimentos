@@ -63,6 +63,17 @@ for (const viewport of viewports) {
       await page.waitForSelector('.rf-table tbody tr', { state: 'attached', timeout: 5000 });
 
       const snapshot = await page.evaluate(() => {
+        const rootOverflow = document.documentElement.style.getPropertyValue('overflow-x');
+        const rootPriority = document.documentElement.style.getPropertyPriority('overflow-x');
+        const bodyOverflow = document.body.style.getPropertyValue('overflow-x');
+        const bodyPriority = document.body.style.getPropertyPriority('overflow-x');
+        document.documentElement.style.setProperty('overflow-x', 'visible', 'important');
+        document.body.style.setProperty('overflow-x', 'visible', 'important');
+        const overflowWithoutGlobalClip = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) > window.innerWidth;
+        if (rootOverflow) document.documentElement.style.setProperty('overflow-x', rootOverflow, rootPriority);
+        else document.documentElement.style.removeProperty('overflow-x');
+        if (bodyOverflow) document.body.style.setProperty('overflow-x', bodyOverflow, bodyPriority);
+        else document.body.style.removeProperty('overflow-x');
         const wrap = document.querySelector('.rf-table-wrap');
         const table = document.querySelector('.rf-table');
         const wrapRect = wrap.getBoundingClientRect();
@@ -113,6 +124,7 @@ for (const viewport of viewports) {
           wrapScrollW: wrap.scrollWidth,
           overflowTable: wrap.scrollWidth > wrap.clientWidth,
           overflowPage: document.documentElement.scrollWidth > window.innerWidth,
+          overflowWithoutGlobalClip,
           wrappedNumbers,
           adaptiveVisible: visible(cardList),
           tableVisible,
@@ -136,7 +148,9 @@ for (const viewport of viewports) {
         assert.ok(snapshot.adaptiveCount > 0, `sem cards RF em ${viewport.label}`);
         assert.ok(snapshot.adaptiveCardBounds.every(rect => rect.left >= 0 && rect.right <= viewport.width && !rect.clipped), `card fora da viewport ou com corte interno em ${viewport.label}`);
         assert.ok(snapshot.summaryHeight >= 44, `alvo do expansor < 44px em ${viewport.label}`);
-        assert.match(snapshot.firstSummary, /Atual/);
+        assert.match(snapshot.firstSummary, /Valor atual/);
+        assert.match(snapshot.firstSummary, /Resultado da posição/);
+        assert.match(snapshot.firstSummary, /Rentabilidade da posição/);
         assert.match(snapshot.firstSummary, /Vencimento/);
         const firstCard = page.locator('.rf-responsive-card').first();
         const summary = firstCard.locator('summary');
@@ -179,6 +193,7 @@ for (const viewport of viewports) {
         assert.equal(snapshot.overflowTable, false, `scroll interno da tabela em ${viewport.label} (scrollWidth=${snapshot.wrapScrollW} clientWidth=${snapshot.wrapClientW})`);
       }
       assert.equal(snapshot.overflowPage, false, `overflow horizontal da pagina em ${viewport.label}`);
+      assert.equal(snapshot.overflowWithoutGlobalClip, false, `overflow global mascarado por html/body em ${viewport.label}`);
 
       const id = snapshot.metrics.id;
 

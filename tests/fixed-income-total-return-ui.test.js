@@ -66,11 +66,13 @@ test('position result stays separate from coupons and requires known position ba
 test('Dashboard separates valuation, received income, and uncertified total result',()=>{
   const kpis=source.slice(source.indexOf('function executiveKPIs(data){'),source.indexOf('function package2ExecutivePanel(){'));
   const panel=source.slice(source.indexOf('function package2ExecutivePanel(){'),source.indexOf('function dashboardEvolutionPanel(data){'));
-  assert.match(kpis,/Valorização dos ativos/);
+  assert.match(kpis,/Resultado sobre capital cadastrado/);
   assert.match(kpis,/Renda recebida no mês/);
   assert.match(kpis,/Resultado total: Em consolidação/);
   assert.match(panel,/Resultado total/);
   assert.match(panel,/Em consolidação/);
+  assert.match(panel,/Resultado certificado da RV/);
   assert.match(panel,/Renda recebida/);
-  assert.doesNotMatch(kpis,/Lucro total|Ganho de capital \+/);
+  assert.doesNotMatch(kpis,/Lucro total|Ganho de capital \+|Valorização dos ativos/);
+  assert.doesNotMatch(panel,/Valorização dos ativos/);
 });
