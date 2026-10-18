@@ -126,7 +126,7 @@ for (const viewport of viewports) {
         await page.waitForFunction(card => card?.open === true, await assetDetail.elementHandle());
       }
 
-      const actionTrigger = page.locator('.assets-premium-shell .asset-action-menu-trigger:visible').first();
+      const actionTrigger = page.locator('.assets-premium-shell').getByRole('button', { name: /Mais ações para/i }).first();
       await actionTrigger.waitFor({ state: 'visible', timeout: 5000 });
       const triggerBox = await actionTrigger.boundingBox();
       assert.ok(triggerBox && triggerBox.width >= 44 && triggerBox.height >= 44, `menu contextual menor que 44px em ${viewport.label}`);
