@@ -321,8 +321,9 @@ test('RF: cada linha da tabela mantem todas as celulas dentro de um unico tr', (
     assert.equal(countMatches(rowHtml, /<tr\b/g), 1, `${ticker} deve abrir um unico <tr>`);
     assert.equal(countMatches(rowHtml, /<\/tr>/g), 1, `${ticker} deve fechar um unico </tr>`);
     assert.equal(countMatches(rowHtml, /<td\b/g), 10, `${ticker} deve manter as 10 celulas esperadas dentro do <tr>`);
-    assert.match(rowHtml, /Sem eventos de renda fixa|evento/, `${ticker} deve manter recebido liquido dentro do <tr>`);
-    assert.match(rowHtml, /resultado total/, `${ticker} deve manter resultado com eventos dentro do <tr>`);
+    assert.match(rowHtml, /Renda efetivamente recebida ainda não conciliada/, `${ticker} deve manter o estado de renda sem assumir zero`);
+    assert.match(rowHtml, /Resultado econômico total/);
+    assert.match(rowHtml, /Em consolidação/, `${ticker} não deve apresentar retorno total como certificado`);
     const lineEnd = rowHtml.lastIndexOf('</tr>');
     const afterLine = rowHtml.slice(lineEnd + '</tr>'.length);
     assert.equal(/<td\b/.test(afterLine), false, `${ticker} nao pode ter <td> orfao apos </tr>`);

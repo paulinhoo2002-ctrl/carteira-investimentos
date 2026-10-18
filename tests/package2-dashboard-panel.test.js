@@ -55,10 +55,11 @@ const certifiedSummary = {
   }
 };
 
-test('package2 panel renders certified capital gain with PARTIAL and coverage', () => {
+test('package2 panel renders certified asset valuation with PARTIAL and coverage', () => {
   const html = renderPanel({ package2: certifiedSummary });
   assert.match(html, /data-package2="present"/);
-  assert.match(html, /Ganho de capital atual/);
+  assert.match(html, /Valorização dos ativos/);
+  assert.doesNotMatch(html, /Ganho de capital atual/);
   assert.match(html, /R\$ -10337\.12/);
   assert.match(html, /31 posições certificadas · cobertura 63,04% · PARCIAL/);
   assert.match(html, /não é lucro realizado/);
@@ -66,7 +67,7 @@ test('package2 panel renders certified capital gain with PARTIAL and coverage', 
 
 test('package2 panel renders certified 2026 received income (never stale all-history as 2026)', () => {
   const html = renderPanel({ package2: certifiedSummary });
-  assert.match(html, /Proventos recebidos/);
+  assert.match(html, /Renda recebida/);
   assert.match(html, /R\$ 27108\.91/);
   assert.match(html, /234 eventos/);
   // The stale all-history total must NOT appear as the 2026 value
