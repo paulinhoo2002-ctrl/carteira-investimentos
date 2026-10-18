@@ -89,11 +89,11 @@ for (const viewport of [
         assert.match(summaryText, /Rentabilidade da posição/);
         assert.match(summaryText, /Vencimento/);
         const text = await card.innerText();
-        assert.match(text, /Rendimentos recebidos\s+Parcial/);
-        assert.match(text, /Impostos pagos\s+Parcial/);
+        assert.match(text, /Rendimentos líquidos recebidos\s+(?:Parcial|Indisponível)/);
+        assert.match(text, /Impostos pagos\s+(?:Parcial|Indisponível)/);
         assert.match(text, /Principal devolvido\s+Parcial/);
         assert.match(text, /Resultado econômico total\s+Em consolidação/);
-        assert.match(text, /Rentabilidade total\s+Em consolidação/);
+        assert.match(text, /Rentabilidade total simples\s+Em consolidação/);
         for (const amount of ['987,65', '972,10', '123,45', '543,21', '12,34']) assert.equal(text.includes(amount), false, `agregado de evento não classificado exposto: ${amount}`);
       } else {
         const row = page.locator('.rf-table-wrap:visible .rf-table tbody tr:visible').filter({ hasText: ticker }).first();
@@ -132,7 +132,7 @@ test('hide-values masks currency, percentages, and quantities across primary ren
   assert.ok(executablePath, 'Chrome/Edge não encontrado');
   const harness = await startLocalHttpServer(path.join(__dirname, '..'));
   const browser = await chromium.launch({ executablePath, headless: true });
-  const context = await browser.newContext({ viewport: { width: 1366, height: 768 } });
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -179,6 +179,65 @@ test('hide-values masks currency, percentages, and quantities across primary ren
       }
     }
     assert.deepEqual(errors, []);
+  } finally {
+    await context.close();
+    await browser.close();
+    harness.server.close();
+  }
+});
+
+test('complete synthetic RF evidence renders derived totals and hide-values masks them', async () => {
+  assert.ok(executablePath, 'Chrome/Edge não encontrado');
+  const harness = await startLocalHttpServer(path.join(__dirname, '..'));
+  const browser = await chromium.launch({ executablePath, headless: true });
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await context.newPage();
+  page.setDefaultTimeout(3000);
+  try {
+    await page.goto(harness.url, { waitUntil: 'networkidle' });
+    const fixture = await page.evaluate(() => {
+      const asset = S.assets.find(item => normalizeType(item.type || '', '') === 'Renda Fixa');
+      if (!asset) throw new Error('fixture sintética sem posição RF');
+      asset.name = 'Trend DI FIC RF Simples RL';
+      const currentMarketValue = rfValues(asset).current;
+      if (!Number.isFinite(currentMarketValue)) throw new Error('posição sintética sem valor atual explícito');
+      const assetId = rfAssetEventId(asset);
+      globalThis.FixedIncomeEconomicResultTestEvidence = {
+        [assetId]: {
+          remainingCostBasis: 100,
+          contributions: [{ id: 'synthetic-application', type: 'APPLICATION', amount: 100, status: 'CONFIRMED', occurredOn: '2024-06-01' }],
+          events: [{ id: 'synthetic-coupon', type: 'COUPON', amount: 5, amountBasis: 'NET', status: 'RECEIVED', occurredOn: '2025-06-01' }],
+          coverage: {
+            currentPosition: 'COMPLETE', costBasis: 'COMPLETE', contributions: 'COMPLETE', income: 'COMPLETE',
+            taxes: 'COMPLETE', capitalReturns: 'COMPLETE', principal: 'COMPLETE',
+            history: { status: 'COMPLETE', periodStart: '2024-06-01', periodEnd: '2026-10-18', openingPosition: 'NONE', allEventsRepresented: true, duplicatesResolved: true },
+          },
+          returnPercentBasis: 'CUMULATIVE_CONTRIBUTIONS_SIMPLE',
+        },
+      };
+      go('renda-fixa');
+      return { assetId, ticker: asset.ticker };
+    });
+    await page.evaluate(() => { document.getElementById('root').innerHTML = rendaFixaTab(); });
+    await page.locator('details[data-testid="rf-position-detail"] > summary').click();
+    const card = page.locator('.rf-responsive-card').filter({ hasText: fixture.ticker }).first();
+    await card.locator('summary').click();
+    const visible = await card.innerText();
+    assert.match(visible, /Resultado econômico total/);
+    assert.match(visible, /Rentabilidade total simples/);
+    assert.match(visible, /Derivado do histórico completo/);
+    assert.match(visible, /Resultado em aberto sobre a base remanescente/);
+
+    const hidden = await page.evaluate(() => {
+      S.hideValues = true;
+      document.getElementById('root').innerHTML = rendaFixaTab();
+      return document.getElementById('root').innerText;
+    });
+    assert.match(hidden, /R\$ ••••/);
+    assert.match(hidden, /••••/);
+    assert.doesNotMatch(hidden, /R\$ 100|R\$ 5,00|100,00%/);
+    await page.evaluate(() => go('dashboard'));
+    assert.match(await page.locator('.premium-dashboard.canon-dashboard').innerText(), /Resultado total: Em consolidação/);
   } finally {
     await context.close();
     await browser.close();

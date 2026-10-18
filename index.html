@@ -8754,6 +8754,7 @@ document.write([
 <script src="v213-transaction-trust.js"></script>
 <script src="fixed-income-valuation.js"></script>
 <script src="fixed-income-economic-result.js"></script>
+<script src="fixed-income-economic-result-adapter.js"></script>
 <script src="fixed-income-display.js"></script>
 <script src="fixed-income-trust.js"></script>
 <script src="import-center-context.js"></script>
@@ -30638,12 +30639,48 @@ function rfBucketLabel(days){
   if(days<=365) return 'Próximos 12 meses';
   return 'Acima de 12 meses';
 }
+function rfEconomicEvidenceForAsset(asset){
+  if(['DEMO','BLOCKED','LOGIN_REQUIRED'].includes(FB.accountMode)) return null;
+  const product=rfPosNorm(assetRfName(asset));
+  if(!['TREND DI FIC RF SIMPLES RL','TREND DI II FIC RF SIMPLES RL'].includes(product)) return null;
+  const id=rfAssetEventId(asset);
+  if(FB.accountMode==='REAL') return globalThis.FixedIncomeEconomicResultEvidence?.[id]||null;
+  if(isLocalTestMode()) return globalThis.FixedIncomeEconomicResultTestEvidence?.[id]||null;
+  return null;
+}
 function rfIntelligenceSnapshot(){
   const today=new Date(); today.setHours(0,0,0,0);
   const assets=(S.assets||[]).filter(isRendaFixaAsset);
   const rows=assets.map(a=>{
     const vals=rfValues(a);
+    const currentMeta=assetRfCurrentValueMeta(a);
     const eventTotals=rfIncomeByAsset(a);
+    const economicAdapter=globalThis.FixedIncomeEconomicResultAdapter;
+    const economicEngine=globalThis.FixedIncomeEconomicResultEngine;
+    const certifiedEvidence=rfEconomicEvidenceForAsset(a);
+    const evidence=certifiedEvidence||{
+      contributions:[],
+      events:[],
+      coverage:{
+        income:eventTotals.eventEvidenceCounts.income>0?'PARTIAL':'UNKNOWN',
+        taxes:eventTotals.eventEvidenceCounts.tax>0?'PARTIAL':'UNKNOWN',
+        capitalReturns:eventTotals.eventEvidenceCounts.principal>0?'PARTIAL':'UNKNOWN',
+        principal:eventTotals.eventEvidenceCounts.principal>0?'PARTIAL':'UNKNOWN',
+      },
+    };
+    const economicResult=typeof economicAdapter?.calculate==='function' && typeof economicEngine?.calculateFixedIncomeEconomicResult==='function'
+      ? economicAdapter.calculate({
+          currentMarketValue:vals.current,
+          currentPositionKnown:vals.hasExplicitCurrent && Number.isFinite(vals.current) && vals.currentState?.state!=='invalid',
+          currentPositionCoverage:vals.hasExplicitCurrent && Number.isFinite(vals.current) && vals.currentState?.state!=='invalid'
+            && ['MANUAL_AUTHORITATIVE','IMPORTED_AUTHORITATIVE','LEGACY_AUTHORITATIVE'].includes(currentMeta.authority)
+            && currentMeta.isFallback!==true && currentMeta.isEstimated!==true && currentMeta.isStale!==true
+            ? 'COMPLETE'
+            : vals.hasExplicitCurrent ? 'PARTIAL' : 'UNKNOWN',
+          evidence,
+          engine:economicEngine.calculateFixedIncomeEconomicResult,
+        })
+      : null;
     const applied=Number(vals.applied)||0;
     const current=Number.isFinite(vals.current) ? Number(vals.current) : null;
     const profit=Number.isFinite(vals.profit) ? Number(vals.profit) : null;
@@ -30666,7 +30703,6 @@ function rfIntelligenceSnapshot(){
     if(days!=null && days<0) issues.push({tone:'danger',label:'Vencido'});
     else if(days!=null && days<=30) issues.push({tone:'warn',label:'Vence em até 30 dias'});
     else if(days!=null && days<=90) issues.push({tone:'warn',label:'Vence em até 90 dias'});
-    const currentMeta=assetRfCurrentValueMeta(a);
     const trustStatus=currentMeta.trustStatus || 'MANUAL_AUTHORITATIVE';
     return {
       asset:a,
@@ -30689,6 +30725,7 @@ function rfIntelligenceSnapshot(){
         currentMeta,
         issues,
         eventTotals,
+      economicResult,
         eventCount,
         eventEvidenceCounts:eventTotals.eventEvidenceCounts,
         receivedGross,
@@ -30849,6 +30886,32 @@ function rfZeroBalanceBadge(asset){
 function rfEventEvidenceStatus(row,component='income'){
   const eventCount=Number(row?.eventEvidenceCounts?.[component]);
   return Number.isFinite(eventCount)&&eventCount>0 ? 'Parcial' : 'Indisponível';
+}
+function rfEconomicMoneyText(result,metric,row){
+  if(!result) return 'Indisponível';
+  const states={
+    remainingCostBasis:result.coverage?.costBasis,
+    openPositionResult:result.coverage?.openPositionResult,
+    incomeGross:result.coverage?.incomeGross,
+    incomeNet:result.coverage?.incomeNet,
+    taxesPaid:result.coverage?.taxes==='COMPLETE'?'AVAILABLE':result.coverage?.taxes,
+    principalReturned:result.coverage?.principal,
+  };
+  const exposed=metric==='openPositionResult'?states[metric]==='AVAILABLE':states[metric]==='AVAILABLE'||states[metric]==='DERIVED';
+  if(exposed&&Number.isFinite(result[metric])) return fmt(result[metric]);
+  const eventComponent=metric==='incomeGross'||metric==='incomeNet'?'income':metric==='taxesPaid'?'tax':metric==='principalReturned'?'principal':null;
+  if(states[metric]==='UNKNOWN'&&eventComponent&&rfEventEvidenceStatus(row,eventComponent)==='Parcial') return 'Parcial';
+  return states[metric]==='PARTIAL'?'Parcial':'Indisponível';
+}
+function rfEconomicTotalText(result){
+  return globalThis.FixedIncomeEconomicResultAdapter?.canExposeTotal(result)===true
+    ? fmt(result.totalEconomicResult)
+    : result?.coverage?.totalResult==='PARTIAL'?'Em consolidação':'Indisponível';
+}
+function rfEconomicReturnText(result){
+  return globalThis.FixedIncomeEconomicResultAdapter?.canExposeReturnPercent(result)===true
+    ? fmtP(result.totalReturnPercent)
+    : result?.coverage?.totalReturnPercent==='PARTIAL'?'Em consolidação':'Indisponível';
 }
 function rfPositionResultText(row){
   if(!row?.explicit || !row?.appliedKnown || !Number.isFinite(row?.profit)) return 'Indisponível';
@@ -31344,12 +31407,15 @@ function rendaFixaTab(){
         </summary>
         <dl class="rf-responsive-card-details">
           <div><dt>Capital aplicado informado</dt><dd>${row.appliedKnown?fmt(row.applied):'—'}</dd></div>
-          <div><dt>Rendimentos recebidos</dt><dd>${rfEventEvidenceStatus(row,'income')}</dd></div>
-          <div><dt>Impostos pagos</dt><dd>${rfEventEvidenceStatus(row,'tax')}</dd></div>
-          <div><dt>Principal devolvido</dt><dd>${rfEventEvidenceStatus(row,'principal')}</dd></div>
-          <div><dt>Resultado da posição</dt><dd>${esc(rfPositionResultText(row))}</dd></div>
-          <div><dt>Resultado econômico total</dt><dd>Em consolidação</dd></div>
-          <div><dt>Rentabilidade total</dt><dd>Em consolidação</dd></div>
+          <div><dt>Base remanescente</dt><dd>${rfEconomicMoneyText(row.economicResult,'remainingCostBasis',row)}</dd></div>
+          <div><dt>Resultado da posição sobre capital informado</dt><dd>${esc(rfPositionResultText(row))}</dd></div>
+          <div><dt>Resultado em aberto sobre a base remanescente</dt><dd>${rfEconomicMoneyText(row.economicResult,'openPositionResult',row)}</dd></div>
+          <div><dt>Rendimentos brutos recebidos</dt><dd>${rfEconomicMoneyText(row.economicResult,'incomeGross',row)}</dd></div>
+          <div><dt>Impostos pagos</dt><dd>${rfEconomicMoneyText(row.economicResult,'taxesPaid',row)}</dd></div>
+          <div><dt>Rendimentos líquidos recebidos</dt><dd>${rfEconomicMoneyText(row.economicResult,'incomeNet',row)}</dd></div>
+          <div><dt>Principal devolvido</dt><dd>${rfEconomicMoneyText(row.economicResult,'principalReturned',row)}</dd></div>
+          <div><dt>Resultado econômico total</dt><dd>${rfEconomicTotalText(row.economicResult)}${globalThis.FixedIncomeEconomicResultAdapter?.canExposeTotal(row.economicResult)===true?' · Derivado do histórico completo':''}</dd></div>
+          <div><dt>Rentabilidade total simples</dt><dd>${rfEconomicReturnText(row.economicResult)}</dd></div>
           <div><dt>Taxa</dt><dd>${esc(row.rate||'—')}</dd></div>
           <div><dt>Vencimento</dt><dd>${row.due?row.due.toLocaleDateString('pt-BR'):'—'}</dd></div>
           <div><dt>Situação</dt><dd>${esc(row.issues.length?row.issues[0].label:'OK')}</dd></div>
@@ -31372,16 +31438,16 @@ function rendaFixaTab(){
                   }
                 </td>
       <td class="rf-right">
-        <div class="rf-strong">${rfEventEvidenceStatus(row,'income')}</div>
-        <div class="rf-mini">Renda efetivamente recebida ainda não conciliada</div>
+        <div class="rf-strong">${rfEconomicMoneyText(row.economicResult,'incomeNet',row)}</div>
+        <div class="rf-mini">Rendimentos líquidos recebidos</div>
       </td>
       <td class="rf-right">
-        <div class="rf-strong">Em consolidação</div>
-        <div class="rf-mini">Resultado econômico total</div>
+        <div class="rf-strong">${rfEconomicTotalText(row.economicResult)}</div>
+        <div class="rf-mini">${globalThis.FixedIncomeEconomicResultAdapter?.canExposeTotal(row.economicResult)===true?'Derivado do histórico completo':'Resultado econômico total'}</div>
       </td>
-      <td class="rf-right"><div class="rf-strong">Em consolidação</div><div class="rf-mini">Rentabilidade total</div></td>
+      <td class="rf-right"><div class="rf-strong">${rfEconomicReturnText(row.economicResult)}</div><div class="rf-mini">Rentabilidade total simples</div></td>
       <td>${row.due?row.due.toLocaleDateString('pt-BR'):'—'}</td>
-      <td><span class="analysis-pill ${row.issues.length? (row.days!=null && row.days<0 ? 'danger' : row.days!=null && row.days<=30 ? 'warn' : 'muted') : 'ok'}">${esc(row.issues.length?row.issues[0].label:'OK')}</span><details class="rf-economic-status-details"><summary>Ver campos econômicos</summary><dl><div><dt>Impostos pagos</dt><dd>${rfEventEvidenceStatus(row,'tax')}</dd></div><div><dt>Principal devolvido</dt><dd>${rfEventEvidenceStatus(row,'principal')}</dd></div><div><dt>Resultado econômico total</dt><dd>Em consolidação</dd></div><div><dt>Rentabilidade total</dt><dd>Em consolidação</dd></div></dl></details></td>
+      <td><span class="analysis-pill ${row.issues.length? (row.days!=null && row.days<0 ? 'danger' : row.days!=null && row.days<=30 ? 'warn' : 'muted') : 'ok'}">${esc(row.issues.length?row.issues[0].label:'OK')}</span><details class="rf-economic-status-details"><summary>Ver campos econômicos</summary><dl><div><dt>Base remanescente</dt><dd>${rfEconomicMoneyText(row.economicResult,'remainingCostBasis',row)}</dd></div><div><dt>Resultado da posição sobre capital informado</dt><dd>${esc(rfPositionResultText(row))}</dd></div><div><dt>Resultado em aberto sobre a base remanescente</dt><dd>${rfEconomicMoneyText(row.economicResult,'openPositionResult',row)}</dd></div><div><dt>Rendimentos brutos recebidos</dt><dd>${rfEconomicMoneyText(row.economicResult,'incomeGross',row)}</dd></div><div><dt>Impostos pagos</dt><dd>${rfEconomicMoneyText(row.economicResult,'taxesPaid',row)}</dd></div><div><dt>Rendimentos líquidos recebidos</dt><dd>${rfEconomicMoneyText(row.economicResult,'incomeNet',row)}</dd></div><div><dt>Principal devolvido</dt><dd>${rfEconomicMoneyText(row.economicResult,'principalReturned',row)}</dd></div><div><dt>Resultado econômico total</dt><dd>${rfEconomicTotalText(row.economicResult)}</dd></div><div><dt>Rentabilidade total simples</dt><dd>${rfEconomicReturnText(row.economicResult)}</dd></div><div><dt>Status da cobertura</dt><dd>${esc(row.economicResult?.status==='DERIVED_WITH_COMPLETE_HISTORY'?'Derivado do histórico completo':row.economicResult?.status==='PARTIAL'?'Parcial':'Indisponível')}</dd></div></dl></details></td>
     </tr>`).join('') : '<tr><td colspan="10" style="padding:14px;color:#7489a4;text-align:center">Nenhum título cadastrado.</td></tr>';
 
   return `<div class="rf-page premium-rf-page">

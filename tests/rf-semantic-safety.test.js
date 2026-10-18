@@ -108,8 +108,9 @@ test('missing fixed-income applied basis does not produce a position result', ()
   const context = {
     S: { assets: [{ id: 'unknown-basis', type: 'Renda Fixa', current_price: 100 }], rfEvents: [] },
     isRendaFixaAsset(asset) { return asset?.type === 'Renda Fixa'; },
+    rfEconomicEvidenceForAsset() { return null; },
     rfValues() { return { applied: 0, appliedState: { state: 'missing' }, current: 100, profit: null, hasExplicitCurrent: true }; },
-    rfIncomeByAsset() { return { grossValue: 0, ir: 0, iof: 0, netValue: 0, principalDelta: 0, count: 0 }; },
+    rfIncomeByAsset() { return { grossValue: 0, ir: 0, iof: 0, netValue: 0, principalDelta: 0, count: 0, eventEvidenceCounts: { income: 0, tax: 0, principal: 0 } }; },
     assetRfMaturityDate() { return ''; }, parseAnyDate() { return null; }, rfCategoryLabel() { return 'Debênture'; },
     assetRfContractRate() { return ''; }, assetRfCurrentValueMeta() { return { trustStatus: 'MANUAL_AUTHORITATIVE' }; },
     assetRfName(asset) { return asset.ticker || 'Título'; }, assetRfSubtype() { return ''; }, assetRfIndexerLabel() { return '—'; },
@@ -126,6 +127,7 @@ test('position result does not become total return when principal was returned',
   const context = {
     S: { assets: [{ id: 'principal-returned', type: 'Renda Fixa', ticker: 'MOVI18' }], rfEvents: [{ type: 'amortizacao', principalDelta: 25, netValue: 25 }] },
     isRendaFixaAsset() { return true; },
+    rfEconomicEvidenceForAsset() { return null; },
     rfValues() { return { applied: 100, appliedState: { state: 'value' }, current: 110, profit: 10, hasExplicitCurrent: true }; },
     rfIncomeByAsset() { return { grossValue: 25, ir: 0, iof: 0, netValue: 25, principalDelta: 25, count: 1, eventEvidenceCounts: { income: 0, tax: 0, principal: 1 } }; },
     assetRfMaturityDate() { return ''; }, parseAnyDate() { return null; }, rfCategoryLabel() { return 'Debênture'; },
@@ -146,6 +148,7 @@ test('MOVIDA and CRA stay partial instead of closing by arithmetic', () => {
     const context = {
       S: { assets: [{ id: ticker, type: 'Renda Fixa', ticker }], rfEvents: [] },
       isRendaFixaAsset() { return true; },
+    rfEconomicEvidenceForAsset() { return null; },
       rfValues() { return { applied: 100, appliedState: { state: 'value' }, current: 110, profit: 10, hasExplicitCurrent: true }; },
       rfIncomeByAsset() { return { grossValue: 100, ir: 10, iof: 0, netValue: 90, principalDelta: 0, count: 1, incomeGrossValue: 100, incomeIr: 10, incomeIof: 0, incomeNetValue: 90, eventEvidenceCounts: { income: 1, tax: 1, principal: 0 } }; },
       assetRfMaturityDate() { return ''; }, parseAnyDate() { return null; }, rfCategoryLabel() { return 'Debênture'; },
@@ -165,6 +168,7 @@ test('recorded tax does not change position result into an income-adjusted retur
   const context = {
     S: { assets: [{ id: 'tax-only', type: 'Renda Fixa' }], rfEvents: [] },
     isRendaFixaAsset() { return true; },
+    rfEconomicEvidenceForAsset() { return null; },
     rfValues() { return { applied: 100, appliedState: { state: 'value' }, current: 90, profit: -10, hasExplicitCurrent: true }; },
     rfIncomeByAsset() { return { grossValue: 0, ir: 5, iof: 0, netValue: -5, principalDelta: 0, count: 1, incomeGrossValue: 0, incomeIr: 0, incomeIof: 0, incomeNetValue: 0, eventEvidenceCounts: { income: 0, tax: 1, principal: 0 } }; },
     assetRfMaturityDate() { return ''; }, parseAnyDate() { return null; }, rfCategoryLabel() { return 'CDB'; },
@@ -184,6 +188,7 @@ test('Dashboard does not certify result when any applied basis is missing', () =
     S: { assets: [{ id: 'unknown-basis', type: 'Renda Fixa' }] },
     assetAppliedValue() { return 0; }, assetCurrentValue() { return 100; },
     isRendaFixaAsset(asset) { return asset?.type === 'Renda Fixa'; },
+    rfEconomicEvidenceForAsset() { return null; },
     rfValues() { return { hasExplicitApplied: false, appliedState: { state: 'missing' } }; },
     hasOwnFiniteNumber(asset, keys) { return keys.some(key => Object.hasOwn(asset, key) && asset[key] !== '' && Number.isFinite(Number(asset[key]))); },
   };
