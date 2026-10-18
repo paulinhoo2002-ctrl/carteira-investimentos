@@ -19726,27 +19726,27 @@ function rfEventTextCandidates(value){
   ].filter(v=>v!=null && v!=='');
 }
 function normalizeRfEventType(value){
-  const candidates=rfEventTextCandidates(value);
-  for(const candidate of candidates){
+  const obj=value && typeof value==='object' ? value : null;
+  const raw=obj?.raw && typeof obj.raw==='object' ? obj.raw : null;
+  const classify=candidate=>{
     const key=rfPosNorm(candidate).replace(/[^A-Z0-9]+/g,' ');
+    if(/^IR( |$)/.test(key) || /^(IRRF|IMPOSTO DE RENDA)( |$)/.test(key)) return 'ir';
+    if(key==='IOF' || /^IOF( |$)/.test(key)) return 'iof';
     if(key.includes('JUROS') || key.includes('CUPOM') || key.includes('RENDIMENTO')) return 'juros';
     if(key.includes('APORTE') || key.includes('APLICACAO')) return 'aporte';
     if(key.includes('RESGATE TOTAL')) return 'resgate_total';
     if(key.includes('AMORT')) return 'amortizacao';
     if(key.includes('PREMIO')) return 'premio';
     if(key.includes('RESGATE PARCIAL')) return 'resgate_parcial';
-    if(key==='IR') return 'ir';
-    if(key==='IOF') return 'iof';
+    if(key==='OUTRO') return 'outro';
+    return '';
+  };
+  const explicit=[obj?.type,obj?.eventType,raw?.type,raw?.eventType].filter(v=>v!=null && v!=='');
+  if(explicit.length){
+    for(const candidate of explicit){ const type=classify(candidate); if(type) return type; }
+    return 'outro';
   }
-  const obj=value && typeof value==='object' ? value : null;
-  if(obj){
-    const gross=rfEventNumber(obj.grossValue ?? obj.gross ?? obj.value ?? 0);
-    const ir=rfEventNumber(obj.ir ?? obj.irValue ?? 0);
-    const iof=rfEventNumber(obj.iof ?? obj.iofValue ?? 0);
-    const net=rfEventNumber(obj.netValue ?? obj.net ?? (gross-ir-iof));
-    const principalDelta=rfEventNumber(obj.principalDelta ?? obj.principal ?? 0);
-    if(principalDelta===0 && (gross>0 || net>0)) return 'juros';
-  }
+  for(const candidate of rfEventTextCandidates(value)){ const type=classify(candidate); if(type) return type; }
   return 'outro';
 }
 function rfEventTypeLabel(value){
@@ -19878,14 +19878,29 @@ function rfContextualHistoryModal(){
 }
 function rfEventTotals(events){
   return (Array.isArray(events)?events:[]).reduce((acc,event)=>{
-    acc.grossValue+=rfEventNumber(event.grossValue);
-    acc.ir+=rfEventNumber(event.ir);
-    acc.iof+=rfEventNumber(event.iof);
-    acc.netValue+=rfEventNumber(event.netValue);
-    acc.principalDelta+=rfEventNumber(event.principalDelta);
+    const type=normalizeRfEventType(event);
+    const gross=rfEventNumber(event.grossValue);
+    const ir=rfEventNumber(event.ir);
+    const iof=rfEventNumber(event.iof);
+    const net=rfEventNumber(event.netValue);
+    const principal=rfEventNumber(event.principalDelta);
+    acc.grossValue+=gross;
+    acc.ir+=ir;
+    acc.iof+=iof;
+    acc.netValue+=net;
+    acc.principalDelta+=principal;
+    if(type==='juros'){
+      acc.incomeGrossValue+=gross;
+      acc.incomeIr+=ir;
+      acc.incomeIof+=iof;
+      acc.incomeNetValue+=net;
+      acc.eventEvidenceCounts.income++;
+    }
+    if(type==='ir' || type==='iof' || ir>0 || iof>0) acc.eventEvidenceCounts.tax++;
+    if(principal!==0 || ['amortizacao','resgate_parcial','resgate_total'].includes(type)) acc.eventEvidenceCounts.principal++;
     acc.count++;
     return acc;
-  }, {grossValue:0, ir:0, iof:0, netValue:0, principalDelta:0, count:0});
+  }, {grossValue:0, ir:0, iof:0, netValue:0, principalDelta:0, incomeGrossValue:0, incomeIr:0, incomeIof:0, incomeNetValue:0, eventEvidenceCounts:{income:0,tax:0,principal:0}, count:0});
 }
 function rfIncomeByAsset(asset){
   return rfEventTotals(rfEventsForAsset(asset));
@@ -20558,13 +20573,22 @@ function findDy(q){
 function cx(){
   const tI=S.assets.reduce((s,a)=>s+assetAppliedValue(a),0);
   const tC=S.assets.reduce((s,a)=>s+assetCurrentValue(a),0);
+  const appliedComplete=S.assets.every(a=>{
+    if(isRendaFixaAsset(a)){
+      const state=rfValues(a).appliedState?.state;
+      return !!state && !['missing','invalid'].includes(state);
+    }
+    const numeric=value=>value!=null&&String(value).trim()!==''&&Number.isFinite(Number(value));
+    const qty=Number(a?.qty);
+    return numeric(a?.qty)&&(qty===0||numeric(a?.avg_price));
+  });
   const tG=tC-tI,tGP=tI>0?(tG/tI)*100:0;
   const mD=S.assets.reduce((s,a)=>{
     const cur=assetCurrentValue(a);
     return s + (Number.isFinite(cur) ? (cur*(Number(a.dy)||0)/100)/12 : 0);
   },0);
   const aD=mD*12,avgDY=tC>0?(aD/tC)*100:0;
-  return{tI,tC,tG,tGP,mD,aD,avgDY};
+  return{tI,tC,tG,tGP,mD,aD,avgDY,appliedComplete};
 }
 function proventoStats(){
   const {rows, summary}=proventoHistoricoOficial();
@@ -30623,13 +30647,13 @@ function rfIntelligenceSnapshot(){
     const current=Number.isFinite(vals.current) ? Number(vals.current) : null;
     const profit=Number.isFinite(vals.profit) ? Number(vals.profit) : null;
     const pct=Number.isFinite(profit) && applied>0 ? (profit/applied)*100 : null;
-    const receivedGross=Number(eventTotals.grossValue)||0;
-    const receivedIr=Number(eventTotals.ir)||0;
-    const receivedIof=Number(eventTotals.iof)||0;
-    const receivedNet=Number(eventTotals.netValue)||0;
+    const receivedGross=Number(eventTotals.incomeGrossValue)||0;
+    const receivedIr=Number(eventTotals.incomeIr)||0;
+    const receivedIof=Number(eventTotals.incomeIof)||0;
+    const receivedNet=Number(eventTotals.incomeNetValue)||0;
     const eventCount=Number(eventTotals.count)||0;
-    const resultWithEvents=Number.isFinite(profit) ? profit+receivedNet : null;
-    const rentabWithEvents=Number.isFinite(resultWithEvents) && applied>0 ? (resultWithEvents/applied)*100 : null;
+    const resultWithEvents=null;
+    const rentabWithEvents=null;
     const due=parseAnyDate(assetRfMaturityDate(a));
     const days=due ? Math.floor((due.getTime()-today.getTime())/86400000) : null;
     const category=rfCategoryLabel(a);
@@ -30665,6 +30689,7 @@ function rfIntelligenceSnapshot(){
         issues,
         eventTotals,
         eventCount,
+        eventEvidenceCounts:eventTotals.eventEvidenceCounts,
         receivedGross,
         receivedIr,
         receivedIof,
@@ -30677,13 +30702,13 @@ function rfIntelligenceSnapshot(){
   });
   const totalApplied=rows.reduce((s,r)=>s+r.applied,0);
   const totalCurrent=rows.reduce((s,r)=>s+(Number.isFinite(r.current)?r.current:0),0);
-  const totalProfit=rows.every(r=>Number.isFinite(r.current)) ? totalCurrent-totalApplied : null;
+  const totalProfit=rows.every(r=>Number.isFinite(r.current)&&r.appliedKnown) ? totalCurrent-totalApplied : null;
   const totalReceivedGross=rows.reduce((s,r)=>s+r.receivedGross,0);
   const totalReceivedIr=rows.reduce((s,r)=>s+r.receivedIr,0);
   const totalReceivedIof=rows.reduce((s,r)=>s+r.receivedIof,0);
   const totalReceivedNet=rows.reduce((s,r)=>s+r.receivedNet,0);
-  const totalResultWithEvents=Number.isFinite(totalProfit) ? totalProfit+totalReceivedNet : null;
-  const totalRentabWithEvents=Number.isFinite(totalResultWithEvents) && totalApplied>0 ? (totalResultWithEvents/totalApplied)*100 : null;
+  const totalResultWithEvents=null;
+  const totalRentabWithEvents=null;
   const totalPct=Number.isFinite(totalProfit) && totalApplied>0 ? (totalProfit/totalApplied)*100 : null;
   const explicitCount=rows.filter(r=>r.explicit).length;
   const missingCurrent=rows.length-explicitCount;
@@ -30820,15 +30845,16 @@ function rfZeroBalanceBadge(asset){
   if(!asset || rfPrincipalBalance(asset).value!==0) return '';
   return `<span class="rf-event-badge zero">Saldo zerado</span>`;
 }
-function rfEventEvidenceStatus(row){
-  return Number(row?.eventCount)>0 ? 'Parcial' : 'Indisponível';
+function rfEventEvidenceStatus(row,component='income'){
+  const eventCount=Number(row?.eventEvidenceCounts?.[component]);
+  return Number.isFinite(eventCount)&&eventCount>0 ? 'Parcial' : 'Indisponível';
 }
 function rfPositionResultText(row){
   if(!row?.explicit || !row?.appliedKnown || !Number.isFinite(row?.profit)) return 'Indisponível';
   return assetSignedMoneyText(row.profit);
 }
 function rfEventReceiptsSummaryHtml(row){
-  const status=rfEventEvidenceStatus(row);
+  const status=rfEventEvidenceStatus(row,'income');
   return `<div class="rf-event-evidence" role="status"><strong>Recebimentos:</strong> ${status} · classificação de renda, impostos e principal ainda não certificada.</div>`;
 }
 function rfEventSeedActionHtml(row, totals){
@@ -31033,10 +31059,10 @@ function rfEventHistoryCards(rows){
         </div>
       </div>
       <div class="rf-event-summary">
-        <div class="rf-event-kpi info"><div class="rf-event-kpi-label">Bruto</div><div class="rf-event-kpi-value">${fmt(totals.grossValue)}</div><div class="rf-event-kpi-sub">${totals.count} evento(s)</div></div>
-        <div class="rf-event-kpi warn"><div class="rf-event-kpi-label">IR</div><div class="rf-event-kpi-value">${fmt(totals.ir)}</div><div class="rf-event-kpi-sub">Retido nos eventos</div></div>
-        <div class="rf-event-kpi warn"><div class="rf-event-kpi-label">IOF</div><div class="rf-event-kpi-value">${fmt(totals.iof)}</div><div class="rf-event-kpi-sub">Cobrança registrada</div></div>
-        <div class="rf-event-kpi good"><div class="rf-event-kpi-label">Líquido</div><div class="rf-event-kpi-value">${fmt(totals.netValue)}</div><div class="rf-event-kpi-sub">Recebido no caixa</div></div>
+        <div class="rf-event-kpi info"><div class="rf-event-kpi-label">Bruto registrado</div><div class="rf-event-kpi-value">${fmt(totals.grossValue)}</div><div class="rf-event-kpi-sub">Soma dos eventos registrados</div></div>
+        <div class="rf-event-kpi warn"><div class="rf-event-kpi-label">IR registrado</div><div class="rf-event-kpi-value">${fmt(totals.ir)}</div><div class="rf-event-kpi-sub">Valores informados nos eventos</div></div>
+        <div class="rf-event-kpi warn"><div class="rf-event-kpi-label">IOF registrado</div><div class="rf-event-kpi-value">${fmt(totals.iof)}</div><div class="rf-event-kpi-sub">Valores informados nos eventos</div></div>
+        <div class="rf-event-kpi good"><div class="rf-event-kpi-label">Líquido registrado</div><div class="rf-event-kpi-value">${fmt(totals.netValue)}</div><div class="rf-event-kpi-sub">Soma dos eventos; pode incluir principal</div></div>
         <div class="rf-event-kpi"><div class="rf-event-kpi-label">Principal</div><div class="rf-event-kpi-value">${fmt(totals.principalDelta)}</div><div class="rf-event-kpi-sub">Ainda não entra no cálculo atual</div></div>
       </div>
       <div class="rf-event-sub">${esc(expectedNote)}</div>
@@ -31317,9 +31343,9 @@ function rendaFixaTab(){
         </summary>
         <dl class="rf-responsive-card-details">
           <div><dt>Capital aplicado informado</dt><dd>${row.appliedKnown?fmt(row.applied):'—'}</dd></div>
-          <div><dt>Rendimentos recebidos</dt><dd>${rfEventEvidenceStatus(row)}</dd></div>
-          <div><dt>Impostos pagos</dt><dd>${rfEventEvidenceStatus(row)}</dd></div>
-          <div><dt>Principal devolvido</dt><dd>${rfEventEvidenceStatus(row)}</dd></div>
+          <div><dt>Rendimentos recebidos</dt><dd>${rfEventEvidenceStatus(row,'income')}</dd></div>
+          <div><dt>Impostos pagos</dt><dd>${rfEventEvidenceStatus(row,'tax')}</dd></div>
+          <div><dt>Principal devolvido</dt><dd>${rfEventEvidenceStatus(row,'principal')}</dd></div>
           <div><dt>Resultado da posição</dt><dd>${esc(rfPositionResultText(row))}</dd></div>
           <div><dt>Resultado econômico total</dt><dd>Em consolidação</dd></div>
           <div><dt>Rentabilidade total</dt><dd>Em consolidação</dd></div>
@@ -31345,7 +31371,7 @@ function rendaFixaTab(){
                   }
                 </td>
       <td class="rf-right">
-        <div class="rf-strong">${rfEventEvidenceStatus(row)}</div>
+        <div class="rf-strong">${rfEventEvidenceStatus(row,'income')}</div>
         <div class="rf-mini">Renda efetivamente recebida ainda não conciliada</div>
       </td>
       <td class="rf-right">
@@ -31354,7 +31380,7 @@ function rendaFixaTab(){
       </td>
       <td class="rf-right"><div class="rf-strong">Em consolidação</div><div class="rf-mini">Rentabilidade total</div></td>
       <td>${row.due?row.due.toLocaleDateString('pt-BR'):'—'}</td>
-      <td><span class="analysis-pill ${row.issues.length? (row.days!=null && row.days<0 ? 'danger' : row.days!=null && row.days<=30 ? 'warn' : 'muted') : 'ok'}">${esc(row.issues.length?row.issues[0].label:'OK')}</span><details class="rf-economic-status-details"><summary>Ver campos econômicos</summary><dl><div><dt>Impostos pagos</dt><dd>${rfEventEvidenceStatus(row)}</dd></div><div><dt>Principal devolvido</dt><dd>${rfEventEvidenceStatus(row)}</dd></div><div><dt>Resultado econômico total</dt><dd>Em consolidação</dd></div><div><dt>Rentabilidade total</dt><dd>Em consolidação</dd></div></dl></details></td>
+      <td><span class="analysis-pill ${row.issues.length? (row.days!=null && row.days<0 ? 'danger' : row.days!=null && row.days<=30 ? 'warn' : 'muted') : 'ok'}">${esc(row.issues.length?row.issues[0].label:'OK')}</span><details class="rf-economic-status-details"><summary>Ver campos econômicos</summary><dl><div><dt>Impostos pagos</dt><dd>${rfEventEvidenceStatus(row,'tax')}</dd></div><div><dt>Principal devolvido</dt><dd>${rfEventEvidenceStatus(row,'principal')}</dd></div><div><dt>Resultado econômico total</dt><dd>Em consolidação</dd></div><div><dt>Rentabilidade total</dt><dd>Em consolidação</dd></div></dl></details></td>
     </tr>`).join('') : '<tr><td colspan="10" style="padding:14px;color:#7489a4;text-align:center">Nenhum título cadastrado.</td></tr>';
 
   return `<div class="rf-page premium-rf-page">
@@ -31963,15 +31989,15 @@ function executiveKPIs(data){
   // cx() supplies both values from the same applied-capital base. Validate the
   // relationship before pairing; this does not calculate a replacement return.
   const sameBasis=amountValid && percentValid && Math.abs((p.tG/totalApplied)*100-p.tGP)<0.02;
-  const resultAvailable=!['UNKNOWN','PARTIAL','NO_DATA'].includes(availability.state);
+  const resultAvailable=!['UNKNOWN','PARTIAL','NO_DATA'].includes(availability.state)&&p.appliedComplete!==false;
   const amount=resultAvailable&&amountValid?assetSignedMoneyText(p.tG):'';
   const percent=resultAvailable&&percentValid&&!S.hideValues?fmtP(p.tGP):'';
   const resultValue=sameBasis&&amount&&percent?`${amount} · ${percent}`:(amount||percent||'—');
-  const resultNote=!resultAvailable?'Base parcial ou indisponível':'Valor atual menos capital aplicado cadastrado; não representa retorno econômico total';
+  const resultNote=p.appliedComplete===false?'Base aplicada parcial ou indisponível':!resultAvailable?'Base parcial ou indisponível':'Valor atual menos capital aplicado cadastrado; não representa retorno econômico total';
   const resultTone=!resultAvailable||!amountValid?'#94a3b8':p.tG>0?'#34d399':p.tG<0?'#f87171':'#94a3b8';
   const resultGlow=!resultAvailable||!amountValid?'rgba(148,163,184,.12)':p.tG>0?'rgba(52,211,153,.14)':p.tG<0?'rgba(248,113,113,.14)':'rgba(148,163,184,.12)';
   const patrimonyValue=['UNKNOWN','NO_DATA'].includes(availability.state)?'—':fmt(totalCurrent);
-  const investedContext=totalApplied>0?`Investido ${fmt(totalApplied)}`:'Sem capital aplicado';
+  const investedContext=p.appliedComplete===false?`Capital informado parcialmente · ${fmt(totalApplied)}`:totalApplied>0?`Investido ${fmt(totalApplied)}`:'Sem capital aplicado';
   const patrimonyNote=availability.state==='AVAILABLE'&&totalCurrent===0?'Valor conhecido: zero':availability.note;
   const incomeAvailable=(S.proventos||[]).length>0 || (S.rfEvents||[]).length>0;
   const package2=(typeof FB!=='undefined'&&FB)||{};
