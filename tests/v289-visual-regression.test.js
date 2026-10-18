@@ -732,6 +732,14 @@ test('tablet navigation exposes its scroll affordance and every route by keyboar
         });
         assert.equal(reachable.inside, true, `${width}px: navigation item ${index + 1} must scroll into view when focused: ${JSON.stringify(reachable)}`);
       }
+      const fixedIncomeRoute = nav.locator(':scope > button.tab').filter({ hasText: 'Renda Fixa' });
+      assert.equal(await fixedIncomeRoute.count(), 1, `${width}px: Renda Fixa must be directly discoverable in tablet navigation`);
+      await fixedIncomeRoute.focus();
+      await runtime.page.keyboard.press('Enter');
+      await runtime.page.waitForFunction(() => S.tab === 'renda-fixa');
+      await fixedIncomeRoute.click();
+      await runtime.page.waitForFunction(() => S.tab === 'renda-fixa');
+
       const reportGroup = nav.locator(':scope > details.tab-menu');
       const reportSummary = reportGroup.locator(':scope > summary');
       await reportSummary.focus();

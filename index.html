@@ -29234,7 +29234,7 @@ function corporateEventsCenterTab(){
   return CorporateEventsCenter.render(vm,{escape:esc});
 }
 function filterCorporateEventsCenter(control){return CorporateEventsCenter.filterCorporateEventsCenter(control)}
-const NAV_TABS=[['dashboard','📊 Dashboard'],['patrimonio','💎 Patrimônio'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','💡 Insights'],['confiabilidade','🛡️ Confiabilidade']];
+const NAV_TABS=[['dashboard','📊 Dashboard'],['patrimonio','💎 Patrimônio'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['renda-fixa','🧾 Renda Fixa'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','💡 Insights'],['confiabilidade','🛡️ Confiabilidade']];
 const REPORT_TABS=[['relatorios','📑 Relatórios'],['corporate-eventos','⚙️ Eventos societários'],['irpf','🧾 IRPF'],['auditoria','🔎 Auditoria']];
 function navTabActive(key){
   return S.tab===key || (key==='ativos' && S.tab==='ranking');
@@ -31184,7 +31184,7 @@ function rendaFixaTab(){
     <div class="premium-rf-position-row">
       <div class="premium-rf-row-main">
         <div class="premium-rf-row-title">${esc(row.ticker)}${row.name&&row.name!==row.ticker?` · ${esc(row.name)}`:''}</div>
-        <div class="premium-rf-row-meta">${esc(row.category)} · ${esc(row.indexer)} · ${esc(row.rate||'taxa não informada')}</div>
+        <div class="premium-rf-row-meta">${esc(row.category)} · ${esc(row.indexer)} · ${S.hideValues&&valueVisibilityDepth===0?'••••':esc(row.rate||'taxa não informada')}</div>
         <div class="premium-rf-row-meta premium-rf-row-issuer">Instituição: ${esc(row.issuer||'não informada')}</div>
       </div>
       <div class="premium-rf-row-value">

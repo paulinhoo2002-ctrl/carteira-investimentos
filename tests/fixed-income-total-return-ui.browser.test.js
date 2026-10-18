@@ -152,6 +152,23 @@ test('hide-values masks currency, percentages, and quantities across primary ren
       assert.equal(surface.percentage,false,'percentual sensível visível em '+route);
       assert.equal(surface.quantity,false,'quantidade de posição visível em '+route);
     };
+    const rateFixture=await page.evaluate(() => {
+      const assets=S.assets.filter(item=>normalizeType(item.type||'','')==='Renda Fixa');
+      if(!assets.length) throw new Error('fixture sintética sem posição RF');
+      assets.forEach(asset=>{asset.rf_contract_rate='100,00';});
+      S.hideValues=false;
+      go('renda-fixa');
+      return {count:assets.length,rate:assetRfContractRate(assets[0])};
+    });
+    assert.ok(rateFixture.count>0);
+    assert.equal(rateFixture.rate,'100,00');
+    const visibleContractRate=await page.locator('.premium-rf-row-main > .premium-rf-row-meta').first().innerText();
+    assert.match(visibleContractRate,/100,00/,'fixture deve reproduzir taxa sem símbolo de porcentagem');
+    await page.evaluate(() => { S.hideValues=true; go('renda-fixa'); });
+    const hiddenContractRate=await page.locator('.premium-rf-row-main > .premium-rf-row-meta').first().innerText();
+    assert.match(hiddenContractRate,/••••/,'taxa contratual deve ser ocultada junto aos valores da carteira');
+    assert.doesNotMatch(hiddenContractRate,/\b100,00\b/,'taxa sem unidade não pode escapar do modo oculto');
+
     for (const route of routes) {
       await page.evaluate(route => { S.hideValues=true; go(route); }, route);
       await assertNoSensitiveValues(route);
