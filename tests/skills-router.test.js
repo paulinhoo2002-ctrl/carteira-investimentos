@@ -9,19 +9,19 @@ const inventory = [
   'firebase-security-rules-auditor', 'interface-design', 'web-quality-audit',
   'browser-harness', 'playwright', 'browser-testing-with-devtools',
   'caveman-review', 'caveman-commit', 'archify', 'find-skills',
-  'verification-before-completion'
+  'verification-before-completion', 'find-skills'
 ];
 
 test('representative routes select only available, minimal specialist skills', () => {
   const cases = [
     ['financial', [], ['doubt-driven-development']],
-    ['firebase', [], ['firebase-security-rules-auditor']],
+    ['firebase', [], ['doubt-driven-development']],
     ['ui', [], ['interface-design']],
-    ['browser', [], ['browser-harness']],
-    ['backup', [], ['doubt-driven-development']],
-    ['security', [], ['firebase-security-rules-auditor']],
+    ['browser', [], ['playwright']],
+    ['backup', [], ['doubt-driven-development', 'caveman-review']],
+    ['security', [], ['doubt-driven-development']],
     ['documentation', [], ['caveman-review']],
-    ['release', [], ['verification-before-completion']],
+    ['release', [], ['caveman-review']],
     ['skillDiscovery', [], ['find-skills']]
   ];
   for (const [task, triggers, expected] of cases) {
@@ -40,29 +40,27 @@ test('optional skills require explicit matching triggers', () => {
   );
 });
 
-test('unavailable skills are reported and never auto-installed or substituted', () => {
-  const result = selectSkills('firebase', ['doubt-driven-development']);
-  assert.deepEqual(result.selectedSkills, []);
-  assert.deepEqual(result.missingRequiredSkills, ['firebase-security-rules-auditor']);
+test('project discovery is automatic and never auto-installs a missing runtime skill', () => {
+  const result = selectSkills('firebase', []);
+  assert.deepEqual(result.selectedSkills, ['doubt-driven-development']);
+  assert.deepEqual(result.missingRequiredSkills, []);
 });
 
 test('explicit optional trigger reports an unavailable requested skill', () => {
   const result = selectSkills('financial', ['doubt-driven-development'], ['officialSource']);
-  assert.deepEqual(result.selectedSkills, ['doubt-driven-development']);
-  assert.deepEqual(result.missingTriggeredSkills, ['source-driven-development']);
+  assert.deepEqual(result.selectedSkills, ['doubt-driven-development', 'source-driven-development']);
+  assert.deepEqual(result.missingTriggeredSkills, []);
 });
 
 test('browser route chooses one available alternative and reports a gap if neither exists', () => {
   assert.deepEqual(selectSkills('browser', ['playwright']).selectedSkills, ['playwright']);
-  assert.deepEqual(selectSkills('browser', []).missingRequiredSkills, ['browser-harness', 'playwright']);
+  assert.deepEqual(selectSkills('browser', []).selectedSkills, ['playwright']);
 });
 
 test('process contract remains separate from skills and does not grant authorization', () => {
   const result = selectSkills('documentation', inventory);
   assert.deepEqual(result.processContract, ['Superpowers-first', 'Ponytail-full', 'Caveman']);
-  assert.equal(result.modelRecommendation.codex, 'GPT-6 Luna Medium');
-  assert.equal(result.modelRecommendation.effort, 'LOW');
-  assert.match(result.modelRecommendation.availabilityRule, /Verify in the active runtime/);
+  assert.equal('modelRecommendation' in result, false);
   assert.equal(result.authorization, 'NEVER_GRANTED_BY_SELECTION');
 });
 
@@ -71,13 +69,13 @@ test('unknown categories fail closed', () => {
 });
 
 test('selects a namespaced Firebase skill from the active runtime inventory', () => {
-  const result = selectSkills('firebase', ['firebase:firebase-security-rules-auditor']);
-  assert.deepEqual(result.selectedSkills, ['firebase:firebase-security-rules-auditor']);
+  const result = selectSkills('firebase', ['firebase:firebase-security-rules-auditor'], ['firestoreRules']);
+  assert.deepEqual(result.selectedSkills, ['doubt-driven-development', 'firebase:firebase-security-rules-auditor']);
   assert.deepEqual(result.missingRequiredSkills, []);
 });
 
-test('selects a namespaced browser harness from the active runtime inventory', () => {
-  const result = selectSkills('browser', ['browser-harness:browser-harness']);
-  assert.deepEqual(result.selectedSkills, ['browser-harness:browser-harness']);
-  assert.deepEqual(result.missingRequiredSkills, []);
+test('selects an optional namespaced Firebase auditor only when triggered', () => {
+  const result = selectSkills('firebase', ['firebase:firebase-security-rules-auditor'], ['firestoreRules']);
+  assert.deepEqual(result.selectedSkills, ['doubt-driven-development', 'firebase:firebase-security-rules-auditor']);
+  assert.deepEqual(result.missingTriggeredSkills, []);
 });

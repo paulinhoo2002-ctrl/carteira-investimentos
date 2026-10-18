@@ -4,7 +4,7 @@
   "fallback_if_unavailable": true,
   "mission_authorization_has_precedence": true,
   "portable_entrypoint": "AGENTS.md",
-  "routing_entrypoint": "docs/SKILLS_ROUTING.md",
+  "routing_entrypoint": ".agents/SKILL_ROUTER.md",
   "handoff_fields": [
     "SKILLS_DISCOVERED",
     "SUPERPOWERS_AVAILABLE",

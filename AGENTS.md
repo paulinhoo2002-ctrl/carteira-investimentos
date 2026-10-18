@@ -64,8 +64,8 @@ Para toda missão substancial neste projeto:
    conjunto mínimo relevante e reavalie se o escopo mudar.
    O catálogo versionado é um snapshot; valide a instalação física atual e
    não presuma que pacotes locais ignorados pelo Git existem em outros clones.
-4. Siga `docs/SKILLS_ROUTING.md` para agente/modelo, justificativa da escolha,
-   fallback, limites e campos de relatório. Esta preferência não permite
+4. Siga `.agents/SKILL_ROUTER.md` para classificar a missão e selecionar Skills;
+   modelo/agente são decisões separadas. Esta preferência não permite
    alegar que um provider/modelo foi usado quando ele não estiver disponível.
 5. Use a documentação versionada do repositório como continuidade durável,
    não o histórico de chat. A memória canônica de projeto permanece
@@ -81,11 +81,13 @@ O handoff deve registrar `SKILLS_CONSIDERED`, `SKILLS_USED`,
 
 Ao iniciar uma tarefa relevante neste repositório:
 
-1. Leia este arquivo e `docs/ai/PROJECT_MEMORY.md`.
-2. Consulte `docs/ai/SKILLS.md` e `docs/ai/SKILL_ROUTER.md`.
-3. Confirme workspace, branch, HEAD, `origin/main` e working tree.
-4. Use primeiro Superpowers; descubra Skills locais e classifique a missão
-   conforme `docs/SKILLS_ROUTING.md` e `docs/ai/SKILL_ROUTER.md`.
+1. Confirme workspace, branch, HEAD, `origin/main`, working tree e Git comum.
+2. Leia este arquivo, `docs/ai/PERMANENT_OPERATING_CONTRACT.md` e
+   `docs/ai/PROJECT_MEMORY.md`.
+3. Leia o roteador canônico `.agents/SKILL_ROUTER.md`; use `docs/ai/SKILLS.md`
+   como catálogo complementar.
+4. Use primeiro Superpowers quando disponível; classifique a missão e descubra
+   Skills físicas conforme `.agents/SKILL_ROUTER.md`.
 5. Selecione somente o menor conjunto relevante; reavalie se a categoria mudar.
 6. Execute a mudança com escopo controlado e preserve áreas protegidas.
 7. Valide com os testes, build e navegador aplicáveis.
@@ -116,7 +118,7 @@ Before UI work:
 
 Fontes canônicas: arquitetura em `docs/ai/ARCHITECTURE.md`, estado e decisões
 em `docs/ai/PROJECT_MEMORY.md`, mapa de Skills em `docs/ai/SKILLS.md`,
-roteamento de Skills em `docs/ai/SKILL_ROUTER.md`,
+roteamento canônico de Skills em `.agents/SKILL_ROUTER.md`,
 roteamento de Agentes em `docs/ai/AGENT_ROUTER.md`,
 autonomia em `docs/ai/AGENT_AUTONOMY.md`.
 
@@ -344,7 +346,8 @@ Sempre parar e pedir autorização explícita antes de:
 
 ## Referências obrigatórias para decisões de ferramentas e fluxo:
 
-- Skill Router: `docs/ai/SKILLS_ROUTING.md`
+- Skill Router canônico: `.agents/SKILL_ROUTER.md`
+- Ponte de roteamento: `docs/ai/SKILLS_ROUTING.md`
 - Agent Router: `docs/ai/AGENT_ROUTER.md`
 - Agent Autonomy: `docs/ai/AGENT_AUTONOMY.md`
 - Project Memory: `docs/ai/PROJECT_MEMORY.md`
@@ -373,19 +376,18 @@ Até nova orientação, este `AGENTS.md` não substitui nem altera qualquer
 documento oficial existente: ele somente consolida as regras que Hermes,
 Codex e outros agentes devem seguir no fluxo diário.
 
-## V197 compact boot contract
+## Compact boot contract
 
-|Toda sessão deve executar primeiro o PROJECT IDENTITY GATE, ler `AGENTS.md`,
-`docs/ai/PROJECT_MEMORY.md`, `docs/ai/NEXT_STEP.md`, `docs/ai/DECISIONS.md` e
-`docs/ai/SKILLS_ROUTING.md`, descobrir Skills em `.agents/skills`, sempre
-considerar Superpowers, selecionar o menor conjunto relevante, executar,
-validar delta e atualizar `NEXT_STEP.md`. O router versionado em
-`docs/ai/SKILLS_ROUTING.md` é suficiente; `.agents/SKILL_ROUTER.md`, se existir,
-é somente uma bridge local e nunca é requisito do boot.
+Toda missão substancial confirma identidade, lê `AGENTS.md`,
+`docs/ai/PERMANENT_OPERATING_CONTRACT.md`, `docs/ai/PROJECT_MEMORY.md`,
+`docs/ai/NEXT_STEP.md` e `docs/ai/DECISIONS.md`; classifica a missão e descobre
+Skills pelo roteador canônico `.agents/SKILL_ROUTER.md`; depois executa e
+valida. `docs/ai/SKILLS_ROUTING.md` e `docs/ai/SKILL_ROUTER.md` são pontes
+compatíveis que apontam para a fonte canônica.
 
 Precedência: AGENTS.md → semântica protegida → gates humanos → segurança
-financeira/persistência/Git → PROJECT_MEMORY → DECISIONS → SKILL_ROUTER →
-SKILL.md → preferência da missão. Superpowers nunca autoriza writes, merge,
+financeira/persistência/Git → PROJECT_MEMORY → DECISIONS → roteador canônico →
+SKILL.md → preferência da missão. Skill/modelo nunca autorizam writes, merge,
 deploy ou mudança protegida.
 
 Políticas: `MANDATORY_FIRST_SKILL=Superpowers`,
@@ -398,10 +400,9 @@ Políticas: `MANDATORY_FIRST_SKILL=Superpowers`,
 
 Antes de implementar, investigar, depurar, revisar código, fazer QA,
 refatorar ou planejar uma mudança técnica, qualquer executor deve confirmar a
-identidade do projeto e carregar/usar Superpowers primeiro. Em seguida deve
-ler a memória canônica, descobrir as Skills reais em `.agents/skills` e
-selecionar somente as especializadas relevantes, conforme
-`docs/SKILLS_ROUTING.md`.
+identidade do projeto e carregar/usar Superpowers primeiro quando disponível.
+Em seguida deve ler a memória canônica, descobrir Skills em `.agents/skills` e
+selecionar somente as especializadas relevantes conforme o roteador canônico.
 
 Se a categoria mudar, registrar `SKILL_REEVALUATED=true` e reavaliar. Não
 inventar Skills nem ampliar escopo por causa de uma Skill. Superpowers é uma
@@ -422,7 +423,8 @@ O seletor `scripts/qa/select-skills.js` é consultivo: informe somente Skills
 confirmadas no runtime. Ele não instala/carrega Skills nem concede autorização;
 `AGENTS.md`, contratos protegidos e autorização da missão continuam prevalecendo.
 
-Detalhes: [`docs/SKILLS_ROUTING.md`](docs/SKILLS_ROUTING.md).
+Detalhes: [`.agents/SKILL_ROUTER.md`](.agents/SKILL_ROUTER.md). A ponte curta é
+[`docs/ai/SKILLS_ROUTING.md`](docs/ai/SKILLS_ROUTING.md).
 
 ---
 
@@ -489,19 +491,16 @@ consider `ponytail-review` before final technical certification. Run
 refactor opportunistically. This policy does not override project rules or
 authorize protected or remote actions.
 
-See `docs/ai/SKILLS_ROUTING.md` for the short routing reference.
+See `.agents/SKILL_ROUTER.md` for the canonical routing reference.
 
-## Model and Skill routing
+## Model and Skill selection
 
-`docs/ai/SKILLS_ROUTING.md` owns model selection, independent reviewer routing,
-Skill discovery and mission reporting for every runtime. Codex GPT-6 Luna Medium
-is the default implementation model; Codex GPT-6 Sol Medium handles complex
-architecture/security or a root cause unresolved after three reasoned attempts.
-Hermes GLM-5.3 via NVIDIA is the preferred independent reviewer when available.
-These are routing preferences, never a dependency or a claim that a model ran.
+`.agents/SKILL_ROUTER.md` owns mission classification and Skill selection.
+Model/agent selection is a separate runtime decision. Neither model catalog nor
+model choice changes which Skills a mission requires.
 
 For substantial missions, discover the Skills actually available, use
-Superpowers first, select the smallest useful set, and report
+Superpowers first when available, select the smallest useful set, and report
 `SKILLS_CONSIDERED`, `SKILLS_USED`, `SKILLS_NOT_USED`,
 `SKILL_SELECTION_REASON`, `SKILL_REEVALUATED` and `SKILL_GAPS_FOUND`.
 Repository state and tracked rules outrank chat memory or runtime defaults.

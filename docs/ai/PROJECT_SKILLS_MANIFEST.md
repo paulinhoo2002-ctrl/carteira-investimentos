@@ -1,13 +1,16 @@
 # Project Skills Manifest — Carteira de Investimentos
 
-Canonical skill source: `C:/Projetos/carteira-investimentos/.agents/skills/`
+Canonical skill directory: `.agents/skills/`.
 
-This manifest is an inventory snapshot, not proof of installation in another
-runtime. Discover actual Skills before each substantial mission. Model and Skill
-routing is owned by `docs/ai/SKILLS_ROUTING.md`; mandatory behavior is owned by
-`AGENTS.md`. Codex, Hermes and OpenCode may have different installed Skills.
+This file is an inventory snapshot, not proof that a Skill is installed in a
+runtime. Discover the physical project Skills for each substantial mission and
+use `.agents/SKILL_ROUTER.md` for canonical selection. Runtime Skills remain
+conditional; model choice and chat history do not affect routing.
 
-**⚠️ NOTE**: The `.agents/skills` directory is **partially tracked** by Git (see `.gitignore`). 17 approved project-local skills are versioned. Heavy skills (browser-harness-main, impeccable, archify-main) and meta/backup skills are excluded and must be re-synced from `C:/Projetos/skills/` or upstream sources. See `docs/ai/PROJECT_CONTINUITY_POLICY.md` for continuity requirements.
+The clean versioned project inventory contains 17 `SKILL.md` files. Host-local
+overlays are not portable and are inventoried separately in the canonical
+router's host snapshot. Do not synchronize or install excluded Skills as part
+of routine discovery.
 
 ---
 

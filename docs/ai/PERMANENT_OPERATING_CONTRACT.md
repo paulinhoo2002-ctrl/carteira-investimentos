@@ -34,8 +34,8 @@
 ## 5. Skills, modelos e execução eficiente
 
 - A cada missão/fase relevante: descobrir modelos realmente acessíveis **no runtime ativo**; catálogo NVIDIA público é referência, não prova acesso. Escolher modelo por criticidade/custo (segurança e finanças requerem maior capacidade), registrar modelo usado e fallback real.
-- Ordem normativa: **Superpowers primeiro → Ponytail full → Caveman → Skills especialistas mínimas por tarefa**, somente se encontradas e instruções lidas. Auditar `.agents/skills` e overlays locais sem presumir portabilidade; seguir `docs/ai/SKILLS_ROUTING.md`, `docs/ai/SKILLS.md` e `docs/ai/skills-routing.json`.
-- `scripts/qa/select-skills.js` apenas aconselha. Não instala, executa nem concede autorização. Relatar Skills descobertas, consideradas, usadas/não usadas, justificativa e lacunas. Evitar carregar todo o catálogo ou duplicar grandes suítes verdes.
+- Ordem normativa: **Superpowers primeiro → Ponytail full → Caveman → Skills especialistas mínimas por tarefa**, somente se encontradas e instruções lidas. `.agents/SKILL_ROUTER.md` é a fonte canônica de classificação e seleção; `.agents/skills/` é descoberto primeiro, e Skills de runtime são condicionais à disponibilidade informada. `docs/ai/SKILLS_ROUTING.md` e `docs/ai/SKILL_ROUTER.md` são pontes curtas; `docs/ai/skills-routing.json` contém os dados do seletor.
+- Skill selection é independente do modelo e do histórico de chat. `scripts/qa/select-skills.js` recomenda Skills; não instala nem executa, e nunca concede autorização. Relatar Skills descobertas, consideradas, usadas/não usadas, justificativa e lacunas. Evitar carregar todo o catálogo ou duplicar grandes suítes verdes.
 
 ## 6. Definição de pronto e manutenção por anos
 
