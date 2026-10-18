@@ -982,6 +982,7 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
   .premium-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
   .premium-metric{min-height:84px;padding:9px}
   .premium-metric-value{font-size:15px}
+  .premium-dashboard .premium-metric-label{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.2}
   .premium-dashboard-grid{gap:8px}
   .premium-panel{padding:10px}
   .dashboard-home-performance{padding:8px!important}
@@ -2565,7 +2566,7 @@ html[data-theme="light"] .reports-panel,html[data-theme="light"] .reports-detail
 .reports-reconciliation-pass{color:#34d399}.reports-reconciliation-mismatch{color:#fbbf24}.reports-reconciliation-unavailable{color:#94a3b8}
 .reports-reconciliation-note{margin:10px 0 0;color:#a9b8cb;font-size:10px;line-height:1.45}
 .premium-rf-provenance-details{margin-top:3px;font-size:9px;color:var(--muted)}
-.premium-rf-provenance-details summary{display:inline-flex;min-height:28px;align-items:center;cursor:pointer;color:#9bb4d0;font-weight:700}
+.premium-rf-provenance-details summary{display:inline-flex;min-height:44px;align-items:center;cursor:pointer;color:#9bb4d0;font-weight:700}
 .premium-rf-provenance-grid{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 8px;margin-top:4px;padding:6px 8px;border-left:2px solid rgba(96,165,250,.45);background:rgba(96,165,250,.05);border-radius:0 7px 7px 0}
 .premium-rf-provenance-grid span{color:var(--muted)}
 .premium-rf-provenance-grid strong{color:var(--text);font-weight:700;overflow-wrap:anywhere}
@@ -6581,7 +6582,8 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       @media(max-width:767px){
         .premium-rf-row-value{min-width:0;max-width:51%;font-size:11px}
         .premium-rf-row-results{gap:4px 8px}
-        .premium-rf-row-results .premium-rf-row-meta{font-size:9px}
+        .premium-rf-row-applied{display:none}
+        .premium-rf-row-results .premium-rf-row-meta{font-size:12px}
       }
 
   /* V328 ACCORDION CATEGORY - Adapted from index2027 */
@@ -7326,6 +7328,10 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     .ag-table .tw .asset-action{padding-left:6px;padding-right:6px;font-size:10px}
     .rf-table-wrap table{min-width:0;width:100%;table-layout:fixed}
     .rf-table-wrap table th,.rf-table-wrap table td{overflow:hidden;text-overflow:ellipsis}
+    .rf-table-wrap table td:last-child{position:relative;overflow:visible;text-overflow:clip;white-space:normal}
+    .rf-economic-status-details{position:relative}
+    .rf-economic-status-details[open]{z-index:3}
+    .rf-economic-status-details dl{position:absolute;right:0;min-width:220px;max-width:calc(100vw - 24px);z-index:5}
     #assets-premium-rf-table-desktop table,#assets-premium-rf-table-desktop .rf-table{min-width:0!important;width:100%;table-layout:fixed;font-size:10px}
     #assets-premium-rf-table-desktop table th,#assets-premium-rf-table-desktop table td{min-width:0!important;padding:6px 5px;overflow:visible;text-overflow:clip;white-space:normal}
     #assets-premium-rf-table-desktop table td:first-child{min-width:112px!important;white-space:normal}
@@ -18158,8 +18164,8 @@ const withVisibleValues = fn => {
   try{ return fn(); }
   finally{ valueVisibilityDepth--; }
 };
-const fmtP = v => `${v>=0?'+':''}${v.toFixed(2)}%`;
-const fmtN = v => Number(v||0).toLocaleString('pt-BR',{maximumFractionDigits:2});
+const fmtP = v => S.hideValues&&valueVisibilityDepth===0?'••••':`${v>=0?'+':''}${v.toFixed(2)}%`;
+const fmtN = v => S.hideValues&&valueVisibilityDepth===0?'••••':Number(v||0).toLocaleString('pt-BR',{maximumFractionDigits:2});
 const DEBUG = (() => {
   try{
     if(isLocalTestMode()) return false;
@@ -18172,13 +18178,32 @@ const debugLog = (...args) => { if(DEBUG) console.log('[DEBUG]', ...args); };
 const debugInfo = (...args) => { if(DEBUG) console.info('[DEBUG]', ...args); };
 const debugWarn = (...args) => { if(DEBUG) console.warn('[DEBUG]', ...args); };
 const debugError = (...args) => { if(DEBUG) console.error('[DEBUG]', ...args); };
-const esc  = s => String(s ?? '').replace(/[&<>"']/g, ch => ({
-  '&':'&amp;',
-  '<':'&lt;',
-  '>':'&gt;',
-  '"':'&quot;',
-  "'":'&#39;'
-}[ch]));
+const esc  = s => {
+  const text=String(s ?? '');
+  const safeText=S.hideValues&&valueVisibilityDepth===0?text.replace(/(?:[-+]\s*)?R\$\s*[-+]?\s*[\d.,]+/g,'R$ ••••').replace(/\b[\d.,]+\s*(?=%)/g,'••••').replace(/\b[\d.,]+\s+(?=(?:cotas?|ações?|acoes|unidades?)\b)/gi,'•••• '):text;
+  return safeText.replace(/[&<>"']/g, ch => ({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+  }[ch]));
+};
+function maskSensitiveRenderedValues(root){
+  if(!S.hideValues||valueVisibilityDepth>0||!root) return;
+  const mask=text=>String(text??'').replace(/(?:[-+]\s*)?R\$\s*[-+]?\s*[\d.,]+/g,'R$ ••••').replace(/\b[\d.,]+\s*(?=%)/g,'••••').replace(/\b[\d.,]+\s+(?=(?:cotas?|ações?|acoes|unidades?|un\.|units?)\b)/gi,'•••• ');
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  let node;
+  while((node=walker.nextNode())){
+    if(!node.parentElement?.closest('script,style,textarea,[contenteditable="true"]')) node.nodeValue=mask(node.nodeValue);
+  }
+  for(const element of root.querySelectorAll('[aria-label],[title],[data-chart-tooltip],[alt]')){
+    for(const attribute of ['aria-label','title','data-chart-tooltip','alt']){
+      const value=element.getAttribute(attribute);
+      if(value) element.setAttribute(attribute,mask(value));
+    }
+  }
+}
 const noteDisplay = note => {
   const text = String(note||'');
   if(!S.hideValues) return esc(text);
@@ -29022,6 +29047,7 @@ function render(){
     root.innerHTML=withRenderCycleReportCache(()=>app());
     bind();
     renderPortfolioSearch();
+    maskSensitiveRenderedValues(root);
     if(preserveQuoteUI) restoreQuoteUi();
     else if(preserveScroll) restoreScroll();
   }catch(error){
@@ -29208,7 +29234,7 @@ function corporateEventsCenterTab(){
   return CorporateEventsCenter.render(vm,{escape:esc});
 }
 function filterCorporateEventsCenter(control){return CorporateEventsCenter.filterCorporateEventsCenter(control)}
-const NAV_TABS=[['dashboard','📊 Dashboard'],['patrimonio','💎 Patrimônio'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','💡 Insights'],['confiabilidade','🛡️ Confiabilidade']];
+const NAV_TABS=[['dashboard','📊 Dashboard'],['patrimonio','💎 Patrimônio'],['ativos','💼 Ativos'],['aportes','💰 Aportes'],['metas','🎯 Metas'],['dividendos','📅 Dividendos'],['renda-fixa','🧾 Renda Fixa'],['rentabilidade','📈 Rentabilidade'],['ajudar','⚖️ Rebalancear'],['ia','💡 Insights'],['confiabilidade','🛡️ Confiabilidade']];
 const REPORT_TABS=[['relatorios','📑 Relatórios'],['corporate-eventos','⚙️ Eventos societários'],['irpf','🧾 IRPF'],['auditoria','🔎 Auditoria']];
 function navTabActive(key){
   return S.tab===key || (key==='ativos' && S.tab==='ranking');
@@ -29462,7 +29488,7 @@ function assetDetailPage(asset){
   const tabs=[['overview','Visão geral'],['valuation','Valuation']]; if(records.length)tabs.push(['history','Histórico']); if(income.length)tabs.push(['income','Proventos']); if(documents.length)tabs.push(['documents','Documentos']); if(detailIntelligence)tabs.push(['intelligence','Inteligência']); if(!tabs.some(([key])=>key===assetDetailTab))assetDetailTab='overview';
   const trust=assetDetailTrust(asset,isRF), resultClass=Number.isFinite(result)?(result>0?'pos':result<0?'neg':'neutral'):'';
   const valueText=Number.isFinite(current)?fmt(current):'—', subtitle=isRF?`${assetRfSubtype(asset)} · ${assetRfIndexerLabel(asset)}`:`${type}${asset?.sector?` · ${asset.sector}`:''}`;
-  const kpis=isRF?[['Valor usado na carteira',valueText,trust.label,''],['Valor aplicado',Number.isFinite(applied)?fmt(applied):'—','Principal cadastrado',''],['Resultado',Number.isFinite(result)?assetSignedMoneyText(result):'—',Number.isFinite(rentab)?fmtP(rentab):'Sem rentabilidade calculável',resultClass],['Vencimento',assetDetailDate(assetRfMaturityDate(asset)),assetRfApplicationDate(asset)?`Aplicado em ${assetDetailDate(assetRfApplicationDate(asset))}`:'Data de aplicação não informada','']]:[['Valor de mercado',valueText,asset?.quoteUpdatedAt?'Cotação atualizada':'Cotação disponível',''],['Quantidade',assetDetailText(asset?.qty),'Posição atual',''],['Preço médio',Number(asset?.avg_price)>0?fmt(asset.avg_price):'—','Custo por unidade',''],['Resultado',Number.isFinite(result)?assetSignedMoneyText(result):'—',Number.isFinite(rentab)?fmtP(rentab):'Sem rentabilidade calculável',resultClass]];
+  const kpis=isRF?[['Valor usado na carteira',valueText,trust.label,''],['Valor aplicado',Number.isFinite(applied)?fmt(applied):'—','Principal cadastrado',''],['Resultado da posição',Number.isFinite(result)?assetSignedMoneyText(result):'—',Number.isFinite(rentab)?fmtP(rentab):'Sem rentabilidade calculável',resultClass],['Vencimento',assetDetailDate(assetRfMaturityDate(asset)),assetRfApplicationDate(asset)?`Aplicado em ${assetDetailDate(assetRfApplicationDate(asset))}`:'Data de aplicação não informada','']]:[['Valor de mercado',valueText,asset?.quoteUpdatedAt?'Cotação atualizada':'Cotação disponível',''],['Quantidade',fmtN(asset?.qty),'Posição atual',''],['Preço médio',Number(asset?.avg_price)>0?fmt(asset.avg_price):'—','Custo por unidade',''],['Resultado',Number.isFinite(result)?assetSignedMoneyText(result):'—',Number.isFinite(rentab)?fmtP(rentab):'Sem rentabilidade calculável',resultClass]];
   const kpiHtml=kpis.map(([label,value,note,cls])=>`<article class="asset-detail-kpi"><div class="asset-detail-kpi-label">${esc(label)}</div><div class="asset-detail-kpi-value ${cls}">${esc(value)}</div><div class="asset-detail-kpi-note">${esc(note)}</div></article>`).join('');
   const row=(label,value)=>`<div class="asset-detail-row"><span>${esc(label)}</span><strong>${esc(assetDetailText(value))}</strong></div>`;
   const provenanceFacts=globalThis.V213TransactionTrust?.provenanceFacts?.({...asset,source:asset?.source||asset?.quoteSource})||[];
@@ -29472,8 +29498,8 @@ function assetDetailPage(asset){
   const history=records.length?`<article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Histórico de movimentações</h2><p>Registros existentes para este ativo, sem alterar a fonte.</p></div><span class="asset-detail-badge">${records.length} registro${records.length===1?'':'s'}</span></div><div class="asset-detail-list">${records.map(item=>row(`${assetDetailDate(item.date||item.tradeDate)} · ${assetDetailKindLabel(item)}`,Number(item.total||item.value||item.amount)>0?fmt(Number(item.total||item.value||item.amount)):'Quantidade registrada')).join('')}</div></article>`:'<article class="asset-detail-panel"><div class="asset-detail-empty">Coletando histórico desde 15/09/2026. Ainda não há pontos suficientes para uma série confiável.</div></article>';
   const incomeHtml=income.length?`<article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Proventos do ativo</h2><p>Somente eventos já presentes no histórico da carteira.</p></div><span class="asset-detail-badge">${income.length} registro${income.length===1?'':'s'}</span></div><div class="asset-detail-list">${income.map(item=>row(`${assetDetailDate(item.date||item.paymentDate)} · ${assetDetailText(item.type,'Provento')}`,Number(item.value)>0?fmt(item.value):'Valor não informado')).join('')}</div></article>`:'<article class="asset-detail-panel"><div class="asset-detail-empty">Nenhum provento disponível para este ativo no histórico atual.</div></article>';
   const docsHtml=documents.length?`<article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Documentos</h2><p>Referências vinculadas ao ativo.</p></div></div><div class="asset-detail-list">${documents.map(doc=>row(assetDetailText(doc.title||doc.name,'Documento'),assetDetailText(doc.date||doc.source,'Referência cadastrada'))).join('')}</div></article>`:'<article class="asset-detail-panel"><div class="asset-detail-empty">Nenhum documento vinculado a este ativo.</div></article>';
-  const intelligenceHtml=detailIntelligence?`<div class="asset-detail-content-grid"><article class="asset-detail-panel" data-asset-intelligence="true"><div class="asset-detail-panel-head"><div><h2>Inteligência do ativo</h2><p>Leitura derivada dos ledgers certificados; não cria nem grava uma nova autoridade.</p></div><span class="asset-detail-badge ${detailIntelligence.review.status==='HIGH'?'accent':''}">${esc(detailIntelligence.review.status==='HIGH'?'Alta confiança':detailIntelligence.review.status==='NEEDS_REVIEW'?'Revisão necessária':'Indisponível')}</span></div><div class="asset-detail-list">${row('Posição atual',detailIntelligence.position.quantity===null?'—':detailIntelligence.position.quantity)}${row('Valor considerado',detailIntelligence.position.currentValue===null?'—':fmt(detailIntelligence.position.currentValue))}${row('Custo médio',detailIntelligence.position.averageCost===null?'—':fmt(detailIntelligence.position.averageCost))}${row('Resultado atual',detailIntelligence.position.result===null?'—':assetSignedMoneyText(detailIntelligence.position.result))}${row('Renda paga',detailIntelligence.income.paidTotal===null?'—':fmt(detailIntelligence.income.paidTotal))}${row('Renda paga no ano',detailIntelligence.income.ytdPaidIncome===null?'—':fmt(detailIntelligence.income.ytdPaidIncome))}${row('Renda paga 12M',detailIntelligence.income.ttmPaidIncome===null?'—':fmt(detailIntelligence.income.ttmPaidIncome))}${row('Eventos pagos',detailIntelligence.income.paidEventCount)}${row('Eventos anunciados',detailIntelligence.income.announcedEventCount)}${row('Custo-base',detailIntelligence.tax.costBasis===null?'—':fmt(detailIntelligence.tax.costBasis))}${row('Resultado realizado',detailIntelligence.tax.realizedResult===null?'—':assetSignedMoneyText(detailIntelligence.tax.realizedResult))}${row('Transações do ativo',detailIntelligence.transactions.list.length)}${row('Fonte das transações',detailIntelligence.transactions.source===null?'—':detailIntelligence.transactions.source)}</div></article><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Confiança e cobertura</h2><p>Estados incompletos permanecem visíveis e não são tratados como zero.</p></div></div><div class="asset-detail-list">${row('Histórico',detailIntelligence.historical.status)}${row('Cobertura histórica',detailIntelligence.historical.coverage)}${row('Reconciliação da posição',detailIntelligence.historical.reconciliationState==='ALL_MATCH'?'Reconciliada':detailIntelligence.historical.reconciliationState===null?'—':'Revisar divergência')}${row('Status do custo-base',detailIntelligence.tax.status)}${row('Status do resultado realizado',detailIntelligence.tax.realizedStatus)}${row('Autoridade da posição',detailIntelligence.position.authority)}${row('Cotação',detailIntelligence.marketData.status)}${row('Fonte da cotação',detailIntelligence.marketData.source===null?'—':detailIntelligence.marketData.source)}${row('Cobertura de renda',detailIntelligence.coverage.income)}${row('Cobertura de custo-base',detailIntelligence.coverage.tax)}</div>${detailIntelligence.review.reasons.length?`<div class="asset-detail-interpretation" style="margin-top:14px"><strong>Revisão necessária</strong><span>${esc(detailIntelligence.review.reasons.join(' · '))}</span></div>`:''}</article><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Qualidade, alertas e eventos</h2><p>Pendências, monitoramento e eventos corporativos deste ativo; leitura somente consulta.</p></div></div><div class="asset-detail-list">${row('Pendências de qualidade',detailIntelligence.dataQuality.issues.length)}${row('Qualidade em revisão',detailIntelligence.dataQuality.needsReview?'Sim':'Não')}${row('Alertas de monitoramento',detailIntelligence.monitoring.alerts.length)}${row('Eventos corporativos',detailIntelligence.events.list.length)}${row('Autoridade de eventos',detailIntelligence.events.status===null?'—':detailIntelligence.events.status)}${row('Documentos',detailIntelligence.documents.list.length)}${row('Proveniência',detailIntelligence.provenance.dataTrustSource===null?'—':detailIntelligence.provenance.dataTrustSource)}</div></article></div>`:'<article class="asset-detail-panel"><div class="asset-detail-empty">Inteligência do ativo indisponível nesta sessão.</div></article>';
-  const interpretation=`<aside class="asset-detail-interpretation" aria-label="Como ler esta posição"><strong>Como ler esta posição</strong><span>${esc(trust.note)}</span><span>Valor considerado: ${esc(valueText)}</span><span>Resultado disponível: ${Number.isFinite(result)?esc(assetSignedMoneyText(result)):'—'}</span></aside>`;
+  const intelligenceHtml=detailIntelligence?`<div class="asset-detail-content-grid"><article class="asset-detail-panel" data-asset-intelligence="true"><div class="asset-detail-panel-head"><div><h2>Inteligência do ativo</h2><p>Leitura derivada dos ledgers certificados; não cria nem grava uma nova autoridade.</p></div><span class="asset-detail-badge ${detailIntelligence.review.status==='HIGH'?'accent':''}">${esc(detailIntelligence.review.status==='HIGH'?'Alta confiança':detailIntelligence.review.status==='NEEDS_REVIEW'?'Revisão necessária':'Indisponível')}</span></div><div class="asset-detail-list">${row('Posição atual',detailIntelligence.position.quantity===null?'—':fmtN(detailIntelligence.position.quantity))}${row('Valor considerado',detailIntelligence.position.currentValue===null?'—':fmt(detailIntelligence.position.currentValue))}${row('Custo médio',detailIntelligence.position.averageCost===null?'—':fmt(detailIntelligence.position.averageCost))}${row('Resultado atual',detailIntelligence.position.result===null?'—':assetSignedMoneyText(detailIntelligence.position.result))}${row('Renda paga',detailIntelligence.income.paidTotal===null?'—':fmt(detailIntelligence.income.paidTotal))}${row('Renda paga no ano',detailIntelligence.income.ytdPaidIncome===null?'—':fmt(detailIntelligence.income.ytdPaidIncome))}${row('Renda paga 12M',detailIntelligence.income.ttmPaidIncome===null?'—':fmt(detailIntelligence.income.ttmPaidIncome))}${row('Eventos pagos',detailIntelligence.income.paidEventCount)}${row('Eventos anunciados',detailIntelligence.income.announcedEventCount)}${row('Custo-base',detailIntelligence.tax.costBasis===null?'—':fmt(detailIntelligence.tax.costBasis))}${row('Resultado realizado',detailIntelligence.tax.realizedResult===null?'—':assetSignedMoneyText(detailIntelligence.tax.realizedResult))}${row('Transações do ativo',detailIntelligence.transactions.list.length)}${row('Fonte das transações',detailIntelligence.transactions.source===null?'—':detailIntelligence.transactions.source)}</div></article><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Confiança e cobertura</h2><p>Estados incompletos permanecem visíveis e não são tratados como zero.</p></div></div><div class="asset-detail-list">${row('Histórico',detailIntelligence.historical.status)}${row('Cobertura histórica',detailIntelligence.historical.coverage)}${row('Reconciliação da posição',detailIntelligence.historical.reconciliationState==='ALL_MATCH'?'Reconciliada':detailIntelligence.historical.reconciliationState===null?'—':'Revisar divergência')}${row('Status do custo-base',detailIntelligence.tax.status)}${row('Status do resultado realizado',detailIntelligence.tax.realizedStatus)}${row('Autoridade da posição',detailIntelligence.position.authority)}${row('Cotação',detailIntelligence.marketData.status)}${row('Fonte da cotação',detailIntelligence.marketData.source===null?'—':detailIntelligence.marketData.source)}${row('Cobertura de renda',detailIntelligence.coverage.income)}${row('Cobertura de custo-base',detailIntelligence.coverage.tax)}</div>${detailIntelligence.review.reasons.length?`<div class="asset-detail-interpretation" style="margin-top:14px"><strong>Revisão necessária</strong><span>${esc(detailIntelligence.review.reasons.join(' · '))}</span></div>`:''}</article><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Qualidade, alertas e eventos</h2><p>Pendências, monitoramento e eventos corporativos deste ativo; leitura somente consulta.</p></div></div><div class="asset-detail-list">${row('Pendências de qualidade',detailIntelligence.dataQuality.issues.length)}${row('Qualidade em revisão',detailIntelligence.dataQuality.needsReview?'Sim':'Não')}${row('Alertas de monitoramento',detailIntelligence.monitoring.alerts.length)}${row('Eventos corporativos',detailIntelligence.events.list.length)}${row('Autoridade de eventos',detailIntelligence.events.status===null?'—':detailIntelligence.events.status)}${row('Documentos',detailIntelligence.documents.list.length)}${row('Proveniência',detailIntelligence.provenance.dataTrustSource===null?'—':detailIntelligence.provenance.dataTrustSource)}</div></article></div>`:'<article class="asset-detail-panel"><div class="asset-detail-empty">Inteligência do ativo indisponível nesta sessão.</div></article>';
+  const interpretation=`<aside class="asset-detail-interpretation" aria-label="Como ler esta posição"><strong>Como ler esta posição</strong><span>${esc(trust.note)}</span>${isRF?'<span>O resultado exibido é da posição e não representa o resultado econômico total.</span>':''}<span>Valor considerado: ${esc(valueText)}</span><span>Resultado disponível: ${Number.isFinite(result)?esc(assetSignedMoneyText(result)):'—'}</span></aside>`;
   const body=assetDetailTab==='valuation'?valuation:assetDetailTab==='history'?history:assetDetailTab==='income'?incomeHtml:assetDetailTab==='documents'?docsHtml:assetDetailTab==='intelligence'?intelligenceHtml:overview;
   return `<section class="asset-detail-page" aria-labelledby="asset-detail-title"><header class="asset-detail-hero"><div class="asset-detail-hero-main"><button type="button" class="btn bgh asset-detail-back" onclick="closeAssetDetail()" aria-label="Voltar para a tela anterior">← Voltar</button><div><div class="asset-detail-kicker"><span>${esc(ticker)}</span><span>·</span><span>${esc(type)}</span></div><h1 id="asset-detail-title" class="asset-detail-title">${esc(name)}</h1><div class="asset-detail-subtitle">${esc(subtitle)}</div><div class="asset-detail-badges"><span class="asset-detail-badge accent">${esc(isRF?'Renda Fixa':'Posição em carteira')}</span><span class="asset-detail-badge">${esc(trust.label)}</span></div></div></div><div class="asset-detail-actions"><button type="button" class="btn bgh" onclick='${isRF?`openRfMovementEditor(${JSON.stringify(rfAssetEventId(asset))}, "aporte")`:`openAssetQuickMovement(${JSON.stringify(String(asset.id))}, "compra")`}'>${isRF?'Movimentar':'Comprar'}</button><button type="button" class="btn bp" onclick='edA(${JSON.stringify(String(asset.id))})'>✎ Editar</button></div></header><div class="asset-detail-kpis">${kpiHtml}</div><nav class="asset-detail-tabs" role="tablist" aria-label="Seções do detalhe de ${esc(ticker)}">${tabs.map(([key,label])=>`<button type="button" role="tab" aria-selected="${assetDetailTab===key?'true':'false'}" class="asset-detail-tab ${assetDetailTab===key?'on':''}" onclick="setAssetDetailTab('${key}')">${esc(label)}</button>`).join('')}</nav><div>${interpretation}${body}${v228AssetTimelineSection(asset)}</div></section>`;
 }
@@ -30794,19 +30820,16 @@ function rfZeroBalanceBadge(asset){
   if(!asset || rfPrincipalBalance(asset).value!==0) return '';
   return `<span class="rf-event-badge zero">Saldo zerado</span>`;
 }
+function rfEventEvidenceStatus(row){
+  return Number(row?.eventCount)>0 ? 'Parcial' : 'Indisponível';
+}
+function rfPositionResultText(row){
+  if(!row?.explicit || !row?.appliedKnown || !Number.isFinite(row?.profit)) return 'Indisponível';
+  return assetSignedMoneyText(row.profit);
+}
 function rfEventReceiptsSummaryHtml(row){
-  const count=Number(row?.eventCount)||0;
-  if(count<=0) return '';
-  const gross=Number(row?.receivedGross)||0;
-  const ir=Number(row?.receivedIr)||0;
-  const iof=Number(row?.receivedIof)||0;
-  const net=Number(row?.receivedNet)||0;
-  const resultWithEvents=Number(row?.resultWithEvents)||0;
-  const rentabWithEvents=row?.rentabWithEvents;
-  return `
-    <div><strong>Recebidos:</strong> bruto ${fmt(gross)} · IR ${fmt(ir)} · IOF ${fmt(iof)} · líquido ${fmt(net)}</div>
-    <div><strong>Com eventos:</strong> resultado ${fmt(resultWithEvents)} · rentab. ${rentabWithEvents!=null?fmtP(rentabWithEvents):'—'}</div>
-  `;
+  const status=rfEventEvidenceStatus(row);
+  return `<div class="rf-event-evidence" role="status"><strong>Recebimentos:</strong> ${status} · classificação de renda, impostos e principal ainda não certificada.</div>`;
 }
 function rfEventSeedActionHtml(row, totals){
   const seed=rfEventSeedSummaryForTicker(row.ticker);
@@ -31135,7 +31158,7 @@ function rendaFixaTab(){
   const primaryKpis=[
     ['Valor atual informado',data.explicitCount?fmt(knownCurrentTotal):'—',count?`${data.explicitCount}/${count} posições com valor explícito`:'Sem posições','#34d399'],
     ['Capital aplicado',count&&appliedCount===count?fmt(data.totalApplied):'—',count?`${appliedCount}/${count} bases informadas`:'Sem posições','#a78bfa'],
-    ['Resultado',count&&data.missingCurrent===0&&appliedCount===count&&Number.isFinite(data.totalProfit)?fmt(data.totalProfit):'—',count?(data.missingCurrent===0&&appliedCount===count&&Number.isFinite(data.totalPct)?`${fmtP(data.totalPct)} com valores completos`:'Indisponível enquanto houver valores atuais ou bases ausentes'):'Sem posições',resultTone],
+    ['Resultado da posição',count&&data.missingCurrent===0&&appliedCount===count&&Number.isFinite(data.totalProfit)?assetSignedMoneyText(data.totalProfit):'—',count?(data.missingCurrent===0&&appliedCount===count&&Number.isFinite(data.totalPct)?'Valor atual menos capital aplicado informado; não representa retorno total.':'Indisponível enquanto houver valores atuais ou bases ausentes'):'Sem posições',resultTone],
     ['Próximo vencimento',nextMaturity?(nextMaturity.days===0?'Hoje':nextMaturity.days===1?'Amanhã':`${nextMaturity.days} dias`):'—',nextMaturity?(nextMaturity.ticker||'Título RF'):'Nenhum vencimento futuro','#fbbf24']
   ];
   const activeRfFilters=[S.rfTrustFilter!=='all',!!S.rfIssuerFilter,!!S.rfCategoryFilter].filter(Boolean).length;
@@ -31161,18 +31184,18 @@ function rendaFixaTab(){
     <div class="premium-rf-position-row">
       <div class="premium-rf-row-main">
         <div class="premium-rf-row-title">${esc(row.ticker)}${row.name&&row.name!==row.ticker?` · ${esc(row.name)}`:''}</div>
-        <div class="premium-rf-row-meta">${esc(row.category)} · ${esc(row.indexer)} · ${esc(row.rate||'taxa não informada')}</div>
+        <div class="premium-rf-row-meta">${esc(row.category)} · ${esc(row.indexer)} · ${S.hideValues&&valueVisibilityDepth===0?'••••':esc(row.rate||'taxa não informada')}</div>
         <div class="premium-rf-row-meta premium-rf-row-issuer">Instituição: ${esc(row.issuer||'não informada')}</div>
       </div>
       <div class="premium-rf-row-value">
         <div class="premium-rf-row-financial"><span class="premium-rf-row-financial-label">Atual</span>${display.currentText}</div>
-        <div class="premium-rf-row-meta">Valor aplicado ${display.appliedText}</div>
+        <div class="premium-rf-row-meta premium-rf-row-applied">Valor aplicado ${display.appliedText}</div>
         <div class="premium-rf-row-meta"><span class="premium-rf-provenance ${esc(display.provenance?.tone||'muted')}">${esc(display.provenance?.label||'Valor informado')}</span> ${esc(display.currentNote)}</div>
         ${provenanceDetails?.rows?.length ? `<details class="premium-rf-provenance-details"><summary>Como foi avaliado</summary><div class="premium-rf-provenance-grid">${provenanceDetails.rows.map(([key,value])=>`<span>${esc(key)}</span><strong>${esc(value)}</strong>`).join('')}</div></details>` : ''}
         <div class="premium-rf-row-meta">Vencimento ${esc(display.maturityText)}</div>
         <div class="premium-rf-row-results">
-          <span class="premium-rf-row-meta ${display.resultClass}">Resultado ${display.kind==='fallback-applied' ? '—' : display.resultText}</span>
-          <span class="premium-rf-row-meta ${display.resultClass}">Rentab. ${display.rentabilityText}</span>
+          <span class="premium-rf-row-meta ${display.resultClass}">Resultado da posição ${display.kind==='fallback-applied' ? '—' : display.resultText}</span>
+          <span class="premium-rf-row-meta ${display.resultClass}">Rentabilidade da posição ${display.rentabilityText}</span>
         </div>
       </div>
       ${assetId ? `
@@ -31284,23 +31307,24 @@ function rendaFixaTab(){
     const responsiveCards=trustRows.length ? trustRows.map(row=>`
       <details class="rf-responsive-card">
         <summary aria-label="Detalhes de ${esc(row.name||row.ticker)}">
-          <span class="rf-responsive-card-heading"><strong>${esc(row.ticker)}</strong><span>${esc(row.category)}${row.issuer?` · ${esc(row.issuer)}`:''}</span></span>
+          <span class="rf-responsive-card-heading"><strong>${esc(row.ticker)}</strong><span>${esc(row.category)}${row.issuer?` · ${esc(row.issuer)}`:''} · Vencimento ${row.due?row.due.toLocaleDateString('pt-BR'):'não informado'}</span></span>
           <span class="rf-responsive-card-summary-values">
-            <span><small>Atual</small><strong>${row.explicit===false?'—':fmt(row.current)}</strong></span>
-            <span><small>Resultado total</small><strong>${Number.isFinite(row.resultWithEvents)?fmt(row.resultWithEvents):'—'}</strong></span>
-            <span><small>Rentab.</small><strong>${Number.isFinite(row.pct)?fmtP(row.pct):'—'}</strong></span>
-            <span><small>Vencimento</small><strong>${row.due?row.due.toLocaleDateString('pt-BR'):'—'}</strong></span>
+            <span><small>Valor atual</small><strong>${row.explicit===false?'—':fmt(row.current)}</strong></span>
+            <span><small>Resultado da posição</small><strong>${esc(rfPositionResultText(row))}</strong></span>
+            <span><small>Rentabilidade da posição</small><strong>${row.explicit&&row.appliedKnown&&Number.isFinite(row.pct)?fmtP(row.pct):'Indisponível'}</strong></span>
           </span>
           <span class="rf-responsive-card-disclosure" aria-hidden="true">＋</span>
         </summary>
         <dl class="rf-responsive-card-details">
-          <div><dt>Valor aplicado</dt><dd>${fmt(row.applied)}</dd></div>
-          <div><dt>Rendimentos recebidos</dt><dd>${fmt(row.receivedNet)}</dd></div>
-          <div><dt>Resultado de mercado</dt><dd>${row.explicit===false?'—':fmt(row.profit)}</dd></div>
-          <div><dt>Rentabilidade</dt><dd>${Number.isFinite(row.pct)?fmtP(row.pct):'—'}</dd></div>
+          <div><dt>Capital aplicado informado</dt><dd>${row.appliedKnown?fmt(row.applied):'—'}</dd></div>
+          <div><dt>Rendimentos recebidos</dt><dd>${rfEventEvidenceStatus(row)}</dd></div>
+          <div><dt>Impostos pagos</dt><dd>${rfEventEvidenceStatus(row)}</dd></div>
+          <div><dt>Principal devolvido</dt><dd>${rfEventEvidenceStatus(row)}</dd></div>
+          <div><dt>Resultado da posição</dt><dd>${esc(rfPositionResultText(row))}</dd></div>
+          <div><dt>Resultado econômico total</dt><dd>Em consolidação</dd></div>
+          <div><dt>Rentabilidade total</dt><dd>Em consolidação</dd></div>
           <div><dt>Taxa</dt><dd>${esc(row.rate||'—')}</dd></div>
           <div><dt>Vencimento</dt><dd>${row.due?row.due.toLocaleDateString('pt-BR'):'—'}</dd></div>
-          <div><dt>Resultado total</dt><dd>${Number.isFinite(row.resultWithEvents)?fmt(row.resultWithEvents):'—'}</dd></div>
           <div><dt>Situação</dt><dd>${esc(row.issues.length?row.issues[0].label:'OK')}</dd></div>
         </dl>
       </details>`).join('') : '<div class="rf-empty">Nenhum título cadastrado.</div>';
@@ -31309,28 +31333,28 @@ function rendaFixaTab(){
       <tr>
         <td class="rf-strong">${esc(row.ticker)}</td>
         <td>${esc(row.category)}</td>
-        <td class="rf-right">${fmt(row.applied)}</td>
+        <td class="rf-right">${row.appliedKnown?fmt(row.applied):'—'}</td>
         <td class="rf-right">
           <div class="rf-strong">${row.explicit===false ? '—' : fmt(row.current)}</div>
           <div class="rf-mini">${row.explicit===false ? 'Valor atual não informado' : 'Valor atual / líquido'}</div>
         </td>
-        <td class="rf-right ${row.profit>=0?'gn':'rd'}">
+        <td class="rf-right ${row.profit>0?'gn':row.profit<0?'rd':''}">
                   ${row.explicit === false
                     ? `<div class="rf-strong" style="color:#c8a84b">Atualização necessária</div><div class="rf-mini">Sem valor atual informado</div>`
-                    : `<div class="rf-strong">${fmt(row.profit)}</div><div class="rf-mini">Resultado de mercado</div>`
+                    : `<div class="rf-strong">${esc(rfPositionResultText(row))}</div><div class="rf-mini">Valor atual menos capital aplicado informado</div>`
                   }
                 </td>
       <td class="rf-right">
-        <div class="rf-strong">${fmt(row.receivedNet)}</div>
-        <div class="rf-mini">${row.eventCount>0 ? `${row.eventCount} evento${row.eventCount===1?'':'s'} · bruto ${fmt(row.receivedGross)} · IR ${fmt(row.receivedIr)} · IOF ${fmt(row.receivedIof)}` : 'Sem eventos de renda fixa'}</div>
+        <div class="rf-strong">${rfEventEvidenceStatus(row)}</div>
+        <div class="rf-mini">Renda efetivamente recebida ainda não conciliada</div>
       </td>
-      <td class="rf-right ${row.resultWithEvents>0?'gn':row.resultWithEvents<0?'rd':''}">
-        <div class="rf-strong">${Number.isFinite(row.resultWithEvents)?fmt(row.resultWithEvents):'—'}</div>
-        <div class="rf-mini">${Number.isFinite(row.resultWithEvents) ? `${Number.isFinite(row.rentabWithEvents)?fmtP(row.rentabWithEvents):'—'} · resultado total` : 'resultado total indisponível'}</div>
+      <td class="rf-right">
+        <div class="rf-strong">Em consolidação</div>
+        <div class="rf-mini">Resultado econômico total</div>
       </td>
-      <td class="rf-right ${row.pct>0?'gn':row.pct<0?'rd':''}">${Number.isFinite(row.pct)?fmtP(row.pct):'—'}</td>
+      <td class="rf-right"><div class="rf-strong">Em consolidação</div><div class="rf-mini">Rentabilidade total</div></td>
       <td>${row.due?row.due.toLocaleDateString('pt-BR'):'—'}</td>
-      <td><span class="analysis-pill ${row.issues.length? (row.days!=null && row.days<0 ? 'danger' : row.days!=null && row.days<=30 ? 'warn' : 'muted') : 'ok'}">${esc(row.issues.length?row.issues[0].label:'OK')}</span></td>
+      <td><span class="analysis-pill ${row.issues.length? (row.days!=null && row.days<0 ? 'danger' : row.days!=null && row.days<=30 ? 'warn' : 'muted') : 'ok'}">${esc(row.issues.length?row.issues[0].label:'OK')}</span><details class="rf-economic-status-details"><summary>Ver campos econômicos</summary><dl><div><dt>Impostos pagos</dt><dd>${rfEventEvidenceStatus(row)}</dd></div><div><dt>Principal devolvido</dt><dd>${rfEventEvidenceStatus(row)}</dd></div><div><dt>Resultado econômico total</dt><dd>Em consolidação</dd></div><div><dt>Rentabilidade total</dt><dd>Em consolidação</dd></div></dl></details></td>
     </tr>`).join('') : '<tr><td colspan="10" style="padding:14px;color:#7489a4;text-align:center">Nenhum título cadastrado.</td></tr>';
 
   return `<div class="rf-page premium-rf-page">
@@ -31344,7 +31368,7 @@ function rendaFixaTab(){
     <div class="premium-rf-primary-kpis">${kpiHtml(primaryKpis,'premium-rf-primary-kpi')}</div>
     <div class="premium-rf-grid">
       <div class="premium-rf-panel ds-panel ds-panel--readonly">
-        <div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title">Posições de Renda Fixa</div><div class="premium-rf-panel-sub">Atual e resultado derivados do valor oficial de cada título.</div></div><div class="premium-rf-panel-badge">${trustRows.length}/${count} posições</div></div>
+      <div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title">Posições de Renda Fixa</div><div class="premium-rf-panel-sub">Valor atual e resultado da posição derivados do valor oficial de cada título.</div></div><div class="premium-rf-panel-badge">${trustRows.length}/${count} posições</div></div>
         <div class="premium-rf-controls" aria-label="Controles de leitura de renda fixa">
           <label class="premium-rf-search-control"><span>Buscar</span><input type="search" aria-label="Buscar título de renda fixa" placeholder="Nome, emissor ou indexador" value="${esc(S.rfSearch||'')}" oninput="setRfTrustSearch(this.value)"></label>
           <details class="premium-rf-filter-details" ${typeof window==='undefined'||window.innerWidth>=768||S.rfFilterPanelOpen?'open':''} ontoggle="setRfFilterPanelOpen(this.open)">
@@ -31418,8 +31442,8 @@ function rendaFixaTab(){
     <details class="sec ds-panel ds-panel--readonly" style="margin-top:0">
       <summary>
         <div>
-          <div class="sec-title">Leitura por título</div>
-          <div class="sec-meta">Resultado estimado com base apenas nos valores já informados.</div>
+            <div class="sec-title">Leitura por título</div>
+            <div class="sec-meta">Resultado da posição estimado com base apenas nos valores já informados.</div>
         </div>
         <div class="sec-meta">${data.previewRows.length} destaques · clique para abrir</div>
       </summary>
@@ -31436,7 +31460,7 @@ function rendaFixaTab(){
       <summary>
         <div>
           <div class="sec-title">Detalhamento dos títulos</div>
-          <div class="sec-meta">lista completa dos ativos de renda fixa com aplicado, atual, resultado e vencimento</div>
+            <div class="sec-meta">Lista completa dos títulos com capital aplicado, valor atual, resultado da posição e vencimento.</div>
         </div>
         <div class="sec-meta">${data.tableRows.length} títulos · clique para abrir</div>
       </summary>
@@ -31450,10 +31474,10 @@ function rendaFixaTab(){
                 <th>Tipo</th>
                 <th class="rf-right">Aplicado</th>
                 <th class="rf-right">Atual</th>
-                <th class="rf-right">Resultado de mercado</th>
+                <th class="rf-right">Resultado da posição</th>
                 <th class="rf-right">Rendimentos recebidos</th>
-                <th class="rf-right">Resultado total</th>
-                <th class="rf-right">Rentab.</th>
+                <th class="rf-right">Resultado econômico total</th>
+                <th class="rf-right">Rentabilidade total</th>
                 <th>Vencimento</th>
                 <th>Situação</th>
               </tr>
@@ -31940,22 +31964,30 @@ function executiveKPIs(data){
   // relationship before pairing; this does not calculate a replacement return.
   const sameBasis=amountValid && percentValid && Math.abs((p.tG/totalApplied)*100-p.tGP)<0.02;
   const resultAvailable=!['UNKNOWN','PARTIAL','NO_DATA'].includes(availability.state);
-  const amount=resultAvailable&&amountValid?fmt(p.tG):'';
+  const amount=resultAvailable&&amountValid?assetSignedMoneyText(p.tG):'';
   const percent=resultAvailable&&percentValid&&!S.hideValues?fmtP(p.tGP):'';
   const resultValue=sameBasis&&amount&&percent?`${amount} · ${percent}`:(amount||percent||'—');
-  const resultNote=!resultAvailable?'Base parcial ou indisponível':sameBasis?'Variação atual sobre capital aplicado':'Medidas sem base comum; não pareadas';
-  const resultTone=p.tG>=0?'#34d399':'#f87171';
-  const resultGlow=p.tG>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)';
+  const resultNote=!resultAvailable?'Base parcial ou indisponível':'Valor atual menos capital aplicado cadastrado; não representa retorno econômico total';
+  const resultTone=!resultAvailable||!amountValid?'#94a3b8':p.tG>0?'#34d399':p.tG<0?'#f87171':'#94a3b8';
+  const resultGlow=!resultAvailable||!amountValid?'rgba(148,163,184,.12)':p.tG>0?'rgba(52,211,153,.14)':p.tG<0?'rgba(248,113,113,.14)':'rgba(148,163,184,.12)';
   const patrimonyValue=['UNKNOWN','NO_DATA'].includes(availability.state)?'—':fmt(totalCurrent);
   const investedContext=totalApplied>0?`Investido ${fmt(totalApplied)}`:'Sem capital aplicado';
   const patrimonyNote=availability.state==='AVAILABLE'&&totalCurrent===0?'Valor conhecido: zero':availability.note;
   const incomeAvailable=(S.proventos||[]).length>0 || (S.rfEvents||[]).length>0;
+  const package2=(typeof FB!=='undefined'&&FB)||{};
+  const package2Summary=package2.package2||null;
+  const package2Result=package2Summary?.current_result_summary||{};
+  const package2Income=package2Summary?.income_summary||{};
+  const hasPackage2Summary=(package2Result.rv_total!==null&&package2Result.rv_total!==undefined&&Number.isFinite(Number(package2Result.rv_total)))
+    || (package2Income.y2026_total!==null&&package2Income.y2026_total!==undefined&&Number.isFinite(Number(package2Income.y2026_total)));
+  const totalResultStatus=hasPackage2Summary?'':`<div class="dashboard-total-result-status" role="status"><strong>Resultado total: Em consolidação</strong><span>Renda recebida e devoluções de principal ainda não estão conciliadas em escopo completo.</span></div>`;
 
   return `
+    ${totalResultStatus}
     <div class="dashboard-executive-kpis">
       ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',patrimonyValue,`${investedContext} · ${patrimonyNote} · Data-base financeira não informada`,'#a78bfa','rgba(129,140,248,.16)')}
-      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado',resultValue,resultNote,resultTone,resultGlow)}
-      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida','#10b981','rgba(16,185,129,.14)')}
+      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado sobre capital cadastrado',resultValue,resultNote,resultTone,resultGlow)}
+      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Renda recebida no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida','#10b981','rgba(16,185,129,.14)')}
     </div>
   `;
 }
@@ -31983,17 +32015,17 @@ function package2ExecutivePanel(){
   const fullScope=String(rs.coverage_status||'').toUpperCase()==='FULL_CERTIFIED_SCOPE';
   const gainTone=!rvValid||rvTotal>=0?'#34d399':'#f87171';
   const gainGlow=!rvValid||rvTotal>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)';
-  const gainValue=rvValid&&!hidden?fmt(rvTotal):'—';
+  const gainValue=rvValid&&!hidden?assetSignedMoneyText(rvTotal):'—';
   const gainScope=fullScope?'COMPLETA':'PARCIAL';
   const gainNote=rvValid?`${rs.rv_certified_count||0} posições certificadas · cobertura ${coveragePct}% · ${gainScope}`:'Base indisponível';
   const y2026=Number(income.y2026_total);
   const incomeValid=Number.isFinite(y2026);
-  const incomeValue=incomeValid&&!hidden?fmt(y2026):'—';
+  const incomeValue=incomeValid&&!hidden?assetSignedMoneyText(y2026):'—';
   const incomeNote=incomeValid?`Recebidos em 2026 · ${Number(income.y2026_events)||0} eventos`:'Base indisponível';
   return `
     <div class="dashboard-executive-kpis package2-kpis" data-package2="present">
-      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Ganho de capital atual',gainValue,`${gainNote} · valor indicativo, não é lucro realizado`,gainTone,gainGlow)}
-      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Proventos recebidos',incomeValue,incomeNote,'#10b981','rgba(16,185,129,.14)')}
+      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado certificado da RV',gainValue,`${gainNote} · valor indicativo, não é lucro realizado`,gainTone,gainGlow)}
+      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Renda recebida',incomeValue,incomeNote,'#10b981','rgba(16,185,129,.14)')}
       ${dashboardMetricCard(dashboardMetricIcon('info'),'Resultado total','Em consolidação','Combinação de escopos ainda não certificada','#94a3b8','rgba(148,163,184,.12)')}
     </div>`;
 }
@@ -32504,7 +32536,6 @@ function ativos(){
       const resultClass = result == null ? '' : result >= 0 ? 'positive-text' : 'negative-text';
       const resultPrefix2 = result != null && result > 0 ? '+' : '';
       const returnPct = Number.isFinite(financial?.returnPct) ? financial.returnPct : null;
-
       // Get analysis row for this ticker
       const analysisRow = canonicalAnalysisByTicker.get(a.ticker);
       const yahooBadge = analysisRow?.yahoo ? '<span class="yahoo-tag">YAHOO</span>' : '';
@@ -32581,6 +32612,8 @@ function ativos(){
       const resultClass = result == null ? '' : result >= 0 ? 'positive-text' : 'negative-text';
       const resultPrefix2 = result != null && result > 0 ? '+' : '';
       const returnPct = Number.isFinite(financial?.returnPct) ? financial.returnPct : null;
+      const resultLabel = isRF ? 'Resultado da posição' : 'Resultado';
+      const returnLabel = isRF ? 'Rentabilidade da posição' : 'Rentabilidade';
 
       const analysisRow = canonicalAnalysisByTicker.get(a.ticker);
       const yahooBadge = analysisRow?.yahoo ? '<span class="yahoo-tag">YAHOO</span>' : '';
@@ -32617,8 +32650,8 @@ function ativos(){
           <div class="asset-premium-card-meta">
             <div><span>Tipo</span><strong>${typeBadge}</strong></div>
             <div><span>Valor da posição</span><strong>${positionValueDisplay}</strong></div>
-            <div><span>Resultado R$</span><strong class="${resultClass}">${resultMoneyDisplay}</strong></div>
-            <div><span>Rentabilidade · % Carteira</span><strong>${returnDisplay} · ${shareDisplay}</strong></div>
+            <div><span>${resultLabel} R$</span><strong class="${resultClass}">${resultMoneyDisplay}</strong></div>
+            <div><span>${returnLabel} · % Carteira</span><strong>${returnDisplay} · ${shareDisplay}</strong></div>
           </div>
         </summary>
         <div class="asset-premium-card-details">
@@ -32627,8 +32660,8 @@ function ativos(){
           <div class="asset-premium-card-row"><span>Preço médio</span><strong>${averagePriceDisplay}</strong></div>
           <div class="asset-premium-card-row"><span>Preço atual / posição</span><strong>${currentPriceDisplay}</strong></div>
           <div class="asset-premium-card-row"><span>Investido</span><strong>${investedDisplay}</strong></div>
-          <div class="asset-premium-card-row"><span>Resultado R$</span><strong class="${resultClass}">${resultMoneyDisplay}</strong></div>
-          <div class="asset-premium-card-row"><span>Rentabilidade</span><strong>${returnDisplay}</strong></div>
+          <div class="asset-premium-card-row"><span>${resultLabel} R$</span><strong class="${resultClass}">${resultMoneyDisplay}</strong></div>
+          <div class="asset-premium-card-row"><span>${returnLabel}</span><strong>${returnDisplay}</strong></div>
           <div class="asset-premium-card-row"><span>Valor total</span><strong>${positionValueDisplay}</strong></div>
           <div class="asset-premium-card-row"><span>% Carteira</span><strong>${shareDisplay}</strong></div>
           <div class="asset-premium-card-row"><span>DY</span><strong>${dyDisplay}</strong></div>
@@ -32656,11 +32689,11 @@ function ativos(){
         <div class="acc-metric-value">${typeTotalValue == null ? '—' : fmt(typeTotalValue)}</div>
       </div>
       <div>
-        <div class="acc-metric-label ag-k">Resultado</div>
+        <div class="acc-metric-label ag-k">${type === 'Renda Fixa' ? 'Resultado das posições' : 'Resultado'}</div>
         <div class="acc-metric-value ${resultTone}">${typeResult == null ? '—' : `${resultPrefix}${fmt(typeResult)}`}</div>
       </div>
       <div>
-        <div class="acc-metric-label ag-k">Rentab.</div>
+        <div class="acc-metric-label ag-k">${type === 'Renda Fixa' ? 'Rentabilidade das posições' : 'Rentab.'}</div>
         <div class="acc-metric-value ${resultTone}">${typeReturn == null ? '—' : fmtP(typeReturn)}</div>
       </div>
       <div>
@@ -32683,8 +32716,8 @@ function ativos(){
               <th class="num">Preço médio</th>
               <th class="num">Preço atual / posição</th>
               <th>Investido</th>
-              <th class="num">Resultado R$</th>
-              <th class="num">Rentabilidade</th>
+              <th class="num">${type === 'Renda Fixa' ? 'Resultado da posição R$' : 'Resultado R$'}</th>
+              <th class="num">${type === 'Renda Fixa' ? 'Rentabilidade da posição' : 'Rentabilidade'}</th>
               <th class="num">Valor total</th>
               <th class="num">% carteira</th>
               <th>Fonte / atualização</th>
@@ -32917,7 +32950,7 @@ function deleteMovementLaunch(id,sourceType){
   scheduleAutoProventosGratis('remove-aporte');
 }
 function aporteHistoryCard(row){
-  const quantity=row.qty>0 ? `${row.qty} un.` : 'Não se aplica';
+  const quantity=row.qty>0 ? `${fmtN(row.qty)} un.` : 'Não se aplica';
   const unit=row.price>0 ? fmt(row.price) : row.kind==='provento' ? 'Valor recebido' : 'Valor informado';
   const signedTotal=row.kind==='venda' || row.kind==='reserva-saida' ? `−${fmt(row.total)}` : row.kind==='outro' ? fmt(row.total) : `+${fmt(row.total)}`;
   const detail=[row.type,row.sector].filter(Boolean).join(' · ') || 'Sem classificação';
@@ -37599,6 +37632,7 @@ function renderPortfolioSearch(){
   root.setAttribute('aria-hidden',open?'false':'true');
   if(!open){root.replaceChildren();return;}
   root.innerHTML=`<div class="portfolio-search-backdrop" onclick="portfolioSearchClose()"></div><section class="portfolio-search-dialog" role="dialog" aria-modal="true" aria-labelledby="portfolio-search-title"><div class="portfolio-search-head"><div class="portfolio-search-input-wrap"><div style="font-size:22px;color:#7dd3fc" aria-hidden="true">⌕</div><div style="min-width:0;flex:1"><div class="portfolio-search-kicker" id="portfolio-search-title">Buscar na carteira</div><input id="portfolio-search-input" class="portfolio-search-input" type="search" autocomplete="off" spellcheck="false" placeholder="Ticker, ativo, provento ou meta" value="${esc(S.portfolioSearchQuery)}" oninput="portfolioSearchInput(this.value)" aria-label="Buscar na carteira" aria-controls="portfolio-search-results"></div></div><button type="button" class="portfolio-search-close" onclick="portfolioSearchClose()" aria-label="Fechar busca">×</button></div><div class="portfolio-search-hint">${results.length?`${results.length} resultado${results.length===1?'':'s'} · `:''}Enter abre o resultado · Esc fecha · use ↑ ↓ para navegar</div><div id="portfolio-search-results" class="portfolio-search-results" role="region" aria-live="polite">${results.length?portfolioSearchGroupMarkup(results):`<div class="portfolio-search-empty">${portfolioSearchText(S.portfolioSearchQuery)?'Nenhum resultado encontrado. Tente ticker, nome, tipo ou seção.':'Digite para buscar ativos, movimentações e conferências.'}</div>`}</div></section>`;
+  maskSensitiveRenderedValues(root);
   requestAnimationFrame(()=>document.getElementById('portfolio-search-input')?.focus());
 }
 function portfolioSearchOpen(){
@@ -38870,6 +38904,14 @@ html[data-theme="dark"] .canon-dashboard .dashboard-page-heading p{color:var(--d
 .canon-dashboard .dashboard-executive-kpis .premium-metric-value{font-size:clamp(18px,1.7vw,24px);white-space:normal;overflow-wrap:anywhere;color:var(--dash-ink)}
 .canon-dashboard .dashboard-executive-kpis .premium-metric:first-child .premium-metric-value{font-size:clamp(24px,2.3vw,32px)}
 .canon-dashboard .dashboard-executive-kpis .premium-metric-note{font-size:12px;line-height:1.35;color:var(--dash-muted);white-space:normal;overflow:visible;display:block}
+.canon-dashboard .dashboard-total-result-status{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;margin:0 0 10px;padding:10px 12px;border:1px solid var(--dash-line);border-radius:10px;background:var(--dash-surface);color:var(--dash-muted);font-size:12px;line-height:1.4}
+.canon-dashboard .dashboard-total-result-status strong{color:var(--dash-ink)}
+.rf-economic-status-details{margin-top:6px;color:var(--muted);font-size:11px;text-align:left}
+.rf-economic-status-details summary{min-height:32px;display:flex;align-items:center;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.rf-economic-status-details dl{display:grid;gap:5px;min-width:180px;margin:6px 0 0;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--panel);white-space:normal}
+.rf-economic-status-details dl>div{display:flex;justify-content:space-between;gap:10px}
+.rf-economic-status-details dt,.rf-economic-status-details dd{margin:0}
+.rf-economic-status-details dd{color:var(--text);font-weight:700}
 .canon-dashboard .dashboard-analytical-primary{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(280px,.8fr);gap:18px;align-items:start;margin:0}
 .canon-dashboard .dashboard-evolution-card{height:276px;min-height:276px;padding:15px;background:var(--dash-surface);border:1px solid var(--dash-line);box-shadow:none}
 .canon-dashboard .dashboard-evolution-card::before{display:none}

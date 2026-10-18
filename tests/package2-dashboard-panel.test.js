@@ -22,6 +22,7 @@ function makeContext(overrides = {}) {
     FB: { package2: overrides.package2 !== undefined ? overrides.package2 : null, ...(overrides.FB || {}) },
     esc(value) { return String(value ?? ''); },
     fmt(value) { return `R$ ${Number(value || 0).toFixed(2)}`; },
+    assetSignedMoneyText(value) { return Number.isFinite(value) ? (value > 0 ? '+ ' : value < 0 ? '- ' : '') + 'R$ ' + Math.abs(value).toFixed(2) : '—'; },
     dashboardMetricIcon() { return '<i></i>'; },
     dashboardMetricCard(icon, label, value, note, tone, glow) {
       return `<div class="premium-metric" data-label="${label}" data-value="${value}" data-note="${note}" data-tone="${tone}"></div>`;
@@ -55,19 +56,20 @@ const certifiedSummary = {
   }
 };
 
-test('package2 panel renders certified capital gain with PARTIAL and coverage', () => {
+test('package2 panel renders certified RV result with PARTIAL coverage', () => {
   const html = renderPanel({ package2: certifiedSummary });
   assert.match(html, /data-package2="present"/);
-  assert.match(html, /Ganho de capital atual/);
-  assert.match(html, /R\$ -10337\.12/);
+  assert.match(html, /Resultado certificado da RV/);
+  assert.doesNotMatch(html, /Ganho de capital atual/);
+  assert.match(html, /\- R\$ 10337\.12/);
   assert.match(html, /31 posições certificadas · cobertura 63,04% · PARCIAL/);
   assert.match(html, /não é lucro realizado/);
 });
 
 test('package2 panel renders certified 2026 received income (never stale all-history as 2026)', () => {
   const html = renderPanel({ package2: certifiedSummary });
-  assert.match(html, /Proventos recebidos/);
-  assert.match(html, /R\$ 27108\.91/);
+  assert.match(html, /Renda recebida/);
+  assert.match(html, /\+ R\$ 27108\.91/);
   assert.match(html, /234 eventos/);
   // The stale all-history total must NOT appear as the 2026 value
   assert.doesNotMatch(html, /R\$ 119324\.80/);
@@ -92,8 +94,8 @@ test('package2 panel renders nothing when summary absent (first-fold preserved)'
 test('package2 panel hides values in hidden-value mode', () => {
   const html = renderPanel({ package2: certifiedSummary, S: { hideValues: true } });
   assert.match(html, /data-package2="present"/);
-  assert.doesNotMatch(html, /R\$ -10337\.12/);
-  assert.doesNotMatch(html, /R\$ 27108\.91/);
+  assert.doesNotMatch(html, /\- R\$ 10337\.12/);
+  assert.doesNotMatch(html, /\+ R\$ 27108\.91/);
   // coverage note remains (it is not a monetary value)
   assert.match(html, /cobertura 63,04%/);
 });

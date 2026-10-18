@@ -29,7 +29,7 @@ const viewports = [
   { width: 1920, height: 1080, label: '1920x1080' },
 ];
 
-const EXPECTED_HEADERS = ['Ticker', 'Tipo', 'Aplicado', 'Atual', 'Resultado de mercado', 'Rendimentos recebidos', 'Resultado total', 'Rentab.', 'Vencimento', 'Situação'];
+const EXPECTED_HEADERS = ['Ticker', 'Tipo', 'Aplicado', 'Atual', 'Resultado da posição', 'Rendimentos recebidos', 'Resultado econômico total', 'Rentabilidade total', 'Vencimento', 'Situação'];
 
 for (const viewport of viewports) {
   test(`RF table width - ${viewport.label}`, async () => {
@@ -63,6 +63,17 @@ for (const viewport of viewports) {
       await page.waitForSelector('.rf-table tbody tr', { state: 'attached', timeout: 5000 });
 
       const snapshot = await page.evaluate(() => {
+        const rootOverflow = document.documentElement.style.getPropertyValue('overflow-x');
+        const rootPriority = document.documentElement.style.getPropertyPriority('overflow-x');
+        const bodyOverflow = document.body.style.getPropertyValue('overflow-x');
+        const bodyPriority = document.body.style.getPropertyPriority('overflow-x');
+        document.documentElement.style.setProperty('overflow-x', 'visible', 'important');
+        document.body.style.setProperty('overflow-x', 'visible', 'important');
+        const overflowWithoutGlobalClip = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) > window.innerWidth;
+        if (rootOverflow) document.documentElement.style.setProperty('overflow-x', rootOverflow, rootPriority);
+        else document.documentElement.style.removeProperty('overflow-x');
+        if (bodyOverflow) document.body.style.setProperty('overflow-x', bodyOverflow, bodyPriority);
+        else document.body.style.removeProperty('overflow-x');
         const wrap = document.querySelector('.rf-table-wrap');
         const table = document.querySelector('.rf-table');
         const wrapRect = wrap.getBoundingClientRect();
@@ -79,7 +90,7 @@ for (const viewport of viewports) {
             const r = b.getBoundingClientRect();
             return { text: b.textContent.trim(), w: Math.round(r.width * 10) / 10, h: Math.round(r.height * 10) / 10, right: Math.round(r.right * 10) / 10 };
           }) : [];
-        const numericCells = tds.filter(td => td.classList.contains('rf-right'));
+        const numericCells = tds.filter(td => td.classList.contains('rf-right') && /\d/.test(td.querySelector('.rf-strong')?.textContent.trim() || td.textContent.trim()));
         const wrappedNumbers = tableVisible ? numericCells.filter(td => {
           const numericText = td.querySelector('.rf-strong')?.textContent.trim() || td.textContent.trim();
           const span = document.createElement('span');
@@ -113,6 +124,7 @@ for (const viewport of viewports) {
           wrapScrollW: wrap.scrollWidth,
           overflowTable: wrap.scrollWidth > wrap.clientWidth,
           overflowPage: document.documentElement.scrollWidth > window.innerWidth,
+          overflowWithoutGlobalClip,
           wrappedNumbers,
           adaptiveVisible: visible(cardList),
           tableVisible,
@@ -123,6 +135,7 @@ for (const viewport of viewports) {
           }),
           firstSummary: cards[0]?.querySelector('summary')?.innerText || '',
           summaryHeight: cards[0]?.querySelector('summary')?.getBoundingClientRect().height || 0,
+          provenanceSummaryHeight: document.querySelector('.premium-rf-provenance-details summary')?.getBoundingClientRect().height || 0,
           metrics,
         };
       });
@@ -136,7 +149,10 @@ for (const viewport of viewports) {
         assert.ok(snapshot.adaptiveCount > 0, `sem cards RF em ${viewport.label}`);
         assert.ok(snapshot.adaptiveCardBounds.every(rect => rect.left >= 0 && rect.right <= viewport.width && !rect.clipped), `card fora da viewport ou com corte interno em ${viewport.label}`);
         assert.ok(snapshot.summaryHeight >= 44, `alvo do expansor < 44px em ${viewport.label}`);
-        assert.match(snapshot.firstSummary, /Atual/);
+        assert.ok(snapshot.provenanceSummaryHeight >= 44, `alvo de proveniência < 44px em ${viewport.label}`);
+        assert.match(snapshot.firstSummary, /Valor atual/);
+        assert.match(snapshot.firstSummary, /Resultado da posição/);
+        assert.match(snapshot.firstSummary, /Rentabilidade da posição/);
         assert.match(snapshot.firstSummary, /Vencimento/);
         const firstCard = page.locator('.rf-responsive-card').first();
         const summary = firstCard.locator('summary');
@@ -147,7 +163,7 @@ for (const viewport of viewports) {
         const focusVisible = await summary.evaluate(element => document.activeElement === element && getComputedStyle(element).outlineStyle !== 'none' && parseFloat(getComputedStyle(element).outlineWidth) >= 2);
         assert.equal(focusVisible, true, `foco visivel ausente no expansor em ${viewport.label}`);
         const details = await firstCard.locator('.rf-responsive-card-details').innerText();
-        for (const label of ['Valor aplicado', 'Rendimentos recebidos', 'Resultado total', 'Rentabilidade', 'Vencimento']) {
+        for (const label of ['Capital aplicado informado', 'Rendimentos recebidos', 'Resultado econômico total', 'Rentabilidade total', 'Vencimento']) {
           assert.ok(details.includes(label), `${label} inacessivel no detalhe em ${viewport.label}`);
         }
         const detailBounds = await firstCard.locator('.rf-responsive-card-details').evaluate(element => ({
@@ -179,6 +195,7 @@ for (const viewport of viewports) {
         assert.equal(snapshot.overflowTable, false, `scroll interno da tabela em ${viewport.label} (scrollWidth=${snapshot.wrapScrollW} clientWidth=${snapshot.wrapClientW})`);
       }
       assert.equal(snapshot.overflowPage, false, `overflow horizontal da pagina em ${viewport.label}`);
+      assert.equal(snapshot.overflowWithoutGlobalClip, false, `overflow global mascarado por html/body em ${viewport.label}`);
 
       const id = snapshot.metrics.id;
 
