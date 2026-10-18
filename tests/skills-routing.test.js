@@ -84,3 +84,26 @@ test('AGENTS and routing bridge identify one canonical router', () => {
   assert.match(routing, /\.agents\/SKILL_ROUTER\.md/);
   assert.match(legacyBridge, /\.agents\/SKILL_ROUTER\.md/);
 });
+
+test('zero-chat workspace cleanup simulation keeps dirty-tree and unique-commit preservation rules', () => {
+  const agents = read('AGENTS.md');
+  const router = read('.agents/SKILL_ROUTER.md');
+  assert.ok(fs.existsSync(path.join(root, 'docs/ai/STORAGE_AND_WORKTREE_POLICY.md')), 'workspace policy must be discoverable');
+  assert.match(agents, /Lifecycle de worktrees/);
+  const category = classifyTask('Limpe as worktrees antigas');
+  const selected = selectSkills(category);
+  assert.equal(category, 'WORKSPACE_CLEANUP');
+  assert.deepEqual(selected.selectedSkills, ['caveman-review']);
+  assert.match(router, /WORKSPACE_CLEANUP/);
+  assert.match(router, /Preservar arquivos\/worktrees desconhecidos/i);
+});
+
+test('zero-chat production incident simulation selects evidence-first debugging skills', () => {
+  const router = read('.agents/SKILL_ROUTER.md');
+  const category = classifyTask('Corrija um problema de produção');
+  const selected = selectSkills(category);
+  assert.equal(category, 'PRODUCTION_INCIDENT');
+  assert.deepEqual(selected.selectedSkills, ['doubt-driven-development']);
+  assert.match(router, /PRODUCTION_INCIDENT/);
+  assert.match(router, /systematic-debugging/);
+});

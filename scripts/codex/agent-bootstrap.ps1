@@ -137,7 +137,7 @@ $constraints = @(
     "NO PERSISTENCE/SCHEMA/FIREBASE changes without authorization",
     "NO CARTEIRA-2.0 ACCESS - forbidden project",
     "NO REAL FINANCIAL DATA in tests - synthetic only",
-    "VISUAL_PHASE=DEFERRED - UI visual skills FORBIDDEN",
+    "VISUAL WORK REQUIRES A BOUNDED USER AUTHORIZATION IN PROJECT_STATE; FOLLOW docs/ai/VISUAL_UX_RESPONSIVE_CONTRACT.md",
     "FINANCIAL TRUTH: UNKNOWN!=ZERO, PARTIAL!=COMPLETE, ESTIMATE!=RECEIVED",
     "MANUAL RF AUTHORITY PRESERVED - auto values never overwrite manual",
     "SAVE() FAILURE = QUARANTINE - blocks subsequent financial writes",

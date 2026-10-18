@@ -152,6 +152,8 @@ autonomia em `docs/ai/AGENT_AUTONOMY.md`.
 
 ## Interface Design
 
+O contrato canônico de UX visual e responsividade é [`docs/ai/VISUAL_UX_RESPONSIVE_CONTRACT.md`](docs/ai/VISUAL_UX_RESPONSIVE_CONTRACT.md). Consulte-o junto de `docs/ai/VISUAL_CANON_V2.md` antes de mudanças de interface; ele define matriz de viewports, estratégia de tabelas, tipografia, acessibilidade, progressive disclosure e limites financeiros.
+
 Em mudanças visuais, revisar:
 
 - Hierarquia visual e ordem de leitura.

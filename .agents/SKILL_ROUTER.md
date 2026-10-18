@@ -131,8 +131,7 @@ nomes assumidos de Skills nem exigem arquivos separados.
 - Acessibilidade: requisitos de foco, contraste, teclado, leitores de tela e
   alvos de toque em `AGENTS.md`, mais os critérios do `docs/ai/VISUAL_CANON.md`.
 - Design system: `docs/ai/DESIGN_SYSTEM.md`.
-- Se presente em uma branch futura, `docs/ai/VISUAL_UX_RESPONSIVE_CONTRACT.md`
-  agrega esses temas; a seleção não depende desse arquivo para funcionar.
+- Contrato agregador canônico: `docs/ai/VISUAL_UX_RESPONSIVE_CONTRACT.md` (viewports, tipografia, progressive disclosure, acessibilidade e limites financeiros). `PROJECT_STATE.md` registra se há fase visual limitada ativa; revalide branch/PR/HEAD antes de usar Skills de UI. A seleção não depende desse arquivo para funcionar.
 
 Nenhum contrato visual autoriza redesign por si só. Respeite `VISUAL_PHASE`,
 `FEATURE_FREEZE`, `DESIGN.md` e a autorização específica da missão.
