@@ -136,6 +136,19 @@
   --ds-space-6:var(--sp-6);
   --ds-control-height:var(--control-min-h);
   --ds-icon-size:22px;
+  --text-accent:#818cf8;
+  /* Tipografia e peso consolidados (P1 - fundação visual).
+     Leitura comum nunca abaixo de 12px; peso máximo 700. */
+  --fs-body:14px;
+  --fs-label:12px;
+  --fs-caption:11px;
+  --fs-heading-sm:16px;
+  --fs-heading-md:20px;
+  --fs-heading-lg:24px;
+  --fw-regular:400;
+  --fw-medium:500;
+  --fw-semibold:600;
+  --fw-bold:700;
 }
 html[data-theme="light"]{
   color-scheme:light;
@@ -199,6 +212,19 @@ html[data-theme="light"]{
   --ds-space-6:var(--sp-6);
   --ds-control-height:var(--control-min-h);
   --ds-icon-size:22px;
+  --text-accent:#3730a3;
+  /* Tipografia e peso consolidados (P1 - fundação visual).
+     Leitura comum nunca abaixo de 12px; peso máximo 700. */
+  --fs-body:14px;
+  --fs-label:12px;
+  --fs-caption:11px;
+  --fs-heading-sm:16px;
+  --fs-heading-md:20px;
+  --fs-heading-lg:24px;
+  --fw-regular:400;
+  --fw-medium:500;
+  --fw-semibold:600;
+  --fw-bold:700;
 }
 .ds-kpi{display:flex;min-width:0;flex-direction:column;justify-content:space-between;gap:var(--ds-space-2);padding:10px 12px;border:1px solid var(--ds-border);border-radius:var(--ds-radius-card);background:var(--ds-surface)}
 .ds-kpi__label{display:flex;min-width:0;align-items:center;gap:var(--ds-space-2);color:var(--ds-text-secondary);font-size:9px;font-weight:700;line-height:1.2;letter-spacing:.04em;text-transform:uppercase}
@@ -221,7 +247,7 @@ html[data-theme="light"]{
 .ds-button:focus-visible{outline:2px solid var(--ds-info);outline-offset:2px}
 .ds-icon-container{display:inline-flex;width:var(--ds-icon-size);height:var(--ds-icon-size);flex:none;align-items:center;justify-content:center}
 .ds-icon-container svg{width:14px;height:14px}
-.ds-badge{display:inline-flex;min-height:24px;align-items:center;justify-content:center;border:1px solid var(--ds-border);border-radius:var(--radius-pill);padding:0 8px;background:var(--ds-surface-elevated);color:var(--ds-text-secondary);font-size:9px;font-weight:900;line-height:1.1;white-space:nowrap}
+.ds-badge{display:inline-flex;min-height:24px;align-items:center;justify-content:center;border:1px solid var(--ds-border);border-radius:var(--radius-pill);padding:0 8px;background:var(--ds-surface-elevated);color:var(--ds-text-secondary);font-size:11px;font-weight:700;line-height:1.1;white-space:nowrap}
 .ds-badge--positive{border-color:color-mix(in srgb,var(--ds-positive) 28%,var(--ds-border));background:color-mix(in srgb,var(--ds-positive) 8%,transparent);color:var(--ds-positive)}
 .ds-badge--negative{border-color:color-mix(in srgb,var(--ds-negative) 28%,var(--ds-border));background:color-mix(in srgb,var(--ds-negative) 8%,transparent);color:var(--ds-negative)}
 .ds-badge--warning{border-color:color-mix(in srgb,var(--ds-warning) 28%,var(--ds-border));background:color-mix(in srgb,var(--ds-warning) 8%,transparent);color:var(--ds-warning)}
@@ -283,7 +309,8 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
 .tab{background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);padding:11px 18px;font-size:13px;white-space:nowrap;flex:0 0 auto;transition:all .2s;min-height:44px}
 .tab:hover{color:var(--text)}.tab.on{border-bottom-color:var(--primary);color:#dbe4ff;font-weight:700}
 @media(max-width:1180px){.tabs-desktop{display:none}.tabs-mobile{display:flex;justify-content:flex-start;padding:0 8px;top:52px}.tab{padding:10px 12px;font-size:12px}.tab-menu-panel{left:8px;right:8px;min-width:0}}
-@media(min-width:621px) and (max-width:900px){.hdr{padding:8px 10px;gap:8px}.hdr-logo{min-width:0;flex:1 1 auto}.hdr-logo>div:last-child{min-width:0}.hdr-sub,.hdr-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hdr-right{min-width:0;max-width:52%;justify-content:flex-end;overflow:hidden}.hdr-right>*{min-width:0}.hdr-right .auth-box,.hdr-right .wallet-switch,.hdr-right .install-box{display:none}.tabs-mobile{max-width:100%;min-width:0;flex-wrap:wrap;overflow-x:visible;overflow-y:visible;justify-content:center}.tabs-mobile .tab,.tabs-mobile .tab-menu{flex:1 1 120px;min-width:0;text-align:center}.tabs-mobile .tab{padding:9px 8px}.tabs-mobile .tab-menu-panel{max-width:calc(100vw - 16px)}}
+@media(min-width:621px) and (max-width:900px){.hdr{padding:8px 10px;gap:8px}.hdr-logo{min-width:0;flex:1 1 auto}.hdr-logo>div:last-child{min-width:0}.hdr-sub,.hdr-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hdr-right{min-width:0;max-width:52%;justify-content:flex-end;overflow:hidden}.hdr-right>*{min-width:0}.hdr-right .auth-box,.hdr-right .wallet-switch,.hdr-right .install-box{display:none}.tabs-mobile{max-width:100%;min-width:0;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;justify-content:flex-start;overscroll-behavior-x:contain;scrollbar-width:thin}.tabs-mobile .tab,.tabs-mobile .tab-menu{flex:0 0 auto;min-width:0;text-align:center}.tabs-mobile .tab{padding:9px 8px}.tabs-mobile .tab-menu-panel{position:fixed;left:8px;right:8px;top:108px;max-width:none;max-height:calc(100vh - 116px);overflow:auto}}
+@media(min-width:621px) and (max-width:900px){.tabs-mobile::-webkit-scrollbar{display:block;height:4px}.tabs-mobile::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}}
 @media(min-width:621px) and (max-width:900px){.tabs-mobile .tab-menu-panel button{white-space:normal;overflow-wrap:anywhere}}
 
 /* PHASE 11: visual master shell. Desktop navigation is the persistent sidebar;
@@ -541,7 +568,7 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .rebalance-study-stat-label{display:none;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 .rebalance-study-stat-value{font-size:11px;font-weight:800;color:var(--text)}
 .rebalance-study-gap-meaning{display:block;margin-top:2px;font-size:9px;font-weight:600;color:var(--muted);line-height:1.2}
-.rebalance-study-value{color:var(--primary);font-size:12px;font-weight:900}
+.rebalance-study-value{color:var(--text-accent);font-size:12px;font-weight:700}
 .rebalance-asset-suggestions{display:flex;flex-direction:column;gap:8px;padding:11px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
 .rebalance-asset-group{display:flex;flex-direction:column;gap:5px}
 .rebalance-asset-group>strong{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
@@ -549,7 +576,7 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .rebalance-asset-suggestion span{display:flex;flex-direction:column;gap:2px;min-width:0}
 .rebalance-asset-suggestion b{font-size:12px;color:var(--text)}
 .rebalance-asset-suggestion small{font-size:10px;color:var(--muted)}
-.rebalance-asset-suggestion>strong{font-size:12px;color:var(--primary);white-space:nowrap}
+.rebalance-asset-suggestion>strong{font-size:12px;color:var(--text-accent);white-space:nowrap}
 .rebalance-scenario-panel{display:flex;flex-direction:column;gap:10px;padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--surface)}
 .rebalance-scenario-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .rebalance-scenario-title{font-size:13px;font-weight:900;color:var(--text)}
@@ -563,7 +590,7 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .rebalance-scenario-card{min-width:0;padding:10px;border:1px solid var(--border);border-radius:11px;background:var(--surface-2)}
 .rebalance-scenario-card-head{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
 .rebalance-scenario-card-title{font-size:11px;font-weight:900;color:var(--text)}
-.rebalance-scenario-card-amount{font-size:13px;font-weight:900;color:var(--primary);font-variant-numeric:tabular-nums;white-space:nowrap}
+.rebalance-scenario-card-amount{font-size:13px;font-weight:700;color:var(--text-accent);font-variant-numeric:tabular-nums;white-space:nowrap}
 .rebalance-scenario-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:8px}
 .rebalance-scenario-summary div{display:grid;gap:2px;min-width:0}
 .rebalance-scenario-summary span{font-size:9px;color:var(--muted)}
@@ -610,7 +637,7 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .ai-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .ai-card-title{font-size:13px;font-weight:900;color:var(--text);line-height:1.2}
 .ai-card-summary{font-size:12px;line-height:1.5;color:var(--text);margin-top:4px}
-.ai-mode-pill{font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--primary);background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);border-radius:999px;padding:5px 8px;white-space:nowrap}
+.ai-mode-pill{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text-accent);background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);border-radius:999px;padding:5px 8px;white-space:nowrap}
 .ai-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .ai-metric{border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:10px 11px;display:flex;flex-direction:column;gap:4px}
 .ai-metric-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
@@ -681,7 +708,7 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .ai-hub-card-evidence{font-size:10px;color:var(--muted);line-height:1.4}
 .ai-hub-card-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .ai-hub-card-route{font-size:10px;color:var(--muted)}
-.ai-hub-pill{font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--primary);background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);border-radius:999px;padding:4px 7px;white-space:nowrap}
+.ai-hub-pill{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text-accent);background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);border-radius:999px;padding:4px 7px;white-space:nowrap}
 .ai-hub-cta{min-height:36px;padding:7px 10px;font-size:12px}
 .ai-compact-details{border:1px solid var(--border);border-radius:14px;background:var(--surface-2);overflow:hidden}
 .ai-compact-details>summary{list-style:none;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:11px 12px;cursor:pointer}
@@ -973,12 +1000,11 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .premium-dashboard-sub{font-size:11px;color:var(--muted);line-height:1.45;margin-top:3px}
 .premium-dashboard-date{font-size:10px;color:var(--muted);border:1px solid var(--border);background:var(--panel);border-radius:999px;padding:5px 9px;white-space:nowrap}
 .premium-metrics{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
-.premium-metric{position:relative;overflow:hidden;min-height:98px;border:1px solid var(--border);border-radius:14px;padding:11px;background:linear-gradient(145deg,var(--panel),var(--surface));display:flex;flex-direction:column;justify-content:space-between;gap:6px}
-.premium-metric:after{content:"";position:absolute;width:64px;height:64px;border-radius:50%;right:-26px;top:-30px;background:var(--metric-glow,rgba(96,165,250,.12));pointer-events:none}
+.premium-metric{min-height:98px;border:1px solid var(--border);border-radius:14px;padding:11px;background:var(--panel);display:flex;flex-direction:column;justify-content:space-between;gap:6px}
 .premium-metric-top{display:flex;align-items:center;gap:7px;min-width:0}
 .premium-metric-icon{width:24px;height:24px;border-radius:8px;background:#141d2f;border:1px solid #27344b;display:flex;align-items:center;justify-content:center;font-size:12px;flex:none}
     .premium-metric-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.055em;line-height:1.25}
-.premium-metric-value{font-size:17px;font-weight:900;color:var(--metric-color,var(--text));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.premium-metric-value{font-size:17px;font-weight:700;color:var(--metric-color,var(--text));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .premium-metric-note{font-size:11px;color:var(--muted);line-height:1.35}
 .premium-consultive-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .premium-consultive-card{border:1px solid var(--border);border-radius:12px;background:linear-gradient(180deg,var(--panel-2),var(--panel));padding:9px 10px;min-width:0;display:flex;flex-direction:column;gap:6px}
@@ -1200,7 +1226,7 @@ html[data-theme="light"] .asset-class-results-title{color:#0f172a}
 .rf-spotlight-badges{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
 .rf-bucket-list,.rf-type-list,.rf-alert-list,.rf-preview-list{display:flex;flex-direction:column;gap:7px}
 .rf-table-wrap{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:auto}
-.rf-table{width:100%;border-collapse:collapse;min-width:1120px}
+.rf-table{width:100%;border-collapse:collapse}
 .rf-table th,.rf-table td{padding:7px 7px;border-bottom:1px solid var(--border);font-size:11px;vertical-align:top}
 .rf-table th{position:sticky;top:0;background:var(--surface);color:var(--muted);text-align:left;font-weight:800;z-index:1}
 .rf-table td{color:var(--text);font-variant-numeric:tabular-nums}
@@ -1880,7 +1906,7 @@ input::placeholder{color:var(--muted)}select option{background:var(--panel-2)}
 .ag-body{padding:0 14px 14px}
 .ag-table{margin-top:0}
 .ag-table .ts{border-radius:10px}
-.ag-table table{min-width:1120px}
+.ag-table table{min-width:0}
 .rf-category-row{display:grid;grid-template-columns:minmax(180px,1.5fr) repeat(5,minmax(92px,1fr)) auto;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(148,163,184,.12)}
 .rf-category-row:last-of-type{border-bottom:0}
 .rf-category-identity{display:flex;flex-direction:column;gap:3px;min-width:0}.rf-category-identity strong{color:#e2eaf6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rf-category-identity span,.rf-category-metric small{font-size:10px;color:#94a3b8}.rf-category-metric{display:flex;flex-direction:column;gap:3px;text-align:right}.rf-category-metric b{color:#d7e1ef;font-size:12px}.rf-category-metric.pos b{color:var(--success)}.rf-category-metric.neg b{color:var(--danger)}.rf-category-metric.neutral b{color:var(--muted)}
@@ -2431,8 +2457,14 @@ body.modal-open{overflow:hidden}
 .reports-kpi .value{font-size:15px;font-weight:900;color:#e5edf8;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .reports-kpi .sub{font-size:9px;color:#8192aa;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .reports-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
-.report-export-card{display:flex;flex-direction:column;gap:10px;padding:13px;border:1px solid #1a273b;border-radius:14px;background:#0b111d;min-width:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}
-.report-export-card-head{display:flex;align-items:flex-start;gap:9px}
+.report-export-card{display:block;border:1px solid #1a273b;border-radius:14px;background:#0b111d;min-width:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}
+.report-export-summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px;cursor:pointer}
+.report-export-summary::-webkit-details-marker{display:none}
+.report-export-summary:focus-visible{outline:2px solid var(--ds-info);outline-offset:2px;border-radius:12px}
+.report-export-card-head{display:flex;align-items:flex-start;gap:9px;min-width:0}
+.report-export-expand{flex:none;color:var(--text-accent,var(--primary));font-size:12px;font-weight:700}
+.report-export-grid .report-export-summary::after{content:none}
+.report-export-card-body{display:flex;flex-direction:column;gap:10px;padding:0 13px 13px}
 .report-export-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:rgba(99,102,241,.13);font-size:17px;flex:0 0 auto}
 .report-export-title{font-size:13px;font-weight:900;color:#e5edf8;line-height:1.2}
 .report-export-desc{font-size:10px;line-height:1.42;color:#8799b1;margin-top:3px}
@@ -2581,8 +2613,8 @@ html[data-theme="light"] .reports-executive-summary-head p,html[data-theme="ligh
   .reports-secondary-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 }
 .reports-details summary{min-height:44px}
-.reports-details summary::after{content:'+';display:inline-flex;align-items:center;justify-content:center;flex:0 0 22px;width:22px;height:22px;border:1px solid #2a3b56;border-radius:50%;color:#9fb0c7;font-size:14px;line-height:1}
-.reports-details[open] summary::after{content:'-';color:#dbe7f5}
+.reports-details>summary::after{content:'+';display:inline-flex;align-items:center;justify-content:center;flex:0 0 22px;width:22px;height:22px;border:1px solid #2a3b56;border-radius:50%;color:#9fb0c7;font-size:14px;line-height:1}
+.reports-details[open]>summary::after{content:'-';color:#dbe7f5}
 .reports-export-details:not([open]){border-color:#2a3b56;background:#0d1522}
 .reports-export-details:not([open]) summary{color:#f3f7ff}
 .reports-experiment-entry{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding:12px 14px;border:1px solid #24344d;border-radius:14px;background:linear-gradient(180deg,rgba(13,20,34,.98),rgba(10,16,27,.92));box-shadow:0 10px 28px rgba(0,0,0,.18)}
@@ -4718,7 +4750,7 @@ html[data-theme="light"] .report-format{
 }
 html[data-theme="light"] .tab{color:#6b7b91}
 html[data-theme="light"] .tab:hover{color:#334155}
-html[data-theme="light"] .tab.on{border-bottom-color:var(--primary);color:var(--primary);font-weight:800}
+html[data-theme="light"] .tab.on{border-bottom-color:var(--primary);color:var(--text-accent);font-weight:700}
 html[data-theme="light"] .tab-menu-panel{
   background:#ffffff;
   border-color:#dbe3ee;
@@ -6336,7 +6368,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     .asset-premium-card-body{padding:10px 12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px}
     .asset-premium-card-row{display:flex;flex-direction:column;gap:2px}
     .asset-premium-card-row.full{grid-column:1/-1}
-    .asset-premium-card-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    .asset-premium-card-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
     .asset-premium-card-value{font-size:13px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
     .asset-premium-card-value.accent{color:#e2eaf6}
     .asset-premium-card-value.pos{color:var(--success)}
@@ -28553,14 +28585,15 @@ function reportExportCard(icon,title,description,type,formats=['csv','json']){
     if(format==='json') return `<button type="button" class="report-format report-format-btn" onclick='exportReportJSON(${typeArg})'>${label}</button>`;
     return `<span class="report-format">${label}</span>`;
   }).join('');
-  return `<article class="report-export-card">
-    <div class="report-export-card-head">
+  return `<details class="report-export-card">
+    <summary class="report-export-summary"><div class="report-export-card-head">
       <div class="report-export-icon">${icon}</div>
       <div style="min-width:0">
         <div class="report-export-title">${esc(title)}</div>
         <div class="report-export-desc">${esc(description)}</div>
       </div>
-    </div>
+    </div><span class="report-export-expand">Formatos e ações</span></summary>
+    <div class="report-export-card-body">
     <div class="report-export-meta">
       ${formatBadges}
       <span class="report-format">${esc(reportsPeriodLabel())}</span>
@@ -28571,7 +28604,7 @@ function reportExportCard(icon,title,description,type,formats=['csv','json']){
       ${jsonOnly?`<button class="btn bsv" onclick="exportReportJSON('${type}')">Exportar JSON</button>`:''}
       ${formats.includes('pdf')?`<button class="btn bp" onclick="${pdfAction}" aria-busy="${S.pdfBusy?'true':'false'}" ${S.pdfBusy?'disabled':''}>${S.pdfBusy?'⏳ Gerando PDF...':'Gerar PDF'}</button>`:''}
     </div>
-  </article>`;
+  </div></details>`;
 }
 function reportExportContext(data){
   const periodLabel=reportsPeriodLabel();
@@ -28827,7 +28860,7 @@ function reportsTab(){
           <button class="${reportsPeriod()==='year'?'on':''}" onclick="setReportsPeriod('year')">Ano atual</button>
           <button class="${reportsPeriod()==='12m'?'on':''}" onclick="setReportsPeriod('12m')">Últimos 12 meses</button>
           <button class="${reportsPeriod()==='all'?'on':''}" onclick="setReportsPeriod('all')">Todos</button>
-        </div><button class="btn bp reports-export-cta" onclick="document.getElementById('reports-export-details')?.scrollIntoView({behavior:'smooth'})">Exportar</button></div>
+        </div><button class="btn bp reports-export-cta" onclick="const d=document.getElementById('reports-export-details');if(d){d.open=true;d.scrollIntoView({behavior:'smooth'})}">Exportar</button></div>
       </div>
       <div class="reports-kpis reports-premium-kpis">
         <div class="reports-kpi"><div class="label">Patrimônio atual</div><div class="value">${fmt(data.portfolio.tC)}</div><div class="sub">Estimativa pelos ativos cadastrados</div></div>
@@ -28885,7 +28918,7 @@ function reportsTab(){
       <article class="reports-panel reports-audit-panel"><div class="reports-panel-head"><div><h2>Qualidade dos dados</h2><p>Conferência sem alterar registros.</p></div><span class="reports-badge reports-badge-${auditTone}">${data.auditCount?'Atenção':'Tudo certo'}</span></div><div class="reports-audit-count">${data.auditCount}<span>alertas para conferência</span></div><a class="reports-inline-link" href="#" onclick="go('auditoria');return false">Abrir Auditoria</a></article>
     </section>
     ${v228TimelinePanel()}
-    <details class="reports-details" open><summary>Histórico e detalhes <span>dados completos da carteira</span></summary><div class="reports-details-body"><p>Use as exportações para consultar posições, proventos, renda fixa, patrimônio e auditoria em formato estruturado.</p><div class="reports-secondary-kpis"><div class="reports-kpi"><div class="label">Ativos</div><div class="value">${data.assetsCount}</div><div class="sub">${data.fixedCount} título(s) de renda fixa</div></div><div class="reports-kpi"><div class="label">Renda Fixa</div><div class="value">${fmt(fixed.totalCurrent)}</div><div class="sub">Valor atual oficial</div></div><div class="reports-kpi"><div class="label">Alertas de auditoria</div><div class="value">${data.auditCount}</div><div class="sub">Somente para conferência</div></div></div></div></details>
+    <details class="reports-details"><summary>Histórico e detalhes <span>dados completos da carteira</span></summary><div class="reports-details-body"><p>Use as exportações para consultar posições, proventos, renda fixa, patrimônio e auditoria em formato estruturado.</p><div class="reports-secondary-kpis"><div class="reports-kpi"><div class="label">Ativos</div><div class="value">${data.assetsCount}</div><div class="sub">${data.fixedCount} título(s) de renda fixa</div></div><div class="reports-kpi"><div class="label">Renda Fixa</div><div class="value">${fmt(fixed.totalCurrent)}</div><div class="sub">Valor atual oficial</div></div><div class="reports-kpi"><div class="label">Alertas de auditoria</div><div class="value">${data.auditCount}</div><div class="sub">Somente para conferência</div></div></div></div></details>
     <details class="reports-details reports-export-details" id="reports-export-details"><summary>Exportar relatórios <span>CSV, JSON e PDF conforme cada relatório</span></summary>${reportExportContext(data)}<div class="reports-grid reports-export-grid">${exportCards}</div></details>
     ${experimentalEntry}
     <div class="reports-footnote">Exportações são somente para consulta e não substituem o Backup e restauração.</div>
@@ -32237,7 +32270,7 @@ function assetActionMenuHtml(asset, isRF, context='default'){
     ? `<button type="button" class="btn bgh asset-action" onclick='openRfMovementEditor(${JSON.stringify(rfAssetEventId(asset))}, "resgate_parcial")'>Resgatar</button>`
     : `<button type="button" class="btn bgh asset-action" onclick='openAssetQuickMovement(${JSON.stringify(id)}, "venda")'>Vender</button>`;
   return `<div class="asset-actions asset-action-menu" data-asset-actions="${esc(id)}">
-    <button type="button" class="asset-action-menu-trigger" aria-label="Mais ações para ${esc(asset.ticker||asset.name||'ativo')}" aria-haspopup="menu" aria-controls="${esc(menuId)}" aria-expanded="false" onclick='toggleAssetActionMenu(${JSON.stringify(menuId)}, event)'>•••</button>
+    <button type="button" class="asset-action-trigger" aria-label="Mais ações para ${esc(asset.ticker||asset.name||'ativo')}" aria-haspopup="menu" aria-controls="${esc(menuId)}" aria-expanded="false" onclick='toggleAssetActionMenu(${JSON.stringify(menuId)}, event)'>⋯</button>
     <div class="asset-action-menu-panel" id="${esc(menuId)}" role="menu" aria-label="Ações para ${esc(asset.ticker||asset.name||'ativo')}">
       <button type="button" role="menuitem" onclick='openAssetDetail(${JSON.stringify(id)})'>Detalhes</button>
       ${primary.replace('<button ', '<button role="menuitem" ')}
@@ -38511,7 +38544,7 @@ function updateRfAssetSummary(selectElement) {
   font-variant-numeric:tabular-nums;
 }
 .assets-filter-summary strong{color:var(--text);font-size:12px}
-.assets-filter-summary-dot{color:var(--primary);font-weight:800}
+.assets-filter-summary-dot{color:var(--text-accent);font-weight:700}
 .assets-page-context{max-width:66ch;line-height:1.4}
 html[data-theme="light"] .assets-page-context,
 html[data-theme="light"] .assets-filter-summary{color:#334155}

@@ -602,6 +602,109 @@ test('V289 final route matrix keeps Dashboard first-fold, mobile order and navig
   }
 });
 
+test('V2 tablet navigation stays in one reachable row without page overflow', async () => {
+  const runtime = await createRuntime({ width: 768, height: 1024 });
+  try {
+    await setThemeAndRoute(runtime.page, 'dark', 'dashboard');
+    const before = await runtime.page.locator('.tabs-mobile').evaluate(element => ({
+      wrap: getComputedStyle(element).flexWrap,
+      height: element.getBoundingClientRect().height,
+      children: [...element.children].map(child => child.getBoundingClientRect().top),
+      scrollWidth: element.scrollWidth,
+      clientWidth: element.clientWidth,
+      pageWidth: document.documentElement.scrollWidth,
+    }));
+    assert.equal(before.wrap, 'nowrap', 'tablet navigation must not wrap into multiple rows');
+    assert.ok(before.children.every(top => Math.abs(top - before.children[0]) < 1), 'tablet navigation items must share one row');
+    assert.ok(before.scrollWidth >= before.clientWidth, 'navigation items must remain inside the local scroll region');
+    assert.ok(before.pageWidth <= 768, 'tablet navigation must not create document overflow');
+
+    const first = runtime.page.locator('.tabs-mobile > button.tab').first();
+    await first.focus();
+    await runtime.page.keyboard.press('Tab');
+    const keyboardFocus = await runtime.page.evaluate(() => ({
+      isNavigationItem: document.activeElement?.matches('.tabs-mobile > button.tab'),
+      outline: getComputedStyle(document.activeElement).outlineStyle,
+      outlineWidth: getComputedStyle(document.activeElement).outlineWidth,
+    }));
+    assert.equal(keyboardFocus.isNavigationItem, true, 'Tab should reach the next navigation destination');
+    assert.notEqual(keyboardFocus.outlineStyle, 'none', 'keyboard focus must remain visible');
+    assert.notEqual(keyboardFocus.outlineWidth, '0px', 'keyboard focus must have a visible width');
+
+    const navigationItems = runtime.page.locator('.tabs-mobile > button.tab');
+    const lastNavigationItem = navigationItems.last();
+    await lastNavigationItem.focus();
+    await lastNavigationItem.evaluate(element => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    const lastItemReachable = await lastNavigationItem.evaluate(element => {
+      const viewport = element.parentElement.getBoundingClientRect();
+      const item = element.getBoundingClientRect();
+      return item.left >= viewport.left && item.right <= viewport.right;
+    });
+    assert.equal(lastItemReachable, true, 'keyboard focus must scroll the last navigation destination fully into view');
+
+    await runtime.page.getByRole('button', { name: /Patrimônio/ }).click();
+    await runtime.page.waitForFunction(() => S.tab === 'patrimonio');
+    assert.ok(await runtime.page.locator('#root .wrap').innerText().then(text => text.trim().length > 0), 'tablet route should render after navigation');
+    await assertSyntheticReadOnlyRuntime(runtime);
+  } finally {
+    await closeRuntime(runtime);
+  }
+});
+
+test('Relatórios mantém detalhes secundários fechados e abre exportação pela ação principal', async () => {
+  const runtime = await createRuntime({ width: 390, height: 844 });
+  try {
+    await setThemeAndRoute(runtime.page, 'light', 'relatorios');
+    assert.equal(await runtime.page.locator('.reports-details').first().getAttribute('open'), null, 'histórico e detalhes devem começar recolhidos');
+    const exportDetails = runtime.page.locator('#reports-export-details');
+    assert.equal(await exportDetails.getAttribute('open'), null, 'formatos devem aguardar a escolha explícita de exportação');
+    await runtime.page.getByRole('button', { name: 'Exportar' }).click();
+    await runtime.page.waitForFunction(() => document.querySelector('#reports-export-details')?.open === true);
+    assert.equal(await runtime.page.locator('.reports-export-grid').isVisible(), true, 'ação principal deve revelar relatórios e formatos');
+    const firstReport = runtime.page.locator('.reports-export-grid details.report-export-card').first();
+    assert.equal(await firstReport.getAttribute('open'), null, 'formatos de um relatório não devem aparecer antes da seleção');
+    await firstReport.locator(':scope > summary').focus();
+    await runtime.page.keyboard.press('Enter');
+    await runtime.page.waitForFunction(() => document.querySelector('.reports-export-grid details.report-export-card')?.open === true);
+    assert.equal(await firstReport.locator('.report-export-actions').isVisible(), true, 'teclado deve abrir os formatos do relatório escolhido');
+    await firstReport.locator(':scope > summary').click();
+    await firstReport.locator(':scope > summary').click();
+    assert.equal(await firstReport.locator('.report-export-actions').isVisible(), true, 'ponteiro deve abrir os formatos do relatório escolhido');
+    assert.ok(await runtime.page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'Relatórios não deve criar overflow mobile');
+    await assertSyntheticReadOnlyRuntime(runtime);
+  } finally {
+    await closeRuntime(runtime);
+  }
+});
+
+test('V2 responsive contract keeps primary routes within the viewport in both themes', async () => {
+  const routes = ['dashboard', 'ativos', 'aportes', 'renda-fixa', 'dividendos', 'rentabilidade', 'ajudar', 'metas', 'relatorios', 'irpf', 'settings'];
+  const widths = [360, 390, 412, 430, 768, 1024, 1366, 1440, 1920];
+  const runtime = await createRuntime({ width: 1366, height: 900 });
+  try {
+    for (const width of widths) {
+      await runtime.page.setViewportSize({ width, height: width < 500 ? 844 : width < 1200 ? 1024 : 900 });
+      for (const theme of THEMES) {
+        for (const route of routes) {
+          await setThemeAndRoute(runtime.page, theme, route);
+          const layout = await runtime.page.evaluate(() => ({
+            heading: document.querySelector('#root .wrap h1')?.innerText.trim() || '',
+            contentLength: document.querySelector('#root .wrap')?.innerText.trim().length || 0,
+            documentWidth: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
+            viewportWidth: innerWidth,
+          }));
+          assert.ok(layout.heading || layout.contentLength > 20, `${route} did not render at ${width}px/${theme}`);
+          assert.ok(layout.documentWidth <= layout.viewportWidth, `${route} has global horizontal overflow at ${width}px/${theme}: ${JSON.stringify(layout)}`);
+        }
+      }
+    }
+    assert.deepEqual(runtime.pageErrors, []);
+    await assertSyntheticReadOnlyRuntime(runtime);
+  } finally {
+    await closeRuntime(runtime);
+  }
+});
+
 test('Ativos tabela rola por teclado sem ampliar a pagina e preserva cards mobile', async () => {
   const runtime = await createRuntime({ width: 1366, height: 768 });
   try {
@@ -693,7 +796,7 @@ test('Ativos inicia por categoria e concentra acoes contextuais em um menu acess
     await runtime.page.waitForFunction(ticker => S.assetsSearch === ticker.toLowerCase() && document.querySelector('details.ag[open]')?.open === true, searchedTicker);
     assert.equal(await runtime.page.locator('details.ag[open]').count(), 1, 'a busca deve revelar somente a categoria compatível');
 
-    const menuTrigger = runtime.page.locator('.assets-premium-shell .asset-action-menu-trigger:visible').first();
+    const menuTrigger = runtime.page.getByRole('button', { name: /^Mais ações para / }).first();
     await menuTrigger.click();
     const menuId = await menuTrigger.getAttribute('aria-controls');
     const menu = runtime.page.locator(`#${menuId}`);
