@@ -126,3 +126,45 @@ for (const viewport of [
     }
   });
 }
+
+
+test('hide-values masks currency, percentages, and quantities across primary rendered routes', async () => {
+  assert.ok(executablePath, 'Chrome/Edge não encontrado');
+  const harness = await startLocalHttpServer(path.join(__dirname, '..'));
+  const browser = await chromium.launch({ executablePath, headless: true });
+  const context = await browser.newContext({ viewport: { width: 1366, height: 768 } });
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  try {
+    await page.goto(harness.url, { waitUntil: 'networkidle' });
+    const routes = ['dashboard','patrimonio','ativos','renda-fixa','aportes','dividendos','rentabilidade','irpf'];
+    const assertNoSensitiveValues = async route => {
+      const surface = await page.evaluate(() => {
+        const root=document.getElementById('root');
+        const attributes=[...root.querySelectorAll('[aria-label],[title],[data-chart-tooltip],[alt]')].flatMap(node=>['aria-label','title','data-chart-tooltip','alt'].map(key=>node.getAttribute(key)||''));
+        const svg=[...root.querySelectorAll('svg title,svg desc,svg text')].map(node=>node.textContent||'');
+        const text=[root.innerText,...attributes,...svg].join(' ');
+        return {text,empty:!root.innerText.trim(),currency:/[-+]?\s*R\$\s*[-+]?\s*[\d.,]+/.test(text),percentage:/\b[\d.,]+\s*%/.test(text),quantity:/\b[\d.,]+\s+(?:cotas?|ações?|acoes|unidades?|un\.|units?)\b/i.test(text)};
+      });
+      assert.equal(surface.empty,false,'rota '+route+' não renderizou');
+      assert.equal(surface.currency,false,'valor monetário visível em '+route);
+      assert.equal(surface.percentage,false,'percentual sensível visível em '+route);
+      assert.equal(surface.quantity,false,'quantidade de posição visível em '+route);
+    };
+    for (const route of routes) {
+      await page.evaluate(route => { S.hideValues=true; go(route); }, route);
+      await assertNoSensitiveValues(route);
+      const collapsedCount=Math.min(await page.locator('#root details:not([open]) > summary:visible').count(),8);
+      for(let index=0;index<collapsedCount;index++){
+        await page.locator('#root details:not([open]) > summary:visible').first().click();
+        await assertNoSensitiveValues(route+' após expandir detalhes');
+      }
+    }
+    assert.deepEqual(errors, []);
+  } finally {
+    await context.close();
+    await browser.close();
+    harness.server.close();
+  }
+});
