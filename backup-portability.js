@@ -112,6 +112,14 @@
       return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(plaintext));
     } catch (_) { throw new Error('DECRYPTION_FAILED'); }
   }
+  function inspectEncryptedBackupEnvelope(envelope) {
+    if (!isRecord(envelope) || envelope.format !== ENCRYPTED_FORMAT) return { status: 'UNSUPPORTED' };
+    if (envelope.version !== 1 || envelope.kdf?.name !== 'PBKDF2' || envelope.kdf?.hash !== 'SHA-256' || envelope.kdf?.iterations !== PBKDF2_ITERATIONS || envelope.cipher?.name !== 'AES-GCM') return { status: 'UNSUPPORTED' };
+    try {
+      if (base64ToBytes(envelope.kdf.salt).length !== 16 || base64ToBytes(envelope.cipher.iv).length !== 12 || base64ToBytes(envelope.ciphertext).length < 16) return { status: 'CORRUPTED' };
+    } catch (_) { return { status: 'CORRUPTED' }; }
+    return { status: 'ENCRYPTED_LOCKED' };
+  }
   async function ownerScopeFor(ownerId) {
     if (typeof ownerId !== 'string' || !ownerId.trim()) throw new Error('OWNER_ID_REQUIRED');
     return sha256(`carteira-investimentos-backup-owner-v1:${ownerId.trim()}`);
@@ -626,5 +634,5 @@
       result.ok = true; result.store = next; result.rollback = false; return result;
     } catch (error) { return { ...result, error }; }
   }
-  return { FORMAT, VERSION, canonical, createBackup, parseBackup, verifyBackup, previewRestore, applyToIsolatedStore, normalize, sha256, planRetention, periodicCadences, listLocalBackups, saveLocalBackup, createPeriodicBackups, externalBackupChannels, encryptBackup, decryptBackup };
+  return { FORMAT, VERSION, canonical, createBackup, parseBackup, verifyBackup, previewRestore, applyToIsolatedStore, normalize, sha256, planRetention, periodicCadences, listLocalBackups, saveLocalBackup, createPeriodicBackups, externalBackupChannels, encryptBackup, decryptBackup, inspectEncryptedBackupEnvelope };
 });
