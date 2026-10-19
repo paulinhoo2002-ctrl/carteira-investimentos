@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const crypto = require('node:crypto');
+const { webcrypto } = crypto;
 const { verifyFile } = require('../scripts/maintenance/backup-verify.js');
 const Backup = require('../backup-portability.js');
 
@@ -24,6 +25,74 @@ test('V592: supported app backup with fresh mtime and matching sidecar passes', 
   const { dir, file } = await tmpFixture();
   try { const r = await verifyFile(file, 35); assert.equal(r.state, 'OK'); assert.match(r.details.join(';'), /manifest and payload verified/); }
   finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('protected app backup is recognized but remains unverified without decryption', async () => {
+  const { dir, file } = await tmpFixture();
+  const backup = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const encrypted = await Backup.encryptBackup(backup, 'synthetic-only passphrase', { cryptoProvider: webcrypto });
+  fs.writeFileSync(file, JSON.stringify(encrypted));
+  fs.writeFileSync(file + '.sha256', crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'));
+
+  try {
+    const result = await verifyFile(file, 35);
+    assert.equal(result.state, 'WARN');
+    assert.match(result.details.join(';'), /protected envelope recognized/);
+    assert.match(result.details.join(';'), /payload not decrypted/);
+    assert.match(result.details.join(';'), /hash verified/);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('unknown encrypted backup envelope is rejected', async () => {
+  const { dir, file } = await tmpFixture();
+  fs.writeFileSync(file, JSON.stringify({ format: 'unknown-encrypted-backup', version: 1 }));
+  fs.writeFileSync(file + '.sha256', crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'));
+  try {
+    const result = await verifyFile(file, 35);
+    assert.equal(result.state, 'FAIL');
+    assert.match(result.details.join(';'), /unsupported or invalid application backup/);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('malformed official encrypted envelope fails closed', async () => {
+  const { dir, file } = await tmpFixture();
+  const backup = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const encrypted = await Backup.encryptBackup(backup, 'synthetic-only passphrase', { cryptoProvider: webcrypto });
+  encrypted.ciphertext = 'AA==';
+  fs.writeFileSync(file, JSON.stringify(encrypted));
+  fs.writeFileSync(file + '.sha256', crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'));
+  try {
+    const result = await verifyFile(file, 35);
+    assert.equal(result.state, 'FAIL');
+    assert.match(result.details.join(';'), /invalid official protected backup envelope/);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('protected app backup with mismatched full-file hash fails', async () => {
+  const { dir, file } = await tmpFixture();
+  const backup = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const encrypted = await Backup.encryptBackup(backup, 'synthetic-only passphrase', { cryptoProvider: webcrypto });
+  fs.writeFileSync(file, JSON.stringify(encrypted));
+  fs.writeFileSync(file + '.sha256', 'deadbeef'.repeat(8));
+  try {
+    const result = await verifyFile(file, 35);
+    assert.equal(result.state, 'FAIL');
+    assert.match(result.details.join(';'), /hash sidecar invalid or mismatched/);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('incompatible protected-envelope crypto metadata fails closed', async () => {
+  const { dir, file } = await tmpFixture();
+  const backup = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const encrypted = await Backup.encryptBackup(backup, 'synthetic-only passphrase', { cryptoProvider: webcrypto });
+  encrypted.kdf.iterations++;
+  fs.writeFileSync(file, JSON.stringify(encrypted));
+  fs.writeFileSync(file + '.sha256', crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'));
+  try {
+    const result = await verifyFile(file, 35);
+    assert.equal(result.state, 'FAIL');
+    assert.match(result.details.join(';'), /unsupported or invalid application backup/);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
 test('V592: arbitrary valid JSON is rejected as a backup', async () => {
