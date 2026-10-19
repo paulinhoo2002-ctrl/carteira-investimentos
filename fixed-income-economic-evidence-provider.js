@@ -248,7 +248,7 @@
       if (!structuralHistoryComplete) return component === 'contributions' && !contributions.length ? 'UNKNOWN' : 'PARTIAL';
       return historyEvidence?.coverage?.[component] === 'COMPLETE' ? 'COMPLETE' : 'UNKNOWN';
     };
-    const hasTaxEvidenceGap = taxEvidencePresent || historyEvidence?.coverage?.taxes !== 'COMPLETE';
+    const taxCoverageComplete = structuralHistoryComplete && historyEvidence?.coverage?.taxes === 'COMPLETE';
     return Object.freeze({
       product,
       remainingCostBasis: null,
@@ -259,7 +259,7 @@
         costBasis: 'UNKNOWN',
         contributions: componentCoverage('contributions'),
         income: incomePresent ? componentCoverage('income') : structuralHistoryComplete && historyEvidence?.coverage?.income === 'COMPLETE' ? 'COMPLETE' : eventsSupported ? 'UNKNOWN' : 'PARTIAL',
-        taxes: structuralHistoryComplete && !hasTaxEvidenceGap ? 'COMPLETE' : taxEvidencePresent ? 'PARTIAL' : 'UNKNOWN',
+        taxes: taxCoverageComplete ? 'COMPLETE' : taxEvidencePresent ? 'PARTIAL' : 'UNKNOWN',
         capitalReturns: returnsPresent ? componentCoverage('capitalReturns') : structuralHistoryComplete && historyEvidence?.coverage?.capitalReturns === 'COMPLETE' ? 'COMPLETE' : 'UNKNOWN',
         principal: structuralHistoryComplete && historyEvidence?.coverage?.principal === 'COMPLETE' ? 'COMPLETE' : 'UNKNOWN',
         history: Object.freeze({
