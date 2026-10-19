@@ -313,7 +313,7 @@ html[data-theme="light"] .edit-lock-banner-text{color:#334155}
 @media(min-width:621px) and (max-width:900px){.tabs-mobile::-webkit-scrollbar{display:block;height:4px}.tabs-mobile::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}}
 @media(min-width:621px) and (max-width:900px){.tabs-mobile .tab-menu-panel button{white-space:normal;overflow-wrap:anywhere}}
 @media(min-width:621px) and (max-width:1180px){
-  .tabs-mobile{scrollbar-width:thin;scrollbar-color:var(--primary) var(--border);scroll-padding-inline:8px}
+  .tabs.tabs-mobile{padding-right:32px;scrollbar-width:thin;scrollbar-color:var(--primary) var(--border);scroll-padding-inline:8px}
   .tabs-mobile::-webkit-scrollbar{display:block;height:8px}
   .tabs-mobile::-webkit-scrollbar-thumb{background:var(--primary);border-radius:6px}
   .tabs-mobile::-webkit-scrollbar-track{background:var(--border)}
@@ -2201,6 +2201,11 @@ html[data-theme="light"] .asset-insight-sub{color:#4f6175}
 .ap-toolbar .aporte-search{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:7px 10px;min-width:min(100%,340px);flex:1 1 320px;max-width:560px;min-height:44px}
 .aporte-search input{border:0;background:transparent;padding:0;min-width:0;flex:1 1 auto;width:100%;color:var(--text);min-height:44px}
 .aporte-trust-summary{display:flex;align-items:center;min-height:32px;color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(min-width:641px) and (max-width:900px){
+  .aporte-control-toolbar{display:grid;grid-template-columns:minmax(0,1fr);width:100%;gap:4px}
+  .aporte-control-toolbar .aporte-search{min-width:0;max-width:none;width:100%}
+  .aporte-control-toolbar .aporte-trust-summary{min-width:0;white-space:normal}
+}
 .aporte-extract{display:flex;flex-direction:column;gap:8px}
 .aporte-history-card{display:grid;grid-template-columns:74px minmax(0,1.25fr) minmax(110px,.82fr) minmax(100px,.72fr) minmax(112px,.82fr) auto;gap:10px;align-items:center;padding:10px 11px;border:1px solid var(--border);border-radius:13px;background:var(--panel-2);box-shadow:0 5px 14px rgba(2,6,23,.05);transition:.18s ease}
 .aporte-history-card:hover{border-color:rgba(99,102,241,.35);transform:translateY(-1px);box-shadow:0 11px 24px rgba(2,6,23,.1)}
@@ -29329,6 +29334,7 @@ function mobileTabs(){
   return `<nav class="tabs tabs-mobile" aria-label="Navegação principal da carteira" onfocusin="event.target.scrollIntoView({block:'nearest',inline:'nearest'})">
     ${NAV_TABS.map(([k,l])=>navTabButton(k,l)).join('')}
     ${navTabGroup('Relatórios',REPORT_TABS,'mobile')}
+    ${navTabButton('settings','⚙️ Configurações')}
   </nav>`;
 }
 function app(){
@@ -39100,6 +39106,8 @@ html[data-theme="light"] .canon-dashboard .dashboard-quick-action-sub{color:#405
   .premium-dividends-3 .div-premium-head{align-items:flex-start;flex-direction:column;gap:10px}
   .premium-dividends-3 .div-premium-canon-actions{width:100%;flex-wrap:wrap}
   .premium-dividends-3 .div-premium-tabs{width:100%;overflow-x:auto}
+  .premium-dividends-3 .div-premium-tabs>.div-premium-tab{padding-inline:6px}
+  .premium-dividends-3 .div-dividend-moreviews-summary{gap:4px}
 }
 html[data-theme="light"] .premium-dividends-3 .div-premium-tab{color:#4b5d70}
 html[data-theme="light"] .premium-dividends-3 .div-type-badge.rendimento{color:#137333}

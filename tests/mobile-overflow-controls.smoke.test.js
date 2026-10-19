@@ -87,6 +87,19 @@ for (const viewport of viewports) {
       await page.evaluate(() => go('dividendos'));
       const dividendModes = page.locator('nav[aria-label="Modos de Dividendos"]');
       assert.equal(await dividendModes.isVisible(), true, `navegação de modos indisponível em ${viewport.label}`);
+      const moreModesLabel = dividendModes.locator('.div-dividend-moreviews > summary');
+      const moreModesLabelGeometry = await moreModesLabel.evaluate(summary => {
+        const box = summary.getBoundingClientRect();
+        return [...summary.querySelectorAll('span')].map(label => {
+          const rect = label.getBoundingClientRect();
+          return { text: label.textContent.trim(), left: rect.left, right: rect.right, summaryLeft: box.left, summaryRight: box.right };
+        });
+      });
+      assert.ok(moreModesLabelGeometry.length > 0, `rótulo de modos adicionais ausente em ${viewport.label}`);
+      assert.ok(moreModesLabelGeometry.every(label => label.left >= label.summaryLeft && label.right <= label.summaryRight),
+        `rótulo de modos adicionais cortado em ${viewport.label}: ${JSON.stringify(moreModesLabelGeometry)}`);
+      assert.equal(await dividendModes.getByRole('button', { name: 'Mais modos', exact: true }).count(), 1,
+        `nome acessível de modos adicionais ausente em ${viewport.label}`);
       const dividendNavGeometry = await dividendModes.evaluate(nav => {
         const rect = nav.getBoundingClientRect();
         return { left: rect.left, right: rect.right };
@@ -105,6 +118,29 @@ for (const viewport of viewports) {
       assert.equal(await page.locator('.prov-review-shell .prov-review-title strong').innerText(), 'Revisão',
         `conteúdo de Revisão não renderizado em ${viewport.label}`);
       assert.equal(await pageOverflow(), 0, `pageOverflow em dividendos ${viewport.label}`);
+
+      // Aportes: counters must wrap within the tablet toolbar, not rely on body clipping.
+      await page.evaluate(() => go('aportes'));
+      const aporteToolbar = page.locator('.aporte-control-toolbar');
+      await aporteToolbar.waitFor({ state: 'visible', timeout: 5000 });
+      const aporteToolbarGeometry = await aporteToolbar.evaluate(toolbar => {
+        const toolbarBox = toolbar.getBoundingClientRect();
+        const summary = toolbar.querySelector('.aporte-trust-summary');
+        const summaryBox = summary.getBoundingClientRect();
+        return {
+          clientWidth: toolbar.clientWidth,
+          scrollWidth: toolbar.scrollWidth,
+          toolbarRight: toolbarBox.right,
+          summaryRight: summaryBox.right,
+          summaryText: summary.innerText,
+        };
+      });
+      assert.ok(aporteToolbarGeometry.scrollWidth <= aporteToolbarGeometry.clientWidth + 1,
+        `barra de Aportes transborda em ${viewport.label}: ${JSON.stringify(aporteToolbarGeometry)}`);
+      assert.ok(aporteToolbarGeometry.summaryRight <= aporteToolbarGeometry.toolbarRight + 1,
+        `resumo de Aportes sai da barra em ${viewport.label}: ${JSON.stringify(aporteToolbarGeometry)}`);
+      assert.ok(aporteToolbarGeometry.summaryText.includes('não classificados'),
+        `resumo de Aportes foi truncado em ${viewport.label}`);
 
       // Ativos: o resumo inicia fechado e as ações vivem no menu contextual.
       await page.evaluate(() => go('ativos'));

@@ -23,7 +23,8 @@ const mainTabs = [
   { route: 'dividendos', label: 'Dividendos' },
   { route: 'rentabilidade', label: 'Rentabilidade' },
   { route: 'ajudar', label: 'Rebalancear' },
-  { route: 'ia', label: 'Insights' }
+  { route: 'ia', label: 'Insights' },
+  { route: 'settings', label: 'Configurações' }
 ];
 const reportGroupItems = ['Relatórios', 'Eventos societários', 'IRPF', 'Auditoria'];
 
@@ -114,6 +115,18 @@ for (const viewport of viewports) {
         await page.click('.tabs-mobile button.tab:text("Dividendos")');
         await page.waitForTimeout(60);
         assert.equal(await page.evaluate(() => S.tab), 'dividendos', `navegacao por tab funciona em ${viewport.label}`);
+        const settingsTab = page.locator(`.tabs-mobile button.tab[onclick="go('settings')"]`);
+        await settingsTab.focus();
+        const settingsTabGeometry = await settingsTab.evaluate(element => {
+          const item = element.getBoundingClientRect();
+          const nav = element.closest('.tabs-mobile').getBoundingClientRect();
+          return { left: item.left, right: item.right, navLeft: nav.left, navRight: nav.right };
+        });
+        assert.ok(settingsTabGeometry.left >= settingsTabGeometry.navLeft - 1 && settingsTabGeometry.right <= settingsTabGeometry.navRight - 24,
+          `Configurações deve ficar visível antes da seta de continuação em ${viewport.label}: ${JSON.stringify(settingsTabGeometry)}`);
+        await settingsTab.click();
+        await page.waitForTimeout(60);
+        assert.equal(await page.evaluate(() => S.tab), 'settings', `Configurações acessíveis no tablet em ${viewport.label}`);
       } else {
         const desktopCount = await page.evaluate(() => document.querySelectorAll('.tabs-desktop button.tab, .tabs-desktop summary.tab').length);
         assert.ok(desktopCount >= mainTabs.length + reportGroupItems.length, `tabs desktop renderizadas em ${viewport.label}`);
