@@ -503,6 +503,11 @@ test('Ativos mantém valor indisponível como desconhecido, nunca como zero', as
     assert.equal(values['Rentabilidade'], '—', 'rentabilidade sem valor atual deve ficar indisponível');
     assert.equal(values['% carteira'], '—', 'peso sem valor atual deve ficar indisponível');
     assert.equal(values['Valor total'], '—', 'valor total sem preço deve ficar indisponível');
+    assert.deepEqual(
+      await runtime.page.locator('.assets-portfolio-summary strong').allInnerTexts(),
+      ['—', '—', '—', '—'],
+      'o resumo superior não pode apresentar totais como completos quando falta valor corrente'
+    );
     const categoryMetrics = await runtime.page.locator('.assets-premium-shell details.ag[data-asset-group="FII"] .acc-metric-value').allInnerTexts();
     assert.deepEqual(categoryMetrics.slice(1), ['—', '—', '—', '—'], 'agregados da categoria incompleta não podem transformar valor ausente em perda ou peso zero');
     const rowWeights = await runtime.page.locator('.assets-premium-shell .assets-table tbody tr').evaluateAll(rows => rows.map(row => {
@@ -511,6 +516,26 @@ test('Ativos mantém valor indisponível como desconhecido, nunca como zero', as
     }));
     assert.ok(rowWeights.length > 0 && rowWeights.every(value => value.trim() === '—'), 'pesos individuais também ficam indisponíveis quando o denominador da carteira é parcial');
     assert.match(await runtime.page.locator('.assets-coverage-note').innerText(), /parcial|indisponível/i);
+    await assertSyntheticReadOnlyRuntime(runtime);
+  } finally {
+    await closeRuntime(runtime);
+  }
+});
+
+test('Ativos apresenta resultado zero de forma neutra no resumo da categoria', async () => {
+  const runtime = await createRuntime({ width: 1366, height: 768 });
+  try {
+    await applyV289VisualFixture(runtime.page, 'baseline');
+    await runtime.page.evaluate(() => {
+      S.assets = [{ id:'QA_ZERO', ticker:'QA0', name:'Ativo zero sintético', type:'Ação', qty:10, avg_price:10, current_price:10 }];
+      S.aportes = []; S.proventos = []; S.rfEvents = []; S.assetsSearch = ''; S.assetsFilterClasses = [];
+      render();
+    });
+    await setThemeAndRoute(runtime.page, 'dark', 'ativos');
+    const category = runtime.page.locator('.assets-premium-shell details.ag[data-asset-group="Ação"]');
+    const result = category.locator('.acc-metric-value').nth(2);
+    assert.equal((await result.innerText()).trim(), 'R$ 0,00');
+    assert.equal(await result.evaluate(element => element.classList.contains('positive-text') || element.classList.contains('negative-text')), false, 'resultado zero deve permanecer neutro');
     await assertSyntheticReadOnlyRuntime(runtime);
   } finally {
     await closeRuntime(runtime);
