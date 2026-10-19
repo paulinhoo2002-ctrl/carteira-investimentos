@@ -239,8 +239,8 @@ test('bootstrap local com testMode ativa modo de teste e nÃ£o lÃª tema salvo
   const harness = makeThemeBootstrapHarness();
 
   assert.equal(harness.context.window.__LOCAL_TEST_MODE__, true);
-  assert.equal(harness.documentElement.dataset.theme, 'dark');
-  assert.equal(harness.documentElement.style.colorScheme, 'dark');
+  assert.equal(harness.documentElement.dataset.theme, 'light');
+  assert.equal(harness.documentElement.style.colorScheme, 'light');
   assert.equal(harness.storageReads, 0);
   assert.deepEqual(harness.meta.setAttributeCalls, []);
 });
@@ -377,4 +377,79 @@ test('fluxo de impressÃ£o dos relatÃ³rios usa janela protegida com noopener 
   assert.equal(harness.counters.openCalls[0].features, 'noopener,noreferrer,width=900,height=700');
   const html = readIndexHtml();
   assert.match(html, /window\.open\('about:blank', '_blank', 'noopener,noreferrer,width=1280,height=900'\)/);
+});
+
+test('tema claro e padrão quando não há preferência salva', () => {
+  const harness = makeThemeBootstrapHarness({ host: 'carteira.example', search: '', storedTheme: null });
+  assert.equal(harness.documentElement.dataset.theme, 'light');
+  assert.equal(harness.documentElement.style.colorScheme, 'light');
+});
+
+test('preferência explícita de tema escuro continua respeitada', () => {
+  const harness = makeThemeBootstrapHarness({ host: 'carteira.example', search: '', storedTheme: 'dark' });
+  assert.equal(harness.documentElement.dataset.theme, 'dark');
+  assert.equal(harness.documentElement.style.colorScheme, 'dark');
+});
+
+function makeHideValuesPreferenceHarness({ storedValue = null, initialValue = false, localTest = false } = {}) {
+  const storage = new Map(storedValue === null ? [] : [['carteira_hide_values', storedValue]]);
+  const calls = { reads: 0, writes: [], renders: 0, saves: 0, toasts: [] };
+  const context = {
+    S: { hideValues: initialValue },
+    HIDE_VALUES_STOR: 'carteira_hide_values',
+    isLocalTestMode: () => localTest,
+    localStorage: {
+      getItem(key) { calls.reads += 1; return storage.has(key) ? storage.get(key) : null; },
+      setItem(key, value) { calls.writes.push([key, value]); storage.set(key, value); }
+    },
+    render() { calls.renders += 1; },
+    save() { calls.saves += 1; },
+    toast(message) { calls.toasts.push(message); }
+  };
+  const source = [
+    extractSnippet('function syncHideValuesPreference(){', 'function toggleHideValues(){'),
+    extractSnippet('function toggleHideValues(){', 'function installBox(){')
+  ].join('\n');
+  const functions = vm.runInNewContext(`${source}\n({syncHideValuesPreference,toggleHideValues})`, context);
+  return { ...functions, context, calls, storage };
+}
+
+test('Hide Values local vence valor antigo salvo e sobrevive ao reload', () => {
+  const firstLoad = makeHideValuesPreferenceHarness({ initialValue: false });
+  firstLoad.syncHideValuesPreference();
+  firstLoad.toggleHideValues();
+  assert.equal(firstLoad.context.S.hideValues, true);
+  assert.equal(firstLoad.storage.get('carteira_hide_values'), 'true');
+  assert.equal(firstLoad.calls.saves, 0);
+
+  const nextLoad = makeHideValuesPreferenceHarness({
+    storedValue: firstLoad.storage.get('carteira_hide_values'),
+    initialValue: false
+  });
+  nextLoad.syncHideValuesPreference();
+  assert.equal(nextLoad.context.S.hideValues, true);
+});
+
+test('Hide Values migra preferência legada sem salvar carteira', () => {
+  const harness = makeHideValuesPreferenceHarness({ initialValue: true });
+  harness.syncHideValuesPreference();
+  assert.equal(harness.storage.get('carteira_hide_values'), 'true');
+  harness.toggleHideValues();
+  assert.equal(harness.storage.get('carteira_hide_values'), 'false');
+  assert.equal(harness.calls.saves, 0);
+});
+
+test('Hide Values no teste local não acessa nem escreve storage', () => {
+  const harness = makeHideValuesPreferenceHarness({ localTest: true });
+  harness.syncHideValuesPreference();
+  harness.toggleHideValues();
+  assert.equal(harness.context.S.hideValues, true);
+  assert.equal(harness.calls.reads, 0);
+  assert.deepEqual(harness.calls.writes, []);
+});
+test('M523 light foundation is emitted inside a stylesheet', () => {
+  const html = readIndexHtml();
+  const styleBlocks = [...html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)].map(match => match[1]);
+  assert.ok(styleBlocks.some(css => css.includes('/* M523: light-first visual foundation')));
+  assert.doesNotMatch(html, /<style>\s*<style>/i);
 });

@@ -32,7 +32,8 @@ test('Dividendos mantém o contrato canônico, fontes oficiais e bloqueios visua
   assert.match(source, /onclick="exportBackup\(\)"/);
   assert.match(source, /Renda recebida/);
 
-  assert.match(canon, /VISUAL_DIRECTION=PREMIUM_DARK_EXECUTIVE/);
+  assert.match(canon, /VISUAL_DIRECTION=MODERN_LIGHT_MINIMALIST/);
+  assert.match(canon, /LIGHT_THEME_DEFAULT=YES/);
   assert.match(canon, /DIVIDENDOS/);
   assert.match(refs, /No image is currently asserted as a public canonical asset/);
   assert.match(refs, /synthetic, independently/);

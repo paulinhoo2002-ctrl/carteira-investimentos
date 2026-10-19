@@ -2,9 +2,9 @@
 
 > Nesta branch de governança, o roteador canônico de Skills está em `.agents/SKILL_ROUTER.md`; o seletor usa o inventário local versionado e não depende de chat ou modelo. Esta proposta ainda não está integrada em `main`.
 
-DATE=2026-10-18
-MAIN_HEAD=c49175efb18fac247840e08c8b57339bc8f09afd
-VISUAL_PHASE=ACTIVE_FOR_PR_503
+DATE=2026-10-19
+MAIN_HEAD=10083077d2471063807da6097a3872be7ad5c67d
+VISUAL_PHASE=ACTIVE_FOR_M523
 VISUAL_CONTRACT=docs/ai/VISUAL_UX_RESPONSIVE_CONTRACT.md
 PRODUCTION=READY
 SITE_TECHNICALLY_COMPLETE=YES
@@ -43,7 +43,7 @@ OPERATING_MODE=MAINTENANCE_AND_DATA_CERTIFICATION_MODE
 
 ## Governança atual
 
-- Feature freeze ativo. A exceção visual limitada e autorizada nesta data é a PR #503 (`feat/legacy-slim-ui-refinement-2026-10-17`); confirme HEAD/CI ao continuar. Não iniciar fundação, redesign ou arquitetura nova fora desse escopo sem necessidade concreta e autorização.
+- Feature freeze permanece ativo; M523 é a exceção visual limitada aprovada pelo proprietário para modernizar navegação, cores, tipografia e hierarquia do Dashboard. Não amplia escopo para fórmulas, persistência, Auth, Firebase ou a PR #520. A branch visual usa a base main identificada no início desta missão; confirme os fatos remotos antes da revisão.
 - O contrato permanente de UX visual e responsividade está em [`VISUAL_UX_RESPONSIVE_CONTRACT.md`](VISUAL_UX_RESPONSIVE_CONTRACT.md), complementado pelo [`VISUAL_CANON_V2.md`](VISUAL_CANON_V2.md).
 - Invariantes permanentes: `UNKNOWN != ZERO`, `MISSING != ZERO`, `PARTIAL != COMPLETE`, `EXPECTED != RECEIVED`.
 - Sem escrita financeira real, importação, restore, promoção Package2, alteração de Auth/Rules ou deploy manual nesta release.

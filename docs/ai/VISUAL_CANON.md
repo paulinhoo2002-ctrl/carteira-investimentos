@@ -9,7 +9,10 @@
 V2 supersedes this document's earlier high-level guidance where it is more
 specific. Existing product and financial contracts remain authoritative.
 
-`VISUAL_DIRECTION=PREMIUM_DARK_EXECUTIVE`.
+`VISUAL_DIRECTION=MODERN_LIGHT_MINIMALIST`.
+`LIGHT_THEME_DEFAULT=YES`.
+`DARK_THEME_OPTIONAL=YES`.
+`VISUAL_DIRECTION_APPROVED_FOR_M523=YES`.
 `UI_WORK_MUST_READ_VISUAL_CANON=true`.
 
 This public document preserves structural design intent. Private visual
@@ -17,11 +20,15 @@ references may exist locally and must not be committed. Only synthetic,
 public-safe, or explicitly approved-for-publication images may be tracked under
 `Refs/visual-canon/`.
 
+## Controlled direction update (M523)
+
+The owner selected Concept C from the isolated M522 prototype: modern minimal UI, light by default, dark optional. This replaces the previous dark-default direction while retaining dark mode as a supported preference. M522 informs appearance only; no financial logic, data, credentials, or governance is reused. The initial implementation is limited to navigation, shared color roles, typography, and Dashboard hierarchy. Existing product, accessibility, privacy, and financial contracts remain authoritative.
+
 ## Durable visual principles
 
 - Strong KPI hierarchy and clear typographic hierarchy.
 - Dense but comfortable layout combining charts, tables, and textual context.
-- Consistent sidebar and restrained borders and shadows.
+- Consistent sidebar, light neutral surfaces, restrained blue accent, borders, and shadows.
 - Controlled blue/indigo structural accents; green, red, and amber are reserved
   for semantic meaning and must not be the only signal.
 - No gaming/neon aesthetic, excessive glow, giant empty areas, or microcard
