@@ -126,6 +126,36 @@ test('PROVIDER_PAID_IR_LINKED_ONCE; projected IR is never promoted to paid', () 
   assert.equal(result.events.find(row => row.id === 'tax-projected').amount, null);
 });
 
+test('validated paid IR with complete tax coverage can remain COMPLETE and net gross cash exactly once', () => {
+  const asset = trend();
+  const evidence = provider.buildEvidence({
+    asset,
+    assets: [asset],
+    currentPositionCoverage: 'COMPLETE',
+    historyEvidence: proof(),
+    events: [
+      event('application-1', 'aporte', { date: '2024-06-01', status: 'CONFIRMED', principalDelta: 100 }),
+      event('redemption-1', 'resgate_parcial', { date: '2025-06-01', status: 'RECEIVED', amount: 100, amountBasis: 'GROSS', principalDelta: -100 }),
+      event('tax-paid', 'ir', { date: '2025-06-02', status: 'PAID', amount: 10, relatedEventId: 'redemption-1' }),
+    ],
+  });
+
+  assert.equal(evidence.coverage.history.status, 'COMPLETE');
+  assert.equal(evidence.coverage.taxes, 'COMPLETE');
+
+  const calculated = adapter.calculate({
+    currentMarketValue: 0,
+    currentPositionKnown: true,
+    currentPositionCoverage: 'COMPLETE',
+    evidence,
+    engine: engine.calculateFixedIncomeEconomicResult,
+  });
+
+  assert.equal(calculated.taxesPaid, 10);
+  assert.equal(calculated.capitalReturnNet, 90);
+  assert.equal(calculated.totalEconomicResult, -10);
+});
+
 test('PROVIDER_GROSS_NET_NOT_MIXED keeps one explicit cash basis', () => {
   const result = provider.buildEvidence({ asset: trend(), assets: [trend()], events: [event('coupon-1', 'juros', { status: 'RECEIVED', grossValue: 100, netValue: 90, ir: 10 })], historyEvidence: proof() });
   const coupon = result.events[0];
