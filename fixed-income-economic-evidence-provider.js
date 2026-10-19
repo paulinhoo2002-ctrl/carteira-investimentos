@@ -259,14 +259,18 @@
     // Legacy aportes may duplicate or extend the RF ledger; do not infer linkage from matching amounts.
     const legacyRows = sourceRows(asset, assets, aportes);
     if (legacyRows.ambiguous) blockers.add('AMBIGUOUS_LEGACY_CONTRIBUTION_LINK');
-    const relevantLegacyRows = legacyRows.rows.filter(row => (row?.type || row?.asset_type) === 'Renda Fixa');
+    const relevantLegacyRows = legacyRows.rows.filter(row => {
+      const assetType = row?.type || row?.asset_type;
+      return !assetType || norm(assetType) === 'RENDA FIXA';
+    });
     const legacyPurchases = relevantLegacyRows.filter(row => {
       const operation = norm(row?.operation || row?.kind || row?.movementKind);
       return ['COMPRA', 'APORTE', 'APLICACAO'].includes(operation);
     });
     const unknownLegacyRows = relevantLegacyRows.filter(row => {
+      const assetType = row?.type || row?.asset_type;
       const operation = norm(row?.operation || row?.kind || row?.movementKind);
-      return !['COMPRA', 'APORTE', 'APLICACAO'].includes(operation);
+      return !assetType || !['COMPRA', 'APORTE', 'APLICACAO'].includes(operation);
     });
     if (unknownLegacyRows.length) {
       eventsSupported = false;

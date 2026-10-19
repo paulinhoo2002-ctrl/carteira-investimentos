@@ -540,6 +540,7 @@ test('UNKNOWN_LINKED_LEGACY_APORTE_CANNOT_BE_OMITTED_FROM_COMPLETE_HISTORY', () 
   for (const [id, operationFields] of [
     ['legacy-unknown', { operation: 'transferencia' }],
     ['legacy-missing-type', {}],
+    ['legacy-missing-class', { type: undefined, operation: 'mystery' }],
   ]) {
     const result = provider.buildEvidence({
       asset, assets: [asset],
