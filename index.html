@@ -7577,6 +7577,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 .assets-premium-shell .assets-portfolio-summary>div{display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0;padding:9px 12px}
 .assets-premium-shell .assets-portfolio-summary>div+div{border-left:1px solid var(--border)}
 .assets-premium-shell .assets-portfolio-summary span{color:var(--muted);font-size:12px;line-height:1.25}
+html[data-theme="light"] .assets-premium-shell .assets-portfolio-summary span{color:#45586c}
 .assets-premium-shell .assets-portfolio-summary strong{font-size:18px;font-weight:650;line-height:1.2;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .assets-premium-shell .accordion-header .acc-metric-label{font-size:11px;text-transform:none;letter-spacing:normal}
 .assets-premium-shell .accordion-header .acc-metric-value{font-variant-numeric:tabular-nums}
@@ -31660,8 +31661,9 @@ function waveBIcon(name){
   if(name==='readonly') return `<span class="wave-b-icon ds-icon-container" aria-hidden="true"><svg viewBox="0 0 20 20">${paths.shield}</svg></span>`;
   return dashboardMetricIcon(map[name]||name).replace('dashboard-metric-glyph','wave-b-icon ds-icon-container');
 }
-function dashboardMetricCard(icon,label,value,note,tone='#edf3ff',glow='rgba(96,165,250,.12)'){
-  return `<div class="premium-metric" style="--metric-color:${tone};--metric-glow:${glow}">
+function dashboardMetricCard(icon,label,value,note,tone='#edf3ff',glow='rgba(96,165,250,.12)',tip=''){
+  const tipAttr=tip?` title="${esc(tip)}"`:'';
+  return `<div class="premium-metric" style="--metric-color:${tone};--metric-glow:${glow}"${tipAttr}>
     <div class="premium-metric-top"><div class="premium-metric-icon">${icon}</div><div class="premium-metric-label">${esc(label)}</div></div>
     <div class="premium-metric-value">${esc(value)}</div>
     <div class="premium-metric-note">${esc(note)}</div>
@@ -32112,9 +32114,9 @@ function executiveKPIs(data){
   return `
     ${totalResultStatus}
     <div class="dashboard-executive-kpis">
-      ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',patrimonyValue,`${investedContext} · ${patrimonyNote} · Data-base financeira não informada`,'#a78bfa','rgba(129,140,248,.16)')}
-      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado sobre capital cadastrado',resultValue,resultNote,resultTone,resultGlow)}
-      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Renda recebida no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida','#10b981','rgba(16,185,129,.14)')}
+      ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',patrimonyValue,investedContext,'#a78bfa','rgba(129,140,248,.16)',`${investedContext} · ${patrimonyNote} · Data-base financeira não informada`)}
+      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado',resultValue,resultAvailable?'Sobre capital cadastrado':resultNote,resultTone,resultGlow,resultNote)}
+      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Renda no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo':recent.coverage==='PARTIAL'?'Cobertura parcial':'Cobertura desconhecida','#10b981','rgba(16,185,129,.14)',recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida')}
     </div>
   `;
 }
