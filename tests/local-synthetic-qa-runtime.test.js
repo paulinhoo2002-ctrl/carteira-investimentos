@@ -343,7 +343,7 @@ test('readonly rejects a valid synthetic offline snapshot before wallet hydratio
   const S={assets:[{ticker:'SYNTH3'}],wallets:[]};
   const before=JSON.stringify(S);
   const snapshot={state:{wallets:[{id:'qa-new',assets:[]}],activeWalletId:'qa-new'}};
-  const context={S,FB:{},rebuildLearnMeta:()=>{},cloudSnapshotSignature:()=> 'synthetic',isLocalTestReadOnlyMode:()=>true,normalizeWalletEntry:x=>x,syncStateFromWallet:wallet=>{S.assets=wallet.assets;}};
+  const context={S,FB:{},rebuildLearnMeta:()=>{},cloudSnapshotSignature:()=> 'synthetic',isLocalTestReadOnlyMode:()=>true,normalizeWalletEntry:x=>x,syncStateFromWallet:wallet=>{S.assets=wallet.assets;},syncHideValuesPreference:()=>{}};
   const result=vm.runInNewContext(body+'; applyProtectedReadOnlyOfflineState('+JSON.stringify(snapshot)+')',context);
   assert.equal(result,false);
   assert.equal(JSON.stringify(S),before);
