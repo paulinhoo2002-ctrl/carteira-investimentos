@@ -94,7 +94,7 @@
         && sourcePeriodMatches && periodProof && amountBasisValid;
     });
     if (!validRows) return false;
-    const hasMatchingEvent = (item, contribution) => relevant.some((row) => row.stableEventId === item?.id
+    const isMatchingEvent = (row, item, contribution) => row.stableEventId === item?.id
       && row.semanticType === item?.type && row.occurredOn === item?.occurredOn
       && toCents(row.amount) !== null && toCents(row.amount) === toCents(item?.amount)
       && (contribution
@@ -102,9 +102,19 @@
         : row.status === 'RECEIVED' || ['IR', 'IOF'].includes(row.semanticType) && row.status === 'PAID')
       && (!['COUPON', 'INTEREST', 'INCOME', 'AMORTIZATION', 'PARTIAL_REDEMPTION', 'TOTAL_REDEMPTION', 'PRINCIPAL_RETURN'].includes(row.semanticType)
         || row.amountBasis === item?.amountBasis)
-      && (!['IR', 'IOF'].includes(row.semanticType) || row.relatedEventId === item?.relatedEventId));
-    return evidence.contributions.every(item => hasMatchingEvent(item, true))
-      && evidence.events.every(item => hasMatchingEvent(item, false));
+      && (!['IR', 'IOF'].includes(row.semanticType) || row.relatedEventId === item?.relatedEventId);
+    const normalizedEvents = [
+      ...evidence.contributions.map(item => ({ item, contribution: true })),
+      ...evidence.events.map(item => ({ item, contribution: false })),
+    ];
+    const representedTypes = new Set([
+      'APPLICATION', 'PURCHASE', 'COUPON', 'INTEREST', 'INCOME', 'IR', 'IOF',
+      'AMORTIZATION', 'PARTIAL_REDEMPTION', 'TOTAL_REDEMPTION', 'PRINCIPAL_RETURN', 'UNKNOWN',
+    ]);
+    const economicRows = relevant.filter(row => representedTypes.has(row?.semanticType));
+    return economicRows.length === normalizedEvents.length
+      && normalizedEvents.every(({ item, contribution }) => relevant.filter(row => isMatchingEvent(row, item, contribution)).length === 1)
+      && economicRows.every(row => normalizedEvents.filter(({ item, contribution }) => isMatchingEvent(row, item, contribution)).length === 1);
   }
 
   function completeEvidenceHistory(history) {
