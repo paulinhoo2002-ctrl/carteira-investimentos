@@ -89,6 +89,25 @@ test('missing provenance cannot promote an engine result to complete', () => {
   assert.ok(result.blockers.includes('PROVENANCE_NOT_COMPLETE'));
 });
 
+test('missing history evidence fails closed without throwing', () => {
+  const result = pipeline.reconcileAsset({
+    asset: { id: 'synthetic-trend', type: 'Renda Fixa', name: 'Trend DI FIC RF Simples RL' },
+    currentPosition: { value: 10, coverage: 'COMPLETE' },
+    evidence: {
+      coverage: {},
+      sourceEvidence: [{}],
+      contributions: [],
+      events: [],
+      provenanceComplete: true,
+      blockers: [],
+    },
+  });
+
+  assert.equal(result.status, 'PARTIAL');
+  assert.equal(result.economicResult.value, null);
+  assert.ok(result.blockers.includes('EVIDENCE_HISTORY_NOT_COMPLETE'));
+});
+
 test('incomplete source identity in provenance blocks certification', () => {
   const asset = { id: 'synthetic-trend', type: 'Renda Fixa', name: 'Trend DI FIC RF Simples RL' };
   const evidence = {

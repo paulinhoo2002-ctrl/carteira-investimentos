@@ -67,6 +67,7 @@
     const relevant = rows.filter(row => row?.historyRelevant !== false);
     const history = evidence?.coverage?.history;
     if (!relevant.length || !Array.isArray(evidence?.contributions) || !Array.isArray(evidence?.events)) return false;
+    if (!history || typeof history !== 'object' || Array.isArray(history)) return false;
     const isDate = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
       && Number.isFinite(Date.parse(`${value}T00:00:00.000Z`))
       && new Date(`${value}T00:00:00.000Z`).toISOString().slice(0, 10) === value;
