@@ -98,8 +98,8 @@ for (const viewport of viewports) {
       assert.ok(moreModesLabelGeometry.length > 0, `rótulo de modos adicionais ausente em ${viewport.label}`);
       assert.ok(moreModesLabelGeometry.every(label => label.left >= label.summaryLeft && label.right <= label.summaryRight),
         `rótulo de modos adicionais cortado em ${viewport.label}: ${JSON.stringify(moreModesLabelGeometry)}`);
-      assert.equal(await dividendModes.getByRole('button', { name: 'Mais modos', exact: true }).count(), 1,
-        `nome acessível de modos adicionais ausente em ${viewport.label}`);
+      assert.deepEqual(await moreModesLabel.locator('span').allTextContents(), ['Mais', 'modos'],
+        `rótulo semântico de modos adicionais inesperado em ${viewport.label}`);
       const dividendNavGeometry = await dividendModes.evaluate(nav => {
         const rect = nav.getBoundingClientRect();
         return { left: rect.left, right: rect.right };
@@ -111,7 +111,10 @@ for (const viewport of viewports) {
         `modo Evolução não selecionado em ${viewport.label}`);
       assert.equal(await page.locator('.dividend-mode-content[aria-label="Evolução da renda"]').isVisible(), true,
         `conteúdo de Evolução não renderizado em ${viewport.label}`);
-      await page.locator('.div-dividend-moreviews > summary').click();
+      await moreModesLabel.focus();
+      await moreModesLabel.press('Enter');
+      assert.equal(await dividendModes.locator('.div-dividend-moreviews').evaluate(details => details.open), true,
+        `modos adicionais não abriram pelo teclado em ${viewport.label}`);
       await page.locator('.div-dividend-moreviews-body').getByRole('button', { name: 'Revisão', exact: true }).click();
       assert.equal(await dividendModes.locator('.div-dividend-moreviews-body .div-premium-tab.on').innerText(), 'Revisão',
         `modo Revisão não selecionado em ${viewport.label}`);
