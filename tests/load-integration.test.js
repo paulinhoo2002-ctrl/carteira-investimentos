@@ -25,6 +25,7 @@ function extractLoadBundle() {
   return [
     extractSnippet('function normalizeWalletEntry(w, fallbackName=\'Carteira\'){', 'function walletLabel('),
     extractSnippet('function backupCorruptedStorageValue(storageKey, rawValue, error){', 'function markProventosDirty(){'),
+    extractSnippet('function syncHideValuesPreference(){', 'function load(){'),
     extractSnippet('function load(){', 'function initFirebase(){')
   ].join('\n');
 }
@@ -140,6 +141,7 @@ function makeHarness({
   const context = {
     PersistenceCore,
     STOR: stateKey,
+    HIDE_VALUES_STOR: 'carteira_hide_values',
     DEFAULT_BRAPI: '',
     S: clone(initialState),
     localStorage: storage,
@@ -313,6 +315,26 @@ test('load faz backup do JSON invÃ¡lido do estado principal e mantÃ©m o app 
   assert.equal(harness.counters.save, 0);
 });
 
+test('load reaplica a preferência local de Hide Values após reload sem salvar carteira', () => {
+  const storedState = makeInitialState({ hideValues: false });
+  const storageData = {
+    [stateKey]: JSON.stringify(storedState),
+    carteira_hide_values: 'true'
+  };
+  const firstLoad = makeHarness({ initialState: makeInitialState({ hideValues: false }), storageData });
+  firstLoad.load();
+  assert.equal(firstLoad.context.S.hideValues, true);
+  assert.equal(firstLoad.counters.save, 0);
+
+  const reloaded = makeHarness({
+    initialState: makeInitialState({ hideValues: false }),
+    storageData: firstLoad.storage.snapshot()
+  });
+  reloaded.load();
+  assert.equal(reloaded.context.S.hideValues, true);
+  assert.equal(reloaded.counters.save, 0);
+});
+
 test('load preserva o estado financeiro quando a configuraÃ§Ã£o estÃ¡ invÃ¡lida e volta para o token padrÃ£o', () => {
   const storedState = {
     assets: [{ ticker: 'ITSA4', qty: 5 }],
@@ -356,7 +378,8 @@ test('load preserva estado atual e nÃ£o propaga mais a falha histÃ³rica de l
   });
 
   assert.doesNotThrow(() => harness.load());
-  assert.equal(harness.storage.calls.some(call => call.op === 'setItem'), false);
+  assert.equal(harness.storage.calls.some(call => call.op === 'setItem' && call.key === stateKey), false);
+  assert.equal(harness.storage.calls.some(call => call.op === 'setItem' && call.key === 'carteira_hide_values'), true);
   assert.equal(harness.storage.calls.some(call => call.key === configKey), true);
   assert.deepEqual(harness.context.S.assets, initialState.assets);
   assert.deepEqual(harness.context.S.aportes, initialState.aportes);
