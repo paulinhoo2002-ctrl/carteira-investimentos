@@ -40,6 +40,19 @@ test('PROVIDER_UNKNOWN_FAILS_CLOSED and missing type does not become interest', 
   assert.equal(result.coverage.income, 'PARTIAL');
 });
 
+test('normalized contribution and receipt amounts remain attached to their provenance', () => {
+  const asset = trend();
+  const result = provider.buildEvidence({ asset, assets: [asset], historyEvidence: proof(), events: [
+    event('application-1', 'aporte', { status: 'CONFIRMED', principalDelta: 100 }),
+    event('coupon-1', 'juros', { status: 'RECEIVED', netValue: 10, amountBasis: 'NET' }),
+  ] });
+
+  for (const normalized of [...result.contributions, ...result.events]) {
+    const source = result.sourceEvidence.find(row => row.stableEventId === normalized.id);
+    assert.equal(source.amount, normalized.amount);
+  }
+});
+
 test('history completion requires period, no opening position, all events, and resolved duplicates', () => {
   const base = { asset: trend(), assets: [trend()], events: [event('application-1', 'aporte', { status: 'CONFIRMED', principalDelta: 100 })], historyEvidence: proof() };
   assert.equal(provider.buildEvidence({ ...base, historyEvidence: { ...proof(), periodStart: null } }).coverage.history.status, 'PARTIAL');

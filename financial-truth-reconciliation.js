@@ -96,7 +96,13 @@
     if (!validRows) return false;
     const hasMatchingEvent = (item, contribution) => relevant.some((row) => row.stableEventId === item?.id
       && row.semanticType === item?.type && row.occurredOn === item?.occurredOn
-      && (contribution ? row.status === 'CONFIRMED' : row.status === 'RECEIVED' || ['IR', 'IOF'].includes(row.semanticType) && row.status === 'PAID'));
+      && toCents(row.amount) !== null && toCents(row.amount) === toCents(item?.amount)
+      && (contribution
+        ? row.status === 'CONFIRMED'
+        : row.status === 'RECEIVED' || ['IR', 'IOF'].includes(row.semanticType) && row.status === 'PAID')
+      && (!['COUPON', 'INTEREST', 'INCOME', 'AMORTIZATION', 'PARTIAL_REDEMPTION', 'TOTAL_REDEMPTION', 'PRINCIPAL_RETURN'].includes(row.semanticType)
+        || row.amountBasis === item?.amountBasis)
+      && (!['IR', 'IOF'].includes(row.semanticType) || row.relatedEventId === item?.relatedEventId));
     return evidence.contributions.every(item => hasMatchingEvent(item, true))
       && evidence.events.every(item => hasMatchingEvent(item, false));
   }

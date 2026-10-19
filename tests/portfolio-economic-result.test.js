@@ -19,10 +19,10 @@ const completeCoverage = overrides => ({
   ...overrides,
 });
 
-function completeProvenance(assetId, eventId = `${assetId}-application`) {
+function completeProvenance(assetId, eventId = `${assetId}-application`, amount = 100) {
   return [{
     sourceKind: 'RF_EVENT', sourceId: 'synthetic-source', stableEventId: eventId,
-    assetIdentity: assetId, occurredOn: '2024-01-01', authority: 'SYNTHETIC_TEST_SOURCE',
+    assetIdentity: assetId, occurredOn: '2024-01-01', amount, authority: 'SYNTHETIC_TEST_SOURCE',
     semanticType: 'APPLICATION', status: 'CONFIRMED', amountBasis: 'GROSS',
     periodStart: '2024-01-01', periodEnd: '2026-10-18', periodMembership: 'IN_PERIOD',
     duplicateState: 'NONE', conflictState: 'NONE', sourceOverlapResolution: 'RESOLVED',
@@ -36,7 +36,7 @@ function completeAsset(assetId, currentMarketValue = 110, contributed = 100) {
     events: [],
     coverage: completeCoverage(),
     returnPercentBasis: 'CUMULATIVE_CONTRIBUTIONS_SIMPLE',
-    sourceEvidence: completeProvenance(assetId),
+    sourceEvidence: completeProvenance(assetId, `${assetId}-application`, contributed),
     provenanceComplete: true,
     blockers: [],
   };
@@ -81,6 +81,78 @@ test('missing provenance cannot promote an engine result to complete', () => {
     asset: { id: 'synthetic-trend', type: 'Renda Fixa', name: 'Trend DI FIC RF Simples RL' },
     currentPosition: { value: 110, coverage: 'COMPLETE' },
     evidence: { coverage: completeCoverage(), blockers: [] },
+    result: calculated,
+  });
+
+  assert.equal(result.status, 'PARTIAL');
+  assert.equal(result.economicResult.value, null);
+  assert.ok(result.blockers.includes('PROVENANCE_NOT_COMPLETE'));
+});
+
+test('provenance amount must match the normalized economic event amount', () => {
+  const asset = { id: 'synthetic-trend', type: 'Renda Fixa', name: 'Trend DI FIC RF Simples RL' };
+  const evidence = {
+    contributions: [{ id: 'application-1', type: 'APPLICATION', amount: 200, status: 'CONFIRMED', occurredOn: '2024-01-01' }],
+    events: [],
+    coverage: completeCoverage(),
+    sourceEvidence: [{
+      ...completeProvenance(asset.id, 'application-1')[0],
+      amount: 100,
+    }],
+    provenanceComplete: true,
+    blockers: [],
+  };
+  const calculated = engine.calculateFixedIncomeEconomicResult({
+    currentMarketValue: 220,
+    contributions: evidence.contributions,
+    events: evidence.events,
+    coverage: evidence.coverage,
+    returnPercentBasis: 'CUMULATIVE_CONTRIBUTIONS_SIMPLE',
+  });
+
+  const result = pipeline.reconcileAsset({
+    asset,
+    currentPosition: { value: 220, coverage: 'COMPLETE' },
+    evidence,
+    result: calculated,
+  });
+
+  assert.equal(result.status, 'PARTIAL');
+  assert.equal(result.economicResult.value, null);
+  assert.ok(result.blockers.includes('PROVENANCE_NOT_COMPLETE'));
+});
+
+test('provenance amount basis must match the normalized receipt basis', () => {
+  const asset = { id: 'synthetic-trend', type: 'Renda Fixa', name: 'Trend DI FIC RF Simples RL' };
+  const evidence = {
+    contributions: [{ id: 'application-1', type: 'APPLICATION', amount: 100, status: 'CONFIRMED', occurredOn: '2024-01-01' }],
+    events: [{ id: 'coupon-1', type: 'COUPON', amount: 10, amountBasis: 'NET', status: 'RECEIVED', occurredOn: '2025-01-01' }],
+    coverage: completeCoverage(),
+    sourceEvidence: [
+      ...completeProvenance(asset.id, 'application-1', 100),
+      {
+        ...completeProvenance(asset.id, 'coupon-1', 10)[0],
+        semanticType: 'COUPON',
+        amountBasis: 'GROSS',
+        status: 'RECEIVED',
+        occurredOn: '2025-01-01',
+      },
+    ],
+    provenanceComplete: true,
+    blockers: [],
+  };
+  const calculated = engine.calculateFixedIncomeEconomicResult({
+    currentMarketValue: 100,
+    contributions: evidence.contributions,
+    events: evidence.events,
+    coverage: evidence.coverage,
+    returnPercentBasis: 'CUMULATIVE_CONTRIBUTIONS_SIMPLE',
+  });
+
+  const result = pipeline.reconcileAsset({
+    asset,
+    currentPosition: { value: 100, coverage: 'COMPLETE' },
+    evidence,
     result: calculated,
   });
 

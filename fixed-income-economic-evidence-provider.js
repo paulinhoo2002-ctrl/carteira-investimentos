@@ -197,6 +197,7 @@
 
       if (['APPLICATION', 'PURCHASE'].includes(type)) {
         const sourceAmount = amountFor(row, 'contribution');
+        provenanceRow.amount = sourceAmount?.amount ?? null;
         const status = row?.status === 'CONFIRMED' ? 'CONFIRMED' : 'UNKNOWN';
         provenanceRow.status = status;
         if (!sourceAmount || !id || !validDate(date) || status !== 'CONFIRMED') {
@@ -219,6 +220,7 @@
       if (['IR', 'IOF'].includes(type)) {
         taxEvidencePresent = true;
         const sourceAmount = amountFor(row, 'tax');
+        provenanceRow.amount = sourceAmount?.amount ?? null;
         const relatedEventId = String(row?.relatedEventId || '').trim();
         const taxLinked = hasValidTaxLink(relatedEventId);
         const status = row?.status === 'PAID' && taxLinked ? 'PAID' : 'UNKNOWN';
@@ -235,6 +237,7 @@
       const isIncome = ['COUPON', 'INTEREST', 'INCOME'].includes(type);
       const isCapitalReturn = ['AMORTIZATION', 'PARTIAL_REDEMPTION', 'TOTAL_REDEMPTION', 'PRINCIPAL_RETURN'].includes(type);
       const sourceAmount = amountFor(row, 'receipt');
+      provenanceRow.amount = sourceAmount?.amount ?? null;
       const status = row?.status === 'RECEIVED' ? 'RECEIVED' : 'UNKNOWN';
       provenanceRow.status = sourceAmount && id && validDate(date) && status === 'RECEIVED' ? 'RECEIVED' : 'UNKNOWN';
       provenanceRow.amountBasis = sourceAmount?.amountBasis || null;
