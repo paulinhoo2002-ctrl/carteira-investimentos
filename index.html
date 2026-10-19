@@ -32066,7 +32066,9 @@ function portfolioEconomicResultSnapshot(rfSnapshot){
   const rfById=new Map(rfRows.filter(row=>row.asset?.id!=null).map(row=>[String(row.asset.id),row]));
   const reconciliations=assets.map(asset=>{
     const row=asset?.id!=null?rfById.get(String(asset.id)):null;
-    return row?.reconciliation||reconciliation.reconcileAsset({asset});
+    const evidence=row?.reconciliation;
+    return evidence&&String(evidence.assetId||'').trim()===String(asset?.id||'').trim()
+      ? evidence : reconciliation.reconcileAsset({asset});
   });
   return reconciliation.aggregatePortfolio({assets,reconciliations,inventoryCoverage:'UNKNOWN'});
 }

@@ -161,3 +161,18 @@ test('dashboard aggregator maps RF results by identity and keeps portfolio inven
   assert.equal(result.inventoryCoverage, 'UNKNOWN');
   assert.deepEqual(Array.from(result.reconciliations), [rfReconciliation, { assetId: 'stock-1', status: 'NOT_AVAILABLE' }]);
 });
+
+test('dashboard recomputes instead of trusting a reconciliation for another asset', () => {
+  const start = source.indexOf('function portfolioEconomicResultSnapshot(');
+  const end = source.indexOf('\nfunction ', start + 10);
+  const input = { assets: [{ id: 'rf-1', type: 'Renda Fixa' }] };
+  const api = {
+    reconcileAsset({ asset }) { return { assetId: asset.id, status: 'PARTIAL' }; },
+    aggregatePortfolio(value) { return value; },
+  };
+  const context = vm.createContext({ S: input, FinancialTruthReconciliation: api });
+  vm.runInNewContext(`${source.slice(start, end)};globalThis.run=portfolioEconomicResultSnapshot;`, context);
+
+  const result = context.run({ assets: [{ asset: input.assets[0], reconciliation: { assetId: 'other-asset', status: 'COMPLETE' } }] });
+  assert.deepEqual(Array.from(result.reconciliations), [{ assetId: 'rf-1', status: 'PARTIAL' }]);
+});

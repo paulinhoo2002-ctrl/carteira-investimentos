@@ -75,7 +75,7 @@ test('Dashboard separates valuation, received income, and uncertified total resu
   const panel=source.slice(source.indexOf('function package2ExecutivePanel('),source.indexOf('function dashboardEvolutionPanel(data){'));
   assert.match(kpis,/Resultado/);
   assert.match(kpis,/Sobre capital cadastrado/);
-  assert.match(kpis,/Renda no mês/);
+  assert.match(kpis,/dashboardMetricCard\([^\n]*'Recebido'/);
   assert.match(kpis,/dashboardEconomicResultStatus\(data\?\.portfolioEconomicResult\)/);
   assert.match(status,/Resultado total: Em consolidação/);
   assert.match(panel,/Resultado total/);

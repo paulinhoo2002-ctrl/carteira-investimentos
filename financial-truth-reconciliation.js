@@ -9,6 +9,10 @@
     'TREND DI FIC RF SIMPLES RL',
     'TREND DI II FIC RF SIMPLES RL',
   ]);
+  const SUPPORTED_PROVENANCE_TYPES = new Set([
+    'OPENING_POSITION', 'LINKED_REFERENCE', 'APPLICATION', 'PURCHASE', 'COUPON', 'INTEREST', 'INCOME',
+    'IR', 'IOF', 'AMORTIZATION', 'PARTIAL_REDEMPTION', 'TOTAL_REDEMPTION', 'PRINCIPAL_RETURN', 'UNKNOWN',
+  ]);
 
   function toCents(value) {
     if (typeof value !== 'number' || !Number.isFinite(value)) return null;
@@ -86,7 +90,7 @@
         && typeof row?.stableEventId === 'string' && row.stableEventId.trim()
         && row.assetIdentity === assetId
         && typeof row?.authority === 'string' && row.authority.trim()
-        && typeof row?.semanticType === 'string' && row.semanticType !== 'UNKNOWN'
+        && SUPPORTED_PROVENANCE_TYPES.has(row.semanticType) && row.semanticType !== 'UNKNOWN'
         && row.status !== 'UNKNOWN' && row.coverageState === 'COMPLETE'
         && ['NONE', 'RESOLVED'].includes(row.duplicateState)
         && ['NONE', 'RESOLVED'].includes(row.conflictState)
@@ -94,11 +98,27 @@
         && sourcePeriodMatches && periodProof && amountBasisValid;
     });
     if (!validRows) return false;
-    const hasMatchingEvent = (item, contribution) => relevant.some((row) => row.stableEventId === item?.id
+    const isMatchingEvent = (row, item, contribution) => row.stableEventId === item?.id
       && row.semanticType === item?.type && row.occurredOn === item?.occurredOn
-      && (contribution ? row.status === 'CONFIRMED' : row.status === 'RECEIVED' || ['IR', 'IOF'].includes(row.semanticType) && row.status === 'PAID'));
-    return evidence.contributions.every(item => hasMatchingEvent(item, true))
-      && evidence.events.every(item => hasMatchingEvent(item, false));
+      && toCents(row.amount) !== null && toCents(row.amount) === toCents(item?.amount)
+      && (contribution
+        ? row.status === 'CONFIRMED'
+        : row.status === 'RECEIVED' || ['IR', 'IOF'].includes(row.semanticType) && row.status === 'PAID')
+      && (!['COUPON', 'INTEREST', 'INCOME', 'AMORTIZATION', 'PARTIAL_REDEMPTION', 'TOTAL_REDEMPTION', 'PRINCIPAL_RETURN'].includes(row.semanticType)
+        || row.amountBasis === item?.amountBasis)
+      && (!['IR', 'IOF'].includes(row.semanticType) || row.relatedEventId === item?.relatedEventId);
+    const normalizedEvents = [
+      ...evidence.contributions.map(item => ({ item, contribution: true })),
+      ...evidence.events.map(item => ({ item, contribution: false })),
+    ];
+    const representedTypes = new Set([
+      'APPLICATION', 'PURCHASE', 'COUPON', 'INTEREST', 'INCOME', 'IR', 'IOF',
+      'AMORTIZATION', 'PARTIAL_REDEMPTION', 'TOTAL_REDEMPTION', 'PRINCIPAL_RETURN', 'UNKNOWN',
+    ]);
+    const economicRows = relevant.filter(row => representedTypes.has(row?.semanticType));
+    return economicRows.length === normalizedEvents.length
+      && normalizedEvents.every(({ item, contribution }) => relevant.filter(row => isMatchingEvent(row, item, contribution)).length === 1)
+      && economicRows.every(row => normalizedEvents.filter(({ item, contribution }) => isMatchingEvent(row, item, contribution)).length === 1);
   }
 
   function completeEvidenceHistory(history) {
@@ -246,10 +266,14 @@
 
     const ids = rows.map((asset) => typeof asset?.id === 'string' ? asset.id.trim() : '');
     const validIds = ids.filter(Boolean);
-    if (validIds.length !== ids.length || new Set(validIds).size !== validIds.length) blockers.add('DUPLICATE_ASSET_ID');
+    const ambiguousIds = new Set(validIds.filter((id, index) => validIds.indexOf(id) !== index));
+    if (validIds.length !== ids.length || ambiguousIds.size) blockers.add('DUPLICATE_ASSET_ID');
     const byId = new Map();
     for (const reconciliation of results) {
-      if (!reconciliation?.assetId || byId.has(reconciliation.assetId)) blockers.add('DUPLICATE_ASSET_RECONCILIATION');
+      if (!reconciliation?.assetId || byId.has(reconciliation.assetId)) {
+        if (reconciliation?.assetId) ambiguousIds.add(reconciliation.assetId);
+        blockers.add('DUPLICATE_ASSET_RECONCILIATION');
+      }
       else byId.set(reconciliation.assetId, reconciliation);
     }
 
@@ -264,6 +288,11 @@
     let allComplete = rows.length > 0 && inventoryCoverage === 'COMPLETE' && blockers.size === 0;
 
     for (const id of validIds) {
+      if (ambiguousIds.has(id)) {
+        unknownAssets.push(id);
+        allComplete = false;
+        continue;
+      }
       const reconciliation = byId.get(id);
       if (!reconciliation) {
         blockers.add('ASSET_RECONCILIATION_MISSING');

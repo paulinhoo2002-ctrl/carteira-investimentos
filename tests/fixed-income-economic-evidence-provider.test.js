@@ -40,6 +40,19 @@ test('PROVIDER_UNKNOWN_FAILS_CLOSED and missing type does not become interest', 
   assert.equal(result.coverage.income, 'PARTIAL');
 });
 
+test('normalized contribution and receipt amounts remain attached to their provenance', () => {
+  const asset = trend();
+  const result = provider.buildEvidence({ asset, assets: [asset], historyEvidence: proof(), events: [
+    event('application-1', 'aporte', { status: 'CONFIRMED', principalDelta: 100 }),
+    event('coupon-1', 'juros', { status: 'RECEIVED', netValue: 10, amountBasis: 'NET' }),
+  ] });
+
+  for (const normalized of [...result.contributions, ...result.events]) {
+    const source = result.sourceEvidence.find(row => row.stableEventId === normalized.id);
+    assert.equal(source.amount, normalized.amount);
+  }
+});
+
 test('history completion requires period, no opening position, all events, and resolved duplicates', () => {
   const base = { asset: trend(), assets: [trend()], events: [event('application-1', 'aporte', { status: 'CONFIRMED', principalDelta: 100 })], historyEvidence: proof() };
   assert.equal(provider.buildEvidence({ ...base, historyEvidence: { ...proof(), periodStart: null } }).coverage.history.status, 'PARTIAL');
@@ -196,6 +209,37 @@ test('PROVIDER_MISSING_APPLICATION_BLOCKS_COMPLETE and duplicate linked source r
   ], historyEvidence: proof() });
   assert.ok(linked.blockers.includes('DUPLICATE_LINKED_INCOME_SOURCE'));
   assert.equal(linked.coverage.history.status, 'PARTIAL');
+});
+
+test('linked source event with missing kind blocks complete history', () => {
+  const asset = trend();
+  for (const sourceEventKind of [undefined, 'dividend']) {
+    const result = provider.buildEvidence({
+      asset, assets: [asset], historyEvidence: proof(), events: [
+        event('app-1', 'aporte', { status: 'CONFIRMED', principalDelta: 100 }),
+        event('coupon-1', 'juros', { status: 'RECEIVED', netValue: 10 }),
+      ],
+      linkedIncomeEvents: [{ sourceEventKind, sourceEventId: 'coupon-1', ticker: 'TREND', assetName: asset.name, value: 10, date: '2025-01-01' }],
+    });
+
+    assert.equal(result.coverage.history.status, 'PARTIAL');
+    assert.equal(result.coverage.history.sourceOverlapResolved, false);
+    assert.ok(result.blockers.includes('AMBIGUOUS_LINKED_INCOME_SOURCE_KIND'));
+  }
+});
+
+test('unlinked income from the same ticker does not contaminate fixed-income history', () => {
+  const asset = trend();
+  const result = provider.buildEvidence({
+    asset, assets: [asset], historyEvidence: proof(), events: [
+      event('app-1', 'aporte', { status: 'CONFIRMED', principalDelta: 100 }),
+      event('coupon-1', 'juros', { status: 'RECEIVED', netValue: 10 }),
+    ],
+    linkedIncomeEvents: [{ sourceEventId: 'unrelated-event', ticker: 'TREND', assetName: asset.name, value: 10, date: '2025-01-01' }],
+  });
+
+  assert.equal(result.coverage.history.status, 'COMPLETE');
+  assert.equal(result.coverage.history.sourceOverlapResolved, true);
 });
 
 test('PROVIDER_TREND_DI_ENGINE_DERIVES only from explicit complete synthetic evidence', () => {
@@ -520,4 +564,25 @@ test('UNLINKED_LEGACY_APORTE_CANNOT_BE_OVERRIDDEN_BY_COMPLETE_HISTORY_ASSERTION'
   assert.equal(result.coverage.history.status, 'PARTIAL');
   assert.equal(result.coverage.history.sourceOverlapResolved, false);
   assert.ok(result.blockers.includes('UNLINKED_LEGACY_PURCHASES'));
+});
+
+test('UNKNOWN_LINKED_LEGACY_APORTE_CANNOT_BE_OMITTED_FROM_COMPLETE_HISTORY', () => {
+  const asset = trend();
+  for (const [id, operationFields] of [
+    ['legacy-unknown', { operation: 'transferencia' }],
+    ['legacy-missing-type', {}],
+    ['legacy-missing-class', { type: undefined, operation: 'mystery' }],
+    ['legacy-conflicting-class', { type: 'Ação', operation: 'transferencia' }],
+  ]) {
+    const result = provider.buildEvidence({
+      asset, assets: [asset],
+      events: [event('application-1', 'aporte', { status: 'CONFIRMED', principalDelta: 100 })],
+      aportes: [{ id, sourceId: `source-${id}`, assetId: 'trend-1', ticker: 'TREND', type: 'Renda Fixa', ...operationFields, date: '2025-03-01', status: 'CONFIRMED', total: 500 }],
+      historyEvidence: proof(),
+    });
+
+    assert.equal(result.coverage.history.status, 'PARTIAL');
+    assert.ok(result.blockers.includes('UNKNOWN_LEGACY_APORTE_TYPE'));
+    assert.ok(result.sourceEvidence.some(row => row.stableEventId === id && row.semanticType === 'UNKNOWN'));
+  }
 });
