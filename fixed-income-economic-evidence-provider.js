@@ -110,6 +110,23 @@
     const contributions = [];
     const normalizedEvents = [];
     const provenanceRows = [];
+    if (historyEvidence?.openingPosition === 'KNOWN' && historyEvidence.openingPositionEvidence && typeof historyEvidence.openingPositionEvidence === 'object') {
+      const opening = historyEvidence.openingPositionEvidence;
+      provenanceRows.push({
+        ...opening,
+        sourceKind: opening.sourceKind || null,
+        sourceId: opening.sourceId || null,
+        stableEventId: opening.stableEventId || null,
+        assetIdentity: opening.assetIdentity || null,
+        occurredOn: opening.asOfDate || opening.occurredOn || null,
+        semanticType: 'OPENING_POSITION',
+        periodStart: historyEvidence.periodStart,
+        periodEnd: historyEvidence.periodEnd,
+        duplicateState: opening.duplicateState || 'UNKNOWN',
+        conflictState: opening.conflictState || 'UNKNOWN',
+        historyRelevant: true,
+      });
+    }
     if (currentPositionProvenance && typeof currentPositionProvenance === 'object') provenanceRows.push({
       sourceKind: 'CURRENT_POSITION', sourceId: currentPositionProvenance.sourceId || 'S.assets',
       stableEventId: null, assetIdentity: currentPositionProvenance.assetIdentity || assetId || null,
@@ -331,6 +348,7 @@
       historyEvidence: provenHistory,
       registry,
       componentCoverage,
+      subjectIdentity: assetId || null,
       subjectPresent: true,
       additionalBlockers: [...blockers],
     }) || { coverage: { ...componentCoverage, history: { status: 'PARTIAL', periodStart: null, periodEnd: null, openingPosition, allEventsRepresented: false, duplicatesResolved: false, sourceOverlapResolved: false } }, blockers: ['HISTORICAL_COVERAGE_ENGINE_UNAVAILABLE'] };

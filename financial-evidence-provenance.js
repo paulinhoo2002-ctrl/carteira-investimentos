@@ -43,6 +43,13 @@
       const status = text(record.status).toUpperCase() || 'UNKNOWN';
       const historyRelevant = record.historyRelevant !== false;
       let period = periodMembership(occurredOn, record.periodStart, record.periodEnd);
+      const compatibleOpeningPosition = semanticType === 'OPENING_POSITION'
+        && status === 'OBSERVED'
+        && validDate(record.periodStart) && validDate(record.periodEnd) && record.periodStart <= record.periodEnd
+        && occurredOn && occurredOn < record.periodStart && record.compatibleWithPeriod === true
+        && typeof record.positionQuantity === 'number' && Number.isFinite(record.positionQuantity) && record.positionQuantity > 0
+        && Boolean(text(record.quantityUnit));
+      if (compatibleOpeningPosition) period = 'OPENING_COMPATIBLE';
 
       if (stableEventId) {
         const key = `${sourceKind || ''}|${stableEventId}`;
@@ -54,6 +61,7 @@
 
       const needsReceiptBasis = RECEIPT_TYPES.has(semanticType);
       const statusVerified = semanticType === 'CURRENT_POSITION' ? status === 'OBSERVED'
+        : semanticType === 'OPENING_POSITION' ? compatibleOpeningPosition
         : CONTRIBUTION_TYPES.has(semanticType) ? status === 'CONFIRMED'
           : TAX_TYPES.has(semanticType) ? status === 'PAID'
             : needsReceiptBasis ? status === 'RECEIVED'
@@ -63,7 +71,8 @@
         ? Boolean(statusVerified && hasSourceAuthority && text(record.observedAt))
         : Boolean(statusVerified && historyRelevant && hasSourceAuthority && stableEventId && occurredOn
           && COMPLETE_DUPLICATE_STATES.has(duplicateState) && COMPLETE_CONFLICT_STATES.has(conflictState)
-          && (!needsReceiptBasis || amountBasis) && period !== 'OUTSIDE_PERIOD');
+          && (!needsReceiptBasis || amountBasis)
+          && (semanticType === 'OPENING_POSITION' ? compatibleOpeningPosition : period === 'IN_PERIOD'));
       const coverageState = complete ? 'COMPLETE' : semanticType === 'CURRENT_POSITION' && hasSourceAuthority ? 'PARTIAL' : 'UNKNOWN';
       return {
         sourceKind,
@@ -79,6 +88,7 @@
         periodStart: validDate(record.periodStart) ? record.periodStart : null,
         periodEnd: validDate(record.periodEnd) ? record.periodEnd : null,
         periodMembership: period,
+        openingPositionCompatible: compatibleOpeningPosition,
         duplicateState,
         conflictState,
         sourceOverlapResolution: text(record.sourceOverlapResolution).toUpperCase() || null,

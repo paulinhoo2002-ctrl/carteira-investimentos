@@ -356,6 +356,116 @@ test('PROVENANCE_REGISTRY_EXPECTED_INCOME_IS_NOT_RECEIVED', () => {
   assert.equal(projectedTax.provenanceComplete, false);
 });
 
+test('PROVENANCE_PERIOD_MUST_BE_EXPLICITLY_PROVEN_FOR_EACH_EVENT', () => {
+  const descriptor = {
+    sourceKind: 'RF_EVENT', sourceId: 'source-ledger-1', stableEventId: 'application-no-period', assetIdentity: 'trend-1',
+    occurredOn: '2025-01-01', authority: 'BROKER_STATEMENT', semanticType: 'APPLICATION', status: 'CONFIRMED',
+    duplicateState: 'NONE', conflictState: 'NONE',
+  };
+  const registry = provenance.createRegistry([descriptor], { duplicatesResolved: true, sourceOverlapResolved: true });
+  assert.equal(registry.sourceEvidence[0].periodMembership, 'UNKNOWN');
+  assert.equal(registry.provenanceComplete, false);
+  const result = coverageEngine.evaluateCoverage({
+    historyEvidence: proof(), registry, componentCoverage: { contributions: 'COMPLETE' }, subjectPresent: true,
+  });
+  assert.equal(result.coverage.history.status, 'PARTIAL');
+});
+
+test('HISTORY_EVENT_MUST_MATCH_AGGREGATE_PERIOD', () => {
+  const descriptor = {
+    sourceKind: 'RF_EVENT', sourceId: 'source-ledger-1', stableEventId: 'application-before-period', assetIdentity: 'trend-1',
+    occurredOn: '2023-12-31', authority: 'BROKER_STATEMENT', semanticType: 'APPLICATION', status: 'CONFIRMED',
+    periodStart: '2020-01-01', periodEnd: '2030-12-31', duplicateState: 'NONE', conflictState: 'NONE',
+  };
+  const registry = provenance.createRegistry([descriptor], { duplicatesResolved: true, sourceOverlapResolved: true });
+  assert.equal(registry.sourceEvidence[0].periodMembership, 'IN_PERIOD');
+  const result = coverageEngine.evaluateCoverage({
+    historyEvidence: proof(), registry, componentCoverage: { contributions: 'COMPLETE' }, subjectPresent: true,
+  });
+  assert.equal(result.coverage.history.status, 'PARTIAL');
+  assert.ok(result.blockers.includes('HISTORY_EVENT_PERIOD_UNPROVEN'));
+});
+
+test('HISTORY_EVENT_ASSET_IDENTITY_MUST_MATCH_SUBJECT', () => {
+  const descriptor = {
+    sourceKind: 'RF_EVENT', sourceId: 'source-ledger-1', stableEventId: 'application-other-asset', assetIdentity: 'asset-A',
+    occurredOn: '2025-01-01', authority: 'BROKER_STATEMENT', semanticType: 'APPLICATION', status: 'CONFIRMED',
+    periodStart: '2024-01-01', periodEnd: '2026-10-18', duplicateState: 'NONE', conflictState: 'NONE',
+  };
+  const registry = provenance.createRegistry([descriptor], { duplicatesResolved: true, sourceOverlapResolved: true });
+  const result = coverageEngine.evaluateCoverage({
+    historyEvidence: proof(), registry, componentCoverage: { contributions: 'COMPLETE' },
+    subjectIdentity: 'asset-B', subjectPresent: true,
+  });
+  assert.equal(result.coverage.history.status, 'PARTIAL');
+  assert.ok(result.blockers.includes('HISTORY_ASSET_IDENTITY_MISMATCH'));
+});
+
+test('COVERAGE_USES_ONLY_THE_REGISTRY_EVIDENCE_IT_VERIFIED', () => {
+  const descriptor = {
+    sourceKind: 'RF_EVENT', sourceId: 'source-ledger-1', stableEventId: 'application-1', assetIdentity: 'asset-A',
+    occurredOn: '2025-01-01', authority: 'BROKER_STATEMENT', semanticType: 'APPLICATION', status: 'CONFIRMED',
+    periodStart: '2024-01-01', periodEnd: '2026-10-18', duplicateState: 'NONE', conflictState: 'NONE',
+  };
+  const registry = provenance.createRegistry([descriptor], { duplicatesResolved: true, sourceOverlapResolved: true });
+  const result = coverageEngine.evaluateCoverage({
+    historyEvidence: proof(), registry,
+    sourceEvidence: [{ ...registry.sourceEvidence[0], assetIdentity: 'asset-B' }],
+    componentCoverage: { contributions: 'COMPLETE' }, subjectIdentity: 'asset-B', subjectPresent: true,
+  });
+  assert.equal(result.coverage.history.status, 'PARTIAL');
+  assert.ok(result.blockers.includes('HISTORY_ASSET_IDENTITY_MISMATCH'));
+});
+
+test('KNOWN_OPENING_POSITION_REQUIRES_COMPATIBLE_PROVENANCE', () => {
+  const asset = trend();
+  const openingPosition = {
+    sourceKind: 'POSITION_SNAPSHOT', sourceId: 'synthetic-opening-snapshot', stableEventId: 'opening-1', assetIdentity: 'trend-1',
+    occurredOn: '2023-12-31', authority: 'BROKER_STATEMENT', semanticType: 'OPENING_POSITION', status: 'OBSERVED',
+    periodStart: '2024-01-01', periodEnd: '2026-10-18', duplicateState: 'NONE', conflictState: 'NONE',
+    compatibleWithPeriod: true, positionQuantity: 20, quantityUnit: 'QUOTA',
+  };
+  const openingRegistry = provenance.createRegistry([openingPosition], { duplicatesResolved: true, sourceOverlapResolved: true });
+  const result = coverageEngine.evaluateCoverage({
+    historyEvidence: { ...proof(), openingPosition: 'KNOWN' }, registry: openingRegistry,
+    componentCoverage: { contributions: 'COMPLETE' }, subjectIdentity: 'trend-1', subjectPresent: true,
+  });
+  assert.equal(result.coverage.history.openingPosition, 'KNOWN');
+  assert.equal(result.coverage.history.status, 'COMPLETE');
+
+  const unproven = provenance.createRegistry([{ ...openingPosition, compatibleWithPeriod: false }], { duplicatesResolved: true, sourceOverlapResolved: true });
+  assert.equal(coverageEngine.evaluateCoverage({
+    historyEvidence: { ...proof(), openingPosition: 'KNOWN' }, registry: unproven,
+    componentCoverage: { contributions: 'COMPLETE' }, subjectIdentity: 'trend-1', subjectPresent: true,
+  }).coverage.history.status, 'PARTIAL');
+  assert.equal(coverageEngine.evaluateCoverage({
+    historyEvidence: { ...proof(), openingPosition: 'KNOWN' }, componentCoverage: { contributions: 'COMPLETE' }, subjectIdentity: 'trend-1', subjectPresent: true,
+  }).coverage.history.status, 'PARTIAL');
+});
+
+test('PROVIDER_ACCEPTS_KNOWN_OPENING_ONLY_WITH_COMPATIBLE_POSITION_EVIDENCE', () => {
+  const asset = trend();
+  const result = provider.buildEvidence({
+    asset, assets: [asset],
+    events: [event('application-1', 'aporte', { status: 'CONFIRMED', principalDelta: 100 })],
+    historyEvidence: {
+      ...proof(), openingPosition: 'KNOWN',
+      openingPositionEvidence: {
+        sourceKind: 'POSITION_SNAPSHOT', sourceId: 'synthetic-opening-snapshot', stableEventId: 'opening-1', assetIdentity: 'trend-1',
+        asOfDate: '2023-12-31', authority: 'BROKER_STATEMENT', status: 'OBSERVED', compatibleWithPeriod: true,
+        positionQuantity: 20, quantityUnit: 'QUOTA', duplicateState: 'NONE', conflictState: 'NONE',
+      },
+    },
+  });
+  assert.equal(result.coverage.history.status, 'COMPLETE');
+  assert.equal(result.sourceEvidence.find(row => row.semanticType === 'OPENING_POSITION').periodMembership, 'OPENING_COMPATIBLE');
+  const calculated = adapter.calculate({
+    currentMarketValue: 120, currentPositionKnown: true, currentPositionCoverage: 'COMPLETE', evidence: result,
+    engine: engine.calculateFixedIncomeEconomicResult,
+  });
+  assert.notEqual(calculated.status, 'DERIVED_WITH_COMPLETE_HISTORY');
+});
+
 test('PROVENANCE_REGISTRY retains duplicates and blocks unresolved source overlap', () => {
   const descriptor = {
     sourceKind: 'RF_EVENT', sourceId: 'source-a', stableEventId: 'event-1', assetIdentity: 'trend-1',
