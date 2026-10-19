@@ -31899,7 +31899,9 @@ function dashboardAllocationIntelligencePanel(){
 function dash(){
   const analysisRows=assetAnalysisRows();
   const data=dashboardSnapshot(analysisRows);
-  data.insights=portfolioInsightsSnapshot({...data,rf:rfIntelligenceSnapshot(),quality:dataQualitySnapshot()});
+  const rfSnapshot=rfIntelligenceSnapshot();
+  data.portfolioEconomicResult=portfolioEconomicResultSnapshot(rfSnapshot);
+  data.insights=portfolioInsightsSnapshot({...data,rf:rfSnapshot,quality:dataQualitySnapshot()});
   const hoje=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
   const periodOpts=[3,6,12,24];
   const dashMeta=new Date().toLocaleString('pt-BR',{hour:'2-digit',minute:'2-digit'});
@@ -31916,7 +31918,7 @@ function dash(){
         </div>
       </div>
       ${executiveKPIs(data)}
-      ${package2ExecutivePanel()}
+      ${package2ExecutivePanel(!dashboardHasEconomicCertification(data?.portfolioEconomicResult))}
       <div class="dashboard-analytical-primary canon-dash-row-b">
         ${dashboardEvolutionPanel(data)}
         ${dashboardV3AllocationPanel()}
@@ -32054,6 +32056,44 @@ function dashboardCurrentValueAvailability(){
     return {state:'STALE',note:'Cotações desatualizadas; confirme a data da fonte'};
   return {state:'AVAILABLE',note:'Valores atuais informados'};
 }
+function portfolioEconomicResultSnapshot(rfSnapshot){
+  const reconciliation=globalThis.FinancialTruthReconciliation;
+  const assets=Array.isArray(S.assets)?S.assets:null;
+  if(!reconciliation?.aggregatePortfolio) return null;
+  if(!assets) return reconciliation.aggregatePortfolio({assets:null,reconciliations:null,inventoryCoverage:'UNKNOWN'});
+  const fixed=rfSnapshot||rfIntelligenceSnapshot();
+  const rfRows=Array.isArray(fixed?.assets)?fixed.assets:[];
+  const rfById=new Map(rfRows.filter(row=>row.asset?.id!=null).map(row=>[String(row.asset.id),row]));
+  const reconciliations=assets.map(asset=>{
+    const row=asset?.id!=null?rfById.get(String(asset.id)):null;
+    return row?.reconciliation||reconciliation.reconcileAsset({asset});
+  });
+  return reconciliation.aggregatePortfolio({assets,reconciliations,inventoryCoverage:'UNKNOWN'});
+}
+function dashboardEconomicResultStatus(summary){
+  const hidden=!!S.hideValues;
+  const formatMoney=value=>hidden?'••••':assetSignedMoneyText(value);
+  const formatReturn=value=>hidden?'••••':fmtP(value);
+  const tone=value=>hidden?'neutral':value>0?'positive':value<0?'negative':'neutral';
+  const complete=summary?.status==='COMPLETE'&&typeof summary.totalEconomicResult==='number'&&Number.isFinite(summary.totalEconomicResult);
+  if(complete){
+    const returnText=typeof summary.totalReturnPct==='number'&&Number.isFinite(summary.totalReturnPct)?` · retorno simples ${formatReturn(summary.totalReturnPct)}`:'';
+    return `<div class="dashboard-total-result-status" role="status"><strong class="dashboard-total-result-value ${tone(summary.totalEconomicResult)}">Resultado total: ${formatMoney(summary.totalEconomicResult)}${returnText}</strong><span>Escopo completo certificado pelo histórico disponível.</span></div>`;
+  }
+  const subset=Array.isArray(summary?.certifiedAssets)&&summary.certifiedAssets.length>0
+    && typeof summary.certifiedEconomicResult==='number'&&Number.isFinite(summary.certifiedEconomicResult);
+  if(subset){
+    const returnText=typeof summary.certifiedReturnPct==='number'&&Number.isFinite(summary.certifiedReturnPct)?` · retorno simples ${formatReturn(summary.certifiedReturnPct)}`:'';
+    return `<div class="dashboard-total-result-status" role="status"><strong class="dashboard-total-result-value ${tone(summary.certifiedEconomicResult)}">Subtotal certificado: ${formatMoney(summary.certifiedEconomicResult)}${returnText}</strong><span>Apenas posições com histórico completo; o resultado total da carteira permanece em consolidação.</span></div>`;
+  }
+  return '<div class="dashboard-total-result-status" role="status"><strong>Resultado total: Em consolidação</strong><span>Resultado econômico ainda não disponível para o escopo completo.</span></div>';
+}
+function dashboardHasEconomicCertification(summary){
+  const complete=summary?.status==='COMPLETE'&&typeof summary.totalEconomicResult==='number'&&Number.isFinite(summary.totalEconomicResult);
+  const subset=Array.isArray(summary?.certifiedAssets)&&summary.certifiedAssets.length>0
+    &&typeof summary.certifiedEconomicResult==='number'&&Number.isFinite(summary.certifiedEconomicResult);
+  return complete||subset;
+}
 function executiveKPIs(data){
   const p=data?.portfolio||cx();
   const totalCurrent=Number(p.tC)||0;
@@ -32078,13 +32118,10 @@ function executiveKPIs(data){
   const investedContext=p.appliedComplete===false?`Capital informado parcialmente · ${fmt(totalApplied)}`:totalApplied>0?`Investido ${fmt(totalApplied)}`:'Sem capital aplicado';
   const patrimonyNote=availability.state==='AVAILABLE'&&totalCurrent===0?'Valor conhecido: zero':availability.note;
   const incomeAvailable=(S.proventos||[]).length>0 || (S.rfEvents||[]).length>0;
-  const package2=(typeof FB!=='undefined'&&FB)||{};
-  const package2Summary=package2.package2||null;
-  const package2Result=package2Summary?.current_result_summary||{};
-  const package2Income=package2Summary?.income_summary||{};
-  const hasPackage2Summary=(package2Result.rv_total!==null&&package2Result.rv_total!==undefined&&Number.isFinite(Number(package2Result.rv_total)))
-    || (package2Income.y2026_total!==null&&package2Income.y2026_total!==undefined&&Number.isFinite(Number(package2Income.y2026_total)));
-  const totalResultStatus=hasPackage2Summary?'':`<div class="dashboard-total-result-status" role="status"><strong>Resultado total: Em consolidação</strong><span>Renda recebida e devoluções de principal ainda não estão conciliadas em escopo completo.</span></div>`;
+  const hasPackage2Summary=!!(typeof FB!=='undefined'&&FB?.package2);
+  const totalResultStatus=hasPackage2Summary&&!dashboardHasEconomicCertification(data?.portfolioEconomicResult)
+    ?''
+    :dashboardEconomicResultStatus(data?.portfolioEconomicResult);
 
   return `
     ${totalResultStatus}
@@ -32095,7 +32132,7 @@ function executiveKPIs(data){
     </div>
   `;
 }
-function package2ExecutivePanel(){
+function package2ExecutivePanel(showTotalStatus=true){
   const p2=(typeof FB!=='undefined'&&FB)||{};
   const summary=p2.package2||null;
   const hidden=!!S.hideValues;
@@ -32130,7 +32167,7 @@ function package2ExecutivePanel(){
     <div class="dashboard-executive-kpis package2-kpis" data-package2="present">
       ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado certificado da RV',gainValue,`${gainNote} · valor indicativo, não é lucro realizado`,gainTone,gainGlow)}
       ${dashboardMetricCard(dashboardMetricIcon('cash'),'Renda recebida',incomeValue,incomeNote,'#10b981','rgba(16,185,129,.14)')}
-      ${dashboardMetricCard(dashboardMetricIcon('info'),'Resultado total','Em consolidação','Combinação de escopos ainda não certificada','#94a3b8','rgba(148,163,184,.12)')}
+      ${showTotalStatus?dashboardMetricCard(dashboardMetricIcon('info'),'Resultado total','Em consolidação','Combinação de escopos ainda não certificada','#94a3b8','rgba(148,163,184,.12)'):''}
     </div>`;
 }
 function dashboardEvolutionPanel(data){
@@ -39017,6 +39054,8 @@ html[data-theme="dark"] .canon-dashboard .dashboard-page-heading p{color:var(--d
 .canon-dashboard .dashboard-executive-kpis .premium-metric-note{font-size:12px;line-height:1.35;color:var(--dash-muted);white-space:normal;overflow:visible;display:block}
 .canon-dashboard .dashboard-total-result-status{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;margin:0 0 10px;padding:10px 12px;border:1px solid var(--dash-line);border-radius:10px;background:var(--dash-surface);color:var(--dash-muted);font-size:12px;line-height:1.4}
 .canon-dashboard .dashboard-total-result-status strong{color:var(--dash-ink)}
+.canon-dashboard .dashboard-total-result-status strong.positive{color:var(--ds-positive)}
+.canon-dashboard .dashboard-total-result-status strong.negative{color:var(--ds-negative)}
 .rf-economic-status-details{margin-top:6px;color:var(--muted);font-size:11px;text-align:left}
 .rf-economic-status-details summary{min-height:32px;display:flex;align-items:center;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
 .rf-economic-status-details dl{display:grid;gap:5px;min-width:180px;margin:6px 0 0;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--panel);white-space:normal}

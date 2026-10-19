@@ -203,13 +203,14 @@ test('Dashboard does not certify result when any applied basis is missing', () =
 });
 
 test('Dashboard labels result unavailable when applied coverage is incomplete', () => {
-  const dashboardSource = section('function executiveKPIs(data){', 'function package2ExecutivePanel(){');
+  const dashboardSource = section('function executiveKPIs(data){', 'function package2ExecutivePanel(');
   const context = {
     S: { hideValues: false },
     dashboardCurrentValueAvailability() { return { state: 'AVAILABLE', note: 'Valores atuais informados' }; },
     passiveIncomeMonthKey() { return '2026-10'; },
     passiveIncomeMonthSummary() { return { month: '2026-10', total: null, coverage: 'UNKNOWN' }; },
     passiveIncomeValue() { return '—'; },
+    dashboardEconomicResultStatus() { return '<div>Resultado total: Em consolidação</div>'; },
     assetSignedMoneyText(value) { return `R$ ${value}`; },
     fmtP(value) { return `${value}%`; }, fmt(value) { return `R$ ${value}`; },
     dashboardMetricCard(_icon, label, value, note) { return `${label}|${value}|${note}`; },
