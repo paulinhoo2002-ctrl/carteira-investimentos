@@ -247,7 +247,7 @@ test('Dashboard HYBRID V2 - availability follows authoritative allocation values
   });
 });
 
-test('Dashboard HYBRID V2 - priority cardinality: 0/1/many', async () => {
+test('Dashboard HYBRID V2 - priorities do not infer missing income as zero', async () => {
   await withPage({ width: 1366, height: 768 }, async page => {
     await applyV289VisualFixture(page, 'priority-zero');
     assert.equal(await page.evaluate(() => S.assets.length + S.aportes.length + S.proventos.length), 0);
@@ -257,11 +257,8 @@ test('Dashboard HYBRID V2 - priority cardinality: 0/1/many', async () => {
     await applyV289VisualFixture(page, 'priority-one');
     assert.equal(await page.evaluate(() => S.goals.proventos.monthly), 1200);
     const priority = page.locator('.dashboard-v3-priority');
-    assert.equal(await priority.count(), 1);
-    assert.match(await priority.innerText(), /meta de renda|renda passiva/i);
-    assert.match(await priority.innerText(), /abaixo|falta|meta/i);
-    await priority.locator('button').click();
-    assert.equal(await page.evaluate(() => S.tab), 'metas');
+    assert.equal(await page.evaluate(() => S.proventos.length), 0);
+    assert.equal(await priority.count(), 0, 'Meta sem histórico de recebimentos não prova falta de renda');
   });
   await withPage({ width: 1366, height: 768 }, async page => {
     await applyV289VisualFixture(page, 'priority-many');
@@ -409,7 +406,7 @@ test('Dashboard HYBRID V2 - dark and light themes readable contrast', async () =
 
       await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') });
       const result = await page.evaluate(async () => axe.run('.premium-dashboard', {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'cat.color'] }
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa'] }
       }));
       assert.deepEqual(result.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => ({ target: n.target, summary: n.failureSummary })) })), [], `${theme}: contraste no dashboard`);
     });

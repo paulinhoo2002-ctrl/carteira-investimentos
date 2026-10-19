@@ -32126,9 +32126,16 @@ function executiveKPIs(data){
   const resultNote=p.appliedComplete===false?'Base aplicada parcial ou indisponível':!resultAvailable?'Base parcial ou indisponível':'Valor atual menos capital aplicado cadastrado; não representa retorno econômico total';
   const resultTone=!resultAvailable||!amountValid?'#94a3b8':p.tG>0?'#34d399':p.tG<0?'#f87171':'#94a3b8';
   const resultGlow=!resultAvailable||!amountValid?'rgba(148,163,184,.12)':p.tG>0?'rgba(52,211,153,.14)':p.tG<0?'rgba(248,113,113,.14)':'rgba(148,163,184,.12)';
-  const patrimonyValue=['UNKNOWN','NO_DATA'].includes(availability.state)?'—':fmt(totalCurrent);
-  const investedContext=p.appliedComplete===false?`Capital informado parcialmente · ${fmt(totalApplied)}`:totalApplied>0?`Investido ${fmt(totalApplied)}`:'Sem capital aplicado';
+  const patrimonyValue=['UNKNOWN','PARTIAL','NO_DATA'].includes(availability.state)?'—':fmt(totalCurrent);
+  const investedContext=availability.state==='NO_DATA'
+    ? availability.note
+    : p.appliedComplete===false
+      ? totalApplied>0?`Capital informado parcialmente · ${fmt(totalApplied)}`:'Capital informado parcialmente'
+      : totalApplied>0?`Investido ${fmt(totalApplied)}`:'Sem capital aplicado';
   const patrimonyNote=availability.state==='AVAILABLE'&&totalCurrent===0?'Valor conhecido: zero':availability.note;
+  const patrimonyContext=(['UNKNOWN','PARTIAL','STALE','NO_DATA'].includes(availability.state)||(availability.state==='AVAILABLE'&&totalCurrent===0))&&patrimonyNote!==investedContext
+    ? `${investedContext} · ${patrimonyNote}`
+    : investedContext;
   const incomeAvailable=(S.proventos||[]).length>0 || (S.rfEvents||[]).length>0;
   const package2Summary=typeof FB!=='undefined'?FB?.package2:null;
   const hasPackage2Summary=package2HasRenderableSummary(package2Summary);
@@ -32139,9 +32146,9 @@ function executiveKPIs(data){
   return `
     ${totalResultStatus}
     <div class="dashboard-executive-kpis">
-      ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',patrimonyValue,investedContext,'#a78bfa','rgba(129,140,248,.16)',`${investedContext} · ${patrimonyNote} · Data-base financeira não informada`)}
+      ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',patrimonyValue,patrimonyContext,'#a78bfa','rgba(129,140,248,.16)',`${patrimonyContext} · Data-base financeira não informada`)}
       ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado',resultValue,resultAvailable?'Sobre capital cadastrado':resultNote,resultTone,resultGlow,resultNote)}
-      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Renda no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo':recent.coverage==='PARTIAL'?'Cobertura parcial':'Cobertura desconhecida','#10b981','rgba(16,185,129,.14)',recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida')}
+      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'No mês · cobertura completa':recent.coverage==='PARTIAL'?'No mês · cobertura parcial':'No mês · cobertura desconhecida','#10b981','rgba(16,185,129,.14)',recent.coverage==='COMPLETE'?'Recebimentos do mês completos':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida')}
     </div>
   `;
 }
