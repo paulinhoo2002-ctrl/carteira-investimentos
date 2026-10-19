@@ -24,11 +24,25 @@ test('unauthenticated users reach login; private route content remains behind ac
 });
 
 test('portfolio reads start only after the REAL account-mode decision', () => {
-  const auth = html.indexOf("FB.accountMode = await resolveAccountModeCompat(FB.user, ok);");
+  const auth = html.indexOf("FB.accountMode = await resolveAccountModeCompat(user, ok, authSession);");
   const startSync = html.indexOf('startCloudSync({readOnlyOnly:', auth);
   assert.ok(auth > 0 && startSync > auth, 'real cloud sync must follow authorization decision');
   assert.match(html, /if\(FB\.accountMode === 'BLOCKED' \|\| FB\.accountMode === 'AUTH_FAILURE'\)\{[\s\S]*?return;/);
   assert.doesNotMatch(html.slice(auth, startSync), /enterDemoMode|createDemoSource/);
+});
+
+test('stale auth callbacks cannot reuse another session authorization result', () => {
+  const callbackStart = html.indexOf('FB.auth.onAuthStateChanged(async user=>{');
+  const callbackEnd = html.indexOf("if(!FB.authResolved){", callbackStart);
+  const callback = html.slice(callbackStart, callbackEnd);
+  assert.ok(callbackStart >= 0 && callbackEnd > callbackStart, 'auth callback source exists');
+  assert.match(callback, /const authSession = authSessionGuard\.begin\(user\);\s*stopCloudSync\(false\);/);
+  assert.match(callback, /const ok = await loadAccessControl\(user,authSession\);\s*if\(!authSession\.isCurrent\(\) \|\| FB\.user\?\.uid !== user\.uid\) return;/);
+  assert.match(callback, /resolveAccountModeCompat\(user, ok, authSession\)/);
+  assert.match(callback, /await recordAccessAttempt\(user, ok, FB\.access\.reason\);\s*if\(!authSession\.isCurrent\(\) \|\| FB\.user\?\.uid !== user\.uid\) return;/);
+  assert.match(html, /async function loadAccessControl\(user,authSession=null\)\{\s*if\(authSession && !authSession\.isCurrent\(\)\) return false;/);
+  assert.match(html, /const snap = await FB\.db\.collection\('meta'\)\.doc\('access'\)\.get\(\);\s*if\(authSession && !authSession\.isCurrent\(\)\) return false;/);
+  assert.match(html, /const snap = await FB\.db\.collection\('authorizedUsers'\)\.doc\(user\.uid\)\.get\(\);\s*if\(authSession && !authSession\.isCurrent\(\)\) return 'AUTH_FAILURE';/);
 });
 
 test('authorization failures are distinct and never fall back to a local fixture', () => {
@@ -40,6 +54,7 @@ test('authorization failures are distinct and never fall back to a local fixture
 
 test('logout clears in-memory portfolio and derived account values before rendering login', () => {
   assert.match(html, /function signOutGoogle\(\)\{[\s\S]*?clearRealStateInMemory\(\);\s*FB\.user=null;\s*FB\.accountMode='LOGIN_REQUIRED';[\s\S]*?render\(\);[\s\S]*?FB\.auth\.signOut\(\)/);
+  assert.match(html, /function signOutGoogle\(\)\{[\s\S]*?authSessionGuard\.begin\(null\);\s*clearV250OfflineEligibility\(\);\s*stopCloudSync\(false\);\s*clearRealStateInMemory\(\);/);
   assert.match(html, /function clearRealStateInMemory\(\)\{[\s\S]*?Object\.assign\(S, cloneData\(DEFAULT_RUNTIME_STATE\)\);\s*S\.assets=\[\];\s*S\.wallets=\[\];\s*S\.aportes=\[\];\s*S\.proventos=\[\];\s*S\.rfEvents=\[\];[\s\S]*?window\.__V76_RUNTIME__=\{snapshots:\[\],flows:\[\]/);
 });
 

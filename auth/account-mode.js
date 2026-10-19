@@ -33,6 +33,24 @@
     return String(email || '').trim().toLowerCase();
   }
 
+  /** Invalidate pending async auth decisions whenever Firebase emits a new session. */
+  function createSessionGuard() {
+    let currentSession = null;
+    return Object.freeze({
+      begin(user) {
+        const uid = user && user.uid ? String(user.uid) : null;
+        let session;
+        session = Object.freeze({
+          uid,
+          isCurrent: () => currentSession === session,
+        });
+        currentSession = session;
+        return session;
+      },
+      current() { return currentSession; },
+    });
+  }
+
   /**
    * Resolve account mode.
    * @param {object} params
@@ -89,5 +107,5 @@
     }
   }
 
-  return { MODES, normalizeEmail, resolveAccountMode, canAccessRealPortfolio, isBlockedMode, modeLabel };
+  return { MODES, normalizeEmail, resolveAccountMode, canAccessRealPortfolio, isBlockedMode, modeLabel, createSessionGuard };
 });

@@ -109,6 +109,54 @@ test('unauthorized and auth-failure states stay blocked across direct routes', a
   }
 });
 
+test('late authorization reads from an old account cannot authorize or overwrite the new session', async () => {
+  await freshPage();
+  const result = await page.evaluate(async () => {
+    const userA = { uid: 'synthetic-account-a', email: 'a@example.invalid', emailVerified: true };
+    const userB = { uid: 'synthetic-account-b', email: 'b@example.invalid', emailVerified: true };
+    let resolveAccess;
+    let resolveRegistry;
+    const accessRead = new Promise(resolve => { resolveAccess = resolve; });
+    const registryRead = new Promise(resolve => { resolveRegistry = resolve; });
+    const originalDb = FB.db;
+    FB.db = { collection: name => ({ doc: id => ({ get: () => name === 'meta' && id === 'access' ? accessRead : registryRead }) }) };
+
+    const sessionA = authSessionGuard.begin(userA);
+    FB.user = userA;
+    FB.access = { loaded: true, loading: false, allowed: false, reason: 'synthetic B state' };
+    const pendingAccess = loadAccessControl(userA, sessionA);
+    authSessionGuard.begin(userB);
+    FB.user = userB;
+    const stateForB = FB.access;
+    resolveAccess({ exists: true, data: () => ({ allowedEmails: ['a@example.invalid'] }) });
+    const accessA = await pendingAccess;
+
+    const staleMode = await resolveAccountModeCompat(userA, true, sessionA);
+    const modeSession = authSessionGuard.begin(userA);
+    const pendingMode = resolveAccountModeCompat(userA, true, modeSession);
+    authSessionGuard.begin(userB);
+    resolveRegistry({ exists: true, data: () => ({ enabled: true, role: 'owner', blocked: false }) });
+    const registryMode = await pendingMode;
+    FB.db = originalDb;
+    return {
+      accessA,
+      accessStatePreserved: FB.access === stateForB,
+      staleMode,
+      registryMode,
+      currentUid: FB.user?.uid,
+    };
+  });
+
+  assert.deepEqual(result, {
+    accessA: false,
+    accessStatePreserved: true,
+    staleMode: 'AUTH_FAILURE',
+    registryMode: 'AUTH_FAILURE',
+    currentUid: 'synthetic-account-b',
+  });
+  assert.equal(portfolioRequests, 0, 'an obsolete authorization result must not start a private portfolio read');
+});
+
 test('authorized synthetic owner reaches REAL shell and logout clears portfolio state', async () => {
   await freshPage();
   await setAccessState('REAL');

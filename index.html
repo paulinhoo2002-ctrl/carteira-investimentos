@@ -8949,6 +8949,7 @@ let FB = {
   readOnlyOfflineSnapshotReady:false, readOnlyOfflineSnapshotScope:'', readOnlyOfflineSnapshotSignature:'',
   access:{loaded:false,loading:true,allowed:false,reason:'',cfg:null,lastDeniedAt:null}
 };
+const authSessionGuard = window.AccountMode.createSessionGuard();
 let firebaseAuthPersistenceReady = Promise.resolve();
 
 const V250_RECONNECT_RELOAD_KEY = 'civ5_v250_reconnect_reload_v1';
@@ -8968,6 +8969,9 @@ function revalidateFirebaseAuthAfterReconnect(){
   }
   reconnectAuthFlight = (async()=>{
     reconnectAuthAttemptCount += 1;
+    const user = FB.user;
+    const authSession = authSessionGuard.current();
+    if(!user || !authSession || !authSession.isCurrent() || authSession.uid !== String(user.uid || '')) return {status:'stale-session'};
     FB.authResolved = false;
     FB.access.loading = true;
     FB.access.loaded = false;
@@ -8980,11 +8984,14 @@ function revalidateFirebaseAuthAfterReconnect(){
     // A Firebase-owned currentUser is evidence for the bootstrap, never a
     // reason to assign FB.user locally. Let the normal observer own recovery.
     if(currentUser) debugInfo('Firebase mantém uma sessão candidata para o bootstrap de reconnect');
-    if(FB.user && currentUser){
+    if(currentUser && currentUser.uid === user.uid){
       try{
         await currentUser.getIdToken(true);
-        const accessOk = await loadAccessControl(FB.user);
-        FB.accountMode=await resolveAccountModeCompat(FB.user,accessOk);
+        if(!authSession.isCurrent() || FB.user?.uid !== user.uid) return {status:'stale-session'};
+        const accessOk = await loadAccessControl(user,authSession);
+        if(!authSession.isCurrent() || FB.user?.uid !== user.uid) return {status:'stale-session'};
+        FB.accountMode=await resolveAccountModeCompat(user,accessOk,authSession);
+        if(!authSession.isCurrent() || FB.user?.uid !== user.uid) return {status:'stale-session'};
         if(!accessOk || FB.accountMode!=='REAL'){
           clearRealStateInMemory();
           FB.access.loading=false;
@@ -11257,6 +11264,8 @@ function initFirebase(){
       try{ FB.db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(e){}
     }
     FB.auth.onAuthStateChanged(async user=>{
+      const authSession = authSessionGuard.begin(user);
+      stopCloudSync(false);
       clearRealStateInMemory();
       FB.authResolved = true;
       FB.user = user || null;
@@ -11267,10 +11276,12 @@ function initFirebase(){
         FB.access.allowed = false;
         FB.access.reason = '';
         render();
-        const ok = await loadAccessControl(FB.user);
+        const ok = await loadAccessControl(user,authSession);
+        if(!authSession.isCurrent() || FB.user?.uid !== user.uid) return;
         // Phase 2: protected offline cached session wins before any mode routing
         // Phase 2: single authoritative account-mode decision (auth/boot contract)
-        FB.accountMode = await resolveAccountModeCompat(FB.user, ok);
+        FB.accountMode = await resolveAccountModeCompat(user, ok, authSession);
+        if(!authSession.isCurrent() || FB.user?.uid !== user.uid) return;
         if(FB.accountMode === 'BLOCKED' || FB.accountMode === 'AUTH_FAILURE'){
           stopCloudSync(false);
           FB.access.loading = false;
@@ -11292,7 +11303,8 @@ function initFirebase(){
           render();
           return;
         }
-        await recordAccessAttempt(FB.user, ok, FB.access.reason);
+        await recordAccessAttempt(user, ok, FB.access.reason);
+        if(!authSession.isCurrent() || FB.user?.uid !== user.uid) return;
         FB.access.loading = false;
         hydrateAuthorizedLocalState();
         try{ if(S.aportes.length) syncAssetsFromAportes(false); }
@@ -11302,11 +11314,13 @@ function initFirebase(){
         fetchQuotes(false);
         if(isAuthoritativeLocalRecoveryBoot()){
           readFreshCloudPayload().then(async cloudPayload=>{
+            if(!authSession.isCurrent() || FB.user?.uid !== user.uid) return;
             if(window.ProtectedLocalCloudAuthority){
               FB.lastCloudAuthorityFingerprint=window.ProtectedLocalCloudAuthority.fingerprintCloud(cloudPayload||{});
             }
             FB.cloudLoaded = true;
             await rememberV250TrustedSnapshot();
+            if(!authSession.isCurrent() || FB.user?.uid !== user.uid) return;
             FB.cloudStateModel=CloudSyncState.resolve(CloudSyncState.begin(FB.cloudStateModel),{exists:true,hasData:true});
             bindProtectedRealPilotSession();
             runV324PeriodicBackups();
@@ -11337,6 +11351,7 @@ function initFirebase(){
       render();
     }, error=>{
       debugWarn('Falha na sessão de autenticação:', error);
+      authSessionGuard.begin(null);
       stopCloudSync(false);
       clearRealStateInMemory();
       FB.user = null;
@@ -11360,24 +11375,29 @@ function initFirebase(){
     render();
   }
 }
-async function loadAccessControl(user){
+async function loadAccessControl(user,authSession=null){
+  if(authSession && !authSession.isCurrent()) return false;
+  const setAccess = value => {
+    if(!authSession || authSession.isCurrent()) FB.access=value;
+  };
   const email = normalizeEmail(user?.email);
   if(!FB.db || !email){
-    FB.access = {loaded:true,loading:false,allowed:false,reason:'Conecte sua conta Google autorizada para acessar o sistema.',cfg:null,lastDeniedAt:new Date().toISOString()};
+    setAccess({loaded:true,loading:false,allowed:false,reason:'Conecte sua conta Google autorizada para acessar o sistema.',cfg:null,lastDeniedAt:new Date().toISOString()});
     return false;
   }
   try{
     const snap = await FB.db.collection('meta').doc('access').get();
+    if(authSession && !authSession.isCurrent()) return false;
     if(!snap.exists){
       const isAdmin = isAccessAdmin(email);
-      FB.access = {
+      setAccess({
         loaded:true,
         loading:false,
         allowed:isAdmin,
         reason:isAdmin ? '' : 'O controle de acesso ainda não foi configurado neste ambiente.',
         cfg:null,
         lastDeniedAt:isAdmin ? null : new Date().toISOString()
-      };
+      });
       return isAdmin;
     }
     const cfg = snap.exists ? (snap.data() || {}) : {};
@@ -11391,18 +11411,18 @@ async function loadAccessControl(user){
       allowedEmails.includes(email) ||
       (domain && allowedDomains.includes(domain))
     );
-    FB.access = {
+    setAccess({
       loaded:true,
       loading:false,
       allowed:isAllowed,
       reason:isAllowed ? '' : String(cfg.message || 'Acesso restrito a usuários aprovados.'),
       cfg,
       lastDeniedAt:isAllowed ? null : new Date().toISOString()
-    };
+    });
     return isAllowed;
   }catch(e){
     debugWarn('Acesso:', e);
-    FB.access = {loaded:true,loading:false,allowed:false,authFailure:true,reason:'Não foi possível validar o acesso agora.',cfg:null,lastDeniedAt:new Date().toISOString()};
+    setAccess({loaded:true,loading:false,allowed:false,authFailure:true,reason:'Não foi possível validar o acesso agora.',cfg:null,lastDeniedAt:new Date().toISOString()});
     return false;
   }
 }
@@ -11435,18 +11455,21 @@ function portfolioRef(){
 // production (registry rules not deployed) the legacy access control
 // (meta/access + admin allowlist) feeds the resolver so the current owner
 // keeps loading normally. No portfolio source is created for unauthorized users.
-async function resolveAccountModeCompat(user, accessOk){
+async function resolveAccountModeCompat(user, accessOk, authSession=null){
   if(!user) return 'LOGIN_REQUIRED';
+  if(authSession && !authSession.isCurrent()) return 'AUTH_FAILURE';
   if(!window.AccountMode || !FB.db || FB.access?.authFailure) return 'AUTH_FAILURE';
   let authorization = null;
   try{
     const snap = await FB.db.collection('authorizedUsers').doc(user.uid).get();
+    if(authSession && !authSession.isCurrent()) return 'AUTH_FAILURE';
     if(snap.exists){
       const d = snap.data() || {};
       authorization = { enabled: d.enabled !== false, blocked: d.blocked === true, role: String(d.role || 'user') };
     }
   }catch(e){
     // permission-denied in production (registry rules not deployed) → legacy path
+    if(authSession && !authSession.isCurrent()) return 'AUTH_FAILURE';
   }
   if(!authorization){
     const email = normalizeEmail(user && user.email);
@@ -11972,6 +11995,7 @@ async function signOutGoogle(){
     toast('🧪 Modo de teste local: saída desativada.');
     return;
   }
+  authSessionGuard.begin(null);
   clearV250OfflineEligibility();
   stopCloudSync(false);
   clearRealStateInMemory();
