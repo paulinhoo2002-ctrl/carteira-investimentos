@@ -92,6 +92,20 @@
     const selected = sourceRows(asset, assets, events);
     const assetId = String(asset?.id || asset?.assetId || asset?.rf_asset_id || '').trim();
     const selectedEvents = selected.rows;
+    const eventsByStableId = new Map();
+    for (const row of selectedEvents) {
+      const id = stableId(row);
+      if (!id) continue;
+      if (!eventsByStableId.has(id)) eventsByStableId.set(id, []);
+      eventsByStableId.get(id).push(row);
+    }
+    const hasValidTaxLink = id => {
+      const linked = eventsByStableId.get(String(id || '').trim()) || [];
+      if (linked.length !== 1) return false;
+      const row = linked[0];
+      return ['COUPON', 'INTEREST', 'INCOME', 'AMORTIZATION', 'PARTIAL_REDEMPTION', 'TOTAL_REDEMPTION', 'PRINCIPAL_RETURN'].includes(eventType(row))
+        && row?.status === 'RECEIVED' && validDate(row?.date) && Boolean(amountFor(row, 'receipt'));
+    };
     if (selected.ambiguous) blockers.add('AMBIGUOUS_ASSET_LINK');
     const contributions = [];
     const normalizedEvents = [];
@@ -188,14 +202,16 @@
       if (['IR', 'IOF'].includes(type)) {
         taxEvidencePresent = true;
         const sourceAmount = amountFor(row, 'tax');
-        const status = row?.status === 'PAID' ? 'PAID' : 'UNKNOWN';
-        provenanceRow.status = sourceAmount && id && validDate(date) && status === 'PAID' && row?.relatedEventId ? 'PAID' : 'UNKNOWN';
-        provenanceRow.relatedEventId = String(row?.relatedEventId || '');
-        if (!sourceAmount || !id || !validDate(date) || status !== 'PAID' || !row?.relatedEventId) {
+        const relatedEventId = String(row?.relatedEventId || '').trim();
+        const taxLinked = hasValidTaxLink(relatedEventId);
+        const status = row?.status === 'PAID' && taxLinked ? 'PAID' : 'UNKNOWN';
+        provenanceRow.status = sourceAmount && id && validDate(date) && status === 'PAID' ? 'PAID' : 'UNKNOWN';
+        provenanceRow.relatedEventId = relatedEventId;
+        if (!sourceAmount || !id || !validDate(date) || status !== 'PAID') {
           eventsSupported = false;
-          blockers.add(row?.status === 'POTENTIAL' ? 'POTENTIAL_TAX_NOT_PAID' : 'TAX_EVIDENCE_INCOMPLETE');
+          blockers.add(row?.status === 'POTENTIAL' ? 'POTENTIAL_TAX_NOT_PAID' : !taxLinked ? 'TAX_LINK_UNVERIFIED' : 'TAX_EVIDENCE_INCOMPLETE');
         }
-        normalizedEvents.push({ id, type, amount: status === 'PAID' ? sourceAmount?.amount ?? null : null, status, relatedEventId: String(row?.relatedEventId || ''), occurredOn: date });
+        normalizedEvents.push({ id, type, amount: status === 'PAID' ? sourceAmount?.amount ?? null : null, status, relatedEventId, occurredOn: date });
         continue;
       }
 

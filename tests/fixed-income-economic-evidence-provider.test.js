@@ -129,6 +129,21 @@ test('PROVIDER_PAID_IR_LINKED_ONCE; projected IR is never promoted to paid', () 
   assert.equal(result.events.find(row => row.id === 'tax-projected').amount, null);
 });
 
+test('PROVIDER_PAID_TAX_REQUIRES_EXISTING_RECEIVED_EVENT_LINK', () => {
+  const result = provider.buildEvidence({
+    asset: trend(), assets: [trend()], historyEvidence: proof(),
+    events: [
+      event('application-1', 'aporte', { date: '2024-06-01', status: 'CONFIRMED', principalDelta: 100 }),
+      event('tax-paid', 'ir', { date: '2025-06-02', status: 'PAID', amount: 10, relatedEventId: 'missing-redemption' }),
+    ],
+  });
+  assert.equal(result.coverage.taxes, 'PARTIAL');
+  assert.equal(result.coverage.history.status, 'PARTIAL');
+  assert.ok(result.blockers.includes('TAX_LINK_UNVERIFIED'));
+  assert.equal(result.events.find(row => row.type === 'IR').status, 'UNKNOWN');
+  assert.equal(result.events.find(row => row.type === 'IR').amount, null);
+});
+
 test('validated paid IR with complete tax coverage can remain COMPLETE and net gross cash exactly once', () => {
   const asset = trend();
   const evidence = provider.buildEvidence({
