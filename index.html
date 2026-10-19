@@ -8773,6 +8773,8 @@ document.write([
 <script src="fixed-income-valuation.js"></script>
 <script src="fixed-income-economic-result.js"></script>
 <script src="fixed-income-economic-result-adapter.js"></script>
+<script src="financial-evidence-provenance.js"></script>
+<script src="historical-coverage-engine.js"></script>
 <script src="fixed-income-economic-evidence-provider.js"></script>
 <script src="fixed-income-display.js"></script>
 <script src="fixed-income-trust.js"></script>
@@ -30681,6 +30683,13 @@ function rfEconomicEvidenceForAsset(asset){
     linkedIncomeEvents:S.proventos||[],
     historyEvidence:null,
     currentPositionCoverage,
+    currentPositionProvenance:{
+      sourceId:'S.assets',
+      assetIdentity:asset?.id||asset?.assetId||asset?.rf_asset_id||null,
+      authority:currentMeta.authority,
+      observedAt:currentMeta.valuationAsOf||currentMeta.sourceAsOf||null,
+      status:hasCurrent?'OBSERVED':'UNKNOWN',
+    },
   })||null;
 }
 function rfIntelligenceSnapshot(){

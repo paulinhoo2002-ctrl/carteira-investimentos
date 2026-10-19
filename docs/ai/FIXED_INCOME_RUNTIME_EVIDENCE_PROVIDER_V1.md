@@ -23,4 +23,8 @@ The RF event normalizer currently defaults missing amount fields to numeric zero
 - No current runtime field is trusted as remaining cost basis. `valor aplicado` is not reinterpreted as remaining cost basis.
 - MOVIDA and CRA are unsupported by this Trend-only provider and retain their existing partial UI state.
 
+## Provenance and historical coverage layer
+
+`financial-evidence-provenance.js` records source/event identity and explicit authority, date, amount basis, duplicate/conflict state, and period membership without copying amounts into a second registry. `historical-coverage-engine.js` evaluates each component independently and marks history `COMPLETE` only with a valid explicit period, `openingPosition: 'NONE'`, complete contributions, all-events proof, resolved duplicates and source overlap, and complete event provenance. The runtime call has no history manifest, so both Trend products remain `PARTIAL`; a current-position observation does not promote historical coverage. `S.aportes` rows without a stable link to `S.rfEvents` remain an unresolved overlap and are not deduplicated.
+
 Synthetic unit tests may supply a proof manifest to test the engine adapter. That manifest is not a production source and contains no personal account data.
