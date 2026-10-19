@@ -2,6 +2,14 @@
 
 Este documento registra decisões arquiteturais que foram validadas pelo projeto e devem ser preservadas.
 
+## M523 — Direção visual light-first
+
+- **Data**: 2026-10-19
+- **Decisão**: Adotar o Conceito C do protótipo M522: tema claro padrão e tema escuro opcional. A mudança cobre navegação, papéis de cor, tipografia e hierarquia do Dashboard; aparência do protótipo não autoriza importar lógica ou dados.
+- **Motivo**: escolha explícita do proprietário para reduzir ruído e melhorar legibilidade sem alterar contratos do produto.
+- **Consequências**: atualizar `VISUAL_CANON.md` e `VISUAL_CANON_V2.md`; manter rotas, cálculos, autenticação, persistência financeira e semântica existentes.
+- **Status**: Aprovada para implementação incremental na M523.
+
 ## V197 — Boot, memória e roteamento
 
 - **Data**: 2026-09-18

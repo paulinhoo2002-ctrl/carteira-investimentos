@@ -2,7 +2,11 @@
 
 Para comportamento responsivo, progressive disclosure, matriz de QA e acessibilidade, consulte o contrato complementar [`VISUAL_UX_RESPONSIVE_CONTRACT.md`](VISUAL_UX_RESPONSIVE_CONTRACT.md).
 
-`VISUAL_DIRECTION=PREMIUM_DARK_EXECUTIVE`
+`VISUAL_DIRECTION=MODERN_LIGHT_MINIMALIST`
+
+`LIGHT_THEME_DEFAULT=YES`
+`DARK_THEME_OPTIONAL=YES`
+`VISUAL_DIRECTION_APPROVED_FOR_M523=YES`
 
 `UI_WORK_MUST_READ_VISUAL_CANON=true`
 
@@ -11,12 +15,16 @@ Para comportamento responsivo, progressive disclosure, matriz de QA e acessibili
 
 This is a reusable product/design contract, not a screenshot recreation or a financial-data specification. Read it with [`VISUAL_CANON.md`](VISUAL_CANON.md) and the evidence/sequence in [`V279B_VISUAL_PRODUCT_AUDIT.md`](V279B_VISUAL_PRODUCT_AUDIT.md). Existing code and contracts remain authoritative for behavior. Private visual references may exist locally and must not be committed.
 
+## Controlled visual direction update (M523)
+
+The owner selected Concept C from the isolated M522 prototype: modern minimal UI, light by default, dark optional. This updates the former PREMIUM_DARK_EXECUTIVE default; it does not remove dark mode or authorize behavioral, financial, authentication, or persistence changes. M522 is an appearance reference only and contributes no calculations, data, credentials, or project governance. M523 is limited to navigation, shared color roles, typography, and Dashboard hierarchy.
+
 ## Product principles
 
 - One coherent shell, sidebar, page-header grammar, and KPI hierarchy.
 - Tables remain primary analytical surfaces; charts explain trends and include context.
 - Dense but comfortable; 1366×768 is first-class. Mobile is adapted, not squeezed desktop.
-- Restrained graphite/slate/navy surfaces with controlled blue/indigo structural accent.
+- Light neutral canvas and white surfaces by default, with restrained blue structural accent; retain the existing dark theme as an optional user choice.
 - Green/red/amber are semantic only; color is never the sole state signal.
 - No invented financial/tax data, arbitrary score, or implied operation.
 - Preserve `UNKNOWN != ZERO`, `PARTIAL != COMPLETE`, `STALE != FRESH`, `ESTIMATE != RECEIVED`, `ENGINE_AVAILABLE != DATA_READY`.

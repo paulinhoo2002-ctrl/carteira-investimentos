@@ -1,11 +1,11 @@
 # Próximo passo oficial
 
 OPERATING_MODE=VISUAL_REFINEMENT_AND_DATA_CERTIFICATION
-VISUAL_PHASE=ACTIVE_FOR_PR_503
+VISUAL_PHASE=ACTIVE_FOR_M523
 
 ## Ação atual
 
-Concluir a linha visual oficial da PR #503 conforme [`VISUAL_UX_RESPONSIVE_CONTRACT.md`](VISUAL_UX_RESPONSIVE_CONTRACT.md): resolver defeitos reproduzíveis, validar rotas/viewports/temas e revisar capturas privadas. O escopo é de apresentação e não revoga o feature freeze geral nem as proteções financeiras. Em paralelo, aguarde evidência fiscal confiável para a abertura de 2026 e prossiga em leitura local, dry-run e revisão dos documentos listados em [`IR2026_DOCUMENT_REQUEST.md`](IR2026_DOCUMENT_REQUEST.md). Não grave resultados na carteira. Ao encerrar ou integrar a PR #503, reavalie o estado e retorne à certificação de dados se não houver outra autorização.
+Implementar a fase visual M523 aprovada pelo proprietário: tema claro padrão, tema escuro opcional, navegação, tipografia e hierarquia do Dashboard. Preservar fórmulas, rotas, acessibilidade, autenticação, persistência e histórico. Usar dados sintéticos para browser QA e screenshots. Manter a PR #520 separada e intocada; não fazer merge nem deploy manual. Ao concluir a validação, abrir uma PR visual independente conforme a autorização da missão.
 
 ## Prioridades
 
