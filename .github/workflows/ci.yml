@@ -47,6 +47,9 @@ jobs:
           echo "Using browser: $CHROME_BIN"
           echo "CHROME_PATH=$CHROME_BIN" >> "$GITHUB_ENV"
 
+      - name: Auth access browser QA
+        run: npm run test:auth-access-browser
+
       - name: Local synthetic readonly QA
         run: npm run test:local-synthetic:browser
 
