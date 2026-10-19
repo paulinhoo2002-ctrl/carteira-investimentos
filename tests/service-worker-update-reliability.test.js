@@ -21,8 +21,8 @@ function resolveBrowser() {
 }
 
 test('service worker owns a versioned cache and never clears app data', () => {
-  assert.match(swSource, /SW_VERSION = 'v250\.2'/);
-  assert.match(indexSource, /__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v250\.2'/);
+  assert.match(swSource, /SW_VERSION = 'v250.3'/);
+  assert.match(indexSource, /__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v250.3'/);
   assert.match(swSource, /startsWith\(CACHE_PREFIX\)/);
   assert.doesNotMatch(swSource, /localStorage\.clear\s*\(/);
   assert.doesNotMatch(swSource, /indexedDB\.deleteDatabase\s*\(/);
