@@ -32103,7 +32103,7 @@ function executiveKPIs(data){
     ${totalResultStatus}
     <div class="dashboard-executive-kpis">
       ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',patrimonyValue,investedContext,'#a78bfa','rgba(129,140,248,.16)',`${investedContext} · ${patrimonyNote} · Data-base financeira não informada`)}
-      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado',resultValue,resultAvailable?'Sobre capital cadastrado':resultNote,resultTone,resultGlow,resultNote)}
+      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado da posição',resultValue,resultAvailable?'Sobre capital cadastrado':resultNote,resultTone,resultGlow,resultNote)}
       ${dashboardMetricCard(dashboardMetricIcon('cash'),'Renda no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo':recent.coverage==='PARTIAL'?'Cobertura parcial':'Cobertura desconhecida','#10b981','rgba(16,185,129,.14)',recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida')}
     </div>
   `;
@@ -32153,7 +32153,7 @@ function dashboardEvolutionPanel(data){
   if(hasHistory){
     return `
       <div class="dashboard-evolution-card">
-        <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Aportes líquidos registrados</div><div class="premium-panel-sub">Acumulado apenas nos meses com movimentos registrados · cobertura do histórico desconhecida.</div></div></div>
+        <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Aportes líquidos registrados</div><details class="dashboard-history-disclosure"><summary>Sobre o histórico</summary><span>Acumulado somente nos meses com movimentação registrada. Períodos sem registro não são preenchidos; a cobertura do histórico permanece desconhecida.</span></details></div></div>
         ${lineChart([{name:'Aportes líquidos registrados',tooltipLabel:'Aportes registrados',values,color:'#34d399',fill:'rgba(52,211,153,.16)',width:2.4}],snapshot.months.map(row=>row.label),'dashboard-patrimony-chart',fmt)}
       </div>
     `;
@@ -39206,6 +39206,12 @@ html[data-theme="light"] .hdr :focus-visible,
 html[data-theme="light"] .tabs-mobile :focus-visible,
 html[data-theme="light"] .tabs-desktop :focus-visible{outline-color:#285b95!important}
 @media(max-width:640px){html[data-theme="light"] .canon-dashboard{padding:10px;gap:10px}html[data-theme="light"] .canon-dashboard .dashboard-page-heading h1{font-size:21px}}
+.canon-dashboard .dashboard-history-disclosure{margin-top:2px;color:var(--muted);font-size:12px;line-height:1.45}
+.canon-dashboard .dashboard-history-disclosure>summary{display:inline-flex;align-items:center;gap:6px;min-height:44px;color:var(--info);font-size:12px;font-weight:650;cursor:pointer;list-style:none}
+.canon-dashboard .dashboard-history-disclosure>summary::-webkit-details-marker{display:none}
+.canon-dashboard .dashboard-history-disclosure>summary::before{content:'ⓘ';font-size:14px}
+.canon-dashboard .dashboard-history-disclosure>summary:focus-visible{outline:2px solid var(--info);outline-offset:2px;border-radius:4px}
+.canon-dashboard .dashboard-history-disclosure>span{display:block;max-width:64ch;padding:0 0 4px 20px;color:var(--muted)}
 </style>
 <script>
 window.addEventListener('v262:diagnostics-ready',()=>{
