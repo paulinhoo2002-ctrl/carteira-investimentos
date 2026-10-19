@@ -203,7 +203,7 @@ test('Dashboard does not certify result when any applied basis is missing', () =
 });
 
 test('Dashboard labels result unavailable when applied coverage is incomplete', () => {
-  const dashboardSource = section('function executiveKPIs(data){', 'function package2ExecutivePanel(');
+  const dashboardSource = section('function package2FiniteNumber(value){', 'function package2ExecutivePanel(');
   const context = {
     S: { hideValues: false },
     dashboardCurrentValueAvailability() { return { state: 'AVAILABLE', note: 'Valores atuais informados' }; },

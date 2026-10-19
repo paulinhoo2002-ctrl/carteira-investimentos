@@ -93,6 +93,42 @@ test('Package2 fallback keeps one consolidation label; certified subset uses the
   assert.match(certified, /Subtotal certificado/);
 });
 
+test('null Package2 aggregates stay unknown and do not suppress dashboard consolidation', () => {
+  const summary = { current_result_summary: { rv_total: null }, income_summary: { y2026_total: null } };
+  const panelStart = source.indexOf('function package2FiniteNumber(');
+  const panelEnd = source.indexOf('\nfunction dashboardEvolutionPanel(', panelStart + 10);
+  assert.notEqual(panelStart, -1);
+  const panelContext = vm.createContext({
+    S: { hideValues: false }, FB: { package2: summary },
+    dashboardMetricCard: (_icon, label, value) => `${label}|${value}`,
+    dashboardMetricIcon: () => '', assetSignedMoneyText: value => `R$ ${value}`,
+  });
+  vm.runInContext(`${source.slice(panelStart, panelEnd)};globalThis.render=package2ExecutivePanel;`, panelContext);
+  assert.equal(panelContext.render(), '');
+
+  const dashboardStart = source.indexOf('function dashboardHasEconomicCertification(');
+  const dashboardEnd = source.indexOf('\nfunction package2ExecutivePanel(', dashboardStart);
+  const dashboardContext = vm.createContext({
+    S: { hideValues: false, proventos: [], rfEvents: [] }, FB: { package2: summary },
+    dashboardCurrentValueAvailability: () => ({ state: 'AVAILABLE', note: 'Disponível' }),
+    passiveIncomeMonthKey: () => '2026-10',
+    passiveIncomeMonthSummary: () => ({ month: '2026-10', total: null, coverage: 'UNKNOWN' }),
+    passiveIncomeValue: () => '—',
+    dashboardEconomicResultStatus: () => '<div>Resultado total: Em consolidação</div>',
+    assetSignedMoneyText: value => `R$ ${value}`,
+    fmtP: value => `${value}%`, fmt: value => `R$ ${value}`,
+    dashboardMetricCard: (_icon, label, value) => `${label}|${value}`,
+    dashboardMetricIcon: () => '',
+  });
+  vm.runInContext(`${source.slice(dashboardStart, dashboardEnd)};globalThis.render=executiveKPIs;`, dashboardContext);
+  const dashboard = dashboardContext.render({
+    portfolio: { tC: 0, tI: 0, tG: 0, tGP: 0, appliedComplete: true },
+    portfolioEconomicResult: { status: 'PARTIAL' },
+  });
+  assert.match(dashboard, /Resultado total: Em consolidação/);
+  assert.doesNotMatch(dashboard, /Resultado certificado da RV|Renda recebida/);
+});
+
 test('Hide Values masks dashboard subtotal and return in visible and accessible text', () => {
   const html = render({ status: 'PARTIAL', certifiedAssets: ['rf-1'], certifiedEconomicResult: 7408.93, certifiedReturnPct: 11.29 }, true);
   assert.doesNotMatch(html, /7408|11\.29|R\$|%/);
