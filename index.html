@@ -8776,6 +8776,7 @@ document.write([
 <script src="financial-evidence-provenance.js"></script>
 <script src="historical-coverage-engine.js"></script>
 <script src="fixed-income-economic-evidence-provider.js"></script>
+<script src="financial-truth-reconciliation.js"></script>
 <script src="fixed-income-display.js"></script>
 <script src="fixed-income-trust.js"></script>
 <script src="import-center-context.js"></script>
@@ -30658,6 +30659,12 @@ function rfIntelligenceSnapshot(){
     const economicAdapter=globalThis.FixedIncomeEconomicResultAdapter;
     const economicEngine=globalThis.FixedIncomeEconomicResultEngine;
     const certifiedEvidence=rfEconomicEvidenceForAsset(a);
+    const hasCurrentPosition=vals.hasExplicitCurrent && Number.isFinite(vals.current) && vals.currentState?.state!=='invalid';
+    const currentPositionCoverage=hasCurrentPosition
+      && ['MANUAL_AUTHORITATIVE','IMPORTED_AUTHORITATIVE','LEGACY_AUTHORITATIVE'].includes(currentMeta.authority)
+      && currentMeta.isFallback!==true && currentMeta.isEstimated!==true && currentMeta.isStale!==true
+      ? 'COMPLETE'
+      : hasCurrentPosition ? 'PARTIAL' : 'UNKNOWN';
     const evidence=certifiedEvidence||{
       contributions:[],
       events:[],
@@ -30671,16 +30678,18 @@ function rfIntelligenceSnapshot(){
     const economicResult=typeof economicAdapter?.calculate==='function' && typeof economicEngine?.calculateFixedIncomeEconomicResult==='function'
       ? economicAdapter.calculate({
           currentMarketValue:vals.current,
-          currentPositionKnown:vals.hasExplicitCurrent && Number.isFinite(vals.current) && vals.currentState?.state!=='invalid',
-          currentPositionCoverage:vals.hasExplicitCurrent && Number.isFinite(vals.current) && vals.currentState?.state!=='invalid'
-            && ['MANUAL_AUTHORITATIVE','IMPORTED_AUTHORITATIVE','LEGACY_AUTHORITATIVE'].includes(currentMeta.authority)
-            && currentMeta.isFallback!==true && currentMeta.isEstimated!==true && currentMeta.isStale!==true
-            ? 'COMPLETE'
-            : vals.hasExplicitCurrent ? 'PARTIAL' : 'UNKNOWN',
+          currentPositionKnown:hasCurrentPosition,
+          currentPositionCoverage,
           evidence,
           engine:economicEngine.calculateFixedIncomeEconomicResult,
         })
       : null;
+    const reconciliation=globalThis.FinancialTruthReconciliation?.reconcileAsset({
+      asset:a,
+      currentPosition:{value:vals.current,coverage:currentPositionCoverage},
+      evidence:certifiedEvidence,
+      result:economicResult,
+    })||null;
     const applied=Number(vals.applied)||0;
     const current=Number.isFinite(vals.current) ? Number(vals.current) : null;
     const profit=Number.isFinite(vals.profit) ? Number(vals.profit) : null;
@@ -30726,6 +30735,7 @@ function rfIntelligenceSnapshot(){
         issues,
         eventTotals,
       economicResult,
+      reconciliation,
         eventCount,
         eventEvidenceCounts:eventTotals.eventEvidenceCounts,
         receivedGross,

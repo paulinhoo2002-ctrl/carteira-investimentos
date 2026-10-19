@@ -55,7 +55,8 @@
       && history.periodStart <= history.periodEnd
       && history.openingPosition === 'NONE'
       && history.allEventsRepresented === true
-      && history.duplicatesResolved === true;
+      && history.duplicatesResolved === true
+      && history.sourceOverlapResolved === true;
   }
 
   function calculateFixedIncomeEconomicResult(input = {}) {

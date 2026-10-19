@@ -170,7 +170,7 @@ test('economic-result presentation requires component coverage and masks values'
 test('Trend DI II UI can show a derived total without inventing open-position result',()=>{
   const start=source.indexOf('function rfEconomicMoneyText(result,metric,row){');
   const end=source.indexOf('function rfPositionResultText(',start);
-  const history={status:'COMPLETE',periodStart:'2024-06-01',periodEnd:'2026-10-18',openingPosition:'NONE',allEventsRepresented:true,duplicatesResolved:true};
+  const history={status:'COMPLETE',periodStart:'2024-06-01',periodEnd:'2026-10-18',openingPosition:'NONE',allEventsRepresented:true,duplicatesResolved:true,sourceOverlapResolved:true};
   const result=adapter.calculate({
     currentMarketValue:28024.01,
     currentPositionKnown:true,
