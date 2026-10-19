@@ -55,8 +55,11 @@ test('old release to new release clears only the old app cache', { skip: !resolv
   const { chromium } = await import('playwright-core');
   const executablePath = resolveBrowser();
   assert.ok(executablePath, 'navegador resolvido obrigatorio quando o teste executa');
+  const currentVersion = swSource.match(/const SW_VERSION = '([^']+)'/)?.[1];
+  assert.ok(currentVersion, 'service worker version is declared');
+  const currentCacheName = `carteira-investimentos-${currentVersion}`;
   let release = 'A';
-  const oldWorker = swSource.replace("SW_VERSION = 'v250.2'", "SW_VERSION = 'v17'") + '\n// release A';
+  const oldWorker = swSource.replace(`SW_VERSION = '${currentVersion}'`, "SW_VERSION = 'v17'") + '\n// release A';
   const newWorker = swSource + '\n// release B';
   const server = http.createServer((req, res) => {
     const url = new URL(req.url || '/', 'http://127.0.0.1');
@@ -84,12 +87,12 @@ test('old release to new release clears only the old app cache', { skip: !resolv
 
     release = 'B';
     await page.evaluate(async () => { const reg = await navigator.serviceWorker.getRegistration(); await reg.update(); });
-    await page.evaluate(async () => {
+    await page.evaluate(async (cacheName) => {
       const deadline = Date.now() + 15000;
       while (Date.now() < deadline) {
         const reg = await navigator.serviceWorker.getRegistration();
         const keys = await caches.keys();
-        if (keys.includes('carteira-investimentos-v250.2') && !keys.includes('carteira-investimentos-v17')) return;
+        if (keys.includes(cacheName) && !keys.includes('carteira-investimentos-v17')) return;
         if (reg?.waiting) {
           reg.waiting.postMessage({ type: 'SKIP_WAITING' });
           return;
@@ -97,13 +100,13 @@ test('old release to new release clears only the old app cache', { skip: !resolv
         await new Promise(resolve => setTimeout(resolve, 50));
       }
       throw new Error('service worker waiting/activation timeout');
-    });
-    await page.waitForFunction(() => caches.keys().then(keys => (
-      keys.includes('carteira-investimentos-v250.2') && !keys.includes('carteira-investimentos-v17')
-    )));
+    }, currentCacheName);
+    await page.waitForFunction(cacheName => caches.keys().then(keys => (
+      keys.includes(cacheName) && !keys.includes('carteira-investimentos-v17')
+    )), currentCacheName);
     await page.reload({ waitUntil: 'networkidle' });
     assert.equal(await page.evaluate(() => document.body.dataset.release), 'B');
-    assert.deepEqual(await page.evaluate(() => caches.keys()), ['carteira-investimentos-v250.2']);
+    assert.deepEqual(await page.evaluate(() => caches.keys()), [currentCacheName]);
   } finally {
     if (context) await context.close().catch(() => {});
     if (browser) await browser.close().catch(() => {});
