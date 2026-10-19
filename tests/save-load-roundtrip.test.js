@@ -38,6 +38,7 @@ function extractRoundtripBundle() {
     extractSnippet('function normalizeWalletEntry(w, fallbackName=\'Carteira\'){', 'function walletLabel('),
     extractSnippet('function save(){', 'const EDIT_LOCK_KEY ='),
     extractSnippet('function backupCorruptedStorageValue(storageKey, rawValue, error){', 'function markProventosDirty(){'),
+    extractSnippet('function syncHideValuesPreference(){', 'function load(){'),
     extractSnippet('function load(){', 'function initFirebase(){')
   ].join('\n');
 }
@@ -240,6 +241,7 @@ function makeHarness({
     PersistenceCore,
     FB: { accountMode: 'REAL' },
     STOR: stateKey,
+    HIDE_VALUES_STOR: 'carteira_hide_values',
     DEFAULT_BRAPI: '',
     S: clone(state),
     localStorage: storage,
