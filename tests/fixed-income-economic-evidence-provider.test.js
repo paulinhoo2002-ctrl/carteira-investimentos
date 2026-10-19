@@ -325,6 +325,22 @@ test('PROVENANCE_REGISTRY records explicit descriptors and rejects missing sourc
   assert.equal(provenance.createRegistry([{ ...descriptor, sourceId: null }], { duplicatesResolved: true, sourceOverlapResolved: true }).provenanceComplete, false);
 });
 
+test('PROVENANCE_REGISTRY_EXPECTED_INCOME_IS_NOT_RECEIVED', () => {
+  const descriptor = {
+    sourceKind: 'RF_EVENT', sourceId: 'source-ledger-1', stableEventId: 'coupon-expected', assetIdentity: 'trend-1',
+    occurredOn: '2025-01-01', authority: 'BROKER_STATEMENT', semanticType: 'COUPON', status: 'EXPECTED',
+    amountBasis: 'GROSS', periodStart: '2024-01-01', periodEnd: '2026-10-18', duplicateState: 'NONE', conflictState: 'NONE',
+  };
+  const registry = provenance.createRegistry([descriptor], { duplicatesResolved: true, sourceOverlapResolved: true });
+  assert.equal(registry.sourceEvidence[0].coverageState, 'UNKNOWN');
+  assert.equal(registry.provenanceComplete, false);
+  const projectedTax = provenance.createRegistry([{
+    ...descriptor, stableEventId: 'tax-projected', semanticType: 'IR', status: 'PROJECTED', amountBasis: null,
+  }], { duplicatesResolved: true, sourceOverlapResolved: true });
+  assert.equal(projectedTax.sourceEvidence[0].coverageState, 'UNKNOWN');
+  assert.equal(projectedTax.provenanceComplete, false);
+});
+
 test('PROVENANCE_REGISTRY retains duplicates and blocks unresolved source overlap', () => {
   const descriptor = {
     sourceKind: 'RF_EVENT', sourceId: 'source-a', stableEventId: 'event-1', assetIdentity: 'trend-1',

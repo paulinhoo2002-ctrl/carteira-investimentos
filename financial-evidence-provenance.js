@@ -6,6 +6,8 @@
   if (root) root.FinancialEvidenceProvenance = api;
 }(typeof globalThis === 'object' ? globalThis : this, function createProvenance() {
   const RECEIPT_TYPES = new Set(['COUPON', 'INTEREST', 'INCOME', 'AMORTIZATION', 'PARTIAL_REDEMPTION', 'TOTAL_REDEMPTION', 'PRINCIPAL_RETURN']);
+  const CONTRIBUTION_TYPES = new Set(['APPLICATION', 'PURCHASE']);
+  const TAX_TYPES = new Set(['IR', 'IOF']);
   const COMPLETE_DUPLICATE_STATES = new Set(['NONE', 'RESOLVED']);
   const COMPLETE_CONFLICT_STATES = new Set(['NONE', 'RESOLVED']);
 
@@ -51,10 +53,15 @@
       if (period === 'OUTSIDE_PERIOD') period = 'OUTSIDE_PERIOD';
 
       const needsReceiptBasis = RECEIPT_TYPES.has(semanticType);
+      const statusVerified = semanticType === 'CURRENT_POSITION' ? status === 'OBSERVED'
+        : CONTRIBUTION_TYPES.has(semanticType) ? status === 'CONFIRMED'
+          : TAX_TYPES.has(semanticType) ? status === 'PAID'
+            : needsReceiptBasis ? status === 'RECEIVED'
+              : semanticType === 'LINKED_REFERENCE' && status === 'REFERENCE';
       const hasSourceAuthority = Boolean(sourceKind && sourceId && assetIdentity && text(record.authority) && status !== 'UNKNOWN');
       const complete = semanticType === 'CURRENT_POSITION'
-        ? Boolean(hasSourceAuthority && text(record.observedAt))
-        : Boolean(historyRelevant && hasSourceAuthority && stableEventId && occurredOn && semanticType !== 'UNKNOWN'
+        ? Boolean(statusVerified && hasSourceAuthority && text(record.observedAt))
+        : Boolean(statusVerified && historyRelevant && hasSourceAuthority && stableEventId && occurredOn
           && COMPLETE_DUPLICATE_STATES.has(duplicateState) && COMPLETE_CONFLICT_STATES.has(conflictState)
           && (!needsReceiptBasis || amountBasis) && period !== 'OUTSIDE_PERIOD');
       const coverageState = complete ? 'COMPLETE' : semanticType === 'CURRENT_POSITION' && hasSourceAuthority ? 'PARTIAL' : 'UNKNOWN';
