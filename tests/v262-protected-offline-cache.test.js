@@ -95,15 +95,15 @@ test('protected offline snapshot fails closed on corruption or missing active wa
   assert.equal(await helper.readReadOnlySnapshot(storage, { scope: 'user-scope-a', signature: saved.signature }), null);
 });
 
-test('protected QA caches only confirmed authenticated read state and restores it before offline UI', () => {
+test('protected offline snapshots are not restored during unauthenticated startup', () => {
   assert.match(index, /function persistProtectedReadOnlyOfflineSnapshot\(/);
   assert.match(index, /async function restoreProtectedReadOnlyOfflineSnapshot\(/);
   assert.match(index, /if\(isProtectedReadOnlyQaBoot\(\)\) return false;/);
   assert.match(index, /persistProtectedReadOnlyOfflineSnapshot\(\)/);
-  assert.match(index, /restoreProtectedReadOnlyOfflineSnapshot\(FB\.user\)/);
+  const startup = index.slice(index.indexOf('window.addEventListener(\'load\''));
+  assert.doesNotMatch(startup, /restoreProtectedReadOnlyOfflineSnapshot\(/);
   assert.match(index, /readOnlyOfflineSnapshotReady/);
   assert.match(index, /clearReadOnlySnapshot\?\.\(localStorage\)/);
-  assert.match(index, /navigator\.onLine===false && await restoreProtectedReadOnlyOfflineSnapshot\(FB\.user\)/);
   assert.match(index, /cachedWalletId && S\.wallets\.some\(wallet=>String\(wallet\.id\|\|'\'\)===cachedWalletId\)/);
   assert.match(index, /if\(isProtectedReadOnlyQaBoot\(\)\) return;/);
 });

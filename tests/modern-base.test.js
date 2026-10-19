@@ -253,11 +253,10 @@ test('modern shell exists and stays isolated', async () => {
 
   assert.match(indexHtml, /<title>Carteira de Investimentos \| Shell moderno isolado<\/title>/);
   assert.match(indexHtml, /Shell moderno isolado em React, TypeScript e Vite para a Fase 2\./);
-  assert.match(
-        rootIndexHtml.replace(/\r\n/g, '\n'),
-        /function isActiveWalletHostMode\(\)\{[\s\S]*?activeWalletHost[\s\S]*?testMode[\s\S]*?isLocalhost[\s\S]*?isVercelPreview[\s\S]*?\/.*carteira-investimentos-\[a-z0-9\]\+\(\?:-\[a-z0-9\]\+\)\+\\\.vercel\\\.app.*\/[\s\S]*?return isLocalhost \|\| isVercelPreview/,
-      );
-  assert.match(hostHtml, /Host experimental/);
+  const activeWalletHostGuard = rootIndexHtml.replace(/\r\n/g, '\n').match(/function isActiveWalletHostMode\(\)\{[\s\S]*?\n\}/);
+  assert.ok(activeWalletHostGuard, 'active wallet host guard exists');
+  assert.match(activeWalletHostGuard[0], /!activeWalletHost \|\| !testMode \|\| !isLocalTestMode\(\)/);
+  assert.match(activeWalletHostGuard[0], /return isLocalhost && !isVercelPreview/);
   assert.match(hostHtml, /src="\/src\/host-entry\.tsx"/);
   assert.match(readme, /# Shell moderno isolado/);
   assert.match(readme, /Host experimental/);

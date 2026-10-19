@@ -9,8 +9,8 @@
  * resolution: REAL_DATA_FETCH_BEFORE_AUTHORIZATION=0.
  *
  * Fail-closed: any failed check stops boot in a safe state — never falls
- * back to another UID, legacy global data, or cached real state. On DEMO or
- * BLOCKED/LOGIN_REQUIRED the host must drop cached real data
+ * back to another UID, legacy global data, or cached real state. On
+ * BLOCKED/AUTH_FAILURE/LOGIN_REQUIRED the host must drop cached real data
  * (clearRealCache) before any rendering.
  */
 (function exposeBoot(root, factory){
@@ -40,49 +40,45 @@
 
   /**
    * Run the boot sequence. All capabilities are injected by the host app.
-   * Returns the session; throws BOOT_FAIL_CLOSED:* on guard violations.
+   * Any boot/read failure renders a closed state and drops cached real data.
    */
   async function runBoot(deps) {
     if (!deps || typeof deps !== 'object') throw new TypeError('runBoot requires deps');
     const log = [];
     const step = (name) => log.push(name);
 
-    await deps.initFirebase(); step('INIT_FIREBASE');                 // 1
-    const authUser = await deps.resolveAuthUser(); step('RESOLVE_AUTH'); // 2
-    deps.showLoading(); step('SHOW_LOADING');                          // 3
-    const emailVerified = deps.getEmailVerified
-      ? deps.getEmailVerified(authUser)
-      : Boolean(authUser && authUser.emailVerified);
-    step('INSPECT_EMAIL_VERIFIED');                                    // 4
-    const authorization = authUser && authUser.uid
-      ? await deps.loadAuthorization(authUser)   // own registry path only
-      : null;
-    step('LOAD_AUTHORIZATION');                                        // 5
-    const mode = resolveAccountMode({ authUser, emailVerified, authorization });
-    step('RESOLVE_ACCOUNT_MODE');                                      // 6
-
-    // 7 — data source selection with hard fail-closed guards.
+    let authUser = null;
+    let emailVerified = false;
+    let authorization = null;
+    let mode = MODES.AUTH_FAILURE;
     let source = null;
-    if (mode === MODES.REAL) {
-      if (!authUser || !authUser.uid) {
-        throw new Error('BOOT_FAIL_CLOSED:REAL_WITHOUT_UID');
-      }
-      source = deps.createRealSource(authUser.uid, { accountMode: MODES.REAL });
-    } else if (mode === MODES.DEMO) {
-      source = deps.createDemoSource();
-      if (deps.clearRealCache) deps.clearRealCache(); // revocation/flash safety
-    } else {
-      // LOGIN_REQUIRED / BLOCKED: no data source, no data load.
-      if (deps.clearRealCache) deps.clearRealCache();
-    }
-    step('SELECT_DATA_SOURCE');
-
-    // 8 — portfolio load ONLY after mode + source; never for BLOCKED/LOGIN.
     let portfolio = null;
-    if (mode === MODES.REAL || mode === MODES.DEMO) {
-      portfolio = await deps.loadPortfolio(source);
+    try {
+      await deps.initFirebase(); step('INIT_FIREBASE');
+      authUser = await deps.resolveAuthUser(); step('RESOLVE_AUTH');
+      deps.showLoading(); step('SHOW_LOADING');
+      emailVerified = deps.getEmailVerified
+        ? deps.getEmailVerified(authUser)
+        : Boolean(authUser && authUser.emailVerified);
+      step('INSPECT_EMAIL_VERIFIED');
+      authorization = authUser && authUser.uid ? await deps.loadAuthorization(authUser) : null;
+      step('LOAD_AUTHORIZATION');
+      mode = resolveAccountMode({ authUser, emailVerified, authorization });
+      step('RESOLVE_ACCOUNT_MODE');
+      if (mode === MODES.REAL) {
+        if (!authUser || !authUser.uid) throw new Error('BOOT_FAIL_CLOSED:REAL_WITHOUT_UID');
+        source = deps.createRealSource(authUser.uid, { accountMode: MODES.REAL });
+        portfolio = await deps.loadPortfolio(source);
+      }
+      step('SELECT_DATA_SOURCE');
+      step('LOAD_PORTFOLIO');
+    } catch (error) {
+      mode = MODES.AUTH_FAILURE;
+      source = null;
+      portfolio = null;
+      step('AUTH_FAILURE');
     }
-    step('LOAD_PORTFOLIO');
+    if (mode !== MODES.REAL && deps.clearRealCache) deps.clearRealCache();
 
     // 9
     deps.render({ accountMode: mode, source, portfolio, authUser, authorization, emailVerified, log });

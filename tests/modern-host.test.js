@@ -156,11 +156,10 @@ test('host experimental exists and keeps modern app isolated', () => {
   assert.match(contributionsRuntimeTs, /contributionsRefreshController/);
   assert.equal(contributionsSourceTs.includes('score: Number(row?.score) || 0'), false);
   assert.equal(contributionsRuntimeTs.includes('score: Number(row?.score) || 0'), false);
-  assert.match(
-        rootIndexHtml.replace(/\r\n/g, '\n'),
-        /function isActiveWalletHostMode\(\)\{[\s\S]*?activeWalletHost[\s\S]*?testMode[\s\S]*?isLocalhost[\s\S]*?isVercelPreview[\s\S]*?\/.*carteira-investimentos-\[a-z0-9\]\+\(\?:-\[a-z0-9\]\+\)\+\\\.vercel\\\.app.*\/[\s\S]*?return isLocalhost \|\| isVercelPreview/,
-      );
-  assert.match(hostSmokeText, /MODERN_HOST_URL/);
+  const activeWalletHostGuard = rootIndexHtml.replace(/\r\n/g, '\n').match(/function isActiveWalletHostMode\(\)\{[\s\S]*?\n\}/);
+  assert.ok(activeWalletHostGuard, 'active wallet host guard exists');
+  assert.match(activeWalletHostGuard[0], /!activeWalletHost \|\| !testMode \|\| !isLocalTestMode\(\)/);
+  assert.match(activeWalletHostGuard[0], /return isLocalhost && !isVercelPreview/);
   assert.match(hostSmokeText, /CI/);
   assert.match(hostSmokeText, /assert\.fail\('MODERN_HOST_URL required for host smoke test in CI'\)/);
   assert.match(refreshControllerTs, /createReportsRefreshController/);

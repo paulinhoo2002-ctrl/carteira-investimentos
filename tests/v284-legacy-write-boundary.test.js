@@ -86,6 +86,9 @@ function harness(functions, overrides = {}) {
 }
 
 function installSyntheticLocalPersistence(context, { failStorage = false, failQueue = false } = {}) {
+  // These persistence tests exercise the authorized owner path with synthetic
+  // storage; unauthenticated writes now fail closed before reaching this layer.
+  context.FB = { accountMode: 'REAL' };
   const persisted = new Map();
   let failStorageNow = failStorage;
   let failQueueNow = failQueue;

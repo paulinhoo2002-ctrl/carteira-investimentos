@@ -3,15 +3,15 @@
 /**
  * AUTH-DEMO Phase 2 — Security attack matrix (mission P4) + Auth emulator
  * synthetic users (mission P5). Runs inside `firebase emulators:exec` via
- * `npm run test:auth-demo-emulator` (firebase.auth-demo-emulator.json loads
+ * `npm run test:auth-access-emulator` (firebase.auth-demo-emulator.json loads
  * firestore.auth-demo.rules; project demo-auth-demo-phase2; ZERO cost,
  * localhost-only, synthetic emails only, no production contact).
  *
  * Matrix (all must PASS => SECURITY_ATTACK_MATRIX=100%):
  *   T01 unauthenticated read real path        => DENIED
  *   T02 unauthenticated write                 => DENIED
- *   T03 DEMO user reads real data             => DENIED
- *   T04 DEMO user writes real data            => DENIED
+ *   T03 unauthorized user reads real data             => DENIED
+ *   T04 unauthorized user writes real data            => DENIED
  *   T05 REAL A reads B                        => DENIED
  *   T06 REAL A writes B                       => DENIED
  *   T07 REAL A reads own                      => ALLOWED
@@ -23,7 +23,7 @@
  *   T13 cross-user registry read              => DENIED
  *   T14 verified, registry missing            => DENIED (fail-closed)
  *   T15 own registry read + resolver contract => ALLOWED/consistent
- *   T16 invalid role                          => DENIED (resolver => DEMO)
+ *   T16 invalid role                          => DENIED (resolver => BLOCKED)
  */
 
 const assert = require('node:assert/strict');
@@ -145,7 +145,7 @@ before(async () => {
   // P5 synthetic users — no real emails, no real identities.
   ctx.OWNER_REAL = await createUser('OWNER_REAL', { verified: true, registry: { enabled: true, blocked: false, role: 'owner' } });
   ctx.USER_REAL = await createUser('USER_REAL', { verified: true, registry: { enabled: true, blocked: false, role: 'user' } });
-  ctx.USER_DEMO = await createUser('USER_DEMO', { verified: true, registry: { enabled: false, blocked: false, role: 'user' } });
+  ctx.USER_UNAUTHORIZED = await createUser('USER_UNAUTHORIZED', { verified: true, registry: { enabled: false, blocked: false, role: 'user' } });
   ctx.USER_BLOCKED = await createUser('USER_BLOCKED', { verified: true, registry: { enabled: true, blocked: true, role: 'user' } });
   ctx.USER_UNVERIFIED = await createUser('USER_UNVERIFIED', { verified: false, registry: { enabled: true, blocked: false, role: 'owner' } });
   ctx.USER_NOREGISTRY = await createUser('USER_NOREGISTRY', { verified: true, registry: null });
@@ -174,20 +174,20 @@ test('T02: unauthenticated write to real portfolio path => DENIED', async () => 
   assert.ok(DENIED(res.status), `expected DENIED, got HTTP ${res.status}`);
 });
 
-// ===== Invariant 2: DEMO cannot touch real data =====
+// ===== Invariant 2: unauthorized identities cannot touch real data =====
 
-test('T03: DEMO user (enabled=false) reads real data => DENIED (own path and others)', async () => {
-  const own = await userCall(ctx.USER_DEMO.idToken, 'GET', `portfolios/${ctx.USER_DEMO.uid}`);
-  assert.equal(own.status, 403, `DEMO read own real path: got HTTP ${own.status}`);
-  const other = await userCall(ctx.USER_DEMO.idToken, 'GET', `portfolios/${ctx.USER_REAL.uid}`);
-  assert.equal(other.status, 403, `DEMO read other real path: got HTTP ${other.status}`);
+test('T03: unauthorized user (enabled=false) reads real data => DENIED (own path and others)', async () => {
+  const own = await userCall(ctx.USER_UNAUTHORIZED.idToken, 'GET', `portfolios/${ctx.USER_UNAUTHORIZED.uid}`);
+  assert.equal(own.status, 403, `unauthorized read of own real path: got HTTP ${own.status}`);
+  const other = await userCall(ctx.USER_UNAUTHORIZED.idToken, 'GET', `portfolios/${ctx.USER_REAL.uid}`);
+  assert.equal(other.status, 403, `unauthorized read of other real path: got HTTP ${other.status}`);
 });
 
-test('T04: DEMO user writes real data => DENIED', async () => {
-  const own = await userCall(ctx.USER_DEMO.idToken, 'PATCH', `portfolios/${ctx.USER_DEMO.uid}`, { hack: { booleanValue: true } });
-  assert.equal(own.status, 403, `DEMO write own real path: got HTTP ${own.status}`);
-  const other = await userCall(ctx.USER_DEMO.idToken, 'PATCH', `portfolios/${ctx.USER_REAL.uid}`, { hack: { booleanValue: true } });
-  assert.equal(other.status, 403, `DEMO write other real path: got HTTP ${other.status}`);
+test('T04: unauthorized user writes real data => DENIED', async () => {
+  const own = await userCall(ctx.USER_UNAUTHORIZED.idToken, 'PATCH', `portfolios/${ctx.USER_UNAUTHORIZED.uid}`, { hack: { booleanValue: true } });
+  assert.equal(own.status, 403, `unauthorized write of own real path: got HTTP ${own.status}`);
+  const other = await userCall(ctx.USER_UNAUTHORIZED.idToken, 'PATCH', `portfolios/${ctx.USER_REAL.uid}`, { hack: { booleanValue: true } });
+  assert.equal(other.status, 403, `unauthorized write of other real path: got HTTP ${other.status}`);
 });
 
 // ===== Invariants 3+4: own scope only =====
@@ -260,13 +260,13 @@ test('T11: any client mutation of authorization registry => DENIED (no self-esca
 
 // ===== Invariant 7 + P5: spoof / unverified =====
 
-test('T12: client-side ACCOUNT_MODE spoof cannot bypass — DEMO+unverified users denied on real data', async () => {
-  // DEMO user "claiming" REAL client-side: server registry still says enabled=false
-  const spoofRead = await userCall(ctx.USER_DEMO.idToken, 'GET', `portfolios/${ctx.USER_DEMO.uid}`);
-  assert.equal(spoofRead.status, 403, `spoofed DEMO read: got HTTP ${spoofRead.status}`);
-  const spoofWrite = await userCall(ctx.USER_DEMO.idToken, 'PATCH', `portfolios/${ctx.USER_DEMO.uid}`, { spoofed: { booleanValue: true } });
-  assert.equal(spoofWrite.status, 403, `spoofed DEMO write: got HTTP ${spoofWrite.status}`);
-  // Authorized registry + UNVERIFIED email: resolver => DEMO, rules => DENY
+test('T12: client-side ACCOUNT_MODE spoof cannot bypass — unauthorized and unverified users denied on real data', async () => {
+  // unauthorized user "claiming" REAL client-side: server registry still says enabled=false
+  const spoofRead = await userCall(ctx.USER_UNAUTHORIZED.idToken, 'GET', `portfolios/${ctx.USER_UNAUTHORIZED.uid}`);
+  assert.equal(spoofRead.status, 403, `spoofed client mode read: got HTTP ${spoofRead.status}`);
+  const spoofWrite = await userCall(ctx.USER_UNAUTHORIZED.idToken, 'PATCH', `portfolios/${ctx.USER_UNAUTHORIZED.uid}`, { spoofed: { booleanValue: true } });
+  assert.equal(spoofWrite.status, 403, `spoofed client mode write: got HTTP ${spoofWrite.status}`);
+  // Authorized registry + UNVERIFIED email: resolver => BLOCKED, rules => DENY
   const unverifiedRead = await userCall(ctx.USER_UNVERIFIED.idToken, 'GET', `portfolios/${ctx.USER_UNVERIFIED.uid}`);
   assert.equal(unverifiedRead.status, 403, `unverified read: got HTTP ${unverifiedRead.status}`);
   const unverifiedWrite = await userCall(ctx.USER_UNVERIFIED.idToken, 'PATCH', `portfolios/${ctx.USER_UNVERIFIED.uid}`, { spoofed: { booleanValue: true } });
@@ -293,9 +293,9 @@ test('T15: own registry read allowed; server registry data resolves expected acc
   const expectations = [
     [ctx.OWNER_REAL, MODES.REAL],
     [ctx.USER_REAL, MODES.REAL],
-    [ctx.USER_DEMO, MODES.DEMO],
+    [ctx.USER_UNAUTHORIZED, MODES.BLOCKED],
     [ctx.USER_BLOCKED, MODES.BLOCKED],
-    [ctx.USER_UNVERIFIED, MODES.DEMO],
+    [ctx.USER_UNVERIFIED, MODES.BLOCKED],
   ];
   for (const [user, expectedMode] of expectations) {
     const res = await userCall(user.idToken, 'GET', `authorizedUsers/${user.uid}`);
@@ -304,12 +304,12 @@ test('T15: own registry read allowed; server registry data resolves expected acc
     const mode = resolveAccountMode({ authUser: { uid: user.uid }, emailVerified: user.verified, authorization });
     assert.equal(mode, expectedMode, `${user.name}: expected ${expectedMode}, got ${mode}`);
   }
-  // No registry record at all => DEMO (Phase 1 contract)
+  // No registry record at all => BLOCKED (fail closed)
   const mode = resolveAccountMode({ authUser: { uid: ctx.USER_NOREGISTRY.uid }, emailVerified: true, authorization: null });
-  assert.equal(mode, MODES.DEMO);
+  assert.equal(mode, MODES.BLOCKED);
 });
 
-test('T16: invalid role in registry => DENIED on real data; resolver => DEMO', async () => {
+test('T16: invalid role in registry => DENIED on real data; resolver => BLOCKED', async () => {
   const res = await userCall(ctx.USER_BADROLE.idToken, 'GET', `portfolios/${ctx.USER_BADROLE.uid}`);
   assert.equal(res.status, 403, `got HTTP ${res.status}`);
   const regRead = await userCall(ctx.USER_BADROLE.idToken, 'GET', `authorizedUsers/${ctx.USER_BADROLE.uid}`);
@@ -317,6 +317,6 @@ test('T16: invalid role in registry => DENIED on real data; resolver => DEMO', a
   const authorization = toPlain((await regRead.json()).fields);
   assert.equal(
     resolveAccountMode({ authUser: { uid: ctx.USER_BADROLE.uid }, emailVerified: true, authorization }),
-    MODES.DEMO
+    MODES.BLOCKED
   );
 });

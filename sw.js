@@ -1,6 +1,6 @@
 // Bump only when the app-shell/static asset contract changes. Activate removes
 // older caches with this app-owned prefix and preserves unrelated origin data.
-const SW_VERSION = 'v250.2';
+const SW_VERSION = 'v250.3';
 const CACHE_PREFIX = 'carteira-investimentos-';
 const CACHE_NAME = `${CACHE_PREFIX}${SW_VERSION}`;
 const CRITICAL_RUNTIME_PATHS = new Set([
@@ -14,7 +14,6 @@ const APP_SHELL = [
   './v250-runtime.js',
   './auth/account-mode.js',
   './auth/data-source.js',
-  './auth/demo-portfolio.js',
   './auth/boot.js',
   './auth/boot-ui.js',
   './icon.svg',
