@@ -79,21 +79,26 @@ test('backup destination and archive-path security policy blocks unsafe cases', 
 test('backup dry-run creates no archive and rejected destination is not created', {
   skip: windowsOnly
 }, () => {
-  const dryRun = execFileSync(powershell, [
-    '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', backupScript, '-DryRun'
-  ], { encoding: 'utf8', windowsHide: true });
-  const outputPath = dryRun.match(/^OUTPUT_PATH=(.+)$/m)?.[1];
-  assert.ok(outputPath, 'dry-run should report the candidate archive path');
-  assert.equal(fs.existsSync(outputPath), false, 'dry-run must not create a ZIP');
-  assert.match(dryRun, /DESTINATION_CREATED_BEFORE_VALIDATION=false/);
+  const safeBackupRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'v278c-safe-root-'));
+  try {
+    const dryRun = execFileSync(powershell, [
+      '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', backupScript, '-DryRun'
+    ], { encoding: 'utf8', windowsHide: true, env: { ...process.env, CARTEIRA_SAFE_BACKUP_ROOT: safeBackupRoot } });
+    const outputPath = dryRun.match(/^OUTPUT_PATH=(.+)$/m)?.[1];
+    assert.ok(outputPath, 'dry-run should report the candidate archive path');
+    assert.equal(fs.existsSync(outputPath), false, 'dry-run must not create a ZIP');
+    assert.match(dryRun, /DESTINATION_CREATED_BEFORE_VALIDATION=false/);
 
-  const rejectedDestination = path.join(os.tmpdir(), `v278c-unsafe-backup-${process.pid}-${Date.now()}`);
-  assert.equal(fs.existsSync(rejectedDestination), false, 'test destination must start absent');
-  const rejected = spawnSync(powershell, [
-    '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', backupScript,
-    '-DryRun', '-SafeBackupRoot', rejectedDestination
-  ], { encoding: 'utf8', windowsHide: true });
-  assert.notEqual(rejected.status, 0, 'outside destination must be blocked');
-  assert.match(`${rejected.stdout}\n${rejected.stderr}`, /SAFE_BACKUP_ROOT_BLOCKED:\s*OUTSIDE_ALLOWED_ROOT/);
-  assert.equal(fs.existsSync(rejectedDestination), false, 'blocked destination must not be created');
+    const rejectedDestination = path.join(os.tmpdir(), `v278c-unsafe-backup-${process.pid}-${Date.now()}`);
+    assert.equal(fs.existsSync(rejectedDestination), false, 'test destination must start absent');
+    const rejected = spawnSync(powershell, [
+      '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', backupScript,
+      '-DryRun', '-SafeBackupRoot', rejectedDestination
+    ], { encoding: 'utf8', windowsHide: true, env: { ...process.env, CARTEIRA_SAFE_BACKUP_ROOT: safeBackupRoot } });
+    assert.notEqual(rejected.status, 0, 'outside destination must be blocked');
+    assert.match(`${rejected.stdout}\n${rejected.stderr}`, /SAFE_BACKUP_ROOT_BLOCKED:\s*OUTSIDE_ALLOWED_ROOT/);
+    assert.equal(fs.existsSync(rejectedDestination), false, 'blocked destination must not be created');
+  } finally {
+    fs.rmSync(safeBackupRoot, { recursive: true, force: true });
+  }
 });

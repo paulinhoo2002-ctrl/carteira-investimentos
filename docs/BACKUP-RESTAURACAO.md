@@ -23,23 +23,25 @@ O backup não deve conter senha da conta Google.
 2. Acesse **Configurações**.
 3. Abra **Backup e restauração**.
 4. Revise o resumo da carteira atual.
-5. Clique em **Exportar backup**.
-6. Guarde o arquivo JSON em local seguro.
+5. Defina e confirme uma senha forte de pelo menos 12 caracteres.
+6. Clique em **Exportar protegido**.
+7. Guarde o JSON criptografado e a senha em locais seguros e independentes.
 
 O nome esperado segue este padrão:
 
 ```text
-carteira-investimentos-backup-AAAA-MM-DD-HH-mm.json
+carteira-investimentos-backup-protegido-AAAA-MM-DD-HH-mm.json
 ```
 
 ## Conferir o arquivo
 
 Antes de depender do backup:
 
-- confirme que o arquivo foi baixado;
+- confirme que o arquivo protegido foi baixado;
 - confira se o tamanho é maior que zero;
 - mantenha a extensão `.json`;
-- não edite manualmente sem necessidade;
+- não edite manualmente;
+- guarde a senha separadamente; ela não pode ser recuperada;
 - guarde uma cópia adicional em outro local.
 
 ## Importar backup
@@ -47,7 +49,7 @@ Antes de depender do backup:
 1. Exporte um backup dos dados atuais.
 2. Abra **Configurações > Backup e restauração**.
 3. Clique em **Selecionar arquivo**.
-4. Escolha o JSON.
+4. Escolha o JSON protegido e informe a senha usada na exportação.
 5. Confira a prévia:
    - ativos;
    - aportes;

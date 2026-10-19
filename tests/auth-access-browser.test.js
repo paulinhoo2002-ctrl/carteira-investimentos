@@ -32,6 +32,9 @@ async function freshPage(viewport = [1366, 768]) {
     if (/firestore\.googleapis|\/databases\/\(default\)\/documents\/portfolios\//.test(request.url())) portfolioRequests++;
   });
   page.on('pageerror', error => pageErrors.push(String(error?.message || error).slice(0, 250)));
+  // Keep auth-gate tests deterministic without starting a hosted Firebase session.
+  await page.route('https://www.gstatic.com/firebasejs/10.12.5/firebase-*-compat.js', route =>
+    route.fulfill({ status: 200, contentType: 'application/javascript', body: '' }));
   await page.goto(BASE + '/index.html', { waitUntil: 'domcontentloaded', timeout: 30000 });
   try {
     await page.waitForFunction(() => typeof FB !== 'undefined' && typeof S !== 'undefined' && typeof render === 'function' && document.querySelector('#root'), { timeout: 8000 });
@@ -39,6 +42,7 @@ async function freshPage(viewport = [1366, 768]) {
     const state = await page.evaluate(() => ({ title: document.title, marker: window.__LOCAL_QA_RUNTIME__, testMode: window.__LOCAL_TEST_MODE__, hasFB: typeof FB, hasS: typeof S, hasRender: typeof render, scripts: [...document.scripts].map(script => script.src).filter(Boolean) })).catch(() => null);
     throw new Error(`synthetic app bootstrap failed: ${JSON.stringify({ state, pageErrors })}; ${error.message}`);
   }
+  assert.equal(await page.evaluate(() => typeof window.firebase), 'undefined', 'auth gate tests must not initialize hosted Firebase');
   return page;
 }
 async function setAccessState(state) {

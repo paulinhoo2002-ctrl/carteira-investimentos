@@ -1,33 +1,41 @@
-# Backup real do LEGACY — procedimento do proprietário (2026-10-10)
+# Backups LEGACY — contratos e procedimento do proprietário
 
-## Por que o backup-root está vazio
-O LEGACY é uma SPA que **exporta backup via download do navegador** (botão "Exportar backup" na tela de configurações gera `carteira-investimentos-backup-AAAA-MM-DD-HH-mm.json` na pasta Downloads). O app **não grava** arquivos no disco — por design (sandbox do browser). O diretório aprovado `C:\Projetos\_backups\carteira-investimentos` está vazio simplesmente porque **nenhum backup exportado foi ainda copiado para lá**. Isso não é defeito; é fluxo manual documentado (docs/MANUAL-USO.md, seção Exportar).
+Existem dois artefatos diferentes, com verificações próprias:
 
-## O que protege os dados hoje (honesto)
-- **localStorage + IndexedDB** no navegador = fonte primária local do usuário.
-- **Firestore (produção)** = sincronização em nuvem da conta autenticada do dono (projeto carteira-de-investimento-16725). Dados sincronizados sobrevivem a limpezas locais.
-- **Backup exportado** = cópia independente portátil. **Única proteção contra perda da conta/nuvem.** Sem um backup exportado guardado, um problema na conta Google + limpeza local perderia tudo.
+- **Backup financeiro do aplicativo:** JSON criptografado exportado pelo proprietário.
+- **Backup de código-fonte:** ZIP criado por `scripts/backup/create-safe-source-backup.ps1`, com arquivos versionados e regras de exclusão. Não contém os dados financeiros locais.
 
-## Procedimento do proprietário (≤2 minutos, mensal ou antes de mudanças grandes)
-1. Abrir o app em produção (https://carteira-investimentos-delta.vercel.app) e **fazer login**.
-2. Ir em **Configurações → Exportar backup**. O navegador baixa `carteira-investimentos-backup-<data-hora>.json`.
-3. Copiar o arquivo para `C:\Projetos\_backups\carteira-investimentos\`.
-4. Gerar o hash sidecar para verificação automática (PowerShell):
-   `Get-FileHash "C:\Projetos\_backups\carteira-investimentos\<arquivo>.json" -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  <arquivo>.json" | Set-Content "C:\Projetos\_backups\carteira-investimentos\<arquivo>.json.sha256" }`
-5. O verificador pode ser agendado pelo proprietário depois de configurar uma tarefa local. A existência do script, por si só, não significa que há uma agenda ativa nem que notificações estão configuradas.
+Os dois podem usar o diretório aprovado `C:\Projetos\_backups\carteira-investimentos`, mas não substituem um ao outro. `npm test` executa `build:modern` no `pretest` e inclui suítes que verificam políticas de backup. O teste de dry-run do ZIP usa uma raiz temporária vazia; ele não abre nem exige o backup financeiro real do proprietário e não cria um ZIP. `verify:release` inclui `npm test`. A geração real do ZIP é uma operação separada.
 
-## O que a automação já faz (sem tocar nos seus dados)
-- `scripts/maintenance/backup-verify.js`: valida manifest/schema/domínios/checksum do backup do aplicativo, SHA-256 externo no sidecar e idade <35d. Read-only — nunca deleta, move ou restaura.
-- Não há workflow de backup agendado no repositório. A cópia IndexedDB do aplicativo é local ao navegador, oportunista e condicionada à sessão sincronizada aberta; não é armazenamento externo nem recuperação independente do dispositivo.
-- Suítes sintéticas (npm test): backup/restore/rollback/idempotência/dedupe — 32 testes verdes, sem dados reais.
+## Exportar o backup financeiro
 
-## Limite operacional
+1. Abra o app em produção e entre com a conta proprietária.
+2. Acesse **Configurações → Backup e restauração**.
+3. Use **Exportar protegido**. Defina e confirme uma senha forte de pelo menos 12 caracteres; o app não pode recuperá-la.
+4. O navegador baixa `carteira-investimentos-backup-protegido-AAAA-MM-DD-HH-mm.json`.
+5. Guarde o arquivo e a senha em locais seguros e independentes. Não envie o arquivo nem a senha pelo chat.
+6. Copie o arquivo, no seu computador, para `C:\Projetos\_backups\carteira-investimentos\`.
+7. No PowerShell, crie o sidecar SHA-256 ao lado do arquivo, substituindo o nome pelo nome exato baixado:
 
-O documento descreve o procedimento manual e as capacidades locais existentes. Nenhuma agenda Hermes/Task Scheduler, OAuth de Drive, destino externo ou aviso foi verificado nesta revisão; portanto, backup automático fora do navegador permanece **NÃO CONFIGURADO**. Não execute o verificador contra a pasta padrão sem autorização específica para acessar artefatos financeiros locais.
+```powershell
+$file = 'C:\Projetos\_backups\carteira-investimentos\<nome-exato>.json'
+$hash = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant()
+"$hash  $([IO.Path]::GetFileName($file))" | Set-Content -LiteralPath "$file.sha256" -Encoding ascii
+```
 
-## Limites por design (gates humanos)
-- Exportar dados reais = só o dono (botão no app). O agente não exporta carteira real.
-- Restauração real = só com autorização explícita e arquivo específico; o app pede confirmação dupla na importação.
+O sidecar fica como `<nome-exato>.json.sha256`. Ele detecta alterações posteriores no arquivo; sozinho, não prova que a senha está correta, que o conteúdo pode ser descriptografado ou que uma restauração funcionaria.
 
-## Retenção sugerida
-Manter os últimos 3–6 backups mensais no root aprovado; o verificador avisa quando o mais recente passar de 35 dias.
+## O que o verificador certifica
+
+`node scripts/maintenance/backup-verify.js` é um verificador local e somente leitura de **backups JSON financeiros**. Ele confere JSON, formato/manifesto quando legível, sidecar e idade. Arquivos `.zip` do backup de código-fonte não contam como backup financeiro; a ausência de JSON financeiro continua `BACKUP_MISSING`.
+
+Para um JSON criptografado oficial, sem pedir ou guardar a senha, o verificador reconhece a estrutura do envelope e confere o SHA-256 externo, mas informa `WARN`: manifesto, autenticação AES-GCM, conteúdo e capacidade de recuperação permanecem sem verificação. Esse resultado não é `PASS` nem libera um gate que exige validação completa. O verificador não descriptografa dados reais, não restaura e não grava arquivos.
+
+Um JSON desconhecido, inválido, vazio, sem sidecar ou com hash divergente nunca é aceito como backup válido. Um sidecar válido também não é prova de restauração. O teste real de restauração exige exercício separado, autorizado, com destino isolado.
+
+## Limites operacionais
+
+- A exportação financeira real é feita pelo proprietário no app; agentes não abrem nem exportam a carteira real nesta etapa.
+- Não edite manualmente o backup, não sobrescreva cópias antigas e não use uma cópia sintética para satisfazer um gate real.
+- O script de backup de código valida a raiz aprovada antes de criar um ZIP; não cria diretórios externos por conta própria.
+- A existência de um script não prova que há agendamento, destino externo ou restauração testada.
