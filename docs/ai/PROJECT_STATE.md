@@ -1,10 +1,10 @@
 # Estado atual da Carteira LEGACY
 
-> Nesta branch de governança, o roteador canônico de Skills está em `.agents/SKILL_ROUTER.md`; o seletor usa o inventário local versionado e não depende de chat ou modelo. Esta proposta ainda não está integrada em `main`.
+> O roteador canônico de Skills está em `.agents/SKILL_ROUTER.md`; o seletor usa o inventário local versionado e não depende de chat ou modelo. **Integrado em `main` via PR #505.**
 
 DATE=2026-10-18
-MAIN_HEAD=c49175efb18fac247840e08c8b57339bc8f09afd
-VISUAL_PHASE=ACTIVE_FOR_PR_503
+MAIN_HEAD=09fc1c39c278c788c7ecec6a4558d2ec872dfa5d
+VISUAL_PHASE=COMPLETED
 VISUAL_CONTRACT=docs/ai/VISUAL_UX_RESPONSIVE_CONTRACT.md
 PRODUCTION=READY
 SITE_TECHNICALLY_COMPLETE=YES
@@ -19,6 +19,7 @@ OPERATING_MODE=MAINTENANCE_AND_DATA_CERTIFICATION_MODE
 - Produção: projeto Vercel `carteira-investimentos`, domínio `carteira-investimentos-delta.vercel.app`.
 - Release sanitizada: PR #501, squash commit `6619c9ed6286bd1b446ec90d07432ace000e4e03`.
 - PR #500 foi encerrada sem merge; seu histórico remoto anterior à sanitização permanece em backlog de privacidade.
+- **PR #503 (visual/refinement), PR #504 (visual contract), PR #505 (skill router) MERGED.**
 - CI do commit integrado e implantação automática de produção passaram. Smoke autenticado de produção passou nas rotas críticas.
 - `SITE_TECHNICALLY_COMPLETE=YES` descreve a entrega técnica atual. Não certifica dados fiscais reais, patrimônio global ou acessibilidade Axe autenticada em produção.
 
@@ -43,8 +44,9 @@ OPERATING_MODE=MAINTENANCE_AND_DATA_CERTIFICATION_MODE
 
 ## Governança atual
 
-- Feature freeze ativo. A exceção visual limitada e autorizada nesta data é a PR #503 (`feat/legacy-slim-ui-refinement-2026-10-17`); confirme HEAD/CI ao continuar. Não iniciar fundação, redesign ou arquitetura nova fora desse escopo sem necessidade concreta e autorização.
+- Feature freeze ativo. As exceções visuais autorizadas (PR #503, PR #504) foram integradas; não iniciar fundação, redesign ou arquitetura nova fora desse escopo sem necessidade concreta e autorização.
 - O contrato permanente de UX visual e responsividade está em [`VISUAL_UX_RESPONSIVE_CONTRACT.md`](VISUAL_UX_RESPONSIVE_CONTRACT.md), complementado pelo [`VISUAL_CANON_V2.md`](VISUAL_CANON_V2.md).
+- **Roteador permanente de Skills ativo em `.agents/SKILL_ROUTER.md` (PR #505).** Descoberta local-first, seleção determinística, fail-closed.
 - Invariantes permanentes: `UNKNOWN != ZERO`, `MISSING != ZERO`, `PARTIAL != COMPLETE`, `EXPECTED != RECEIVED`.
 - Sem escrita financeira real, importação, restore, promoção Package2, alteração de Auth/Rules ou deploy manual nesta release.
 - Histórico completo preservado em [`archive/PROJECT_STATE_HISTORY_TO_2026-10-17.md`](archive/PROJECT_STATE_HISTORY_TO_2026-10-17.md).
