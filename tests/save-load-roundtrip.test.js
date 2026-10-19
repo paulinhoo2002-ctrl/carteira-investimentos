@@ -238,6 +238,7 @@ function makeHarness({
 
   const context = {
     PersistenceCore,
+    FB: { accountMode: 'REAL' },
     STOR: stateKey,
     DEFAULT_BRAPI: '',
     S: clone(state),

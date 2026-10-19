@@ -51,10 +51,10 @@ test('trusted marker is not created without a local portfolio snapshot', () => {
   assert.equal(helper.eligible({ online: false, marker: { eligible: true }, hasSnapshot: false }), false);
 });
 
-test('V250B source contract gates offline shell before Firebase access gate', () => {
+test('Login gate cannot be bypassed by an offline portfolio snapshot', () => {
   assert.match(index, /v250-offline-session\.js/);
   assert.match(index, /function isV250OfflineCachedSession\(\)/);
-  assert.match(index, /if\(isV250OfflineCachedSession\(\)\) return false;/);
+  assert.match(index, /function shouldShowAccessGate\(\)\{\s*if\(isLocalTestMode\(\)\) return false;\s*return !FB\.authResolved \|\| FB\.access\.loading \|\| !FB\.access\.loaded \|\| !FB\.access\.allowed;/);
   assert.match(index, /clearV250OfflineEligibility\(\)/);
   assert.match(index, /typeof isV250OfflineCachedSession==='function' && isV250OfflineCachedSession\(\) && !protectedLocalRecoveryWrite/);
   assert.match(index, /rememberV250TrustedSnapshot/);
@@ -83,15 +83,15 @@ test('V250D delegates reconnect persistence to Firebase LOCAL authority', () => 
   assert.match(index, /await FB\.auth\.setPersistence\(localPersistence\)/);
   assert.match(index, /await currentUser\.getIdToken\(true\)/);
   assert.match(index, /FB\.authResolved = true/);
-  assert.match(index, /navigator\.onLine===false && isV250OfflineCachedSession\(\)/);
-  assert.match(index, /Sessão local somente leitura enquanto estiver offline/);
+  assert.match(index, /if\(!accessOk \|\| FB\.accountMode!=='REAL'\)\{[\s\S]*?clearRealStateInMemory\(\);/);
+  assert.doesNotMatch(index, /Sessão local somente leitura enquanto estiver offline/);
   assert.match(index, /let firebaseAuthPersistenceReady = Promise\.resolve\(\)/);
   assert.match(index, /await firebaseAuthPersistenceReady/);
 });
 
 test('V250B service worker ships the offline session helper in the versioned shell', () => {
   assert.match(sw, /'\.\/v250-offline-session\.js'/);
-  assert.match(sw, /const SW_VERSION = 'v250\.2'/);
+  assert.match(sw, /const SW_VERSION = 'v250\.3'/);
 });
 
 test('V250B source contains no credential persistence primitive', () => {

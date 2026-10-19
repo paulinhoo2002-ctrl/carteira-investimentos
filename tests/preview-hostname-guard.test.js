@@ -36,3 +36,12 @@ test('preview hostname guard accepts hyphenated team slugs and rejects productio
     assert.equal(re.test('evil-carteira-investimentos-abc-xyz.vercel.app'), false);
   }
 });
+
+test('legacy experimental active-wallet host requires the local synthetic QA marker', () => {
+  const indexHtml = read('index.html');
+  const start = indexHtml.indexOf('function isActiveWalletHostMode(){');
+  const end = indexHtml.indexOf('\nfunction ', start + 1);
+  const guard = indexHtml.slice(start, end);
+  assert.match(guard, /!isLocalTestMode\(\)/);
+  assert.match(guard, /return isLocalhost && !isVercelPreview/);
+});

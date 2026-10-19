@@ -235,8 +235,12 @@ test('real runtime evidence is gated by REAL authorization and logout clears sou
   assert.notEqual(start, -1); assert.notEqual(end, -1);
   let calls = 0;
   const context = {
-    FB: { accountMode: 'DEMO', user: null, access: { allowed: false }, cloudLoaded: false },
+    FB: { accountMode: 'BLOCKED', user: null, access: { allowed: false }, cloudLoaded: false },
     S: { assets: [trend()], rfEvents: [event('live-1', 'juros', { status: 'RECEIVED', netValue: 1 })], aportes: [], proventos: [] },
+    DEFAULT_RUNTIME_STATE: { assets: [], wallets: [], aportes: [], proventos: [], rfEvents: [], hideValues: false },
+    window: {},
+    cloneData: value => JSON.parse(JSON.stringify(value)),
+    resetTransientRuntimeState() {},
     rfPosNorm: value => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim(),
     assetRfName: asset => asset.name,
     rfAssetEventId: asset => asset.id,
@@ -249,7 +253,7 @@ test('real runtime evidence is gated by REAL authorization and logout clears sou
   vm.createContext(context); vm.runInContext(source.slice(start, end), context);
   context.asset = trend();
   assert.equal(vm.runInContext('rfEconomicEvidenceForAsset(asset)', context), null);
-  assert.equal(calls, 0, 'demo must not invoke the real provider');
+  assert.equal(calls, 0, 'blocked mode must not invoke the real provider');
   context.FB.accountMode = 'REAL'; context.FB.user = { uid: 'owner' }; context.FB.access.allowed = true; context.FB.cloudLoaded = false;
   assert.equal(vm.runInContext('rfEconomicEvidenceForAsset(asset)', context), null);
   assert.equal(calls, 0, 'unauthorized/unloaded runtime must not invoke provider');

@@ -51,25 +51,15 @@
   }
 
   // P11/P28 — blocked state. Concise copy, no values, no jargon, no auto-demo.
-  function renderBlockedHtml() {
+  function renderBlockedHtml(options) {
+    const authFailure = options && options.authFailure === true;
     return '<div class="auth-boot-state auth-boot-blocked" role="alert">'
-      + '<h1>Acesso indisponível</h1>'
-      + '<p>No momento esta conta não pode acessar a carteira. Contate o administrador da conta.</p>'
+      + '<h1>' + (authFailure ? 'Não foi possível validar o acesso' : 'Acesso não autorizado') + '</h1>'
+      + '<p>' + (authFailure ? 'Tente novamente quando a conexão estiver disponível.' : 'Esta conta não tem autorização para acessar a carteira.') + '</p>'
+      + (authFailure
+        ? '<button type="button" class="auth-btn auth-btn-ghost" onclick="location.reload()">Tentar novamente</button>'
+        : '<button type="button" class="auth-btn auth-btn-ghost" onclick="signOutGoogle()">Voltar para login</button>')
       + '</div>';
-  }
-
-  // P12/P13 — persistent demo badge: clear, not disruptive.
-  function renderDemoBadgeHtml() {
-    return '<div class="auth-demo-badge" role="status" aria-live="polite">'
-      + '<span class="auth-demo-badge-title">Modo demonstração</span>'
-      + '<span class="auth-demo-badge-sub">Dados fictícios</span>'
-      + '</div>';
-  }
-
-  // P14 — demo reset control (host wires the click; storage stays local-only).
-  function renderDemoResetHtml() {
-    return '<button type="button" id="auth-demo-reset-btn" class="auth-btn auth-btn-ghost" '
-      + 'data-confirm="1" aria-label="Restaurar demonstração">Restaurar demonstração</button>';
   }
 
   function renderInto(container, html) {
@@ -80,5 +70,5 @@
     return true;
   }
 
-  return { esc, renderLoadingHtml, renderLoginHtml, renderBlockedHtml, renderDemoBadgeHtml, renderDemoResetHtml, renderInto };
+  return { esc, renderLoadingHtml, renderLoginHtml, renderBlockedHtml, renderInto };
 });

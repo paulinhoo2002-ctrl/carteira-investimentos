@@ -39,7 +39,7 @@
   window.__AUTHORITATIVE_LOCAL_RECOVERY_BOOT__=authoritativeLocalRecovery;
   window.__APP_BUILD_ID__='phase4i-runtime-v2';
   window.__EXPECTED_AUTHORITY_RUNTIME_VERSION__='local-cloud-authority-v2';
-  window.__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v250.2';
+  window.__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v250.3';
   window.__AUTHORITATIVE_LOCAL_STATUS_BRIDGE__='http://127.0.0.1:9245/status';
   if(testMode || emulatorRequested){
     document.documentElement.dataset.theme='dark';
@@ -8756,7 +8756,6 @@ document.write([
 <script src="public-events-runtime.js"></script>
 <script src="auth/account-mode.js"></script>
 <script src="auth/data-source.js"></script>
-<script src="auth/demo-portfolio.js"></script>
 <script src="auth/boot.js"></script>
 <script src="auth/boot-ui.js"></script>
 <script src="canonical-fingerprint-engine.js?v=phase4h-canonical-fp-v1"></script>
@@ -8945,11 +8944,12 @@ const firebaseConfig = {
 
 let FB = {
   ready:false, app:null, auth:null, db:null, user:null,
-  unsub:null, cloudLoaded:false, cloudStateModel:null, cloudSyncTimeoutTimer:null, applying:false, saveTimer:null, cloudRetryTimer:null, pendingCloudSave:false, lastCloudUpdate:null, lastCloudError:null,
+  unsub:null, cloudLoaded:false, localPortfolioLoaded:false, cloudStateModel:null, cloudSyncTimeoutTimer:null, applying:false, saveTimer:null, cloudRetryTimer:null, pendingCloudSave:false, lastCloudUpdate:null, lastCloudError:null,
   lastCloudSignature:'', authResolved:false, syncInFlight:false, securitySaving:false,
   readOnlyOfflineSnapshotReady:false, readOnlyOfflineSnapshotScope:'', readOnlyOfflineSnapshotSignature:'',
   access:{loaded:false,loading:true,allowed:false,reason:'',cfg:null,lastDeniedAt:null}
 };
+const authSessionGuard = window.AccountMode.createSessionGuard();
 let firebaseAuthPersistenceReady = Promise.resolve();
 
 const V250_RECONNECT_RELOAD_KEY = 'civ5_v250_reconnect_reload_v1';
@@ -8958,26 +8958,20 @@ let reconnectAuthFlight = null;
 let reconnectAuthAttemptCount = 0;
 let reconnectWasOffline = navigator.onLine === false;
 
-function reconnectMarkerHasTrustedSnapshot(){
-  if(isLocalTestMode()) return false;
-  const marker = window.V250OfflineSession?.read?.();
-  if(isProtectedReadOnlyQaBoot()){
-    return Boolean(FB.readOnlyOfflineSnapshotReady && marker?.eligible && marker.scope===FB.readOnlyOfflineSnapshotScope && marker.snapshotSignature===FB.readOnlyOfflineSnapshotSignature);
-  }
-  const hasSnapshot = window.V250OfflineSession?.snapshotHasData?.(localStorage, STOR) === true;
-  return Boolean(marker?.eligible) && hasSnapshot;
-}
 function clearReconnectReloadGuard(){
   try{ sessionStorage.removeItem(V250_RECONNECT_RELOAD_KEY); }catch(_){ }
 }
 function revalidateFirebaseAuthAfterReconnect(){
   if(isLocalTestMode()) return Promise.resolve({status:'not-needed'});
   if(reconnectAuthFlight) return reconnectAuthFlight;
-  if(!navigator.onLine || !reconnectWasOffline || !FB.auth || !reconnectMarkerHasTrustedSnapshot()){
+  if(!navigator.onLine || !reconnectWasOffline || !FB.auth){
     return Promise.resolve({status:'not-needed'});
   }
   reconnectAuthFlight = (async()=>{
     reconnectAuthAttemptCount += 1;
+    const user = FB.user;
+    const authSession = authSessionGuard.current();
+    if(!user || !authSession || !authSession.isCurrent() || authSession.uid !== String(user.uid || '')) return {status:'stale-session'};
     FB.authResolved = false;
     FB.access.loading = true;
     FB.access.loaded = false;
@@ -8990,11 +8984,23 @@ function revalidateFirebaseAuthAfterReconnect(){
     // A Firebase-owned currentUser is evidence for the bootstrap, never a
     // reason to assign FB.user locally. Let the normal observer own recovery.
     if(currentUser) debugInfo('Firebase mantém uma sessão candidata para o bootstrap de reconnect');
-    if(FB.user && currentUser){
+    if(currentUser && currentUser.uid === user.uid){
       try{
         await currentUser.getIdToken(true);
-        const accessOk = await loadAccessControl(FB.user);
-        if(!accessOk) return {status:'auth-gate'};
+        if(!authSession.isCurrent() || FB.user?.uid !== user.uid) return {status:'stale-session'};
+        const accessOk = await loadAccessControl(user,authSession);
+        if(!authSession.isCurrent() || FB.user?.uid !== user.uid) return {status:'stale-session'};
+        FB.accountMode=await resolveAccountModeCompat(user,accessOk,authSession);
+        if(!authSession.isCurrent() || FB.user?.uid !== user.uid) return {status:'stale-session'};
+        if(!accessOk || FB.accountMode!=='REAL'){
+          clearRealStateInMemory();
+          FB.access.loading=false;
+          FB.access.loaded=true;
+          FB.access.allowed=false;
+          render();
+          return {status:'auth-gate'};
+        }
+        hydrateAuthorizedLocalState();
         FB.authResolved = true;
         FB.access.loading = false;
         FB.access.loaded = true;
@@ -9253,7 +9259,7 @@ function isActiveWalletHostMode(){
     const activeWalletHost = params.get('activeWalletHost') === '1';
     const testMode = params.get('testMode') === '1';
 
-    if (!activeWalletHost || !testMode) {
+    if (!activeWalletHost || !testMode || !isLocalTestMode()) {
       return false;
     }
 
@@ -9265,7 +9271,7 @@ function isActiveWalletHostMode(){
     // must accept 2+ segments while production (carteira-investimentos-delta) stays excluded.
     const isVercelPreview = /^carteira-investimentos-[a-z0-9]+(?:-[a-z0-9]+)+\.vercel\.app$/.test(location.hostname);
 
-    return isLocalhost || isVercelPreview;
+    return isLocalhost && !isVercelPreview;
   }catch(e){
     return false;
   }
@@ -9782,6 +9788,7 @@ function persistFinancialImportState(snapshot){
   return false;
 }
 function save(){
+  if(!isLocalTestMode() && FB.accountMode!=='REAL') return false;
   if(S?._financialWriteQuarantined===true){
     toast('Gravações desta sessão estão bloqueadas após uma falha de persistência. Recarregue e confira o estado antes de continuar.','#f87171');
     return false;
@@ -10296,6 +10303,14 @@ function load(){
   const cleanedB3Aportes = cleanupB3PositionAportes();
   if(cleanedB3Summary>0 || cleanedB3Aportes>0) save({queueCloud:false});
   if(S.assets.length && S.aportes.length) S.autoProvDirty=true;
+}
+function hydrateAuthorizedLocalState(){
+  if(FB.accountMode!=='REAL') return false;
+  if(FB.localPortfolioLoaded) return true;
+  load();
+  initializeV76Runtime();
+  FB.localPortfolioLoaded=true;
+  return true;
 }
 
 async function bootstrapExperimentalActiveWalletHost(){
@@ -11249,39 +11264,25 @@ function initFirebase(){
       try{ FB.db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(e){}
     }
     FB.auth.onAuthStateChanged(async user=>{
+      const authSession = authSessionGuard.begin(user);
+      stopCloudSync(false);
+      clearRealStateInMemory();
       FB.authResolved = true;
       FB.user = user || null;
       if(FB.user){
-        if(navigator.onLine===false && await restoreProtectedReadOnlyOfflineSnapshot(FB.user)){
-          FB.cloudLoaded=false;
-          FB.cloudStateModel=CloudSyncState.fail(CloudSyncState.initial(),{code:'unavailable',message:'Offline'});
-          FB.access.loading=false;
-          FB.access.loaded=false;
-          FB.access.allowed=false;
-          FB.access.reason='Carteira local em cache confiável; dados somente leitura e possivelmente desatualizados.';
-          render();
-          return;
-        }
         FB.cloudStateModel=CloudSyncState.initial(CloudSyncState.STATES.AUTHENTICATING);
         FB.access.loading = true;
         FB.access.loaded = false;
         FB.access.allowed = false;
         FB.access.reason = '';
         render();
-        const ok = await loadAccessControl(FB.user);
-        await recordAccessAttempt(FB.user, ok, FB.access.reason);
+        const ok = await loadAccessControl(user,authSession);
+        if(!authSession.isCurrent() || FB.user?.uid !== user.uid) return;
         // Phase 2: protected offline cached session wins before any mode routing
-        if(navigator.onLine===false && isV250OfflineCachedSession()){
-          FB.access.loading = false;
-          FB.access.loaded = false;
-          FB.access.allowed = false;
-          FB.access.reason = 'Sessão local somente leitura enquanto estiver offline.';
-          render();
-          return;
-        }
         // Phase 2: single authoritative account-mode decision (auth/boot contract)
-        FB.accountMode = await resolveAccountModeCompat(FB.user, ok);
-        if(FB.accountMode === 'BLOCKED'){
+        FB.accountMode = await resolveAccountModeCompat(user, ok, authSession);
+        if(!authSession.isCurrent() || FB.user?.uid !== user.uid) return;
+        if(FB.accountMode === 'BLOCKED' || FB.accountMode === 'AUTH_FAILURE'){
           stopCloudSync(false);
           FB.access.loading = false;
           FB.access.loaded = true;
@@ -11290,13 +11291,10 @@ function initFirebase(){
           render();
           return;
         }
-        if(FB.accountMode === 'DEMO'){
-          enterDemoMode();
-          return;
-        }
         if(!ok){
           clearReconnectReloadGuard();
           stopCloudSync(false);
+          clearRealStateInMemory();
           try{ await FB.auth.signOut(); }catch(e){}
           FB.user = null;
           FB.accountMode = 'LOGIN_REQUIRED';
@@ -11305,16 +11303,24 @@ function initFirebase(){
           render();
           return;
         }
+        await recordAccessAttempt(user, ok, FB.access.reason);
+        if(!authSession.isCurrent() || FB.user?.uid !== user.uid) return;
         FB.access.loading = false;
+        hydrateAuthorizedLocalState();
+        try{ if(S.aportes.length) syncAssetsFromAportes(false); }
+        catch(error){ debugError('sincronização inicial de ativos falhou:',error); }
         clearReconnectReloadGuard();
         reconnectWasOffline = false;
+        fetchQuotes(false);
         if(isAuthoritativeLocalRecoveryBoot()){
           readFreshCloudPayload().then(async cloudPayload=>{
+            if(!authSession.isCurrent() || FB.user?.uid !== user.uid) return;
             if(window.ProtectedLocalCloudAuthority){
               FB.lastCloudAuthorityFingerprint=window.ProtectedLocalCloudAuthority.fingerprintCloud(cloudPayload||{});
             }
             FB.cloudLoaded = true;
             await rememberV250TrustedSnapshot();
+            if(!authSession.isCurrent() || FB.user?.uid !== user.uid) return;
             FB.cloudStateModel=CloudSyncState.resolve(CloudSyncState.begin(FB.cloudStateModel),{exists:true,hasData:true});
             bindProtectedRealPilotSession();
             runV324PeriodicBackups();
@@ -11329,8 +11335,9 @@ function initFirebase(){
         }
         startCloudSync({readOnlyOnly: isProtectedReadOnlyQaBoot() || !isEditOwner()});
       }else{
-        // Phase 2: mode reset + in-memory real state clear (no real flash after logout)
-        if(FB.accountMode === 'REAL' || FB.accountMode === 'BLOCKED') clearRealStateInMemory();
+        // Clear every portfolio reference before rendering the login screen.
+        clearRealStateInMemory();
+        FB.localPortfolioLoaded = false;
         FB.accountMode = 'LOGIN_REQUIRED';
         FB.cloudStateModel=CloudSyncState.initial();
         FB.access.loading = false;
@@ -11342,6 +11349,16 @@ function initFirebase(){
         stopCloudSync();
       }
       render();
+    }, error=>{
+      debugWarn('Falha na sessão de autenticação:', error);
+      authSessionGuard.begin(null);
+      stopCloudSync(false);
+      clearRealStateInMemory();
+      FB.user = null;
+      FB.accountMode = 'AUTH_FAILURE';
+      FB.authResolved = true;
+      FB.access = {loading:false,loaded:true,allowed:false,reason:'Não foi possível validar o acesso agora.',cfg:null,lastDeniedAt:new Date().toISOString()};
+      render();
     });
     if(!FB.authResolved){
       FB.access.loading = true;
@@ -11351,26 +11368,36 @@ function initFirebase(){
   }catch(e){
     debugWarn('Firebase indisponível:', e);
     FB.ready=false;
+    FB.accountMode='AUTH_FAILURE';
+    FB.authResolved=true;
+    FB.access={loading:false,loaded:true,allowed:false,reason:'Não foi possível validar o acesso agora.',cfg:null,lastDeniedAt:new Date().toISOString()};
+    clearRealStateInMemory();
+    render();
   }
 }
-async function loadAccessControl(user){
+async function loadAccessControl(user,authSession=null){
+  if(authSession && !authSession.isCurrent()) return false;
+  const setAccess = value => {
+    if(!authSession || authSession.isCurrent()) FB.access=value;
+  };
   const email = normalizeEmail(user?.email);
   if(!FB.db || !email){
-    FB.access = {loaded:true,loading:false,allowed:false,reason:'Conecte sua conta Google autorizada para acessar o sistema.',cfg:null,lastDeniedAt:new Date().toISOString()};
+    setAccess({loaded:true,loading:false,allowed:false,reason:'Conecte sua conta Google autorizada para acessar o sistema.',cfg:null,lastDeniedAt:new Date().toISOString()});
     return false;
   }
   try{
     const snap = await FB.db.collection('meta').doc('access').get();
+    if(authSession && !authSession.isCurrent()) return false;
     if(!snap.exists){
       const isAdmin = isAccessAdmin(email);
-      FB.access = {
+      setAccess({
         loaded:true,
         loading:false,
         allowed:isAdmin,
         reason:isAdmin ? '' : 'O controle de acesso ainda não foi configurado neste ambiente.',
         cfg:null,
         lastDeniedAt:isAdmin ? null : new Date().toISOString()
-      };
+      });
       return isAdmin;
     }
     const cfg = snap.exists ? (snap.data() || {}) : {};
@@ -11384,18 +11411,18 @@ async function loadAccessControl(user){
       allowedEmails.includes(email) ||
       (domain && allowedDomains.includes(domain))
     );
-    FB.access = {
+    setAccess({
       loaded:true,
       loading:false,
       allowed:isAllowed,
       reason:isAllowed ? '' : String(cfg.message || 'Acesso restrito a usuários aprovados.'),
       cfg,
       lastDeniedAt:isAllowed ? null : new Date().toISOString()
-    };
+    });
     return isAllowed;
   }catch(e){
     debugWarn('Acesso:', e);
-    FB.access = {loaded:true,loading:false,allowed:false,reason:'Não foi possível validar o acesso agora.',cfg:null,lastDeniedAt:new Date().toISOString()};
+    setAccess({loaded:true,loading:false,allowed:false,authFailure:true,reason:'Não foi possível validar o acesso agora.',cfg:null,lastDeniedAt:new Date().toISOString()});
     return false;
   }
 }
@@ -11423,22 +11450,26 @@ function portfolioRef(){
   if(!FB.db || !FB.user) return null;
   return FB.db.collection('portfolios').doc(FB.user.uid);
 }
-// ===== Phase 2: account-mode compatibility adapter + demo wiring =====
+// ===== Account-mode compatibility adapter =====
 // Registry (authorizedUsers/{uid}, future rules) is authoritative; in
 // production (registry rules not deployed) the legacy access control
 // (meta/access + admin allowlist) feeds the resolver so the current owner
-// keeps loading normally. Unauthorized authenticated users become DEMO.
-async function resolveAccountModeCompat(user, accessOk){
-  if(!window.AccountMode || !user) return accessOk ? 'REAL' : 'LOGIN_REQUIRED';
+// keeps loading normally. No portfolio source is created for unauthorized users.
+async function resolveAccountModeCompat(user, accessOk, authSession=null){
+  if(!user) return 'LOGIN_REQUIRED';
+  if(authSession && !authSession.isCurrent()) return 'AUTH_FAILURE';
+  if(!window.AccountMode || !FB.db || FB.access?.authFailure) return 'AUTH_FAILURE';
   let authorization = null;
   try{
     const snap = await FB.db.collection('authorizedUsers').doc(user.uid).get();
+    if(authSession && !authSession.isCurrent()) return 'AUTH_FAILURE';
     if(snap.exists){
       const d = snap.data() || {};
       authorization = { enabled: d.enabled !== false, blocked: d.blocked === true, role: String(d.role || 'user') };
     }
   }catch(e){
     // permission-denied in production (registry rules not deployed) → legacy path
+    if(authSession && !authSession.isCurrent()) return 'AUTH_FAILURE';
   }
   if(!authorization){
     const email = normalizeEmail(user && user.email);
@@ -11447,46 +11478,24 @@ async function resolveAccountModeCompat(user, accessOk){
   }
   return AccountMode.resolveAccountMode({ authUser: user, emailVerified: !!(user && user.emailVerified), authorization });
 }
-function enterDemoMode(){
-  stopCloudSync(false); // real listener never survives into DEMO
-  FB.accountMode = 'DEMO';
-  FB.cloudLoaded = false;
-  FB.package2 = null;
-  FB.lastCloudError = null;
-  FB.access.loading = false;
-  FB.access.loaded = true;
-  FB.access.allowed = true;
-  FB.access.reason = '';
-  FB.demoSource = window.PortfolioDataSource ? PortfolioDataSource.createLocalDemoDataSource('demo_portfolio_v1') : null;
-  if(window.DemoPortfolio){
-    const demo = DemoPortfolio.generateDemoPortfolio();
-    const wallet = { ...(demo.wallets[0] || {}) };
-    wallet.aportes = demo.aportes || [];
-    wallet.proventos = demo.proventos || [];
-    S.wallets = [normalizeWalletEntry(wallet, 'Carteira Demonstração')];
-    S.activeWalletId = String((S.wallets[0] && S.wallets[0].id) || '');
-    syncStateFromWallet(S.wallets[0]);
-    if(demo.settings && typeof demo.settings==='object') S.settings = { ...(S.settings||{}), ...demo.settings };
-    if(demo.dashboard && typeof demo.dashboard==='object') S.dashboard = { ...(S.dashboard||{}), ...demo.dashboard };
-  }
-  render();
-}
-function resetDemoPortfolio(){
-  if(FB.accountMode !== 'DEMO') return;
-  if(FB.demoSource && typeof FB.demoSource.reset === 'function'){
-    try{ FB.demoSource.reset(); }catch(e){}
-  }
-  enterDemoMode();
-  toast('🧪 Demonstração restaurada para os dados fictícios padrão.');
-}
 function clearRealStateInMemory(){
-  S.assets = [];
-  S.wallets = [];
-  S.aportes = [];
-  S.proventos = [];
-  S.rfEvents = [];
+  const hideValues=!!S.hideValues;
+  resetTransientRuntimeState();
+  Object.assign(S, cloneData(DEFAULT_RUNTIME_STATE));
+  S.assets=[];
+  S.wallets=[];
+  S.aportes=[];
+  S.proventos=[];
+  S.rfEvents=[];
+  S.hideValues=hideValues;
+  window.__V76_RUNTIME__={snapshots:[],flows:[],diagnostics:['AUTH_REQUIRED']};
+  if(typeof assetDetailId!=='undefined') assetDetailId=null;
   FB.package2 = null;
   FB.cloudLoaded = false;
+  FB.localPortfolioLoaded = false;
+  FB.lastCloudSignature = '';
+  FB.lastCloudUpdate = null;
+  FB.lastCloudError = null;
 }
 function sanitizeFirestoreValue(value, seen=new WeakSet()){
   if(value===undefined || typeof value==='function' || typeof value==='symbol') return undefined;
@@ -11910,8 +11919,8 @@ async function uploadLocalToCloud(show=true, options={}){
     return;
   }
   if(FB.accountMode && FB.accountMode!=='REAL'){
-    if(show) toast('🧪 Modo demonstração: alterações ficam apenas na demonstração.');
-    return {pass:false,reason:'DEMO_MODE_NO_CLOUD_WRITES'};
+    if(show) toast('Entre com uma conta autorizada para sincronizar.','#fbbf24');
+    return {pass:false,reason:'REAL_ACCOUNT_REQUIRED'};
   }
   if(!isEditOwner()){
     if(show) toast('Esta aba está em modo somente leitura para evitar perda de dados.','#fbbf24');
@@ -11986,8 +11995,17 @@ async function signOutGoogle(){
     toast('🧪 Modo de teste local: saída desativada.');
     return;
   }
+  authSessionGuard.begin(null);
   clearV250OfflineEligibility();
-  try{ await FB.auth.signOut(); toast('Sessão encerrada. Dados locais continuam salvos, mas o modo offline protegido foi encerrado.'); }catch(e){}
+  stopCloudSync(false);
+  clearRealStateInMemory();
+  FB.user=null;
+  FB.accountMode='LOGIN_REQUIRED';
+  FB.authResolved=true;
+  FB.access={loading:false,loaded:false,allowed:false,reason:'',cfg:null,lastDeniedAt:null};
+  render();
+  try{ await FB.auth.signOut(); toast('Sessão encerrada.'); }
+  catch(e){ debugWarn('Não foi possível encerrar a sessão Firebase agora.',e); }
 }
 function cloudSnapshotHasData(data={}){
   const wallets=Array.isArray(data.wallets)?data.wallets:[];
@@ -12038,9 +12056,6 @@ function cloudStatus(){
 function authBox(){
   if(isLocalTestMode()) return `<span class="note-pill" style="background:rgba(251,191,36,.08);color:#fde68a;border-color:rgba(251,191,36,.22)">Teste local</span>`;
   if(isV250OfflineCachedSession()) return `<span class="note-pill" role="status" style="background:rgba(251,191,36,.08);color:#fde68a;border-color:rgba(251,191,36,.22)">Offline · leitura</span>`;
-  if(FB.accountMode === 'DEMO'){
-    return `<span class="note-pill" role="status" style="background:rgba(110,231,183,.10);color:#6ee7b7;border-color:rgba(110,231,183,.25)">Modo demonstração · Dados fictícios</span><button class="btn bgh" style="font-size:10px;padding:4px 8px;min-height:26px;margin-left:6px" onclick="resetDemoPortfolio()" title="Restaurar demonstração">Restaurar</button>`;
-  }
   if(!FB.ready) return '';
   if(!FB.user) return `<button class="btn bgh hdr-mobile-btn" style="font-size:11px;padding:6px 10px;min-height:30px;line-height:1;border-color:#24324a;color:#a5b4fc;background:#111827" onclick="signInGoogle()"><span class="hdr-mobile-icon">🔑</span><span class="hdr-mobile-label">Entrar Google</span></button>`;
   const name=esc(FB.user.displayName||'Conta Google');
@@ -12052,8 +12067,8 @@ function authBox(){
   </div>`;
 }
 function accessGateBox(){
-  if(FB.accountMode === 'BLOCKED' && window.AuthBootUi){
-    return `<div style="min-height:calc(100vh - 86px);display:grid;place-items:center;padding:14px 16px 20px">${AuthBootUi.renderBlockedHtml()}</div>`;
+  if(['BLOCKED','AUTH_FAILURE'].includes(FB.accountMode) && window.AuthBootUi){
+    return `<div style="min-height:calc(100vh - 86px);display:grid;place-items:center;padding:14px 16px 20px">${AuthBootUi.renderBlockedHtml({authFailure:FB.accountMode==='AUTH_FAILURE'})}</div>`;
   }
   const loading = !FB.authResolved || FB.access.loading;
   const reason = FB.access.reason || 'Faça login com um e-mail aprovado para acessar a carteira.';
@@ -12096,7 +12111,6 @@ function accessGateBox(){
 }
 function shouldShowAccessGate(){
   if(isLocalTestMode()) return false;
-  if(isV250OfflineCachedSession()) return false;
   return !FB.authResolved || FB.access.loading || !FB.access.loaded || !FB.access.allowed;
 }
 function normalizeListFromText(text){
@@ -12708,6 +12722,7 @@ function loadV76RuntimeStores(){
 }
 function saveV76RuntimeStores(){
   if(isLocalTestMode() || isProtectedReadOnlyQaBoot()) return false;
+  if(FB.accountMode!=='REAL') return false;
   if(!v76RuntimeAvailable()||!window.__V76_RUNTIME__) return false;
   try{
     localStorage.setItem(V76_SNAPSHOT_STORAGE_KEY,JSON.stringify(window.__V76_RUNTIME__.snapshots));
@@ -23365,38 +23380,6 @@ function irpfTab(){
 
 function ir2026ReadinessSection(){
   if(typeof IR2026Readiness==='undefined') return '';
-  // P7 DEMO: synthetic fiscal state only — the owner's real IR2026 readiness
-  // (61 sales, 2025 evidence blockers, opening coverage) is NEVER rendered in DEMO.
-  if(FB.accountMode === 'DEMO' && window.DemoPortfolio && DemoPortfolio.generateDemoIrpfState){
-    const d = DemoPortfolio.generateDemoIrpfState();
-    const card = (label, detail, tone) => `
-      <div class="irpf-summary-card ds-kpi ${tone}">
-        <div class="analysis-summary-kicker ds-kpi__label">${esc(label)}</div>
-        <div class="analysis-summary-value ds-kpi__value">${esc(detail)}</div>
-      </div>`;
-    return `
-    <div class="irpf-shell ir2026-readiness">
-      <div class="irpf-head">
-        <div>
-          <div class="irpf-title">APURAÇÃO DO IR 2026</div>
-          <div class="irpf-sub">Modo demonstração · Dados fictícios para demonstração. Nenhum dado fiscal real é exibido.</div>
-        </div>
-        <span class="irpf-badge warn">DADOS FICTÍCIOS</span>
-      </div>
-      <div class="irpf-summary">
-        ${card('Imposto (demo)', esc(d.taxDue), '')}
-        ${card('Abertura fiscal (demo)', `${d.openingQty.certified} certificadas · ${d.openingQty.partial} parciais (fictício)`, 'warn')}
-        ${card('Vendas analisadas (demo)', `${d.sales.certified} de ${d.sales.analyzed} certificadas (fictício)`, 'warn')}
-        ${card('Regras (demo)', `${d.rules.certified} de ${d.rules.total} certificadas (fictício)`, 'warn')}
-      </div>
-      <div class="irpf-section">
-        <h2 class="irpf-section-title">Estado sintético da demonstração</h2>
-        <ul class="ir2026-blockers">
-          <li><span class="irpf-badge warn">DEMO</span> Painel inteiramente fictício — ${esc(d.explanation)}</li>
-        </ul>
-      </div>
-    </div>`;
-  }
   const contract=IR2026Readiness.buildReadinessContract();
   return IR2026Readiness.renderReadinessPanel(contract, esc);
 }
@@ -29053,37 +29036,9 @@ function restoreQuoteUi(){
   requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({left:x,top:y,behavior:'auto'})));
 }
 function disarmQuoteUi(){ quoteUiArmed=false; quoteUiSnapshot=null; }
-// P8: persistent VISIBLE demo badge. The header authBox container is hidden in
-// some shell states (hdr-right display:none) — a fixed overlay guarantees the
-// badge stays visible across all routes while DEMO, and is removed otherwise.
-function syncDemoBadgeOverlay(){
-  let el=document.getElementById('auth-demo-badge');
-  if(FB.accountMode==='DEMO'){
-    if(!el){
-      el=document.createElement('div');
-      el.id='auth-demo-badge';
-      el.setAttribute('role','status');
-      el.style.cssText='position:fixed;right:10px;bottom:10px;z-index:9999;display:flex;align-items:center;gap:6px;background:rgba(6,15,28,.92);border:1px solid rgba(110,231,183,.35);border-radius:999px;padding:6px 10px;box-shadow:0 6px 18px rgba(0,0,0,.35)';
-      const label=document.createElement('span');
-      label.style.cssText='font-size:10px;font-weight:800;color:#6ee7b7';
-      label.textContent='Modo demonstração · Dados fictícios';
-      const btn=document.createElement('button');
-      btn.type='button';
-      btn.textContent='Restaurar';
-      btn.title='Restaurar demonstração';
-      btn.setAttribute('aria-label','Restaurar demonstração');
-      btn.style.cssText='font-size:9px;font-weight:800;border:1px solid rgba(110,231,183,.35);background:transparent;color:#6ee7b7;border-radius:999px;padding:3px 8px;cursor:pointer;min-height:24px';
-      btn.addEventListener('click',resetDemoPortfolio);
-      el.appendChild(label);
-      el.appendChild(btn);
-      document.body.appendChild(el);
-    }
-  }else if(el){ el.remove(); }
-}
 function render(){
   const root=document.getElementById('root');
   if(!root) return;
-  try{ syncDemoBadgeOverlay(); }catch(e){}
   try{
     S._dashboardHighlightsCache=null;
     if(S._rmpTrace) console.log('[rmP] render() chamado');
@@ -30663,7 +30618,7 @@ function rfBucketLabel(days){
   return 'Acima de 12 meses';
 }
 function rfEconomicEvidenceForAsset(asset){
-  if(['DEMO','BLOCKED','LOGIN_REQUIRED'].includes(FB.accountMode)) return null;
+  if(['BLOCKED','AUTH_FAILURE','LOGIN_REQUIRED'].includes(FB.accountMode)) return null;
   const product=rfPosNorm(assetRfName(asset));
   if(!['TREND DI FIC RF SIMPLES RL','TREND DI II FIC RF SIMPLES RL'].includes(product)) return null;
   const id=rfAssetEventId(asset);
@@ -38357,17 +38312,9 @@ if(isActiveWalletHostMode()){
   initEditProtection();
   render();
 }else{
-  load();
-  initializeV76Runtime();
   initEditProtection();
   initFirebase();
-  try{
-    if(S.aportes.length) syncAssetsFromAportes(false); else render();
-  }catch(error){
-    debugError('sincronização inicial de ativos falhou:',error);
-    render();
-  }
-  fetchQuotes(false);
+  render();
   const schedulePublicEventsSync=()=>{
     if(!navigator.onLine) return;
     const run=()=>startPublicEventsSync();

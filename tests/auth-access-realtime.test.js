@@ -4,7 +4,7 @@
  * AUTH-DEMO Phase 2 — emulator certifications for realtime sync, cross-user
  * isolation, concurrent field-level writes and registry transitions
  * (mission P19/P20/P21/P26/P27 server-side). Runs inside
- * `npm run test:auth-demo-emulator` alongside the security attack matrix.
+ * `npm run test:auth-access-emulator` alongside the security attack matrix.
  * Synthetic identities only; zero cost; localhost only.
  */
 
@@ -164,7 +164,7 @@ test('P21: CONCURRENT_WRITE — field-level updates from two devices both surviv
   assert.ok(fields.shared && fields.shared.stringValue === 'seed', 'seeded field destroyed by masked writes');
 });
 
-test('P26/P27: registry transitions — DEMO→REAL authorizes; REAL revoked denies next request (no cached access)', async () => {
+test('P26/P27: registry transitions — BLOCKED→REAL authorizes; REAL revoked denies next request (no cached access)', async () => {
   const email = 'rt-transition@auth-demo.test';
   const password = `synthetic-${randomUUID()}`;
   const auth = await signUp(email, password);
@@ -180,9 +180,9 @@ test('P26/P27: registry transitions — DEMO→REAL authorizes; REAL revoked den
   });
   await adminPatch(`portfolios/${uid}`, { seededFor: { stringValue: 'RT-TRANSITION' } });
 
-  await reg(false); // registry says DEMO
+  await reg(false); // registry says blocked
   const denied = await userCall(token, 'GET', `portfolios/${uid}`);
-  assert.equal(denied.status, 403, `DEMO-registry read must be denied, got ${denied.status}`);
+  assert.equal(denied.status, 403, `unauthorized-registry read must be denied, got ${denied.status}`);
 
   await reg(true); // authorized → REAL on next resolution
   const allowed = await userCall(token, 'GET', `portfolios/${uid}`);

@@ -10,8 +10,8 @@
  * Account modes:
  *   LOGIN_REQUIRED → not authenticated
  *   REAL            → authenticated + email verified + authorized
- *   DEMO            → authenticated but not authorized (or explicitly demo)
- *   BLOCKED         → explicitly blocked in the authorization registry
+ *   BLOCKED         → authenticated but not authorized
+ *   AUTH_FAILURE    → authentication/authorization validation failed
  *
  * Fail-closed: malformed authorization data → BLOCKED (never silently grant REAL).
  */
@@ -24,13 +24,31 @@
   const MODES = Object.freeze({
     LOGIN_REQUIRED: 'LOGIN_REQUIRED',
     REAL: 'REAL',
-    DEMO: 'DEMO',
     BLOCKED: 'BLOCKED',
+    AUTH_FAILURE: 'AUTH_FAILURE',
   });
 
   /** Normalize email: trim + lowercase. */
   function normalizeEmail(email) {
     return String(email || '').trim().toLowerCase();
+  }
+
+  /** Invalidate pending async auth decisions whenever Firebase emits a new session. */
+  function createSessionGuard() {
+    let currentSession = null;
+    return Object.freeze({
+      begin(user) {
+        const uid = user && user.uid ? String(user.uid) : null;
+        let session;
+        session = Object.freeze({
+          uid,
+          isCurrent: () => currentSession === session,
+        });
+        currentSession = session;
+        return session;
+      },
+      current() { return currentSession; },
+    });
   }
 
   /**
@@ -49,7 +67,7 @@
     if (!authUser || !authUser.uid) return MODES.LOGIN_REQUIRED;
 
     // Authorization must be a valid object; fail closed on malformed data
-    if (authorization === null || authorization === undefined) return MODES.DEMO;
+    if (authorization === null || authorization === undefined) return MODES.BLOCKED;
     if (typeof authorization !== 'object') return MODES.BLOCKED; // malformed → fail closed
 
     // Explicitly blocked takes precedence over everything
@@ -57,13 +75,13 @@
 
     // Must have a valid role
     const VALID_ROLES = new Set(['owner', 'user', 'viewer', 'admin']);
-    if (!VALID_ROLES.has(authorization.role)) return MODES.DEMO;
+    if (!VALID_ROLES.has(authorization.role)) return MODES.BLOCKED;
 
     // Must be enabled
-    if (authorization.enabled === false) return MODES.DEMO;
+    if (authorization.enabled === false) return MODES.BLOCKED;
 
     // Must have verified email for REAL access
-    if (!emailVerified) return MODES.DEMO;
+    if (!emailVerified) return MODES.BLOCKED;
 
     return MODES.REAL;
   }
@@ -73,26 +91,21 @@
     return mode === MODES.REAL;
   }
 
-  /** Check if the mode is the demo mode. */
-  function isDemoMode(mode) {
-    return mode === MODES.DEMO;
-  }
-
   /** Check if the mode is blocked. */
   function isBlockedMode(mode) {
-    return mode === MODES.BLOCKED;
+    return mode === MODES.BLOCKED || mode === MODES.AUTH_FAILURE;
   }
 
   /** Portuguese label for UI. */
   function modeLabel(mode) {
     switch (mode) {
       case MODES.REAL: return 'Conta real';
-      case MODES.DEMO: return 'Modo demonstração';
-      case MODES.BLOCKED: return 'Conta bloqueada';
+      case MODES.BLOCKED: return 'Acesso não autorizado';
+      case MODES.AUTH_FAILURE: return 'Falha ao validar acesso';
       case MODES.LOGIN_REQUIRED: return 'Entrar';
       default: return 'Desconhecido';
     }
   }
 
-  return { MODES, normalizeEmail, resolveAccountMode, canAccessRealPortfolio, isDemoMode, isBlockedMode, modeLabel };
+  return { MODES, normalizeEmail, resolveAccountMode, canAccessRealPortfolio, isBlockedMode, modeLabel, createSessionGuard };
 });
