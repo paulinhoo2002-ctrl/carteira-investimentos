@@ -322,8 +322,17 @@
     const targetTicker = norm(asset?.ticker);
     const targetName = norm(asset?.name || asset?.product || asset?.title);
     for (const row of Array.isArray(linkedIncomeEvents) ? linkedIncomeEvents : []) {
-      if (String(row?.sourceEventKind || '').toLowerCase() !== 'rf') continue;
       const sourceId = String(row?.sourceEventId || '').trim();
+      const sourceEventKind = String(row?.sourceEventKind || '').toLowerCase();
+      if (sourceEventKind !== 'rf') {
+        if (sourceId && seenIds.has(sourceId)) {
+          const linkedEvent = provenanceRows.find(item => item.sourceKind === 'RF_EVENT' && item.stableEventId === sourceId);
+          if (linkedEvent) linkedEvent.sourceOverlapResolution = 'UNRESOLVED';
+          eventsSupported = false;
+          blockers.add('AMBIGUOUS_LINKED_INCOME_SOURCE_KIND');
+        }
+        continue;
+      }
       const linkedTicker = norm(row?.ticker);
       const linkedName = norm(row?.assetName || row?.name || row?.product);
       const relevant = (sourceId && seenIds.has(sourceId))

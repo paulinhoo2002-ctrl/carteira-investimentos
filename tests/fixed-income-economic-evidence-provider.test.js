@@ -211,6 +211,37 @@ test('PROVIDER_MISSING_APPLICATION_BLOCKS_COMPLETE and duplicate linked source r
   assert.equal(linked.coverage.history.status, 'PARTIAL');
 });
 
+test('linked source event with missing kind blocks complete history', () => {
+  const asset = trend();
+  for (const sourceEventKind of [undefined, 'dividend']) {
+    const result = provider.buildEvidence({
+      asset, assets: [asset], historyEvidence: proof(), events: [
+        event('app-1', 'aporte', { status: 'CONFIRMED', principalDelta: 100 }),
+        event('coupon-1', 'juros', { status: 'RECEIVED', netValue: 10 }),
+      ],
+      linkedIncomeEvents: [{ sourceEventKind, sourceEventId: 'coupon-1', ticker: 'TREND', assetName: asset.name, value: 10, date: '2025-01-01' }],
+    });
+
+    assert.equal(result.coverage.history.status, 'PARTIAL');
+    assert.equal(result.coverage.history.sourceOverlapResolved, false);
+    assert.ok(result.blockers.includes('AMBIGUOUS_LINKED_INCOME_SOURCE_KIND'));
+  }
+});
+
+test('unlinked income from the same ticker does not contaminate fixed-income history', () => {
+  const asset = trend();
+  const result = provider.buildEvidence({
+    asset, assets: [asset], historyEvidence: proof(), events: [
+      event('app-1', 'aporte', { status: 'CONFIRMED', principalDelta: 100 }),
+      event('coupon-1', 'juros', { status: 'RECEIVED', netValue: 10 }),
+    ],
+    linkedIncomeEvents: [{ sourceEventId: 'unrelated-event', ticker: 'TREND', assetName: asset.name, value: 10, date: '2025-01-01' }],
+  });
+
+  assert.equal(result.coverage.history.status, 'COMPLETE');
+  assert.equal(result.coverage.history.sourceOverlapResolved, true);
+});
+
 test('PROVIDER_TREND_DI_ENGINE_DERIVES only from explicit complete synthetic evidence', () => {
   const asset = trend();
   const result = provider.buildEvidence({ asset, assets: [asset], historyEvidence: proof(), currentPositionCoverage: 'COMPLETE', events: [
