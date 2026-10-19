@@ -7579,6 +7579,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 .assets-premium-shell .assets-portfolio-summary span{color:var(--muted);font-size:12px;line-height:1.25}
 html[data-theme="light"] .assets-premium-shell .assets-portfolio-summary span{color:#45586c}
 .assets-premium-shell .assets-portfolio-summary strong{font-size:18px;font-weight:650;line-height:1.2;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+html[data-theme="light"] .assets-premium-shell .assets-portfolio-summary .positive-text{color:#0f5c2d}
 .assets-premium-shell .accordion-header .acc-metric-label{font-size:11px;text-transform:none;letter-spacing:normal}
 .assets-premium-shell .accordion-header .acc-metric-value{font-variant-numeric:tabular-nums}
 .assets-premium-shell .assets-premium-subtitle{font-size:11px}
@@ -8773,6 +8774,8 @@ document.write([
 <script src="fixed-income-valuation.js"></script>
 <script src="fixed-income-economic-result.js"></script>
 <script src="fixed-income-economic-result-adapter.js"></script>
+<script src="financial-evidence-provenance.js"></script>
+<script src="historical-coverage-engine.js"></script>
 <script src="fixed-income-economic-evidence-provider.js"></script>
 <script src="fixed-income-display.js"></script>
 <script src="fixed-income-trust.js"></script>
@@ -30681,6 +30684,13 @@ function rfEconomicEvidenceForAsset(asset){
     linkedIncomeEvents:S.proventos||[],
     historyEvidence:null,
     currentPositionCoverage,
+    currentPositionProvenance:{
+      sourceId:'S.assets',
+      assetIdentity:asset?.id||asset?.assetId||asset?.rf_asset_id||null,
+      authority:currentMeta.authority,
+      observedAt:currentMeta.valuationAsOf||currentMeta.sourceAsOf||null,
+      status:hasCurrent?'OBSERVED':'UNKNOWN',
+    },
   })||null;
 }
 function rfIntelligenceSnapshot(){

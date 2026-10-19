@@ -6,18 +6,21 @@ const path = require('node:path');
 const vm = require('node:vm');
 const test = require('node:test');
 const provider = require('../fixed-income-economic-evidence-provider.js');
+const provenance = require('../financial-evidence-provenance.js');
+const coverageEngine = require('../historical-coverage-engine.js');
 const engine = require('../fixed-income-economic-result.js');
 const adapter = require('../fixed-income-economic-result-adapter.js');
 
 const trend = (name = 'Trend DI FIC RF Simples RL') => ({ id: 'trend-1', ticker: 'TREND', type: 'Renda Fixa', name });
 const proof = (coverage = {}) => ({
   status: 'COMPLETE', periodStart: '2024-01-01', periodEnd: '2026-10-18',
-  openingPosition: 'NONE', allEventsRepresented: true, duplicatesResolved: true,
+  openingPosition: 'NONE', allEventsRepresented: true, duplicatesResolved: true, sourceOverlapResolved: true,
   coverage: { contributions: 'COMPLETE', income: 'COMPLETE', taxes: 'COMPLETE', capitalReturns: 'COMPLETE', principal: 'COMPLETE', ...coverage },
 });
 const event = (id, type, fields = {}) => ({
   id, assetId: 'trend-1', ticker: 'TREND', date: '2025-01-01', type,
-  grossValue: 0, netValue: 0, ir: 0, iof: 0, principalDelta: 0, source: 'Movimento confirmado', ...fields,
+  grossValue: 0, netValue: 0, ir: 0, iof: 0, principalDelta: 0, source: 'Movimento confirmado',
+  sourceId: 'synthetic-ledger', authority: 'SYNTHETIC_TEST', conflictState: 'NONE', ...fields,
 });
 
 test('PROVIDER_ONLY_TREND_PRODUCTS_ELIGIBLE; exact products only', () => {
@@ -126,6 +129,21 @@ test('PROVIDER_PAID_IR_LINKED_ONCE; projected IR is never promoted to paid', () 
   assert.equal(result.events.find(row => row.id === 'tax-projected').amount, null);
 });
 
+test('PROVIDER_PAID_TAX_REQUIRES_EXISTING_RECEIVED_EVENT_LINK', () => {
+  const result = provider.buildEvidence({
+    asset: trend(), assets: [trend()], historyEvidence: proof(),
+    events: [
+      event('application-1', 'aporte', { date: '2024-06-01', status: 'CONFIRMED', principalDelta: 100 }),
+      event('tax-paid', 'ir', { date: '2025-06-02', status: 'PAID', amount: 10, relatedEventId: 'missing-redemption' }),
+    ],
+  });
+  assert.equal(result.coverage.taxes, 'PARTIAL');
+  assert.equal(result.coverage.history.status, 'PARTIAL');
+  assert.ok(result.blockers.includes('TAX_LINK_UNVERIFIED'));
+  assert.equal(result.events.find(row => row.type === 'IR').status, 'UNKNOWN');
+  assert.equal(result.events.find(row => row.type === 'IR').amount, null);
+});
+
 test('validated paid IR with complete tax coverage can remain COMPLETE and net gross cash exactly once', () => {
   const asset = trend();
   const evidence = provider.buildEvidence({
@@ -163,6 +181,7 @@ test('PROVIDER_GROSS_NET_NOT_MIXED keeps one explicit cash basis', () => {
   assert.equal(coupon.amount, 90);
   assert.equal(Object.hasOwn(coupon, 'grossAmount'), false);
   assert.equal(result.coverage.taxes, 'PARTIAL');
+  assert.equal(result.coverage.history.status, 'PARTIAL');
 });
 
 test('PROVIDER_MISSING_APPLICATION_BLOCKS_COMPLETE and duplicate linked source risk blocks', () => {
@@ -238,6 +257,7 @@ test('real runtime evidence is gated by REAL authorization and logout clears sou
   const runtimeEvidence = vm.runInContext('rfEconomicEvidenceForAsset(asset)', context);
   assert.ok(runtimeEvidence);
   assert.equal(runtimeEvidence.coverage.history.status, 'PARTIAL', 'runtime data has no proof manifest and cannot certify complete history');
+  assert.equal(runtimeEvidence.sourceEvidence.find(row => row.semanticType === 'CURRENT_POSITION').sourceId, 'S.assets');
   assert.equal(calls, 1);
   const clearStart = source.indexOf('function clearRealStateInMemory(){');
   const clearEnd = source.indexOf('function sanitizeFirestoreValue(', clearStart);
@@ -249,6 +269,7 @@ test('real runtime evidence is gated by REAL authorization and logout clears sou
   context.FB.accountMode = 'BLOCKED'; context.FB.user = null; context.FB.access.allowed = false; context.FB.cloudLoaded = false;
   context.S = { assets: [], rfEvents: [], aportes: [], proventos: [] };
   assert.equal(vm.runInContext('rfEconomicEvidenceForAsset(asset)', context), null);
+  assert.equal(calls, 1, 'blocked mode must not invoke the real provider');
   assert.deepEqual(context.S, { assets: [], rfEvents: [], aportes: [], proventos: [] });
 });
 
@@ -266,5 +287,233 @@ test('runtime data sources and strict authenticated gate remain explicit', () =>
   assert.match(integration, /S\.proventos/);
   assert.doesNotMatch(integration, /FixedIncomeEconomicResultEvidence/);
   assert.match(integration, /FixedIncomeEconomicEvidenceProvider\?\.buildEvidence/);
+  assert.ok(source.indexOf('<script src="financial-evidence-provenance.js"></script>') < source.indexOf('<script src="historical-coverage-engine.js"></script>'));
+  assert.ok(source.indexOf('<script src="historical-coverage-engine.js"></script>') < source.indexOf('<script src="fixed-income-economic-evidence-provider.js"></script>'));
   assert.match(source, /<script src="fixed-income-economic-evidence-provider\.js"><\/script>/);
+});
+
+test('PROVENANCE_MISSING_FAILS_CLOSED and registered evidence keeps source identity', () => {
+  const asset = trend();
+  const rows = [event('application-1', 'aporte', { status: 'CONFIRMED', principalDelta: 100, sourceId: '', authority: '' })];
+  const missing = provider.buildEvidence({ asset, assets: [asset], events: rows, historyEvidence: proof() });
+  assert.equal(missing.coverage.history.status, 'PARTIAL');
+  assert.ok(missing.blockers.includes('PROVENANCE_INCOMPLETE'));
+  assert.equal(missing.sourceEvidence.length, 1);
+
+  const provenance = require('../financial-evidence-provenance.js');
+  const registered = provenance.createRegistry([{ sourceKind: 'RF_EVENT', sourceId: 'synthetic-ledger', stableEventId: 'application-1', assetIdentity: 'trend-1', occurredOn: '2025-01-01', authority: 'SYNTHETIC_TEST', semanticType: 'APPLICATION', status: 'CONFIRMED' }]);
+  assert.equal(registered.sourceEvidence[0].stableEventId, 'application-1');
+  assert.equal(registered.sourceEvidence[0].sourceId, 'synthetic-ledger');
+});
+
+test('HISTORY_SOURCE_OVERLAP_RESOLVED_REQUIRED', () => {
+  const asset = trend();
+  const result = provider.buildEvidence({
+    asset, assets: [asset],
+    events: [event('application-1', 'aporte', { status: 'CONFIRMED', principalDelta: 100, sourceId: 'synthetic-ledger', authority: 'SYNTHETIC_TEST' })],
+    historyEvidence: { ...proof(), sourceOverlapResolved: false },
+  });
+  assert.equal(result.coverage.history.status, 'PARTIAL');
+  assert.equal(result.coverage.history.sourceOverlapResolved, false);
+});
+
+test('HISTORY_PERIOD_END_REQUIRED and every independent component stays explicit', () => {
+  const asset = trend();
+  const result = provider.buildEvidence({
+    asset, assets: [asset], events: [event('application-1', 'aporte', { status: 'CONFIRMED', principalDelta: 100, sourceId: 'synthetic-ledger', authority: 'SYNTHETIC_TEST' })],
+    historyEvidence: { ...proof(), periodEnd: null, sourceOverlapResolved: true },
+  });
+  assert.equal(result.coverage.history.status, 'PARTIAL');
+  assert.equal(result.coverage.history.periodEnd, null);
+});
+
+test('PROVENANCE_REGISTRY records explicit descriptors and rejects missing source identity', () => {
+  const descriptor = {
+    sourceKind: 'RF_EVENT', sourceId: 'source-ledger-1', stableEventId: 'event-1', assetIdentity: 'trend-1',
+    occurredOn: '2025-01-01', authority: 'BROKER_STATEMENT', semanticType: 'APPLICATION', status: 'CONFIRMED',
+    periodStart: '2024-01-01', periodEnd: '2026-10-18', duplicateState: 'NONE', conflictState: 'NONE',
+  };
+  const registry = provenance.createRegistry([descriptor], { duplicatesResolved: true, sourceOverlapResolved: true });
+  assert.equal(registry.provenanceComplete, true);
+  assert.equal(registry.sourceEvidence[0].periodMembership, 'IN_PERIOD');
+  assert.equal(registry.sourceEvidence[0].authority, 'BROKER_STATEMENT');
+  assert.equal(provenance.createRegistry([{ ...descriptor, sourceId: null }], { duplicatesResolved: true, sourceOverlapResolved: true }).provenanceComplete, false);
+});
+
+test('PROVENANCE_REGISTRY_EXPECTED_INCOME_IS_NOT_RECEIVED', () => {
+  const descriptor = {
+    sourceKind: 'RF_EVENT', sourceId: 'source-ledger-1', stableEventId: 'coupon-expected', assetIdentity: 'trend-1',
+    occurredOn: '2025-01-01', authority: 'BROKER_STATEMENT', semanticType: 'COUPON', status: 'EXPECTED',
+    amountBasis: 'GROSS', periodStart: '2024-01-01', periodEnd: '2026-10-18', duplicateState: 'NONE', conflictState: 'NONE',
+  };
+  const registry = provenance.createRegistry([descriptor], { duplicatesResolved: true, sourceOverlapResolved: true });
+  assert.equal(registry.sourceEvidence[0].coverageState, 'UNKNOWN');
+  assert.equal(registry.provenanceComplete, false);
+  const projectedTax = provenance.createRegistry([{
+    ...descriptor, stableEventId: 'tax-projected', semanticType: 'IR', status: 'PROJECTED', amountBasis: null,
+  }], { duplicatesResolved: true, sourceOverlapResolved: true });
+  assert.equal(projectedTax.sourceEvidence[0].coverageState, 'UNKNOWN');
+  assert.equal(projectedTax.provenanceComplete, false);
+});
+
+test('PROVENANCE_PERIOD_MUST_BE_EXPLICITLY_PROVEN_FOR_EACH_EVENT', () => {
+  const descriptor = {
+    sourceKind: 'RF_EVENT', sourceId: 'source-ledger-1', stableEventId: 'application-no-period', assetIdentity: 'trend-1',
+    occurredOn: '2025-01-01', authority: 'BROKER_STATEMENT', semanticType: 'APPLICATION', status: 'CONFIRMED',
+    duplicateState: 'NONE', conflictState: 'NONE',
+  };
+  const registry = provenance.createRegistry([descriptor], { duplicatesResolved: true, sourceOverlapResolved: true });
+  assert.equal(registry.sourceEvidence[0].periodMembership, 'UNKNOWN');
+  assert.equal(registry.provenanceComplete, false);
+  const result = coverageEngine.evaluateCoverage({
+    historyEvidence: proof(), registry, componentCoverage: { contributions: 'COMPLETE' }, subjectPresent: true,
+  });
+  assert.equal(result.coverage.history.status, 'PARTIAL');
+});
+
+test('HISTORY_EVENT_MUST_MATCH_AGGREGATE_PERIOD', () => {
+  const descriptor = {
+    sourceKind: 'RF_EVENT', sourceId: 'source-ledger-1', stableEventId: 'application-before-period', assetIdentity: 'trend-1',
+    occurredOn: '2023-12-31', authority: 'BROKER_STATEMENT', semanticType: 'APPLICATION', status: 'CONFIRMED',
+    periodStart: '2020-01-01', periodEnd: '2030-12-31', duplicateState: 'NONE', conflictState: 'NONE',
+  };
+  const registry = provenance.createRegistry([descriptor], { duplicatesResolved: true, sourceOverlapResolved: true });
+  assert.equal(registry.sourceEvidence[0].periodMembership, 'IN_PERIOD');
+  const result = coverageEngine.evaluateCoverage({
+    historyEvidence: proof(), registry, componentCoverage: { contributions: 'COMPLETE' }, subjectPresent: true,
+  });
+  assert.equal(result.coverage.history.status, 'PARTIAL');
+  assert.ok(result.blockers.includes('HISTORY_EVENT_PERIOD_UNPROVEN'));
+});
+
+test('HISTORY_EVENT_ASSET_IDENTITY_MUST_MATCH_SUBJECT', () => {
+  const descriptor = {
+    sourceKind: 'RF_EVENT', sourceId: 'source-ledger-1', stableEventId: 'application-other-asset', assetIdentity: 'asset-A',
+    occurredOn: '2025-01-01', authority: 'BROKER_STATEMENT', semanticType: 'APPLICATION', status: 'CONFIRMED',
+    periodStart: '2024-01-01', periodEnd: '2026-10-18', duplicateState: 'NONE', conflictState: 'NONE',
+  };
+  const registry = provenance.createRegistry([descriptor], { duplicatesResolved: true, sourceOverlapResolved: true });
+  const result = coverageEngine.evaluateCoverage({
+    historyEvidence: proof(), registry, componentCoverage: { contributions: 'COMPLETE' },
+    subjectIdentity: 'asset-B', subjectPresent: true,
+  });
+  assert.equal(result.coverage.history.status, 'PARTIAL');
+  assert.ok(result.blockers.includes('HISTORY_ASSET_IDENTITY_MISMATCH'));
+});
+
+test('COVERAGE_USES_ONLY_THE_REGISTRY_EVIDENCE_IT_VERIFIED', () => {
+  const descriptor = {
+    sourceKind: 'RF_EVENT', sourceId: 'source-ledger-1', stableEventId: 'application-1', assetIdentity: 'asset-A',
+    occurredOn: '2025-01-01', authority: 'BROKER_STATEMENT', semanticType: 'APPLICATION', status: 'CONFIRMED',
+    periodStart: '2024-01-01', periodEnd: '2026-10-18', duplicateState: 'NONE', conflictState: 'NONE',
+  };
+  const registry = provenance.createRegistry([descriptor], { duplicatesResolved: true, sourceOverlapResolved: true });
+  const result = coverageEngine.evaluateCoverage({
+    historyEvidence: proof(), registry,
+    sourceEvidence: [{ ...registry.sourceEvidence[0], assetIdentity: 'asset-B' }],
+    componentCoverage: { contributions: 'COMPLETE' }, subjectIdentity: 'asset-B', subjectPresent: true,
+  });
+  assert.equal(result.coverage.history.status, 'PARTIAL');
+  assert.ok(result.blockers.includes('HISTORY_ASSET_IDENTITY_MISMATCH'));
+});
+
+test('KNOWN_OPENING_POSITION_REQUIRES_COMPATIBLE_PROVENANCE', () => {
+  const asset = trend();
+  const openingPosition = {
+    sourceKind: 'POSITION_SNAPSHOT', sourceId: 'synthetic-opening-snapshot', stableEventId: 'opening-1', assetIdentity: 'trend-1',
+    occurredOn: '2023-12-31', authority: 'BROKER_STATEMENT', semanticType: 'OPENING_POSITION', status: 'OBSERVED',
+    periodStart: '2024-01-01', periodEnd: '2026-10-18', duplicateState: 'NONE', conflictState: 'NONE',
+    compatibleWithPeriod: true, positionQuantity: 20, quantityUnit: 'QUOTA',
+  };
+  const openingRegistry = provenance.createRegistry([openingPosition], { duplicatesResolved: true, sourceOverlapResolved: true });
+  const result = coverageEngine.evaluateCoverage({
+    historyEvidence: { ...proof(), openingPosition: 'KNOWN' }, registry: openingRegistry,
+    componentCoverage: { contributions: 'COMPLETE' }, subjectIdentity: 'trend-1', subjectPresent: true,
+  });
+  assert.equal(result.coverage.history.openingPosition, 'KNOWN');
+  assert.equal(result.coverage.history.status, 'COMPLETE');
+
+  const unproven = provenance.createRegistry([{ ...openingPosition, compatibleWithPeriod: false }], { duplicatesResolved: true, sourceOverlapResolved: true });
+  assert.equal(coverageEngine.evaluateCoverage({
+    historyEvidence: { ...proof(), openingPosition: 'KNOWN' }, registry: unproven,
+    componentCoverage: { contributions: 'COMPLETE' }, subjectIdentity: 'trend-1', subjectPresent: true,
+  }).coverage.history.status, 'PARTIAL');
+  assert.equal(coverageEngine.evaluateCoverage({
+    historyEvidence: { ...proof(), openingPosition: 'KNOWN' }, componentCoverage: { contributions: 'COMPLETE' }, subjectIdentity: 'trend-1', subjectPresent: true,
+  }).coverage.history.status, 'PARTIAL');
+});
+
+test('PROVIDER_ACCEPTS_KNOWN_OPENING_ONLY_WITH_COMPATIBLE_POSITION_EVIDENCE', () => {
+  const asset = trend();
+  const result = provider.buildEvidence({
+    asset, assets: [asset],
+    events: [event('application-1', 'aporte', { status: 'CONFIRMED', principalDelta: 100 })],
+    historyEvidence: {
+      ...proof(), openingPosition: 'KNOWN',
+      openingPositionEvidence: {
+        sourceKind: 'POSITION_SNAPSHOT', sourceId: 'synthetic-opening-snapshot', stableEventId: 'opening-1', assetIdentity: 'trend-1',
+        asOfDate: '2023-12-31', authority: 'BROKER_STATEMENT', status: 'OBSERVED', compatibleWithPeriod: true,
+        positionQuantity: 20, quantityUnit: 'QUOTA', duplicateState: 'NONE', conflictState: 'NONE',
+      },
+    },
+  });
+  assert.equal(result.coverage.history.status, 'COMPLETE');
+  assert.equal(result.sourceEvidence.find(row => row.semanticType === 'OPENING_POSITION').periodMembership, 'OPENING_COMPATIBLE');
+  const calculated = adapter.calculate({
+    currentMarketValue: 120, currentPositionKnown: true, currentPositionCoverage: 'COMPLETE', evidence: result,
+    engine: engine.calculateFixedIncomeEconomicResult,
+  });
+  assert.notEqual(calculated.status, 'DERIVED_WITH_COMPLETE_HISTORY');
+});
+
+test('PROVENANCE_REGISTRY retains duplicates and blocks unresolved source overlap', () => {
+  const descriptor = {
+    sourceKind: 'RF_EVENT', sourceId: 'source-a', stableEventId: 'event-1', assetIdentity: 'trend-1',
+    occurredOn: '2025-01-01', authority: 'BROKER_STATEMENT', semanticType: 'APPLICATION', status: 'CONFIRMED',
+    periodStart: '2024-01-01', periodEnd: '2026-10-18', duplicateState: 'NONE', conflictState: 'NONE',
+  };
+  const repeated = provenance.createRegistry([descriptor, { ...descriptor, sourceId: 'source-b' }], { duplicatesResolved: true, sourceOverlapResolved: true });
+  assert.equal(repeated.sourceEvidence.length, 2);
+  assert.equal(repeated.sourceOverlapResolved, false);
+  assert.ok(repeated.blockers.includes('SOURCE_OVERLAP_UNRESOLVED'));
+  const duplicate = provenance.createRegistry([descriptor, { ...descriptor, stableEventId: 'event-2', duplicateFingerprint: 'same-source-record-shape' } , { ...descriptor, stableEventId: 'event-3', duplicateFingerprint: 'same-source-record-shape' }], { duplicatesResolved: true, sourceOverlapResolved: true });
+  assert.equal(duplicate.duplicatesResolved, false);
+  const uncertain = provenance.createRegistry([{ ...descriptor, duplicateState: 'UNKNOWN', sourceOverlapResolution: 'UNRESOLVED' }], { duplicatesResolved: true, sourceOverlapResolved: true });
+  assert.equal(uncertain.duplicatesResolved, false);
+  assert.equal(uncertain.sourceOverlapResolved, false);
+});
+
+test('HISTORICAL_COVERAGE keeps components independent and requires explicit proof', () => {
+  const unknown = coverageEngine.evaluateCoverage({ subjectPresent: true, componentCoverage: { currentPosition: 'COMPLETE' } });
+  assert.equal(unknown.coverage.history.status, 'PARTIAL');
+  assert.equal(unknown.coverage.currentPosition, 'COMPLETE');
+  assert.equal(unknown.coverage.costBasis, 'UNKNOWN');
+  assert.equal(unknown.coverage.contributions, 'UNKNOWN');
+});
+
+test('TREND_DI_AND_TREND_DI_II_REMAIN_PARTIAL_WITHOUT_RUNTIME_HISTORY_PROOF', () => {
+  for (const name of ['Trend DI FIC RF Simples RL', 'Trend DI II FIC RF Simples RL']) {
+    const asset = trend(name);
+    const result = provider.buildEvidence({
+      asset, assets: [asset],
+      events: [event('application-1', 'aporte', { status: 'CONFIRMED', principalDelta: 100 })],
+      currentPositionProvenance: { sourceId: 'S.assets', assetIdentity: 'trend-1', authority: 'MANUAL_AUTHORITATIVE', status: 'OBSERVED' },
+    });
+    assert.equal(result.coverage.history.status, 'PARTIAL');
+    assert.equal(result.coverage.currentPosition, 'UNKNOWN');
+    assert.equal(result.coverage.history.openingPosition, 'UNKNOWN');
+  }
+});
+
+test('UNLINKED_LEGACY_APORTE_CANNOT_BE_OVERRIDDEN_BY_COMPLETE_HISTORY_ASSERTION', () => {
+  const asset = trend();
+  const result = provider.buildEvidence({
+    asset, assets: [asset],
+    events: [event('application-1', 'aporte', { status: 'CONFIRMED', principalDelta: 100 })],
+    aportes: [{ id: 'legacy-1', sourceId: 'legacy-import-1', assetId: 'trend-1', ticker: 'TREND', type: 'Renda Fixa', operation: 'aplicação', date: '2024-01-01', status: 'CONFIRMED', authority: 'BROKER_STATEMENT', value: 100 }],
+    historyEvidence: proof(),
+  });
+  assert.equal(result.coverage.history.status, 'PARTIAL');
+  assert.equal(result.coverage.history.sourceOverlapResolved, false);
+  assert.ok(result.blockers.includes('UNLINKED_LEGACY_PURCHASES'));
 });
