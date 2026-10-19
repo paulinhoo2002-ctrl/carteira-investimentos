@@ -73,7 +73,9 @@ before(async () => {
   server = spawn(process.execPath, [path.join(__dirname, 'local-http-server.js'), '--port', String(PORT), '--synthetic-qa'], { stdio: 'ignore' });
   server.unref();
   await waitReady();
-  browser = await require('playwright').chromium.launch();
+  browser = await require('playwright').chromium.launch({
+    executablePath: process.env.CHROME_PATH || undefined,
+  });
 });
 after(async () => {
   if (browser) await browser.close().catch(() => {});
