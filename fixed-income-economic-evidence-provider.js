@@ -259,11 +259,34 @@
     // Legacy aportes may duplicate or extend the RF ledger; do not infer linkage from matching amounts.
     const legacyRows = sourceRows(asset, assets, aportes);
     if (legacyRows.ambiguous) blockers.add('AMBIGUOUS_LEGACY_CONTRIBUTION_LINK');
-    const legacyPurchases = legacyRows.rows.filter(row => {
-      const type = row?.type || row?.asset_type;
+    const relevantLegacyRows = legacyRows.rows.filter(row => (row?.type || row?.asset_type) === 'Renda Fixa');
+    const legacyPurchases = relevantLegacyRows.filter(row => {
       const operation = norm(row?.operation || row?.kind || row?.movementKind);
-      return type === 'Renda Fixa' && ['COMPRA', 'APORTE', 'APLICACAO'].includes(operation);
+      return ['COMPRA', 'APORTE', 'APLICACAO'].includes(operation);
     });
+    const unknownLegacyRows = relevantLegacyRows.filter(row => {
+      const operation = norm(row?.operation || row?.kind || row?.movementKind);
+      return !['COMPRA', 'APORTE', 'APLICACAO'].includes(operation);
+    });
+    if (unknownLegacyRows.length) {
+      eventsSupported = false;
+      contributionsSupported = false;
+      blockers.add('UNKNOWN_LEGACY_APORTE_TYPE');
+      for (const row of unknownLegacyRows) {
+        const id = typeof row?.id === 'string' || typeof row?.id === 'number' ? String(row.id).trim() : '';
+        const operation = norm(row?.operation || row?.kind || row?.movementKind);
+        provenanceRows.push({
+          sourceKind: 'LEGACY_APORTE', sourceId: row?.sourceId || row?.sourceRecordId || row?.importRef || null,
+          stableEventId: id || null, assetIdentity: row?.assetId || row?.asset_id || null,
+          occurredOn: typeof row?.date === 'string' ? row.date : '', observedAt: row?.observedAt || null,
+          authority: row?.authority || row?.sourceAuthority || null, semanticType: 'UNKNOWN', status: 'UNKNOWN',
+          periodStart: historyEvidence?.periodStart, periodEnd: historyEvidence?.periodEnd,
+          duplicateState: 'UNKNOWN', conflictState: row?.conflictState || 'UNKNOWN',
+          sourceOverlapResolution: 'UNRESOLVED',
+          duplicateFingerprint: [row?.date || '', operation, row?.total ?? row?.amount ?? row?.value ?? ''].join('|'),
+        });
+      }
+    }
     if (legacyPurchases.length) {
       contributionsSupported = false;
       blockers.add('UNLINKED_LEGACY_PURCHASES');

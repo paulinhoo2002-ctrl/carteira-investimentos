@@ -534,3 +534,22 @@ test('UNLINKED_LEGACY_APORTE_CANNOT_BE_OVERRIDDEN_BY_COMPLETE_HISTORY_ASSERTION'
   assert.equal(result.coverage.history.sourceOverlapResolved, false);
   assert.ok(result.blockers.includes('UNLINKED_LEGACY_PURCHASES'));
 });
+
+test('UNKNOWN_LINKED_LEGACY_APORTE_CANNOT_BE_OMITTED_FROM_COMPLETE_HISTORY', () => {
+  const asset = trend();
+  for (const [id, operationFields] of [
+    ['legacy-unknown', { operation: 'transferencia' }],
+    ['legacy-missing-type', {}],
+  ]) {
+    const result = provider.buildEvidence({
+      asset, assets: [asset],
+      events: [event('application-1', 'aporte', { status: 'CONFIRMED', principalDelta: 100 })],
+      aportes: [{ id, sourceId: `source-${id}`, assetId: 'trend-1', ticker: 'TREND', type: 'Renda Fixa', ...operationFields, date: '2025-03-01', status: 'CONFIRMED', total: 500 }],
+      historyEvidence: proof(),
+    });
+
+    assert.equal(result.coverage.history.status, 'PARTIAL');
+    assert.ok(result.blockers.includes('UNKNOWN_LEGACY_APORTE_TYPE'));
+    assert.ok(result.sourceEvidence.some(row => row.stableEventId === id && row.semanticType === 'UNKNOWN'));
+  }
+});
