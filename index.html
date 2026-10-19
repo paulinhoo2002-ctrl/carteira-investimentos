@@ -8755,6 +8755,7 @@ document.write([
 <script src="fixed-income-valuation.js"></script>
 <script src="fixed-income-economic-result.js"></script>
 <script src="fixed-income-economic-result-adapter.js"></script>
+<script src="fixed-income-economic-evidence-provider.js"></script>
 <script src="fixed-income-display.js"></script>
 <script src="fixed-income-trust.js"></script>
 <script src="import-center-context.js"></script>
@@ -30644,9 +30645,24 @@ function rfEconomicEvidenceForAsset(asset){
   const product=rfPosNorm(assetRfName(asset));
   if(!['TREND DI FIC RF SIMPLES RL','TREND DI II FIC RF SIMPLES RL'].includes(product)) return null;
   const id=rfAssetEventId(asset);
-  if(FB.accountMode==='REAL') return globalThis.FixedIncomeEconomicResultEvidence?.[id]||null;
-  if(isLocalTestMode()) return globalThis.FixedIncomeEconomicResultTestEvidence?.[id]||null;
-  return null;
+  if(FB.accountMode!=='REAL' && isLocalTestMode()) return globalThis.FixedIncomeEconomicResultTestEvidence?.[id]||null;
+  if(FB.accountMode!=='REAL' || !FB.user?.uid || FB.access?.allowed!==true || FB.cloudLoaded!==true) return null;
+  const vals=rfValues(asset);
+  const currentMeta=assetRfCurrentValueMeta(asset);
+  const hasCurrent=vals.hasExplicitCurrent && Number.isFinite(vals.current) && vals.currentState?.state!=='invalid';
+  const currentPositionCoverage=hasCurrent
+    && ['MANUAL_AUTHORITATIVE','IMPORTED_AUTHORITATIVE','LEGACY_AUTHORITATIVE'].includes(currentMeta.authority)
+    && currentMeta.isFallback!==true && currentMeta.isEstimated!==true && currentMeta.isStale!==true
+    ? 'COMPLETE' : hasCurrent ? 'PARTIAL' : 'UNKNOWN';
+  return globalThis.FixedIncomeEconomicEvidenceProvider?.buildEvidence({
+    asset,
+    assets:S.assets||[],
+    events:S.rfEvents||[],
+    aportes:S.aportes||[],
+    linkedIncomeEvents:S.proventos||[],
+    historyEvidence:null,
+    currentPositionCoverage,
+  })||null;
 }
 function rfIntelligenceSnapshot(){
   const today=new Date(); today.setHours(0,0,0,0);
