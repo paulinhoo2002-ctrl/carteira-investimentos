@@ -58,6 +58,8 @@ test('Dividendos preserva parcial e mês desconhecido sem converter ausência em
   const partial = dividendKpiHtml({ total: 125, coverage: 'PARTIAL' });
   assert.match(partial, />R\$ 125<\/div>/);
   assert.match(partial, /Recebido registrado · cobertura parcial/);
+  assert.match(partial, /<details class="dividend-executive-kpi-info">/);
+  assert.match(partial, /<summary aria-label="Mais informações sobre Último mês">ⓘ<\/summary>/);
   const unknown = dividendKpiHtml({ total: null, coverage: 'UNKNOWN' });
   assert.match(unknown, />—<\/div>/);
   assert.match(unknown, /Cobertura desconhecida/);

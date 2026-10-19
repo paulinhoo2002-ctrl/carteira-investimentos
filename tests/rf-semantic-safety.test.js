@@ -217,7 +217,7 @@ test('Dashboard labels result unavailable when applied coverage is incomplete', 
   };
   vm.runInNewContext(`${dashboardSource};globalThis.api=executiveKPIs;`, context);
   const html = context.api({ portfolio: { tI: 0, tC: 100, tG: 100, tGP: 100, appliedComplete: false } });
-  assert.match(html, /Resultado sobre capital cadastrado\|—/);
+  assert.match(html, /Resultado\|—/);
   assert.match(html, /Base aplicada parcial ou indisponível/);
-  assert.doesNotMatch(html, /Resultado sobre capital cadastrado\|R\$ 100/);
+  assert.doesNotMatch(html, /Resultado\|R\$ 100/);
 });

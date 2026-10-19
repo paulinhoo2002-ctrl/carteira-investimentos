@@ -72,8 +72,9 @@ test('position result stays separate from coupons and requires known position ba
 test('Dashboard separates valuation, received income, and uncertified total result',()=>{
   const kpis=source.slice(source.indexOf('function executiveKPIs(data){'),source.indexOf('function package2ExecutivePanel(){'));
   const panel=source.slice(source.indexOf('function package2ExecutivePanel(){'),source.indexOf('function dashboardEvolutionPanel(data){'));
-  assert.match(kpis,/Resultado sobre capital cadastrado/);
-  assert.match(kpis,/Renda recebida no mês/);
+  assert.match(kpis,/Resultado/);
+  assert.match(kpis,/Sobre capital cadastrado/);
+  assert.match(kpis,/Renda no mês/);
   assert.match(kpis,/Resultado total: Em consolidação/);
   assert.match(panel,/Resultado total/);
   assert.match(panel,/Em consolidação/);
@@ -118,8 +119,8 @@ test('fixed-income detail labels its current result as position-only',()=>{
 test('fixed-income cards, category summary, and table identify position-scope results',()=>{
   assert.match(source,/const resultLabel = isRF \? 'Resultado da posição' : 'Resultado'/);
   assert.match(source,/const returnLabel = isRF \? 'Rentabilidade da posição' : 'Rentabilidade'/);
-  assert.match(source,/Resultado das posições/);
-  assert.match(source,/Rentabilidade das posições/);
+  assert.match(source,/\['Resultado da posição',count&&data\.missingCurrent===0/);
+  assert.match(source,/Rentabilidade da posição \$\{display\.rentabilityText\}/);
   assert.match(source,/Resultado da posição R\$/);
   assert.match(source,/Rentabilidade da posição/);
 });

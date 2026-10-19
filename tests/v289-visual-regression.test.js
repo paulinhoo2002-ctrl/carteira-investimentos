@@ -503,6 +503,11 @@ test('Ativos mantém valor indisponível como desconhecido, nunca como zero', as
     assert.equal(values['Rentabilidade'], '—', 'rentabilidade sem valor atual deve ficar indisponível');
     assert.equal(values['% carteira'], '—', 'peso sem valor atual deve ficar indisponível');
     assert.equal(values['Valor total'], '—', 'valor total sem preço deve ficar indisponível');
+    assert.deepEqual(
+      await runtime.page.locator('.assets-portfolio-summary strong').allInnerTexts(),
+      ['—', '—', '—', '—'],
+      'o resumo superior não pode apresentar totais como completos quando falta valor corrente'
+    );
     const categoryMetrics = await runtime.page.locator('.assets-premium-shell details.ag[data-asset-group="FII"] .acc-metric-value').allInnerTexts();
     assert.deepEqual(categoryMetrics.slice(1), ['—', '—', '—', '—'], 'agregados da categoria incompleta não podem transformar valor ausente em perda ou peso zero');
     const rowWeights = await runtime.page.locator('.assets-premium-shell .assets-table tbody tr').evaluateAll(rows => rows.map(row => {
@@ -511,6 +516,26 @@ test('Ativos mantém valor indisponível como desconhecido, nunca como zero', as
     }));
     assert.ok(rowWeights.length > 0 && rowWeights.every(value => value.trim() === '—'), 'pesos individuais também ficam indisponíveis quando o denominador da carteira é parcial');
     assert.match(await runtime.page.locator('.assets-coverage-note').innerText(), /parcial|indisponível/i);
+    await assertSyntheticReadOnlyRuntime(runtime);
+  } finally {
+    await closeRuntime(runtime);
+  }
+});
+
+test('Ativos apresenta resultado zero de forma neutra no resumo da categoria', async () => {
+  const runtime = await createRuntime({ width: 1366, height: 768 });
+  try {
+    await applyV289VisualFixture(runtime.page, 'baseline');
+    await runtime.page.evaluate(() => {
+      S.assets = [{ id:'QA_ZERO', ticker:'QA0', name:'Ativo zero sintético', type:'Ação', qty:10, avg_price:10, current_price:10 }];
+      S.aportes = []; S.proventos = []; S.rfEvents = []; S.assetsSearch = ''; S.assetsFilterClasses = [];
+      render();
+    });
+    await setThemeAndRoute(runtime.page, 'dark', 'ativos');
+    const category = runtime.page.locator('.assets-premium-shell details.ag[data-asset-group="Ação"]');
+    const result = category.locator('.acc-metric-value').nth(2);
+    assert.equal((await result.innerText()).replace(/\u00a0/g, ' ').trim(), 'R$ 0,00');
+    assert.equal(await result.evaluate(element => element.classList.contains('positive-text') || element.classList.contains('negative-text')), false, 'resultado zero deve permanecer neutro');
     await assertSyntheticReadOnlyRuntime(runtime);
   } finally {
     await closeRuntime(runtime);
@@ -675,14 +700,15 @@ test('Ativos keeps primary category metrics readable and unclipped on tablet', a
           insideSummary: rect.left >= summary.left - 1 && rect.right <= summary.right + 1,
         };
       }));
-      for (const label of ['Atual', 'Resultado', 'Rentab.']) {
-        const metric = metrics.find(item => item.label === label);
-        assert.ok(metric?.visible, `${width}px: ${label} must appear in the category summary`);
-        assert.ok(metric.labelFontSize >= 12, `${width}px: ${label} label must be readable`);
-        assert.ok(metric.valueFontSize >= 12, `${width}px: ${label} value must be readable`);
-        assert.equal(metric.labelClipped, false, `${width}px: ${label} label must not be clipped`);
-        assert.equal(metric.valueClipped, false, `${width}px: ${label} value must not be clipped`);
-        assert.equal(metric.insideSummary, true, `${width}px: ${label} must stay inside its category card`);
+      for (const label of ['Atual', 'Resultado', /^Rentab/]) {
+        const metric = metrics.find(item => typeof label === 'string' ? item.label === label : label.test(item.label));
+        const labelText = typeof label === 'string' ? label : 'Rentabilidade';
+        assert.ok(metric?.visible, `${width}px: ${labelText} must appear in the category summary`);
+        assert.ok(metric.labelFontSize >= 12, `${width}px: ${labelText} label must be readable`);
+        assert.ok(metric.valueFontSize >= 12, `${width}px: ${labelText} value must be readable`);
+        assert.equal(metric.labelClipped, false, `${width}px: ${labelText} label must not be clipped`);
+        assert.equal(metric.valueClipped, false, `${width}px: ${labelText} value must not be clipped`);
+        assert.equal(metric.insideSummary, true, `${width}px: ${labelText} must stay inside its category card`);
       }
       if (!(await category.getAttribute('open'))) await category.locator(':scope > summary').click();
       const table = category.locator('.assets-table-wrap table');
