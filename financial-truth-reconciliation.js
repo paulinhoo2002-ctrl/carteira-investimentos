@@ -9,6 +9,10 @@
     'TREND DI FIC RF SIMPLES RL',
     'TREND DI II FIC RF SIMPLES RL',
   ]);
+  const SUPPORTED_PROVENANCE_TYPES = new Set([
+    'OPENING_POSITION', 'LINKED_REFERENCE', 'APPLICATION', 'PURCHASE', 'COUPON', 'INTEREST', 'INCOME',
+    'IR', 'IOF', 'AMORTIZATION', 'PARTIAL_REDEMPTION', 'TOTAL_REDEMPTION', 'PRINCIPAL_RETURN', 'UNKNOWN',
+  ]);
 
   function toCents(value) {
     if (typeof value !== 'number' || !Number.isFinite(value)) return null;
@@ -86,7 +90,7 @@
         && typeof row?.stableEventId === 'string' && row.stableEventId.trim()
         && row.assetIdentity === assetId
         && typeof row?.authority === 'string' && row.authority.trim()
-        && typeof row?.semanticType === 'string' && row.semanticType !== 'UNKNOWN'
+        && SUPPORTED_PROVENANCE_TYPES.has(row.semanticType) && row.semanticType !== 'UNKNOWN'
         && row.status !== 'UNKNOWN' && row.coverageState === 'COMPLETE'
         && ['NONE', 'RESOLVED'].includes(row.duplicateState)
         && ['NONE', 'RESOLVED'].includes(row.conflictState)

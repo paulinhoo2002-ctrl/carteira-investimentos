@@ -158,6 +158,42 @@ test('unmapped relevant provenance event blocks complete reconciliation', () => 
   assert.ok(result.blockers.includes('PROVENANCE_NOT_COMPLETE'));
 });
 
+test('unrecognized relevant provenance semantic type blocks complete reconciliation', () => {
+  const asset = { id: 'synthetic-trend', type: 'Renda Fixa', name: 'Trend DI FIC RF Simples RL' };
+  const evidence = {
+    contributions: [{ id: 'application-1', type: 'APPLICATION', amount: 100, status: 'CONFIRMED', occurredOn: '2024-01-01' }],
+    events: [],
+    coverage: completeCoverage(),
+    sourceEvidence: [
+      ...completeProvenance(asset.id, 'application-1', 100),
+      {
+        ...completeProvenance(asset.id, 'unmapped-event', 10)[0],
+        semanticType: 'UNCLASSIFIED_CASH', status: 'RECEIVED', amountBasis: 'GROSS', occurredOn: '2025-01-01',
+      },
+    ],
+    provenanceComplete: true,
+    blockers: [],
+  };
+  const calculated = engine.calculateFixedIncomeEconomicResult({
+    currentMarketValue: 110,
+    contributions: evidence.contributions,
+    events: evidence.events,
+    coverage: evidence.coverage,
+    returnPercentBasis: 'CUMULATIVE_CONTRIBUTIONS_SIMPLE',
+  });
+
+  const result = pipeline.reconcileAsset({
+    asset,
+    currentPosition: { value: 110, coverage: 'COMPLETE' },
+    evidence,
+    result: calculated,
+  });
+
+  assert.equal(result.status, 'PARTIAL');
+  assert.equal(result.economicResult.value, null);
+  assert.ok(result.blockers.includes('PROVENANCE_NOT_COMPLETE'));
+});
+
 test('provenance amount basis must match the normalized receipt basis', () => {
   const asset = { id: 'synthetic-trend', type: 'Renda Fixa', name: 'Trend DI FIC RF Simples RL' };
   const evidence = {
