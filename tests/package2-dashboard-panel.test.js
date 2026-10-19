@@ -33,7 +33,7 @@ function makeContext(overrides = {}) {
 }
 
 function renderPanel(overrides, showTotalStatus = true) {
-  const snippet = extractSnippet('function package2ExecutivePanel(', 'function dashboardEvolutionPanel(data){');
+  const snippet = extractSnippet('function package2FiniteNumber(', 'function dashboardEvolutionPanel(data){');
   const context = makeContext(overrides);
   vm.createContext(context);
   vm.runInContext(snippet + '\nglobalThis.render=package2ExecutivePanel', context);
