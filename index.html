@@ -32620,7 +32620,8 @@ function ativos(){
   const portfolioHasCompleteCurrentValues = S.assets.every(a => getAssetMetrics(a).displayCurrentValue != null);
   const portfolioTotal = portfolioHasCompleteCurrentValues ? (reviewFilterActive ? total : assetKpiCurrent) : null;
   const assetPortfolioSummaryComplete = S.assets.length > 0 && consolidated.assets.length === S.assets.length
-    && consolidated.assets.every(row => row.invested != null && row.current != null);
+    && consolidated.assets.every(row => row.invested != null)
+    && S.assets.every(asset => getAssetMetrics(asset).displayCurrentValue != null);
   const assetSummaryInvested = assetPortfolioSummaryComplete && Number.isFinite(assetKpiApplied) ? assetKpiApplied : null;
   const assetSummaryCurrent = assetPortfolioSummaryComplete && portfolioTotal != null ? portfolioTotal : null;
   const portfolioResult = assetSummaryCurrent != null && Number.isFinite(assetKpiProfit) ? assetKpiProfit : null;

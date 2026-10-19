@@ -45,7 +45,7 @@ for (const viewport of [{ width: 1366, height: 768 }, { width: 390, height: 844 
       const coverageDetail = kpiDetails.locator('.dividend-executive-kpi-sub');
       assert.equal(await coverageSummary.getAttribute('aria-label'), 'Mais informações sobre Média mensal');
       assert.equal(await coverageDetail.isVisible(), false, 'coverage explanation stays out of the default KPI view');
-      const kpiCard = page.locator('.dividend-executive-kpi').filter({ has: coverageSummary });
+      const kpiCard = kpiDetails.locator('xpath=..');
       const initialCardHeight = await kpiCard.evaluate(element => element.getBoundingClientRect().height);
       await coverageSummary.press('Enter');
       assert.equal(await coverageDetail.isVisible(), true, 'keyboard opens the coverage explanation');

@@ -534,7 +534,7 @@ test('Ativos apresenta resultado zero de forma neutra no resumo da categoria', a
     await setThemeAndRoute(runtime.page, 'dark', 'ativos');
     const category = runtime.page.locator('.assets-premium-shell details.ag[data-asset-group="Ação"]');
     const result = category.locator('.acc-metric-value').nth(2);
-    assert.equal((await result.innerText()).trim(), 'R$ 0,00');
+    assert.equal((await result.innerText()).replace(/\u00a0/g, ' ').trim(), 'R$ 0,00');
     assert.equal(await result.evaluate(element => element.classList.contains('positive-text') || element.classList.contains('negative-text')), false, 'resultado zero deve permanecer neutro');
     await assertSyntheticReadOnlyRuntime(runtime);
   } finally {
@@ -700,14 +700,15 @@ test('Ativos keeps primary category metrics readable and unclipped on tablet', a
           insideSummary: rect.left >= summary.left - 1 && rect.right <= summary.right + 1,
         };
       }));
-      for (const label of ['Atual', 'Resultado', 'Rentab.']) {
-        const metric = metrics.find(item => item.label === label);
-        assert.ok(metric?.visible, `${width}px: ${label} must appear in the category summary`);
-        assert.ok(metric.labelFontSize >= 12, `${width}px: ${label} label must be readable`);
-        assert.ok(metric.valueFontSize >= 12, `${width}px: ${label} value must be readable`);
-        assert.equal(metric.labelClipped, false, `${width}px: ${label} label must not be clipped`);
-        assert.equal(metric.valueClipped, false, `${width}px: ${label} value must not be clipped`);
-        assert.equal(metric.insideSummary, true, `${width}px: ${label} must stay inside its category card`);
+      for (const label of ['Atual', 'Resultado', /^Rentab/]) {
+        const metric = metrics.find(item => typeof label === 'string' ? item.label === label : label.test(item.label));
+        const labelText = typeof label === 'string' ? label : 'Rentabilidade';
+        assert.ok(metric?.visible, `${width}px: ${labelText} must appear in the category summary`);
+        assert.ok(metric.labelFontSize >= 12, `${width}px: ${labelText} label must be readable`);
+        assert.ok(metric.valueFontSize >= 12, `${width}px: ${labelText} value must be readable`);
+        assert.equal(metric.labelClipped, false, `${width}px: ${labelText} label must not be clipped`);
+        assert.equal(metric.valueClipped, false, `${width}px: ${labelText} value must not be clipped`);
+        assert.equal(metric.insideSummary, true, `${width}px: ${labelText} must stay inside its category card`);
       }
       if (!(await category.getAttribute('open'))) await category.locator(':scope > summary').click();
       const table = category.locator('.assets-table-wrap table');
