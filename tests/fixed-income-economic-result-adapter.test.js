@@ -20,6 +20,7 @@ const completeCoverage = {
     openingPosition: 'NONE',
     allEventsRepresented: true,
     duplicatesResolved: true,
+    sourceOverlapResolved: true,
   },
 };
 

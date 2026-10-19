@@ -34,6 +34,7 @@ function completeCoverage(overrides = {}) {
       openingPosition: 'NONE',
       allEventsRepresented: true,
       duplicatesResolved: true,
+      sourceOverlapResolved: true,
     },
     ...overrides,
   };
@@ -249,6 +250,22 @@ test('complete history must attest duplicate review and a known opening position
   const result = calculateFixedIncomeEconomicResult(completeInput({
     coverage: completeCoverage({
       history: { status: 'COMPLETE', periodStart: '2023-01-01', periodEnd: '2026-10-18', openingPosition: 'NONE', allEventsRepresented: true, duplicatesResolved: false },
+    }),
+  }));
+
+  assert.equal(result.status, 'PARTIAL');
+  assert.equal(result.totalEconomicResult, null);
+  assert.ok(result.blockers.includes('HISTORY_NOT_COMPLETE'));
+});
+
+test('source overlap must be explicitly resolved before a total result can be derived', () => {
+  const result = calculateFixedIncomeEconomicResult(completeInput({
+    coverage: completeCoverage({
+      history: {
+        status: 'COMPLETE', periodStart: '2023-01-01', periodEnd: '2026-10-18',
+        openingPosition: 'NONE', allEventsRepresented: true, duplicatesResolved: true,
+        sourceOverlapResolved: false,
+      },
     }),
   }));
 

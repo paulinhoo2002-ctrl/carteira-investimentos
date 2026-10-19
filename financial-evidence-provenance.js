@@ -81,6 +81,7 @@
         assetIdentity,
         occurredOn,
         observedAt: text(record.observedAt) || null,
+        amount: typeof record.amount === 'number' && Number.isFinite(record.amount) && record.amount >= 0 ? record.amount : null,
         authority: text(record.authority) || null,
         semanticType,
         amountBasis,

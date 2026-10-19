@@ -197,6 +197,7 @@
 
       if (['APPLICATION', 'PURCHASE'].includes(type)) {
         const sourceAmount = amountFor(row, 'contribution');
+        provenanceRow.amount = sourceAmount?.amount ?? null;
         const status = row?.status === 'CONFIRMED' ? 'CONFIRMED' : 'UNKNOWN';
         provenanceRow.status = status;
         if (!sourceAmount || !id || !validDate(date) || status !== 'CONFIRMED') {
@@ -219,6 +220,7 @@
       if (['IR', 'IOF'].includes(type)) {
         taxEvidencePresent = true;
         const sourceAmount = amountFor(row, 'tax');
+        provenanceRow.amount = sourceAmount?.amount ?? null;
         const relatedEventId = String(row?.relatedEventId || '').trim();
         const taxLinked = hasValidTaxLink(relatedEventId);
         const status = row?.status === 'PAID' && taxLinked ? 'PAID' : 'UNKNOWN';
@@ -235,6 +237,7 @@
       const isIncome = ['COUPON', 'INTEREST', 'INCOME'].includes(type);
       const isCapitalReturn = ['AMORTIZATION', 'PARTIAL_REDEMPTION', 'TOTAL_REDEMPTION', 'PRINCIPAL_RETURN'].includes(type);
       const sourceAmount = amountFor(row, 'receipt');
+      provenanceRow.amount = sourceAmount?.amount ?? null;
       const status = row?.status === 'RECEIVED' ? 'RECEIVED' : 'UNKNOWN';
       provenanceRow.status = sourceAmount && id && validDate(date) && status === 'RECEIVED' ? 'RECEIVED' : 'UNKNOWN';
       provenanceRow.amountBasis = sourceAmount?.amountBasis || null;
@@ -256,11 +259,36 @@
     // Legacy aportes may duplicate or extend the RF ledger; do not infer linkage from matching amounts.
     const legacyRows = sourceRows(asset, assets, aportes);
     if (legacyRows.ambiguous) blockers.add('AMBIGUOUS_LEGACY_CONTRIBUTION_LINK');
-    const legacyPurchases = legacyRows.rows.filter(row => {
-      const type = row?.type || row?.asset_type;
+    const relevantLegacyRows = legacyRows.rows;
+    const legacyPurchases = relevantLegacyRows.filter(row => {
+      const assetType = row?.type || row?.asset_type;
       const operation = norm(row?.operation || row?.kind || row?.movementKind);
-      return type === 'Renda Fixa' && ['COMPRA', 'APORTE', 'APLICACAO'].includes(operation);
+      return norm(assetType) === 'RENDA FIXA' && ['COMPRA', 'APORTE', 'APLICACAO'].includes(operation);
     });
+    const unknownLegacyRows = relevantLegacyRows.filter(row => {
+      const assetType = row?.type || row?.asset_type;
+      const operation = norm(row?.operation || row?.kind || row?.movementKind);
+      return norm(assetType) !== 'RENDA FIXA' || !['COMPRA', 'APORTE', 'APLICACAO'].includes(operation);
+    });
+    if (unknownLegacyRows.length) {
+      eventsSupported = false;
+      contributionsSupported = false;
+      blockers.add('UNKNOWN_LEGACY_APORTE_TYPE');
+      for (const row of unknownLegacyRows) {
+        const id = typeof row?.id === 'string' || typeof row?.id === 'number' ? String(row.id).trim() : '';
+        const operation = norm(row?.operation || row?.kind || row?.movementKind);
+        provenanceRows.push({
+          sourceKind: 'LEGACY_APORTE', sourceId: row?.sourceId || row?.sourceRecordId || row?.importRef || null,
+          stableEventId: id || null, assetIdentity: row?.assetId || row?.asset_id || null,
+          occurredOn: typeof row?.date === 'string' ? row.date : '', observedAt: row?.observedAt || null,
+          authority: row?.authority || row?.sourceAuthority || null, semanticType: 'UNKNOWN', status: 'UNKNOWN',
+          periodStart: historyEvidence?.periodStart, periodEnd: historyEvidence?.periodEnd,
+          duplicateState: 'UNKNOWN', conflictState: row?.conflictState || 'UNKNOWN',
+          sourceOverlapResolution: 'UNRESOLVED',
+          duplicateFingerprint: [row?.date || '', operation, row?.total ?? row?.amount ?? row?.value ?? ''].join('|'),
+        });
+      }
+    }
     if (legacyPurchases.length) {
       contributionsSupported = false;
       blockers.add('UNLINKED_LEGACY_PURCHASES');
@@ -294,8 +322,17 @@
     const targetTicker = norm(asset?.ticker);
     const targetName = norm(asset?.name || asset?.product || asset?.title);
     for (const row of Array.isArray(linkedIncomeEvents) ? linkedIncomeEvents : []) {
-      if (String(row?.sourceEventKind || '').toLowerCase() !== 'rf') continue;
       const sourceId = String(row?.sourceEventId || '').trim();
+      const sourceEventKind = String(row?.sourceEventKind || '').toLowerCase();
+      if (sourceEventKind !== 'rf') {
+        if (sourceId && seenIds.has(sourceId)) {
+          const linkedEvent = provenanceRows.find(item => item.sourceKind === 'RF_EVENT' && item.stableEventId === sourceId);
+          if (linkedEvent) linkedEvent.sourceOverlapResolution = 'UNRESOLVED';
+          eventsSupported = false;
+          blockers.add('AMBIGUOUS_LINKED_INCOME_SOURCE_KIND');
+        }
+        continue;
+      }
       const linkedTicker = norm(row?.ticker);
       const linkedName = norm(row?.assetName || row?.name || row?.product);
       const relevant = (sourceId && seenIds.has(sourceId))

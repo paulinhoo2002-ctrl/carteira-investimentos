@@ -211,7 +211,7 @@ test('complete synthetic RF evidence renders derived totals and hide-values mask
           coverage: {
             currentPosition: 'COMPLETE', costBasis: 'COMPLETE', contributions: 'COMPLETE', income: 'COMPLETE',
             taxes: 'COMPLETE', capitalReturns: 'COMPLETE', principal: 'COMPLETE',
-            history: { status: 'COMPLETE', periodStart: '2024-06-01', periodEnd: '2026-10-18', openingPosition: 'NONE', allEventsRepresented: true, duplicatesResolved: true },
+            history: { status: 'COMPLETE', periodStart: '2024-06-01', periodEnd: '2026-10-18', openingPosition: 'NONE', allEventsRepresented: true, duplicatesResolved: true, sourceOverlapResolved: true },
           },
           returnPercentBasis: 'CUMULATIVE_CONTRIBUTIONS_SIMPLE',
         },
