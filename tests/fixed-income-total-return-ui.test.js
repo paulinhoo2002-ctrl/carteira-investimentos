@@ -118,8 +118,8 @@ test('fixed-income detail labels its current result as position-only',()=>{
 test('fixed-income cards, category summary, and table identify position-scope results',()=>{
   assert.match(source,/const resultLabel = isRF \? 'Resultado da posição' : 'Resultado'/);
   assert.match(source,/const returnLabel = isRF \? 'Rentabilidade da posição' : 'Rentabilidade'/);
-  assert.match(source,/Resultado das posições/);
-  assert.match(source,/Rentabilidade das posições/);
+  assert.match(source,/\['Resultado da posição',count&&data\.missingCurrent===0/);
+  assert.match(source,/Rentabilidade da posição \$\{display\.rentabilityText\}/);
   assert.match(source,/Resultado da posição R\$/);
   assert.match(source,/Rentabilidade da posição/);
 });
