@@ -8005,8 +8005,8 @@ html[data-theme="light"] .assets-premium-shell .assets-portfolio-summary .positi
 .canon-dashboard .dashboard-executive-kpis .premium-metric-note{font-size:10px;color:var(--canon-muted);line-height:1.3}
 .canon-dashboard .dashboard-analytical-primary{grid-template-columns:minmax(0,1.55fr) minmax(310px,.95fr);gap:12px;margin:0}
   .canon-dashboard .dashboard-evolution-card{min-height:0;height:220px;padding:10px;border:1px solid var(--canon-border);border-radius:12px;background:var(--canon-panel);box-shadow:none}
-  .canon-dashboard .dashboard-evolution-card.dashboard-evolution-compact{height:160px}
-  .canon-dashboard .dashboard-evolution-card.dashboard-evolution-compact svg{height:100px;margin-top:0}
+  .canon-dashboard .dashboard-evolution-card.dashboard-evolution-compact{height:auto;min-height:0}
+  .canon-dashboard .dashboard-evolution-card.dashboard-evolution-compact svg.dashboard-patrimony-chart{height:142px;margin-top:0}
   .canon-dashboard .dashboard-home-composition{min-height:0;height:245px;padding:10px;border:1px solid var(--canon-border);border-radius:12px;background:var(--canon-panel);box-shadow:none}
 .canon-dashboard .dashboard-evolution-header,.canon-dashboard .dashboard-income-header{margin-bottom:8px}
   .canon-dashboard .dashboard-evolution-card svg{height:160px;margin-top:2px}
@@ -24959,11 +24959,14 @@ function hideLineChartTooltip(){
 }
 function lineChart(series, labels, chartClass='', valueFormatter=fmtP){
   const dashboardChart=chartClass==='dashboard-patrimony-chart';
-  const compactChart=dashboardChart && innerWidth<=767;
-  const width=dashboardChart?(compactChart?360:760):1080;
-  const height=dashboardChart?(compactChart?142:198):260;
-  const padL=dashboardChart?(compactChart?67:72):50, padR=18, padT=14, padB=28;
   const validValue=v=>typeof v==='number' && Number.isFinite(v);
+  // Compact geometry when observed history is scarce (1-2 points), on any viewport.
+  const dashboardMobile=dashboardChart && innerWidth<=767;
+  const sparsePoints=series.reduce((n,s)=>Math.max(n,(s.values||[]).filter(validValue).length),0);
+  const compactChart=dashboardChart && (dashboardMobile || sparsePoints<=2);
+  const width=dashboardChart?(dashboardMobile?360:760):1080;
+  const height=dashboardChart?(compactChart?142:198):260;
+  const padL=dashboardChart?(dashboardMobile?67:72):50, padR=18, padT=14, padB=28;
   const all=series.flatMap(s=>(s.values||[]).filter(validValue));
   if(!all.length) return '<div class="es" style="padding:36px 18px">Sem dados suficientes para desenhar o gráfico.</div>';
   let minY=Math.min(0,...all);
@@ -24974,7 +24977,7 @@ function lineChart(series, labels, chartClass='', valueFormatter=fmtP){
   minY=minY<0?minY-extra:0; maxY+=extra;
   const xStep=(width-padL-padR)/Math.max(1, labels.length-1);
   const yAt=v=>height-padB-(((v-minY)/(maxY-minY))*(height-padT-padB));
-  const xAt=i=>padL + i*xStep;
+  const xAt=i=>padL + (labels.length===1?(width-padL-padR)/2:i*xStep);
 
   // Respect hideValues for tooltips and accessible text
   const hideValues = typeof S !== 'undefined' && S.hideValues;
@@ -32215,14 +32218,14 @@ function dashboardEvolutionPanel(data){
   if(hasHistory){
     return `
       <div class="dashboard-evolution-card${isCompact?' dashboard-evolution-compact':''}">
-        <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Aportes líquidos registrados</div><details class="dashboard-history-disclosure"><summary>Cobertura do histórico</summary><div class="dashboard-history-disclosure-body">${coverageNote}</div></details></div></div>
+        <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Aportes líquidos registrados</div><details class="dashboard-history-disclosure"><summary>Sobre o histórico</summary><div class="dashboard-history-disclosure-body">${coverageNote}</div></details></div></div>
         ${lineChart([{name:'Aportes líquidos registrados',tooltipLabel:'Aportes registrados',values:chartMonths.map(row=>row.cumulative),color:'#34d399',fill:'rgba(52,211,153,.16)',width:2.4,points:!(isCompact&&!sparse)}],chartMonths.map(row=>row.label),'dashboard-patrimony-chart',fmt)}
       </div>
     `;
   }
   return `
     <div class="dashboard-evolution-card dashboard-evolution-empty">
-      <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Aportes líquidos registrados</div><details class="dashboard-history-disclosure"><summary>Cobertura do histórico</summary><div class="dashboard-history-disclosure-body">Histórico patrimonial ainda não disponível.</div></details></div></div>
+      <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Aportes líquidos registrados</div><details class="dashboard-history-disclosure"><summary>Sobre o histórico</summary><div class="dashboard-history-disclosure-body">Histórico patrimonial ainda não disponível.</div></details></div></div>
       <div class="premium-empty">Não há movimentações registradas na janela; a cobertura do histórico é desconhecida.</div>
       <div class="premium-panel-actions" style="margin-top:10px">
         <button class="btn bp" onclick="go('aportes')">Registrar aporte</button>
@@ -39263,8 +39266,8 @@ html[data-theme="light"] .canon-dashboard .dashboard-executive-kpis .premium-met
 html[data-theme="light"] .canon-dashboard .dashboard-executive-kpis .premium-metric-note{font-variant-numeric:tabular-nums}
 html[data-theme="light"] .canon-dashboard .dashboard-analytical-primary{gap:14px}
 html[data-theme="light"] .canon-dashboard .dashboard-evolution-card{border-radius:12px;border-color:var(--dash-line);box-shadow:none}
-html[data-theme="light"] .canon-dashboard .dashboard-evolution-card.dashboard-evolution-compact{height:160px}
-html[data-theme="light"] .canon-dashboard .dashboard-evolution-card.dashboard-evolution-compact svg{height:100px;margin-top:0}
+html[data-theme="light"] .canon-dashboard .dashboard-evolution-card.dashboard-evolution-compact{height:auto;min-height:0}
+html[data-theme="light"] .canon-dashboard .dashboard-evolution-card.dashboard-evolution-compact svg{height:142px;margin-top:0}
 html[data-theme="light"] .canon-dashboard .premium-panel,
 html[data-theme="light"] .canon-dashboard .dashboard-home-composition,
 html[data-theme="light"] .canon-dashboard .dashboard-home-highlights{border-color:var(--dash-line);border-radius:12px;box-shadow:none}
