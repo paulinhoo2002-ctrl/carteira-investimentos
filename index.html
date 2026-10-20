@@ -147,10 +147,17 @@
   --fs-heading-lg:24px;
   --fw-regular:400;
   --fw-medium:500;
-  --fw-semibold:600;
-  --fw-bold:700;
-}
-html[data-theme="light"]{
+    --fw-semibold:600;
+    --fw-bold:700;
+    /* ═══ SEMANTIC HIERARCHY (M538/M537) ═══ */
+    --semantic-official:#4f46e5;
+    --semantic-partial:#f59e0b;
+    --semantic-operational:#60a5fa;
+    --semantic-official-bg:rgba(79,70,229,.12);
+    --semantic-partial-bg:rgba(245,158,11,.12);
+    --semantic-operational-bg:rgba(96,165,250,.12);
+  }
+  html[data-theme="light"]{
   color-scheme:light;
   --bg:#e8eff6;
   --text:#111827;
@@ -209,11 +216,18 @@ html[data-theme="light"]{
   --ds-space-3:var(--sp-3);
   --ds-space-4:var(--sp-4);
   --ds-space-5:var(--sp-5);
-  --ds-space-6:var(--sp-6);
-  --ds-control-height:var(--control-min-h);
-  --ds-icon-size:22px;
-  --text-accent:#3730a3;
-  /* Tipografia e peso consolidados (P1 - fundação visual).
+    --ds-space-6:var(--sp-6);
+    --ds-control-height:var(--control-min-h);
+    --ds-icon-size:22px;
+    --text-accent:#3730a3;
+    /* ═══ SEMANTIC HIERARCHY (M538/M537) ═══ */
+    --semantic-official:#4057d6;
+    --semantic-partial:#854d0e;
+    --semantic-operational:#1d4ed8;
+    --semantic-official-bg:rgba(64,87,214,.12);
+    --semantic-partial-bg:rgba(133,77,14,.12);
+    --semantic-operational-bg:rgba(29,78,216,.12);
+    /* Tipografia e peso consolidados (P1 - fundação visual). */
      Leitura comum nunca abaixo de 12px; peso máximo 700. */
   --fs-body:14px;
   --fs-label:12px;
@@ -366,6 +380,26 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
 .dashboard-evolution-card.dashboard-evolution-empty{min-height:224px}
 .dashboard-evolution-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
 .dashboard-evolution-card svg{display:block;width:100%;height:238px}
+
+/* Dashboard history disclosure (M538 - from PR #523) */
+.dashboard-history-disclosure{display:inline-block;margin-top:4px}
+.dashboard-history-disclosure summary{cursor:pointer;font-size:11px;color:var(--muted);line-height:1.3;list-style:none;display:flex;align-items:center;gap:6px;padding:4px 8px;min-height:44px;border:1px solid var(--border);border-radius:var(--radius-pill);background:var(--panel);transition:background .15s,border-color .15s}
+.dashboard-history-disclosure summary::-webkit-details-marker{display:none}
+.dashboard-history-disclosure summary::before{content:'ⓘ';font-size:12px;line-height:1;flex:none;color:var(--info)}
+.dashboard-history-disclosure summary:hover{background:var(--panel-2);border-color:color-mix(in srgb,var(--info) 30%,var(--border))}
+.dashboard-history-disclosure summary:focus-visible{outline:2px solid var(--info);outline-offset:2px}
+.dashboard-history-disclosure[open] summary{border-color:color-mix(in srgb,var(--info) 40%,var(--border))}
+.dashboard-history-disclosure-body{margin-top:8px;padding:8px 10px;font-size:11px;color:var(--muted);line-height:1.45;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm)}
+html[data-theme="light"] .dashboard-history-disclosure summary{background:var(--panel);border-color:var(--border);color:var(--muted)}
+html[data-theme="light"] .dashboard-history-disclosure summary:hover{background:var(--surface);border-color:color-mix(in srgb,var(--info) 30%,var(--border))}
+html[data-theme="light"] .dashboard-history-disclosure[open] summary{border-color:color-mix(in srgb,var(--info) 40%,var(--border))}
+html[data-theme="light"] .dashboard-history-disclosure-body{background:var(--surface-2);border-color:var(--border)}
+
+/* Mobile responsive adjustments */
+@media (max-width: 430px) {
+  .dashboard-evolution-header{flex-direction:column;align-items:flex-start;gap:8px}
+  .dashboard-history-disclosure summary{min-width:0}
+}
 .dashboard-master-primary .premium-panel{padding:12px}
 .dashboard-master-primary .dashboard-home-highlights{max-height:none}
 .dashboard-master-secondary .perf-card{height:100%}
@@ -975,7 +1009,9 @@ html[data-theme="light"] .tabs-desktop .tab.on,html[data-theme="light"] .tabs-de
   .premium-dashboard{gap:9px}
   .dashboard-page-heading{align-items:flex-start;flex-direction:column;gap:6px}
   .dashboard-page-heading h1{font-size:18px}
-  .dashboard-page-heading-meta{align-self:flex-start}
+  .dashboard-page-sub{font-size:12px;color:var(--muted);line-height:1.4;margin-top:2px}
+  .dashboard-page-heading-meta{align-self:flex-start;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .dashboard-period-selector{display:flex;gap:6px;flex-wrap:wrap}
   .premium-dashboard-head{align-items:flex-start}
   .premium-dashboard-date{display:none}
   .premium-dashboard-title{font-size:16px}
@@ -7168,22 +7204,19 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     height: 300px;
     margin-top: 8px;
   }
-  @media (max-width: 1180px) {
+  @media (max-width: 767px) {
     .dashboard-executive-kpis {
-      grid-template-columns: 1fr;
-    }
-    .dashboard-primary-grid,
-    .dashboard-secondary-grid {
       grid-template-columns: 1fr;
     }
   }
   @media (min-width: 768px) and (max-width: 1180px) {
     .dashboard-executive-kpis {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-    .dashboard-primary-grid,
-    .dashboard-secondary-grid {
-      grid-template-columns: minmax(0, 1.45fr) minmax(260px, 1fr);
+  }
+  @media (min-width: 1181px) {
+    .dashboard-executive-kpis {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
 
@@ -31921,11 +31954,13 @@ function dash(){
       <div class="dashboard-page-heading canon-dash-head">
         <div>
           <h1>Visão consolidada</h1>
-          <p>Resumo geral da sua carteira · ${esc(hoje)}</p>
+          <p class="dashboard-page-sub">Resumo geral da sua carteira · ${esc(hoje)}</p>
         </div>
         <div class="dashboard-page-heading-meta canon-dash-meta">
-          ${periodOpts.map(period=>`<button type="button" class="dash-chip ${Number(S.dashPeriod)===period?'on':''}" onclick="setDashPeriod(${period})" aria-label="Mostrar evolução de ${period} meses" aria-pressed="${Number(S.dashPeriod)===period?'true':'false'}">${period}M</button>`).join('')}
-          <span class="canon-last-update">Últ. ${dashMeta} · ${data.analysis.length} ativos</span>
+          <div class="dashboard-period-selector" role="group" aria-label="Período do gráfico de evolução">
+            ${periodOpts.map(period=>`<button type="button" class="dash-chip ${Number(S.dashPeriod)===period?'on':''}" onclick="setDashPeriod(${period})" aria-label="Mostrar evolução de ${period} meses" aria-pressed="${Number(S.dashPeriod)===period?'true':'false'}">${period}M</button>`).join('')}
+          </div>
+          <span class="canon-last-update" aria-live="polite">Atualizado ${dashMeta} · ${data.analysis.length} ativos</span>
         </div>
       </div>
       ${executiveKPIs(data)}
@@ -32103,8 +32138,8 @@ function executiveKPIs(data){
     ${totalResultStatus}
     <div class="dashboard-executive-kpis">
       ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',patrimonyValue,investedContext,'#a78bfa','rgba(129,140,248,.16)',`${investedContext} · ${patrimonyNote} · Data-base financeira não informada`)}
-      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado',resultValue,resultAvailable?'Sobre capital cadastrado':resultNote,resultTone,resultGlow,resultNote)}
-      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Renda no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo':recent.coverage==='PARTIAL'?'Cobertura parcial':'Cobertura desconhecida','#10b981','rgba(16,185,129,.14)',recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida')}
+      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado da posição',resultValue,resultAvailable?'Sobre capital cadastrado':resultNote,resultTone,resultGlow,resultNote)}
+      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Renda no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Cobertura parcial':'Cobertura desconhecida','#10b981','rgba(16,185,129,.14)',recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida')}
     </div>
   `;
 }
@@ -32153,14 +32188,14 @@ function dashboardEvolutionPanel(data){
   if(hasHistory){
     return `
       <div class="dashboard-evolution-card">
-        <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Aportes líquidos registrados</div><div class="premium-panel-sub">Acumulado apenas nos meses com movimentos registrados · cobertura do histórico desconhecida.</div></div></div>
+        <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Aportes líquidos registrados</div><details class="dashboard-history-disclosure"><summary>Cobertura do histórico</summary><div class="dashboard-history-disclosure-body">Acumulado apenas nos meses com movimentos registrados · cobertura do histórico permanece desconhecida.</div></details></div></div>
         ${lineChart([{name:'Aportes líquidos registrados',tooltipLabel:'Aportes registrados',values,color:'#34d399',fill:'rgba(52,211,153,.16)',width:2.4}],snapshot.months.map(row=>row.label),'dashboard-patrimony-chart',fmt)}
       </div>
     `;
   }
   return `
     <div class="dashboard-evolution-card dashboard-evolution-empty">
-      <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Aportes líquidos registrados</div><div class="premium-panel-sub">Histórico patrimonial ainda não disponível.</div></div></div>
+      <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Aportes líquidos registrados</div><details class="dashboard-history-disclosure"><summary>Cobertura do histórico</summary><div class="dashboard-history-disclosure-body">Histórico patrimonial ainda não disponível.</div></details></div></div>
       <div class="premium-empty">Não há movimentações registradas na janela; a cobertura do histórico é desconhecida.</div>
       <div class="premium-panel-actions" style="margin-top:10px">
         <button class="btn bp" onclick="go('aportes')">Registrar aporte</button>

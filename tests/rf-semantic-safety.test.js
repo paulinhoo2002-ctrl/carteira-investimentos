@@ -216,8 +216,8 @@ test('Dashboard labels result unavailable when applied coverage is incomplete', 
     dashboardMetricIcon() { return ''; },
   };
   vm.runInNewContext(`${dashboardSource};globalThis.api=executiveKPIs;`, context);
-  const html = context.api({ portfolio: { tI: 0, tC: 100, tG: 100, tGP: 100, appliedComplete: false } });
-  assert.match(html, /Resultado\|—/);
-  assert.match(html, /Base aplicada parcial ou indisponível/);
-  assert.doesNotMatch(html, /Resultado\|R\$ 100/);
+    const html = context.api({ portfolio: { tI: 0, tC: 100, tG: 100, tGP: 100, appliedComplete: false } });
+    assert.match(html, /Resultado da posição\|—/);
+    assert.match(html, /Base aplicada parcial ou indisponível/);
+    assert.doesNotMatch(html, /Resultado da posição\|R\$ 100/);
 });
