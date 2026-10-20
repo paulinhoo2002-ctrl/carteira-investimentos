@@ -469,11 +469,16 @@ test('Dashboard explains partial history on demand without filling missing chart
   assert.deepEqual(Array.from(chartInput.labels), ['Jan/26', 'Fev/26', 'Mar/26']);
 });
 test('Dashboard position result label stays distinct from portfolio total', () => {
-  const source = extractSnippet('function executiveKPIs(data){', 'function package2ExecutivePanel(){');
+  const source = extractSnippet('function executiveKPIs(data){', 'function package2ExecutivePanel(');
   const cards = [];
   const renderKpis = vm.runInNewContext(`${source}\nexecutiveKPIs`, {
     S: { proventos: [], rfEvents: [], hideValues: false },
     dashboardCurrentValueAvailability: () => ({ state: 'AVAILABLE', note: 'Valores atuais informados' }),
+
+      package2HasRenderableSummary: () => false,
+      dashboardHasEconomicCertification: () => false,
+      dashboardEconomicResultStatus: () => '',
+      FB: {},
     passiveIncomeMonthKey: () => '2026-10',
     passiveIncomeMonthSummary: () => ({ month: '2026-10', total: null, coverage: 'UNKNOWN' }),
     assetSignedMoneyText: value => `R$ ${value}`,

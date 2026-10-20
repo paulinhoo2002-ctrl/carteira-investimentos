@@ -40,7 +40,7 @@ for (const viewport of [
       const dashboard = await page.locator('.premium-dashboard.canon-dashboard').innerText();
       assert.match(dashboard, /Resultado/i);
       assert.match(dashboard, /Sobre capital cadastrado/i);
-      assert.match(dashboard, /Renda no mês/i);
+      assert.match(dashboard, /Recebido|Renda recebida/i);
       assert.match(dashboard, /Resultado total: Em consolidação/i);
       assert.doesNotMatch(dashboard, /Ganho de capital \+/);
       if (viewport.width <= 900) {

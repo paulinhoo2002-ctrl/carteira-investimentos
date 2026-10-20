@@ -42,12 +42,12 @@ function makeV289VisualFixture(scenario = 'baseline') {
     visual.valueState = 'NO_DATA';
   }
   if (scenario === 'priority-one') {
-    // A synthetic monthly income goal produces one real goal-gap insight.
+    // A target without received-income history cannot prove a goal gap.
     assets.length = 0;
     aportes.length = 0;
     proventos.length = 0;
     goals.proventos.monthly = 1200;
-    visual.priorities = [{id:'QA_PRIORITY_1',reason:'Meta sintética sem renda recebida',impact:'Renda abaixo da meta',destination:'metas'}];
+    visual.priorities = [];
   }
   return { scenario, wallet:{id:'QA_WALLET_01',name:'Conta sintética'}, assets, aportes, proventos, rfEvents:[], goals, divGoal:0, lastUpdate: scenario === 'stale' ? '2026-01-01T12:00:00.000Z' : '2026-10-01T12:00:00.000Z', visual };
 }
