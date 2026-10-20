@@ -463,7 +463,7 @@ test('Dashboard explains partial history on demand without filling missing chart
 
   const html = renderPanel({});
   assert.match(html, /<details class="dashboard-history-disclosure">/);
-  assert.match(html, /<summary>Sobre o histórico<\/summary>/);
+  assert.match(html, /<summary>Movimento registrado<\/summary>/);
   assert.match(html, /cobertura do histórico.*desconhecida/i);
   assert.deepEqual(Array.from(chartInput.series[0].values), [100, null, 130]);
   assert.deepEqual(Array.from(chartInput.labels), ['Jan/26', 'Fev/26', 'Mar/26']);

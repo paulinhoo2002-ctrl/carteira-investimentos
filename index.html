@@ -8007,6 +8007,9 @@ html[data-theme="light"] .assets-premium-shell .assets-portfolio-summary .positi
   .canon-dashboard .dashboard-evolution-card{min-height:0;height:220px;padding:10px;border:1px solid var(--canon-border);border-radius:12px;background:var(--canon-panel);box-shadow:none}
   .canon-dashboard .dashboard-evolution-card.dashboard-evolution-compact{height:auto;min-height:0}
   .canon-dashboard .dashboard-evolution-card.dashboard-evolution-compact svg.dashboard-patrimony-chart{height:142px;margin-top:0}
+  .canon-dashboard .dashboard-evolution-card.dashboard-evolution-sparse .dashboard-evolution-header{margin-bottom:12px}
+  .canon-dashboard .dashboard-evolution-card.dashboard-evolution-sparse .dashboard-history-disclosure summary{color:var(--warning)}
+  .canon-dashboard .dashboard-evolution-card.dashboard-evolution-sparse svg.dashboard-patrimony-chart{height:160px}
   .canon-dashboard .dashboard-home-composition{min-height:0;height:245px;padding:10px;border:1px solid var(--canon-border);border-radius:12px;background:var(--canon-panel);box-shadow:none}
 .canon-dashboard .dashboard-evolution-header,.canon-dashboard .dashboard-income-header{margin-bottom:8px}
   .canon-dashboard .dashboard-evolution-card svg{height:160px;margin-top:2px}
@@ -32273,20 +32276,25 @@ function dashboardEvolutionPanel(data){
   // Sparse coverage: show only real observations; never fill missing periods.
   const sparse=hasHistory && validPoints*2<snapshot.months.length;
   const chartMonths=sparse?observedMonths:snapshot.months;
+  const totalMonths=snapshot.months.length;
+  const monthsWithData=validPoints;
+  const movementPct=totalMonths>0?Math.round((monthsWithData/totalMonths)*100):0;
   const coverageNote=sparse
-    ?`Exibe somente ${validPoints===1?`o mês com movimento registrado nesta janela (${observedMonths[0].label})`:`os ${validPoints} meses com movimento registrados nesta janela`}; meses sem registro não aparecem. Cobertura do histórico permanece desconhecida.`
-    :'Acumulado apenas nos meses com movimentos registrados · cobertura do histórico permanece desconhecida.';
+    ?`Exibe somente ${monthsWithData===1?`o mês com movimento registrado (${observedMonths[0].label})`:`os ${monthsWithData} meses com movimento registrados`} de ${totalMonths} (${movementPct}%). Meses sem registro não aparecem. A cobertura do histórico permanece desconhecida.`
+    :hasHistory
+      ?`${monthsWithData} de ${totalMonths} meses com movimento registrado (${movementPct}%). Meses sem registro não são preenchidos; a cobertura do histórico permanece desconhecida.`
+      :'Histórico patrimonial ainda não disponível; a cobertura do histórico é desconhecida.';
   if(hasHistory){
     return `
-      <div class="dashboard-evolution-card${isCompact?' dashboard-evolution-compact':''}">
-        <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Aportes líquidos registrados</div><details class="dashboard-history-disclosure"><summary>Sobre o histórico</summary><div class="dashboard-history-disclosure-body">${coverageNote}</div></details></div></div>
+      <div class="dashboard-evolution-card${isCompact?' dashboard-evolution-compact':''}${sparse?' dashboard-evolution-sparse':''}">
+        <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Aportes líquidos registrados</div><details class="dashboard-history-disclosure"><summary>Movimento registrado</summary><div class="dashboard-history-disclosure-body">${coverageNote}</div></details></div></div>
         ${lineChart([{name:'Aportes líquidos registrados',tooltipLabel:'Aportes registrados',values:chartMonths.map(row=>row.cumulative),color:'#34d399',fill:'rgba(52,211,153,.16)',width:2.4,points:!(isCompact&&!sparse)}],chartMonths.map(row=>row.label),'dashboard-patrimony-chart',fmt)}
       </div>
     `;
   }
   return `
     <div class="dashboard-evolution-card dashboard-evolution-empty">
-      <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Aportes líquidos registrados</div><details class="dashboard-history-disclosure"><summary>Sobre o histórico</summary><div class="dashboard-history-disclosure-body">Histórico patrimonial ainda não disponível.</div></details></div></div>
+      <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Aportes líquidos registrados</div><details class="dashboard-history-disclosure"><summary>Movimento registrado</summary><div class="dashboard-history-disclosure-body">Histórico patrimonial ainda não disponível; a cobertura do histórico é desconhecida.</div></details></div></div>
       <div class="premium-empty">Não há movimentações registradas na janela; a cobertura do histórico é desconhecida.</div>
       <div class="premium-panel-actions" style="margin-top:10px">
         <button class="btn bp" onclick="go('aportes')">Registrar aporte</button>
@@ -32335,6 +32343,9 @@ function patrimonioTab(){
   const resultKnown=currentKnown&&appliedKnown&&tI>0;
   const periodOpts=[3,6,12,24];
   const shownMonths=data.months.filter(row=>row.movementCount>0);
+  const monthsWithData=shownMonths.length;
+  const totalMonths=data.months.length;
+  const movementPct=totalMonths>0?Math.round((monthsWithData/totalMonths)*100):0;
   const maxMonth=Math.max(...shownMonths.map(row=>Math.max(0,row.cumulative)),1);
   const mobile=typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(max-width:640px)').matches;
   const visibleMonths=mobile&&shownMonths.length>8?shownMonths.slice(-8):shownMonths;
@@ -32388,11 +32399,11 @@ function patrimonioTab(){
   }).join('') : '<div class="premium-empty">Sem ativos com cotação atual para ranquear.</div>';
 
   return `<div class="patrimonio-premium">
-    <div class="patrimonio-hero">
-      <div class="patrimonio-head">
-        <div><h1 class="patrimonio-title">Patrimônio</h1><div class="patrimonio-subtitle">Composição atual e aportes registrados; histórico patrimonial indisponível.</div></div>
-        <div class="patrimony-reading">${resultKnown?data.reading.text:`Valores parciais ou sem base aplicada completa. Resultado atual indisponível (${data.availability.note}).`}</div>
-      </div>
+      <div class="patrimonio-hero">
+        <div class="patrimonio-head">
+          <div><h1 class="patrimonio-title">Patrimônio</h1><div class="patrimonio-subtitle">Composição atual e aportes registrados em ${monthsWithData} de ${totalMonths} meses (${movementPct}% com movimento registrado); histórico patrimonial indisponível.</div></div>
+          <div class="patrimony-reading">${resultKnown?data.reading.text:`Valores parciais ou sem base aplicada completa. Resultado atual indisponível (${data.availability.note}).`}</div>
+        </div>
       <div class="patrimonio-kpis">
         <div class="patrimonio-kpi patrimonio-kpi-main">
           <div class="patrimonio-kpi-label">Patrimônio total</div>
@@ -32421,12 +32432,12 @@ function patrimonioTab(){
     </div>
     <div class="patrimonio-grid">
       <div class="patrimonio-panel patrimonio-panel-chart">
-        <div class="patrimonio-panel-head">
-          <div><h2 class="patrimonio-panel-title">Aportes líquidos acumulados</h2><div class="patrimonio-panel-sub">Acumulado apenas nos meses com movimentos registrados; não representa valuation histórico e a cobertura dos registros é desconhecida.</div></div>
-          <div class="patrimonio-panel-badge">Patrimônio atual ${currentKnown?fmt(tC):'indisponível'}</div>
-        </div>
-        <div class="patrimony-month-list" tabindex="0" role="region" aria-label="Aportes líquidos por mês">${monthRows}</div>
-      </div>
+              <div class="patrimonio-panel-head">
+                <div><h2 class="patrimonio-panel-title">Aportes líquidos acumulados</h2><div class="patrimonio-panel-sub">Acumulado apenas nos meses com movimentos registrados; não representa valuation histórico e a cobertura dos registros é desconhecida.</div></div>
+                <div class="patrimonio-panel-badge">Patrimônio atual ${currentKnown?fmt(tC):'indisponível'}</div>
+              </div>
+              <div class="patrimony-month-list" tabindex="0" role="region" aria-label="Aportes líquidos por mês">${monthRows}</div>
+            </div>
       <div class="patrimonio-panel patrimonio-panel-top">
         <div class="patrimonio-panel-head"><div><h2 class="patrimonio-panel-title">Top Ativos</h2><div class="patrimonio-panel-sub">Maiores posições por valor atual; barras e percentuais comparam as posições exibidas.</div></div><div class="patrimonio-panel-badge">${topAssets.length} ativos</div></div>
         <div class="patrimonio-top-asset-list">${topAssetsHtml}</div>
@@ -32453,14 +32464,14 @@ function patrimonioTab(){
         <div class="patrimony-composition-text">${tG>0?`O patrimônio atual combina capital aportado com ${fmt(tG)} de valorização. Aproximadamente ${positiveResultShare.toFixed(1)}% do valor atual representa ganho de capital.`:tG<0?`O patrimônio é formado pelos aportes, mas uma perda de ${fmt(Math.abs(tG))} reduziu o valor atual. O crescimento depende principalmente de novos aportes enquanto essa diferença permanecer.`:'O patrimônio atual está praticamente igual ao capital aplicado; neste momento, o crescimento vem principalmente dos aportes.'}</div>`:`<div class="premium-empty">Composição indisponível: valores correntes ou base aplicada incompletos.</div>`}
       </div>
       <div class="patrimonio-panel patrimonio-panel-insights">
-        <div class="patrimonio-panel-head"><div><h2 class="patrimonio-panel-title">Registros do período</h2><div class="patrimonio-panel-sub">Aportes registrados; valuation histórico não disponível.</div></div><div class="patrimonio-panel-badge">${data.count} meses</div></div>
-        <div class="patrimonio-insights">
-          <div class="patrimonio-insight"><div class="patrimonio-insight-label">Histórico patrimonial</div><div class="patrimonio-insight-value">Indisponível</div><div class="patrimonio-insight-note">Snapshots de valuation não disponíveis</div></div>
-          <div class="patrimonio-insight"><div class="patrimonio-insight-label">Maior mês de aporte</div><div class="patrimonio-insight-value">${data.biggestContribution?esc(data.biggestContribution.label):'—'}</div><div class="patrimonio-insight-note">${data.biggestContribution?fmt(data.biggestContribution.aporte):'Sem aporte positivo no período'}</div></div>
-          <div class="patrimonio-insight"><div class="patrimonio-insight-label">Meses na janela</div><div class="patrimonio-insight-value">${data.months.length}</div><div class="patrimonio-insight-note">Período selecionado</div></div>
-        </div>
-        <div class="premium-note">Esta série resume movimentações disponíveis; ela não substitui snapshots históricos de valor de mercado.</div>
-      </div>
+              <div class="patrimonio-panel-head"><div><h2 class="patrimonio-panel-title">Registros do período</h2><div class="patrimonio-panel-sub">Aportes registrados em ${monthsWithData} de ${totalMonths} meses (${movementPct}% com movimento registrado); valuation histórico não disponível.</div></div><div class="patrimonio-panel-badge">${data.count} meses</div></div>
+              <div class="patrimonio-insights">
+                <div class="patrimonio-insight"><div class="patrimonio-insight-label">Meses com movimento registrado</div><div class="patrimonio-insight-value">${monthsWithData} de ${totalMonths} meses (${movementPct}%)</div><div class="patrimonio-insight-note">Meses sem registro não são preenchidos; a cobertura histórica permanece desconhecida.</div></div>
+                <div class="patrimonio-insight"><div class="patrimonio-insight-label">Maior mês de aporte</div><div class="patrimonio-insight-value">${data.biggestContribution?esc(data.biggestContribution.label):'—'}</div><div class="patrimonio-insight-note">${data.biggestContribution?fmt(data.biggestContribution.aporte):'Sem aporte positivo no período'}</div></div>
+                <div class="patrimonio-insight"><div class="patrimonio-insight-label">Meses na janela</div><div class="patrimonio-insight-value">${data.months.length}</div><div class="patrimonio-insight-note">Período selecionado (${data.count} meses)</div></div>
+              </div>
+              <div class="premium-note">Esta série resume movimentações disponíveis; ela não substitui snapshots históricos de valor de mercado.</div>
+            </div>
     </div>
   </div>`;
 }
