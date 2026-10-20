@@ -447,6 +447,49 @@ test('Hide Values no teste local não acessa nem escreve storage', () => {
   assert.equal(harness.calls.reads, 0);
   assert.deepEqual(harness.calls.writes, []);
 });
+test('Dashboard explains partial history on demand without filling missing chart periods', () => {
+  const source = extractSnippet('function dashboardEvolutionPanel(data){', 'function dashboardIncomePanel(data){');
+  let chartInput;
+  const renderPanel = vm.runInNewContext(`${source}\ndashboardEvolutionPanel`, {
+    S: { dashPeriod: 12 },
+    patrimonySnapshot: () => ({ months: [
+      { movementCount: 2, cumulative: 100, label: 'Jan/26' },
+      { movementCount: 0, cumulative: null, label: 'Fev/26' },
+      { movementCount: 1, cumulative: 130, label: 'Mar/26' }
+    ] }),
+    lineChart(series, labels) { chartInput = { series, labels }; return '<svg></svg>'; },
+    fmt: value => String(value)
+  });
+
+  const html = renderPanel({});
+  assert.match(html, /<details class="dashboard-history-disclosure">/);
+  assert.match(html, /<summary>Sobre o histórico<\/summary>/);
+  assert.match(html, /cobertura do histórico.*desconhecida/i);
+  assert.deepEqual(Array.from(chartInput.series[0].values), [100, null, 130]);
+  assert.deepEqual(Array.from(chartInput.labels), ['Jan/26', 'Fev/26', 'Mar/26']);
+});
+test('Dashboard position result label stays distinct from portfolio total', () => {
+  const source = extractSnippet('function executiveKPIs(data){', 'function package2ExecutivePanel(){');
+  const cards = [];
+  const renderKpis = vm.runInNewContext(`${source}\nexecutiveKPIs`, {
+    S: { proventos: [], rfEvents: [], hideValues: false },
+    dashboardCurrentValueAvailability: () => ({ state: 'AVAILABLE', note: 'Valores atuais informados' }),
+    passiveIncomeMonthKey: () => '2026-10',
+    passiveIncomeMonthSummary: () => ({ month: '2026-10', total: null, coverage: 'UNKNOWN' }),
+    assetSignedMoneyText: value => `R$ ${value}`,
+    fmtP: value => `${value}%`,
+    dashboardMetricIcon: () => '',
+    dashboardMetricCard: (icon, label, value, note) => { cards.push({ label, value, note }); return ''; },
+    passiveIncomeValue: () => '—',
+    fmt: value => `R$ ${value}`
+  });
+
+  renderKpis({
+    portfolio: { tC: 100, tI: 80, tG: 20, tGP: 25, appliedComplete: true },
+    recent: { month: '2026-10', total: null, coverage: 'UNKNOWN' }
+  });
+  assert.ok(cards.some(card => card.label === 'Resultado da posição'));
+});
 test('M523 light foundation is emitted inside a stylesheet', () => {
   const html = readIndexHtml();
   const styleBlocks = [...html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)].map(match => match[1]);

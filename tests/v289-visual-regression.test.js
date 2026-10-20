@@ -466,6 +466,32 @@ test('V329 all-unknown allocation does not render zero totals or an unsupported 
   }
 });
 
+test('M524 Hide Values removes original Dashboard amounts from text and value-bearing attributes', async () => {
+  const runtime = await createRuntime({ width: 1366, height: 768 });
+  try {
+    await applyV289VisualFixture(runtime.page, 'baseline');
+    await setThemeAndRoute(runtime.page, 'light', 'dashboard');
+    const dashboard = runtime.page.locator('.premium-dashboard.canon-dashboard');
+    const before = await dashboard.innerText();
+    const tokens = [...new Set((before.match(/R\$\s*[\d.]+,\d{2}|[+-]?\d+[,.]\d+%/g) || []).map(value => value.replace(/\s+/g, ' ')))];
+    assert.ok(tokens.length > 0, 'synthetic Dashboard must expose values before Hide Values');
+
+    await runtime.page.getByRole('button', { name: 'Ocultar valores' }).click();
+    const leaks = await dashboard.evaluate((root, sensitiveTokens) => {
+      const nodes = [root, ...root.querySelectorAll('*')];
+      const values = nodes.flatMap(node => [
+        { source: 'text', value: node.textContent || '' },
+        ...[...node.attributes].map(attribute => ({ source: attribute.name, value: attribute.value }))
+      ]);
+      return sensitiveTokens.flatMap(token => values.filter(entry => entry.value.replace(/\s+/g, ' ').includes(token)).map(entry => entry.source));
+    }, tokens);
+    assert.deepEqual(leaks, [], 'masked amounts must not remain in Dashboard text, aria labels, titles, or data attributes');
+    assert.equal(await runtime.page.getByRole('button', { name: 'Mostrar valores' }).count(), 1, 'Hide Values control remains accessible');
+    await assertSyntheticReadOnlyRuntime(runtime);
+  } finally {
+    await closeRuntime(runtime);
+  }
+});
 test('V329 hide-values mode also hides institutional identities, coverage and dates', async () => {
   const runtime = await createRuntime({ width: 1366, height: 768 });
   try {
