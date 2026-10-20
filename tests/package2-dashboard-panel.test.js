@@ -32,12 +32,12 @@ function makeContext(overrides = {}) {
   return context;
 }
 
-function renderPanel(overrides) {
-  const snippet = extractSnippet('function package2ExecutivePanel(){', 'function dashboardEvolutionPanel(data){');
+function renderPanel(overrides, showTotalStatus = true) {
+  const snippet = extractSnippet('function package2FiniteNumber(', 'function dashboardEvolutionPanel(data){');
   const context = makeContext(overrides);
   vm.createContext(context);
-  vm.runInContext(snippet + '\npackage2ExecutivePanel', context);
-  return context.package2ExecutivePanel();
+  vm.runInContext(snippet + '\nglobalThis.render=package2ExecutivePanel', context);
+  return context.render(showTotalStatus);
 }
 
 // The certified payload (mirrors package2_v2 income/result summaries)
@@ -83,6 +83,13 @@ test('package2 panel keeps total result in consolidation (no fake total profit)'
   assert.match(html, /Combinação de escopos ainda não certificada/);
 });
 
+test('package2 total card is omitted when the dashboard status strip carries the result state', () => {
+  const html = renderPanel({ package2: certifiedSummary }, false);
+  assert.match(html, /Resultado certificado da RV/);
+  assert.match(html, /Renda recebida/);
+  assert.doesNotMatch(html, /Resultado total/);
+});
+
 test('package2 panel renders nothing when summary absent (first-fold preserved)', () => {
   const html = renderPanel({ package2: null });
   assert.equal(html, '');
@@ -108,7 +115,7 @@ test('package2 panel renders nothing for malformed summary (no empty cards)', ()
 
 test('dashboard wires the package2 panel after executive KPIs', () => {
   const html = fs.readFileSync(path.join(repoRoot, 'index.html'), 'utf8');
-  assert.match(html, /\$\{executiveKPIs\(data\)\}\s*\r?\n\s*\$\{package2ExecutivePanel\(\)\}/);
+  assert.match(html, /\$\{executiveKPIs\(data\)\}\s*\r?\n\s*\$\{package2ExecutivePanel\(!dashboardHasEconomicCertification\(data\?\.portfolioEconomicResult\)\)\}/);
 });
 
 test('cloud snapshot captures package2_v2 read-only into FB', () => {

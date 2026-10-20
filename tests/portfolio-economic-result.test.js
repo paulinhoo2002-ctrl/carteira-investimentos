@@ -416,6 +416,9 @@ test('duplicate portfolio identities fail closed without double counting', () =>
 
   assert.equal(portfolio.status, 'PARTIAL');
   assert.equal(portfolio.totalEconomicResult, null);
+  assert.equal(portfolio.certifiedEconomicResult, null);
+  assert.equal(portfolio.certifiedReturnPct, null);
+  assert.deepEqual(portfolio.certifiedAssets, []);
   assert.ok(portfolio.blockers.includes('DUPLICATE_ASSET_ID'));
 });
 

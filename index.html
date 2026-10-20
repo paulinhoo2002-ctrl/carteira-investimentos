@@ -31967,7 +31967,9 @@ function dashboardAllocationIntelligencePanel(){
 function dash(){
   const analysisRows=assetAnalysisRows();
   const data=dashboardSnapshot(analysisRows);
-  data.insights=portfolioInsightsSnapshot({...data,rf:rfIntelligenceSnapshot(),quality:dataQualitySnapshot()});
+  const rfSnapshot=rfIntelligenceSnapshot();
+  data.portfolioEconomicResult=portfolioEconomicResultSnapshot(rfSnapshot);
+  data.insights=portfolioInsightsSnapshot({...data,rf:rfSnapshot,quality:dataQualitySnapshot()});
   const hoje=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
   const periodOpts=[3,6,12,24];
   const dashMeta=new Date().toLocaleString('pt-BR',{hour:'2-digit',minute:'2-digit'});
@@ -31986,7 +31988,7 @@ function dash(){
         </div>
       </div>
       ${executiveKPIs(data)}
-      ${package2ExecutivePanel()}
+      ${package2ExecutivePanel(!dashboardHasEconomicCertification(data?.portfolioEconomicResult))}
       <div class="dashboard-analytical-primary canon-dash-row-b">
         ${dashboardEvolutionPanel(data)}
         ${dashboardV3AllocationPanel()}
@@ -32124,6 +32126,58 @@ function dashboardCurrentValueAvailability(){
     return {state:'STALE',note:'Cotações desatualizadas; confirme a data da fonte'};
   return {state:'AVAILABLE',note:'Valores atuais informados'};
 }
+function portfolioEconomicResultSnapshot(rfSnapshot){
+  const reconciliation=globalThis.FinancialTruthReconciliation;
+  const assets=Array.isArray(S.assets)?S.assets:null;
+  if(!reconciliation?.aggregatePortfolio) return null;
+  if(!assets) return reconciliation.aggregatePortfolio({assets:null,reconciliations:null,inventoryCoverage:'UNKNOWN'});
+  const fixed=rfSnapshot||rfIntelligenceSnapshot();
+  const rfRows=Array.isArray(fixed?.assets)?fixed.assets:[];
+  const rfById=new Map(rfRows.filter(row=>row.asset?.id!=null).map(row=>[String(row.asset.id),row]));
+  const reconciliations=assets.map(asset=>{
+    const row=asset?.id!=null?rfById.get(String(asset.id)):null;
+    const evidence=row?.reconciliation;
+    return evidence&&String(evidence.assetId||'').trim()===String(asset?.id||'').trim()
+      ? evidence : reconciliation.reconcileAsset({asset});
+  });
+  return reconciliation.aggregatePortfolio({assets,reconciliations,inventoryCoverage:'UNKNOWN'});
+}
+function dashboardEconomicResultStatus(summary){
+  const hidden=!!S.hideValues;
+  const formatMoney=value=>hidden?'••••':assetSignedMoneyText(value);
+  const formatReturn=value=>hidden?'••••':fmtP(value);
+  const tone=value=>hidden?'neutral':value>0?'positive':value<0?'negative':'neutral';
+  const complete=summary?.status==='COMPLETE'&&typeof summary.totalEconomicResult==='number'&&Number.isFinite(summary.totalEconomicResult);
+  if(complete){
+    const returnText=typeof summary.totalReturnPct==='number'&&Number.isFinite(summary.totalReturnPct)?` · retorno simples ${formatReturn(summary.totalReturnPct)}`:'';
+    return `<div class="dashboard-total-result-status" role="status"><strong class="dashboard-total-result-value ${tone(summary.totalEconomicResult)}">Resultado total: ${formatMoney(summary.totalEconomicResult)}${returnText}</strong><span>Escopo completo certificado pelo histórico disponível.</span></div>`;
+  }
+  const subset=Array.isArray(summary?.certifiedAssets)&&summary.certifiedAssets.length>0
+    && typeof summary.certifiedEconomicResult==='number'&&Number.isFinite(summary.certifiedEconomicResult);
+  if(subset){
+    const returnText=typeof summary.certifiedReturnPct==='number'&&Number.isFinite(summary.certifiedReturnPct)?` · retorno simples ${formatReturn(summary.certifiedReturnPct)}`:'';
+    return `<div class="dashboard-total-result-status" role="status"><strong class="dashboard-total-result-value ${tone(summary.certifiedEconomicResult)}">Subtotal certificado: ${formatMoney(summary.certifiedEconomicResult)}${returnText}</strong><span>Apenas posições com histórico completo; o resultado total da carteira permanece em consolidação.</span></div>`;
+  }
+  return '<div class="dashboard-total-result-status" role="status"><strong>Resultado total: Em consolidação</strong><span>Resultado econômico ainda não disponível para o escopo completo.</span></div>';
+}
+function dashboardHasEconomicCertification(summary){
+  const complete=summary?.status==='COMPLETE'&&typeof summary.totalEconomicResult==='number'&&Number.isFinite(summary.totalEconomicResult);
+  const subset=Array.isArray(summary?.certifiedAssets)&&summary.certifiedAssets.length>0
+    &&typeof summary.certifiedEconomicResult==='number'&&Number.isFinite(summary.certifiedEconomicResult);
+  return complete||subset;
+}
+function package2FiniteNumber(value){
+  if(typeof value==='number') return Number.isFinite(value);
+  return typeof value==='string'&&value.trim()!==''&&Number.isFinite(Number(value));
+}
+function package2HasRenderableSummary(summary){
+  return package2FiniteNumber(summary?.current_result_summary?.rv_total)
+    || package2FiniteNumber(summary?.income_summary?.y2026_total);
+}
+function package2KnownCount(value){
+  const count=Number(value);
+  return package2FiniteNumber(value)&&Number.isSafeInteger(count)&&count>=0?String(count):'contagem indisponível';
+}
 function executiveKPIs(data){
   const p=data?.portfolio||cx();
   const totalCurrent=Number(p.tC)||0;
@@ -32144,28 +32198,33 @@ function executiveKPIs(data){
   const resultNote=p.appliedComplete===false?'Base aplicada parcial ou indisponível':!resultAvailable?'Base parcial ou indisponível':'Valor atual menos capital aplicado cadastrado; não representa retorno econômico total';
   const resultTone=!resultAvailable||!amountValid?'var(--semantic-operational)':p.tG>0?'var(--success)':p.tG<0?'var(--danger)':'var(--semantic-operational)';
   const resultGlow=!resultAvailable||!amountValid?'var(--semantic-operational-bg)':p.tG>0?'rgba(16,185,129,.14)':p.tG<0?'rgba(248,113,113,.14)':'var(--semantic-operational-bg)';
-  const patrimonyValue=['UNKNOWN','NO_DATA'].includes(availability.state)?'—':fmt(totalCurrent);
-  const investedContext=p.appliedComplete===false?`Capital informado parcialmente · ${fmt(totalApplied)}`:totalApplied>0?`Investido ${fmt(totalApplied)}`:'Sem capital aplicado';
+  const patrimonyValue=['UNKNOWN','PARTIAL','NO_DATA'].includes(availability.state)?'—':fmt(totalCurrent);
+  const investedContext=availability.state==='NO_DATA'
+    ? availability.note
+    : p.appliedComplete===false
+      ? totalApplied>0?`Capital informado parcialmente · ${fmt(totalApplied)}`:'Capital informado parcialmente'
+      : totalApplied>0?`Investido ${fmt(totalApplied)}`:'Sem capital aplicado';
   const patrimonyNote=availability.state==='AVAILABLE'&&totalCurrent===0?'Valor conhecido: zero':availability.note;
+  const patrimonyContext=(['UNKNOWN','PARTIAL','STALE','NO_DATA'].includes(availability.state)||(availability.state==='AVAILABLE'&&totalCurrent===0))&&patrimonyNote!==investedContext
+    ? `${investedContext} · ${patrimonyNote}`
+    : investedContext;
   const incomeAvailable=(S.proventos||[]).length>0 || (S.rfEvents||[]).length>0;
-  const package2=(typeof FB!=='undefined'&&FB)||{};
-  const package2Summary=package2.package2||null;
-  const package2Result=package2Summary?.current_result_summary||{};
-  const package2Income=package2Summary?.income_summary||{};
-  const hasPackage2Summary=(package2Result.rv_total!==null&&package2Result.rv_total!==undefined&&Number.isFinite(Number(package2Result.rv_total)))
-    || (package2Income.y2026_total!==null&&package2Income.y2026_total!==undefined&&Number.isFinite(Number(package2Income.y2026_total)));
-  const totalResultStatus=hasPackage2Summary?'':`<div class="dashboard-total-result-status" role="status"><strong>Resultado total: Em consolidação</strong><span>Renda recebida e devoluções de principal ainda não estão conciliadas em escopo completo.</span></div>`;
+  const package2Summary=typeof FB!=='undefined'?FB?.package2:null;
+  const hasPackage2Summary=package2HasRenderableSummary(package2Summary);
+  const totalResultStatus=hasPackage2Summary&&!dashboardHasEconomicCertification(data?.portfolioEconomicResult)
+    ?''
+    :dashboardEconomicResultStatus(data?.portfolioEconomicResult);
 
   return `
     ${totalResultStatus}
     <div class="dashboard-executive-kpis">
-      ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',patrimonyValue,investedContext,'var(--semantic-official)','var(--semantic-official-bg)',`${investedContext} · ${patrimonyNote} · Data-base financeira não informada`)}
+      ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',patrimonyValue,patrimonyContext,'var(--semantic-official)','var(--semantic-official-bg)',`${patrimonyContext} · Data-base financeira não informada`)}
       ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado da posição',resultValue,resultAvailable?'Sobre capital cadastrado':resultNote,resultTone,resultGlow,resultNote)}
-      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Renda no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Cobertura parcial':'Cobertura desconhecida','var(--success)','rgba(16,185,129,.14)',recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida')}
+      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Cobertura parcial':'Cobertura desconhecida','var(--success)','rgba(16,185,129,.14)',recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida')}
     </div>
   `;
 }
-function package2ExecutivePanel(){
+function package2ExecutivePanel(showTotalStatus=true){
   const p2=(typeof FB!=='undefined'&&FB)||{};
   const summary=p2.package2||null;
   const hidden=!!S.hideValues;
@@ -32179,28 +32238,30 @@ function package2ExecutivePanel(){
   const income=summary.income_summary||{};
   // Minimum shape guard: at least one certified aggregate must be present,
   // otherwise degrade to nothing (never render empty/fake cards).
-  const hasResult=Number.isFinite(Number(rs.rv_total));
-  const hasIncome=Number.isFinite(Number(income.y2026_total));
+  const hasResult=package2FiniteNumber(rs.rv_total);
+  const hasIncome=package2FiniteNumber(income.y2026_total);
   if(!hasResult&&!hasIncome) return '';
-  const rvTotal=Number(rs.rv_total);
-  const rvValid=Number.isFinite(rvTotal);
-  const coverage=Number(rs.coverage_ratio);
+  const rvTotal=hasResult?Number(rs.rv_total):Number.NaN;
+  const rvValid=hasResult&&Number.isFinite(rvTotal);
+  const coverage=package2FiniteNumber(rs.coverage_ratio)?Number(rs.coverage_ratio):Number.NaN;
   const coveragePct=Number.isFinite(coverage)?`${(coverage*100).toFixed(2).replace('.',',')}`:'—';
   const fullScope=String(rs.coverage_status||'').toUpperCase()==='FULL_CERTIFIED_SCOPE';
-  const gainTone=!rvValid||rvTotal>=0?'#34d399':'#f87171';
-  const gainGlow=!rvValid||rvTotal>=0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)';
+  const gainTone=!rvValid||rvTotal===0?'#94a3b8':rvTotal>0?'#34d399':'#f87171';
+  const gainGlow=!rvValid||rvTotal===0?'rgba(148,163,184,.12)':rvTotal>0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)';
   const gainValue=rvValid&&!hidden?assetSignedMoneyText(rvTotal):'—';
   const gainScope=fullScope?'COMPLETA':'PARCIAL';
-  const gainNote=rvValid?`${rs.rv_certified_count||0} posições certificadas · cobertura ${coveragePct}% · ${gainScope}`:'Base indisponível';
-  const y2026=Number(income.y2026_total);
-  const incomeValid=Number.isFinite(y2026);
+  const gainNote=rvValid?`${package2KnownCount(rs.rv_certified_count)} posições certificadas · cobertura ${coveragePct}% · ${gainScope}`:'Base indisponível';
+  const y2026=hasIncome?Number(income.y2026_total):Number.NaN;
+  const incomeValid=hasIncome&&Number.isFinite(y2026);
   const incomeValue=incomeValid&&!hidden?assetSignedMoneyText(y2026):'—';
-  const incomeNote=incomeValid?`Recebidos em 2026 · ${Number(income.y2026_events)||0} eventos`:'Base indisponível';
+  const incomeNote=incomeValid?`Recebidos em 2026 · ${package2KnownCount(income.y2026_events)} eventos`:'Base indisponível';
+  const incomeTone=incomeValid&&y2026>0?'#10b981':incomeValid&&y2026<0?'#f87171':'#94a3b8';
+  const incomeGlow=incomeTone==='#10b981'?'rgba(16,185,129,.14)':incomeTone==='#f87171'?'rgba(248,113,113,.14)':'rgba(148,163,184,.12)';
   return `
     <div class="dashboard-executive-kpis package2-kpis" data-package2="present">
       ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado certificado da RV',gainValue,`${gainNote} · valor indicativo, não é lucro realizado`,gainTone,gainGlow)}
-      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Renda recebida',incomeValue,incomeNote,'#10b981','rgba(16,185,129,.14)')}
-      ${dashboardMetricCard(dashboardMetricIcon('info'),'Resultado total','Em consolidação','Combinação de escopos ainda não certificada','#94a3b8','rgba(148,163,184,.12)')}
+      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Renda recebida',incomeValue,incomeNote,incomeTone,incomeGlow)}
+      ${showTotalStatus?dashboardMetricCard(dashboardMetricIcon('info'),'Resultado total','Em consolidação','Combinação de escopos ainda não certificada','#94a3b8','rgba(148,163,184,.12)'):''}
     </div>`;
 }
 function dashboardEvolutionPanel(data){
@@ -39095,6 +39156,8 @@ html[data-theme="dark"] .canon-dashboard .dashboard-page-heading p{color:var(--d
 .canon-dashboard .dashboard-executive-kpis .premium-metric-note{font-size:12px;line-height:1.35;color:var(--dash-muted);white-space:normal;overflow:visible;display:block}
 .canon-dashboard .dashboard-total-result-status{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;margin:0 0 10px;padding:10px 12px;border:1px solid var(--dash-line);border-radius:10px;background:var(--dash-surface);color:var(--dash-muted);font-size:12px;line-height:1.4}
 .canon-dashboard .dashboard-total-result-status strong{color:var(--dash-ink)}
+.canon-dashboard .dashboard-total-result-status strong.positive{color:var(--ds-positive)}
+.canon-dashboard .dashboard-total-result-status strong.negative{color:var(--ds-negative)}
 .rf-economic-status-details{margin-top:6px;color:var(--muted);font-size:11px;text-align:left}
 .rf-economic-status-details summary{min-height:32px;display:flex;align-items:center;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
 .rf-economic-status-details dl{display:grid;gap:5px;min-width:180px;margin:6px 0 0;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--panel);white-space:normal}

@@ -266,10 +266,14 @@
 
     const ids = rows.map((asset) => typeof asset?.id === 'string' ? asset.id.trim() : '');
     const validIds = ids.filter(Boolean);
-    if (validIds.length !== ids.length || new Set(validIds).size !== validIds.length) blockers.add('DUPLICATE_ASSET_ID');
+    const ambiguousIds = new Set(validIds.filter((id, index) => validIds.indexOf(id) !== index));
+    if (validIds.length !== ids.length || ambiguousIds.size) blockers.add('DUPLICATE_ASSET_ID');
     const byId = new Map();
     for (const reconciliation of results) {
-      if (!reconciliation?.assetId || byId.has(reconciliation.assetId)) blockers.add('DUPLICATE_ASSET_RECONCILIATION');
+      if (!reconciliation?.assetId || byId.has(reconciliation.assetId)) {
+        if (reconciliation?.assetId) ambiguousIds.add(reconciliation.assetId);
+        blockers.add('DUPLICATE_ASSET_RECONCILIATION');
+      }
       else byId.set(reconciliation.assetId, reconciliation);
     }
 
@@ -284,6 +288,11 @@
     let allComplete = rows.length > 0 && inventoryCoverage === 'COMPLETE' && blockers.size === 0;
 
     for (const id of validIds) {
+      if (ambiguousIds.has(id)) {
+        unknownAssets.push(id);
+        allComplete = false;
+        continue;
+      }
       const reconciliation = byId.get(id);
       if (!reconciliation) {
         blockers.add('ASSET_RECONCILIATION_MISSING');
