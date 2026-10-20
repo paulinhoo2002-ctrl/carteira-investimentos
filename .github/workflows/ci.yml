@@ -11,6 +11,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   test:
     name: Build and test
@@ -25,15 +29,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run build and tests
         run: npm test
-
-      - name: Build modern
-        run: npm run build:modern
 
       - name: Resolve Chromium (reuse preinstalled browser)
         run: |
@@ -86,12 +88,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Build modern assets
-        run: npm run build:modern
 
       - name: Resolve Chromium (reuse preinstalled browser)
         run: |
