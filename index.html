@@ -34943,7 +34943,7 @@ function dividendMonthlyHistorySummaryLine(summary, groups){
     ? `${groups[0].total>=groups[1].total?'+':'-'}${fmt(Math.abs(groups[0].total-groups[1].total))}`
     : 'Sem base anterior';
   return `<div class="div-monthly-summaryline" aria-label="Resumo do período">
-    <div class="div-monthly-summary-item"><span>Total no período</span><strong>${totalLabel}</strong></div>
+    <div class="div-monthly-summary-item"><span>Total conhecido</span><strong>${totalLabel}</strong></div>
     <div class="div-monthly-summary-item"><span>Média mensal</span><strong>${averageLabel}</strong></div>
     <div class="div-monthly-summary-item"><span>Melhor mês</span><strong>${bestLabel}</strong></div>
     <div class="div-monthly-summary-item"><span>Tendência recente</span><strong>${esc(trend)}</strong></div>
@@ -35549,7 +35549,7 @@ function dividendMonthlyTimeline(rows=filteredDividendRows()){
   }));
   const total=matrix.reduce((sum,row)=>sum+(Number(row.annualTotal)||0),0);
   const chart=lineChart(series,monthLabels,'dividend-line-chart',fmt).replace('class="dividend-line-chart"','class="dividend-line-chart dividend-evolution-chart"');
-  return `<div class="dividend-timeline-summary"><div class="div-timeline-summary-title">Evolução mensal dos proventos</div><div class="div-timeline-summary-sub">Valores oficiais já gravados por ano, sem projeção.</div><div class="div-timeline-summary-meta">${years.length} série(s) · ${fmt(total)} no período</div></div><div class="dividend-chart-wrap dividend-line-chart-wrap">${chart}</div>`;
+  return `<div class="dividend-timeline-summary"><div class="div-timeline-summary-title">Evolução mensal dos proventos</div><div class="div-timeline-summary-sub">Recebimentos registrados por ano; lacunas preservadas, sem projeção.</div><div class="div-timeline-summary-meta">${years.length} série(s) · ${fmt(total)} no período conhecido</div></div><div class="dividend-chart-wrap dividend-line-chart-wrap">${chart}</div>`;
 }
 function showDividendChartTooltip(point){
   const wrap=point?.closest?.('.dividend-chart-wrap');
@@ -35592,44 +35592,36 @@ function dividendSummaryCards(){
 }
 function dividendExecutiveKpis(rows=dividendPremiumRows()){
   const stats=passiveIncomeGoalStats();
-  const incomeEngine=globalThis.DividendIntelligence;
-  const classifyIncomeState=incomeEngine?.classifyIncomeState;
-  const currentYear=new Date().getFullYear();
-  const receivedThisYearRows=typeof classifyIncomeState==='function' ? rows.filter(row=>{
-    if(classifyIncomeState(row)!=='PAID') return false;
-    const date=row.paymentDt instanceof Date ? row.paymentDt : row.dt instanceof Date ? row.dt : parseAnyDate(row.date);
-    return date instanceof Date && !Number.isNaN(date.getTime()) && date.getFullYear()===currentYear;
-  }) : [];
-  const receivedThisYearCents=receivedThisYearRows.map(row=>{
-    if(row.value==null||row.value==='') return NaN;
-    const cents=Number(row.value)*100;
-    const rounded=Math.round(cents);
-    return Number.isSafeInteger(rounded)&&Math.abs(cents-rounded)<1e-6 ? rounded : NaN;
-  });
-  const receivedThisYearKnown=receivedThisYearCents.length>0 && receivedThisYearCents.every(Number.isSafeInteger);
-  const receivedThisYear=receivedThisYearKnown ? receivedThisYearCents.reduce((sum,value)=>sum+value,0)/100 : null;
-  const receivedThisYearSub=typeof classifyIncomeState!=='function'
-    ? 'Classificação de recebimento indisponível'
-    : !receivedThisYearRows.length
-      ? 'Sem recebimentos identificados no ano atual'
-      : receivedThisYearKnown
-        ? 'Pagamentos classificados como recebidos no ano atual'
-        : 'Valor de recebimento indisponível';
-  const covered=dividendAnnualMatrixData(rows).flatMap(year=>year.months).filter(month=>stats.monthKeys.includes(month.key));
-  const complete=covered.filter(month=>month.coverage==='COMPLETE');
-  const monthlyAvg=complete.length?complete.reduce((sum,month)=>sum+month.total,0)/complete.length:null;
-  const lastMonthRow=covered.find(month=>month.key===stats.monthKeys[stats.monthKeys.length-2]);
-  const lastMonth=lastMonthRow?.coverage==='COMPLETE' || (lastMonthRow?.coverage==='PARTIAL' && lastMonthRow.total>0) ? lastMonthRow.total : null;
-  const lastMonthSub=lastMonthRow?.coverage==='COMPLETE'?'Mês completo confirmado':lastMonthRow?.coverage==='PARTIAL'?'Recebido registrado · cobertura parcial':'Cobertura desconhecida';
-  const annualProjection=complete.length===12&&monthlyAvg!==null?monthlyAvg*12:null;
-  const portfolioTotal=(S.assets||[]).reduce((s,a)=>s+(assetCurrentValue(a)||0),0);
-  const yieldNow=(portfolioTotal>0 && stats.total12>0) ? (stats.total12/portfolioTotal*100) : null;
+  const complete=stats.monthlyAverageStatus==='COMPLETE' && stats.completeMonthCount===12;
+  const completeMonths=Number(stats.completeMonthCount)||0;
+  const currentCoverage=stats.currentMonthCoverage||'UNKNOWN';
+  const months=Array.isArray(stats.byMonth)
+    ? stats.byMonth
+    : dividendAnnualMatrixData(rows).flatMap(year=>year.months);
+  const previousMonthKey=stats.previousMonthKey||stats.monthKeys?.[stats.monthKeys.length-2];
+  const previousMonth=months.find(month=>month.key===previousMonthKey);
+  const previousMonthKnown=previousMonth?.coverage==='COMPLETE' || (previousMonth?.coverage==='PARTIAL' && previousMonth.total>0);
+  const previousMonthSub=previousMonth?.coverage==='COMPLETE'
+    ? 'Mês completo confirmado · calendário anterior'
+    : previousMonth?.coverage==='PARTIAL'
+      ? 'Recebido registrado · cobertura parcial no mês anterior'
+      : 'Cobertura desconhecida';
+  const currentSub=currentCoverage==='COMPLETE'
+    ? 'Mês completo confirmado'
+    : currentCoverage==='PARTIAL'
+      ? 'Recebimentos registrados · cobertura parcial'
+      : 'Cobertura desconhecida';
+  const total12Sub=stats.total12==null
+    ? 'Sem total conhecido para o período · cobertura não confirmada'
+    : complete
+      ? 'Recebimentos dos 12 meses completos'
+      : `Subtotal conhecido · ${completeMonths}/12 meses completos`;
   const cards=[
-    ['Recebido no ano',receivedThisYearKnown?fmt(receivedThisYear):'—',receivedThisYearSub,receivedThisYearKnown&&receivedThisYear>0?'good':''],
-    ['Média mensal',monthlyAvg===null?'—':fmt(monthlyAvg),`Cobertura confirmada: ${complete.length}/12 meses`,monthlyAvg>0?'good':''],
-    ['Último mês',lastMonth===null?'—':fmt(lastMonth),lastMonthSub,lastMonth>0?'good':''],
-    ['Projeção anual',annualProjection===null?'—':fmt(annualProjection),'Estimativa · não recebida · somente meses completos',annualProjection>0?'good':''],
-    ['Yield atual',yieldNow!=null?`${yieldNow.toFixed(2)}%`:'—','Rendimento sobre o patrimônio',yieldNow!=null?'good':'']
+    ['Recebido este mês',stats.currentMonthTotal==null?'—':fmt(stats.currentMonthTotal),currentSub,stats.currentMonthTotal>0?'good':''],
+    ['Recebido nos últimos 12 meses',stats.total12==null?'—':fmt(stats.total12),total12Sub,stats.total12>0?'good':''],
+    ['Média mensal',complete&&stats.monthlyAvg!=null?fmt(stats.monthlyAvg):'—',complete?'12/12 meses completos':`Cobertura confirmada: ${completeMonths}/12 meses · média indisponível`,complete&&stats.monthlyAvg>0?'good':''],
+    ['Último mês',previousMonthKnown?fmt(previousMonth.total):'—',previousMonthSub,previousMonthKnown&&previousMonth.total>0?'good':''],
+    ['Projeção anual',complete&&stats.annualProjection!=null?fmt(stats.annualProjection):'—',complete?'Estimativa · não recebida · somente meses completos':'Indisponível · exige 12 meses completos',complete&&stats.annualProjection>0?'good':'']
   ];
   return `<section class="dividend-executive-kpis div-exec-kpis div-kpis-canon" aria-label="Resumo financeiro de dividendos"><div class="dividend-kpis-canon-grid">${cards.map(([label,value,sub,tone])=>`<article class="dividend-executive-kpi div-premium-metric canon-kpi-card"><div class="dividend-executive-kpi-label div-premium-metric-label">${esc(label)}</div><div class="dividend-executive-kpi-value div-premium-metric-value ${tone}" aria-label="${esc(`${label}: ${value}`)}">${value}</div><details class="dividend-executive-kpi-info"><summary aria-label="Mais informações sobre ${esc(label)}">ⓘ</summary><span class="dividend-executive-kpi-sub div-premium-metric-sub">${esc(sub)}</span></details></article>`).join('')}</div></section>`;
 }
@@ -35833,7 +35825,7 @@ function canonDividendYearSummary(rows){
   const ordered=[...groups.values()].sort((a,b)=>b.year-a.year);
   if(!ordered.length) return `<div class="premium-empty">Sem histórico anual ainda.</div>`;
   const total=ordered.reduce((s,g)=>s+g.total,0);
-  const donut=canonDonutInteractive(ordered.map(g=>({name:String(g.year),value:g.total})),{fmt,id:'yearsum',centerText:fmt(total),centerSub:'Total geral'});
+  const donut=canonDonutInteractive(ordered.map(g=>({name:String(g.year),value:g.total})),{fmt,id:'yearsum',centerText:fmt(total),centerSub:'Total conhecido'});
   return `<div class="canon-year-summary-body">
     <div class="canon-year-summary-donut">${donut}</div>
     <div class="canon-year-summary-list">${ordered.map(g=>{
@@ -39359,5 +39351,42 @@ window.addEventListener('v262:diagnostics-ready',()=>{
 });
 document.addEventListener('focusin',event=>{const nav=event.target?.closest?.('.tabs-desktop');if(!nav)return;const targetRect=event.target.getBoundingClientRect(),navRect=nav.getBoundingClientRect(),visibleTop=Math.max(0,navRect.top),visibleBottom=Math.min(innerHeight,navRect.bottom);if(targetRect.top<visibleTop)nav.scrollTop-=visibleTop-targetRect.top;else if(targetRect.bottom>visibleBottom)nav.scrollTop+=targetRect.bottom-visibleBottom});
 </script>
+<style id="m562-dividends-premium-slim">
+.premium-dividends-3 .canon-dividends{width:100%;max-width:1480px;margin-inline:auto;gap:10px}
+.premium-dividends-3 .dividend-kpis-canon-grid{gap:9px}
+.premium-dividends-3 .canon-kpi-card{min-height:0;padding:11px 12px}
+.premium-dividends-3 .canon-div-panel{min-height:0}
+.premium-dividends-3 .canon-div-lower{gap:10px}
+.premium-dividends-3 .dividend-evolution-chart{max-height:210px}
+.premium-dividends-3 .div-premium-canon-actions{gap:7px}
+.premium-dividends-3 .dividend-history-block .div-monthly-summaryline{gap:8px}
+html[data-theme="light"] .premium-dividends-3 .div-monthly-summaryline{background:var(--canon-panel-2);border-color:var(--canon-border)}
+html[data-theme="light"] .premium-dividends-3 .div-year-card{background:var(--canon-panel);color:var(--canon-text);border-color:var(--canon-border)}
+html[data-theme="light"] .premium-dividends-3 .div-premium-head .btn.bp:not(:disabled):not([aria-disabled="true"]){background:#2f6fd1;border-color:#2f6fd1;color:#fff;box-shadow:none}
+html[data-theme="light"] .premium-dividends-3 .div-premium-head .btn.bp:hover:not(:disabled):not([aria-disabled="true"]){background:#275fae;border-color:#275fae}
+@media(max-width:1180px){.premium-dividends-3 .canon-div-lower{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:767px){
+  .premium-dividends-3 .canon-dividends{gap:8px}
+  .premium-dividends-3 .div-premium-head{display:grid;grid-template-columns:minmax(0,1fr);gap:7px;align-items:start}
+  .premium-dividends-3 .div-premium-canon-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;width:100%;align-items:stretch}
+  .premium-dividends-3 .div-premium-canon-actions .canon-year-chips{grid-column:span 2;display:flex;flex-wrap:nowrap;max-width:100%;min-width:0;overflow-x:auto}
+  .premium-dividends-3 .div-premium-canon-actions .canon-year-chip{min-height:44px;padding:7px 10px;flex:0 0 auto}
+  .premium-dividends-3 .div-premium-canon-actions>.btn{grid-column:span 2;width:100%;min-height:44px;margin:0!important;padding:6px 8px;font-size:11px;line-height:1.2;white-space:normal}
+  .premium-dividends-3 .div-premium-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;width:100%;max-width:100%;margin-top:7px;padding:3px;overflow:visible}
+  .premium-dividends-3 .div-premium-tab{display:flex;align-items:center;justify-content:center;min-width:0;min-height:44px;padding:6px 3px;font-size:10px;white-space:normal;text-align:center}
+  .premium-dividends-3 .div-premium-tabs>.div-dividend-moreviews{min-width:0;width:100%}
+  .premium-dividends-3 .div-premium-moreviews-summary,.premium-dividends-3 .div-dividend-moreviews-summary{min-height:44px;padding:5px 3px;justify-content:center;font-size:10px}
+  .premium-dividends-3 .div-dividend-moreviews-summary>span:last-child{display:none}
+  .premium-dividends-3 .dividend-kpis-canon-grid{gap:6px}
+  .premium-dividends-3 .canon-kpi-card{min-height:82px;padding:9px 9px}
+  .premium-dividends-3 .dividend-executive-kpi-label{font-size:9px;line-height:1.2}
+  .premium-dividends-3 .dividend-executive-kpi-value{font-size:16px!important;line-height:1.2}
+  .premium-dividends-3 .dividend-executive-kpi-sub{font-size:10px;line-height:1.25}
+  .premium-dividends-3 .canon-div-history .dividend-history-heading{padding:10px 11px}
+  .premium-dividends-3 .canon-div-lower{grid-template-columns:minmax(0,1fr);gap:8px}
+  .premium-dividends-3 .canon-div-panel{padding:10px}
+  .premium-dividends-3 .dividend-evolution-chart{max-height:none}
+}
+</style>
 </body>
 </html>
