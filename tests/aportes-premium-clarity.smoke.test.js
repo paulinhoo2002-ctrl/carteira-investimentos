@@ -1,9 +1,8 @@
 const assert = require('node:assert/strict');
-const http = require('node:http');
 const fs = require('node:fs');
-const fsp = require('node:fs/promises');
 const path = require('node:path');
 const test = require('node:test');
+const { startLocalHttpServer } = require('./local-http-server');
 
 function resolveBrowser() {
   return [
@@ -17,26 +16,6 @@ function resolveBrowser() {
   });
 }
 
-async function startServer(rootDir) {
-  const server = http.createServer(async (req, res) => {
-    try {
-      const pathname = decodeURIComponent(new URL(req.url || '/', 'http://127.0.0.1').pathname);
-      const relative = pathname === '/' ? '/index.html' : pathname;
-      const filePath = path.normalize(path.join(rootDir, relative));
-      if (!filePath.startsWith(rootDir)) { res.writeHead(403); res.end(''); return; }
-      const content = await fsp.readFile(filePath);
-      const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8' };
-      res.writeHead(200, { 'Content-Type': mime[path.extname(filePath).toLowerCase()] || 'text/plain' });
-      res.end(content);
-    } catch (error) {
-      res.writeHead(error.code === 'ENOENT' ? 404 : 500);
-      res.end('');
-    }
-  });
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  return { server, url: `http://127.0.0.1:${server.address().port}/index.html?testMode=1` };
-}
-
 const viewports = [
   { width: 390, height: 844, label: '390x844' },
   { width: 768, height: 1024, label: '768x1024' },
@@ -45,9 +24,9 @@ const viewports = [
 ];
 
 const labels = [
-  'Total aportado',
+  'Total investido em compras e aplicações',
   'Média mensal',
-  'Maior aporte',
+  'Maior entrada',
   'Meses com aportes',
 ];
 
@@ -55,7 +34,7 @@ for (const viewport of viewports) {
   test(`Aportes Premium Clarity - ${viewport.label}`, async () => {
     const executablePath = resolveBrowser();
     assert.ok(executablePath, 'Chrome/Edge n\u00e3o encontrado para o smoke Playwright');
-    const harness = await startServer(path.join(__dirname, '..'));
+    const harness = await startLocalHttpServer(path.join(__dirname, '..'));
     const { chromium } = await import('playwright-core');
     const browser = await chromium.launch({ executablePath, headless: true });
     const errors = [];
@@ -131,6 +110,7 @@ for (const viewport of viewports) {
       await context.close();
     } finally {
       await browser.close();
+      harness.server.closeAllConnections();
       harness.server.close();
     }
   });

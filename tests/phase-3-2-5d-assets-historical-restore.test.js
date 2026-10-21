@@ -8,8 +8,8 @@ const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8')
 test('Phase 3.2.5D: Renda Fixa mantém resumo rico e resultado explícito', () => {
   assert.match(source, /Aplicado<\/small><b>\$\{fmt\(applied\)\}<\/b>/);
   assert.match(source, /Atual<\/small><b>\$\{Number\.isFinite\(current\)\?fmt\(current\):'—'\}<\/b>/);
-  assert.match(source, /Resultado<\/small><b>\$\{Number\.isFinite\(profit\)\?assetSignedMoneyText\(profit\):'—'\}<\/b>/);
-  assert.match(source, /Rentab\.<\/small><b>\$\{Number\.isFinite\(rentab\)\?fmtP\(rentab\):'—'\}<\/b>/);
+  assert.match(source, /Resultado da posição<\/small><b>\$\{Number\.isFinite\(profit\)\?assetSignedMoneyText\(profit\):'—'\}<\/b>/);
+  assert.match(source, /Rentab\. da posição<\/small><b>\$\{Number\.isFinite\(rentab\)\?fmtP\(rentab\):'—'\}<\/b>/);
   assert.match(source, /Gestão detalhada em Renda Fixa/);
   assert.match(source, /onclick="go\('renda-fixa'\)"/);
 });
@@ -28,6 +28,8 @@ test('Phase 3.2.5D: menu secundário de ativos escapa do empilhamento da tabela'
 });
 
 test('Phase 3.2.5E: grouped e todos os ativos preservam o cabeçalho histórico', () => {
-  assert.equal((source.match(/class="assets-table-caption"/g) || []).length, 2);
-  assert.match(source, /class="assets-table-caption">Posições atuais, custo, valor de mercado, resultado e peso na carteira<\/caption>/);
+  // O cabeçalho histórico deixou de ser <caption> e passou a ser rótulo
+  // acessível por categoria; o contexto financeiro permanece documentado.
+  assert.match(source, /class="assets-table-wrap" tabindex="0" role="region" aria-label="Tabela de ativos · \$\{esc\(type\)\} · use as setas para rolar"/);
+  assert.match(source, /Role para os lados para ver todos os campos e ações\./);
 });

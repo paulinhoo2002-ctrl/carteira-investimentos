@@ -18,8 +18,8 @@ test('Phase 3.2.3: Dashboard reduz ruído sem alterar valores financeiros', () =
 });
 
 test('Phase 3.2.3: destaques móveis mantêm alinhamento e leitura contextual', () => {
-  assert.match(source, /dashboard-highlight-row \.dashboard-highlight-details\{\n    display:grid;grid-column:1\/-1/);
-  assert.match(source, /dashboard-highlight-row \.dashboard-highlight-bar\{\n    display:block;grid-column:1\/-1/);
+  assert.match(source, /dashboard-highlight-row \.dashboard-highlight-details\{\r?\n    display:grid;grid-column:1\/-1/);
+  assert.match(source, /dashboard-highlight-row \.dashboard-highlight-bar\{\r?\n    display:block;grid-column:1\/-1/);
 });
 
 test('Phase 3.2.3: Ativos mantém acordeões e compacta cartões sem reduzir alvos de ação', () => {

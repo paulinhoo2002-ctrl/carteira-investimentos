@@ -19768,6 +19768,10 @@ function assetRfProfit(a){
 function assetRfNote(a){
   return String(a?.rf_note||a?.note||a?.observation||'').trim();
 }
+function assetRfInstitution(a){
+  // Instituição vem somente de campo explícito; nunca é inferida do emissor/nome.
+  return String(a?.rf_institution||a?.fixed_institution||a?.institution||a?.broker||'').trim();
+}
 function rfManualCode(name, subtype, applicationDate, issuer){
   const raw=[name, subtype, issuer, applicationDate].filter(Boolean).join(' ');
   const code=cleanAssetCode(raw);
@@ -32680,7 +32684,11 @@ function ativos(){
     const currentKeys = isRF
       ? ['rf_liquid_value', 'fixed_current_value', 'rf_gross_value', 'current_value', 'current_price']
       : ['current_price', 'current_value'];
-    const displayCurrentValue = hasOwnFiniteNumber(a, currentKeys) ? currentValue : null;
+    // RF: só há valor atual conhecido com campo explícito; o fallback do valor
+    // aplicado permanece desconhecido ('—') e nunca vira resultado zero certificado.
+    const displayCurrentValue = isRF
+      ? (rfValues(a).hasExplicitCurrent === true ? currentValue : null)
+      : (hasOwnFiniteNumber(a, currentKeys) ? currentValue : null);
     const appliedValue = assetAppliedValue(a);
     const rentabPct = assetRentabPct(a);
     const jurosValue = assetJurosValue(a);
@@ -32769,11 +32777,11 @@ function ativos(){
   const accordionHtml = groupNames.map(type => {
     const assets = grouped.get(type) || [];
     const filteredAssets = assets.filter(a => displayAssets.includes(a));
-    if (filteredAssets.length === 0 && !assetFiltersActive) return '';
+    if (filteredAssets.length === 0) return '';
 
     const icon = ativosCategoryIcon(type);
     const typeAssets = assets;
-    const typeDisplayAssets = filteredAssets;
+    const typeDisplayAssets = sortAssetsByGroup(type, filteredAssets, portfolioTotal);
 
     // Category metrics
     const typeHasCompleteCurrentValues = typeAssets.every(a => getAssetMetrics(a).displayCurrentValue != null);
@@ -32853,7 +32861,7 @@ function ativos(){
         <td class="num">${currentPriceDisplay}</td>
         <td class="num">${investedDisplay}</td>
         <td class="num ${resultClass}">${resultMoneyDisplay}</td>
-        <td class="num ${returnPct == null ? '' : returnPct >= 0 ? 'positive-text' : 'negative-text'}">${returnDisplay}</td>
+        <td class="num ${returnPct == null ? '' : returnPct > 0 ? 'positive-text' : returnPct < 0 ? 'negative-text' : ''}">${returnDisplay}</td>
         <td class="num">${positionValueDisplay}</td>
         <td class="num">${shareDisplay}</td>
         <td>${esc(sourceInfo)}</td>
@@ -32950,7 +32958,7 @@ function ativos(){
         <div class="acc-icon" style="background: ${type === 'Ação' ? 'rgba(59, 130, 246, 0.15)' : type === 'FII' ? 'rgba(139, 92, 246, 0.15)' : type === 'ETF' ? 'rgba(245, 197, 66, 0.15)' : type === 'Renda Fixa' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)'}; color: ${type === 'Ação' ? 'var(--info)' : type === 'FII' ? 'var(--ds-info)' : type === 'ETF' ? 'var(--warning)' : type === 'Renda Fixa' ? 'var(--success)' : 'var(--warning)'}">${icon}</div>
         <div>
           <div class="acc-name">${esc(type)}</div>
-          <div class="acc-sub">${typeCount} ativo${typeCount !== 1 ? 's' : ''} ${reviewFilterActive ? ' · filtrados' : ''}</div>
+          <div class="acc-sub">${type === 'Renda Fixa' ? `${typeCount} título${typeCount !== 1 ? 's' : ''}` : `${typeCount} ativo${typeCount !== 1 ? 's' : ''}`} ${reviewFilterActive ? ' · filtrados' : ''}</div>
         </div>
       </div>
       <div>
@@ -32976,10 +32984,60 @@ function ativos(){
       <span class="acc-toggle" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
     `;
 
+    if (type === 'Renda Fixa') {
+      // Renda Fixa permanece classe resumida em Ativos: métricas por título com
+      // desconhecido separado de zero, detalhes somente quando disponíveis e
+      // gestão completa preservada na rota dedicada.
+      const rfSummaryCards = typeDisplayAssets.map(a => {
+        const applied = assetAppliedValue(a);
+        // Atual/Resultado/Rentab. somente com valor atual explícito: fallback do
+        // aplicado permanece desconhecido ('—'), separado de zero certificado.
+        const currentKnown = rfValues(a).hasExplicitCurrent === true;
+        const current = currentKnown ? assetCurrentValue(a) : null;
+        const profit = currentKnown ? assetJurosValue(a) : null;
+        const rentab = currentKnown ? assetRentabPct(a) : null;
+        const share = portfolioTotal > 0 && Number.isFinite(current) ? (current / portfolioTotal) * 100 : null;
+        const pClass = Number.isFinite(profit) ? (profit > 0 ? 'pos' : profit < 0 ? 'neg' : 'neutral') : 'neutral';
+        const rClass = Number.isFinite(rentab) ? (rentab > 0 ? 'pos' : rentab < 0 ? 'neg' : 'neutral') : 'neutral';
+        const indexer = assetRfIndexerLabel(a);
+        const institution = assetRfInstitution(a);
+        const dueRaw = assetRfMaturityDate(a);
+        const dueText = dueRaw ? reportDateText(dueRaw) : '';
+        const unavailable = assetRfUnavailableValue(a);
+        let coverageLabel = '';
+        try {
+          const provenance = fixedIncomeProvenanceDetails(assetRfCurrentValueMeta(a));
+          coverageLabel = provenance && provenance.label ? String(provenance.label) : '';
+        } catch (error) { coverageLabel = ''; }
+        const identityDetails = [indexer !== '—' ? indexer : '', institution, dueText ? `Vencimento ${dueText}` : ''].filter(Boolean).join(' · ');
+        return `<div class="rf-category-row" data-id="${esc(a.id)}">
+          <div class="rf-category-identity"><strong title="${esc(assetRfName(a) || a.ticker || 'Renda Fixa')}">${esc(assetRfName(a) || a.ticker || 'Renda Fixa')}</strong><span>${esc(assetRfSubtype(a))}${identityDetails ? ` · ${esc(identityDetails)}` : ''}</span>${coverageLabel ? `<span title="${esc(coverageLabel)}">Cobertura: ${esc(coverageLabel)}</span>` : ''}${unavailable ? `<span>Indisponível: ${esc(fmt(unavailable))}</span>` : ''}</div>
+          <div class="rf-category-metric"><small>Aplicado</small><b>${fmt(applied)}</b></div>
+          <div class="rf-category-metric"><small>Atual</small><b>${Number.isFinite(current)?fmt(current):'—'}</b></div>
+          <div class="rf-category-metric ${pClass}"><small>Resultado da posição</small><b>${Number.isFinite(profit)?assetSignedMoneyText(profit):'—'}</b></div>
+          <div class="rf-category-metric ${rClass}"><small>Rentab. da posição</small><b>${Number.isFinite(rentab)?fmtP(rentab):'—'}</b></div>
+          <div class="rf-category-metric"><small>% carteira</small><b>${share==null?'—':share.toFixed(1)+'%'}</b></div>
+          <div>${assetActionMenuHtml(a, true, `group-rf-${a.id}`)}</div>
+        </div>`;
+      }).join('');
+      const rfBodyHtml = `<div class="rf-category-summary" style="display:flex;flex-direction:column;gap:12px;padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2)">
+          ${rfSummaryCards || '<div style="color:var(--muted)">Nenhum título nesta categoria.</div>'}
+          <div>
+            <div style="font-weight:800;color:var(--text)">Gestão detalhada em Renda Fixa</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px">Consulte vencimentos, taxas e movimentações na rota dedicada.</div>
+          </div>
+          <button type="button" class="btn bgh touch-target-utility" style="align-self:flex-start" onclick="go('renda-fixa')">Ver Renda Fixa</button>
+        </div>`;
+      return `<details class="accordion-category ag" data-asset-group="${esc(type)}"${categoryOpen ? ' open' : ''}>
+        <summary class="accordion-header">${headerHtml}</summary>
+        <div class="accordion-body ag-body open">${rfBodyHtml}</div>
+      </details>`;
+    }
+
     const tableHtml = `
       <div class="assets-table-wrap" tabindex="0" role="region" aria-label="Tabela de ativos · ${esc(type)} · use as setas para rolar" onkeydown="if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();this.scrollBy({left:(event.key==='ArrowRight'?1:-1)*80})}" onwheel="if(event.deltaX||event.shiftKey){event.preventDefault();this.scrollBy({left:event.deltaX||event.deltaY})}">
         <div class="mu" style="padding:8px 12px">Role para os lados para ver todos os campos e ações.</div>
-        <table class="assets-table ${type === 'Renda Fixa' ? 'rf-table' : 'ag-table'}">
+        <table class="assets-table ag-table">
           <thead>
             <tr>
               <th>Ativo</th>
@@ -32989,8 +33047,8 @@ function ativos(){
               <th class="num">Preço médio</th>
               <th class="num">Preço atual / posição</th>
               <th>Investido</th>
-              <th class="num">${type === 'Renda Fixa' ? 'Resultado da posição R$' : 'Resultado R$'}</th>
-              <th class="num">${type === 'Renda Fixa' ? 'Rentabilidade da posição' : 'Rentabilidade'}</th>
+              <th class="num">Resultado R$</th>
+              <th class="num">Rentabilidade</th>
               <th class="num">Valor total</th>
               <th class="num">% carteira</th>
               <th>Fonte / atualização</th>
@@ -33034,7 +33092,7 @@ function ativos(){
       </div>
       <div style="display:flex; gap:8px;">
         <button class="btn bgh" onclick="exportData()"> Exportar</button>
-        <button class="btn bp" onclick="openAssetModal()">+ Novo Ativo</button>
+        <button class="btn bp" onclick="openQuickMovement('compra')">+ Novo Ativo</button>
       </div>
     </div>
     ${assetPortfolioSummaryHtml}

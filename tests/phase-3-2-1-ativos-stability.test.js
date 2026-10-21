@@ -13,23 +13,28 @@ test('Phase 3.2.1: Ativos e Renda Fixa usam rotas independentes', () => {
 });
 
 test('Phase 3.2.1: Ativos prioriza categorias recolhíveis e não duplica a tabela de RF', () => {
-  assert.match(source, /const isOpen=S\.activeAssetsGroup===type \|\| \(!S\.activeAssetsGroup && !!S\.assetsSearch && idx===0\)/);
-  assert.match(source, /<details class="assets-all-assets" ontoggle=/);
+  // Categorias seguem acordeões <details>; a abertura transitória é controlada
+  // pelos filtros ativos, sem persistir estado de acordeão.
+  assert.match(source, /const categoryOpen = assetFiltersActive && typeDisplayAssets\.length > 0;/);
+  assert.match(source, /<details class="accordion-category ag" data-asset-group="\$\{esc\(type\)\}"\$\{categoryOpen \? ' open' : ''\}>/);
   assert.match(source, /Gestão detalhada em Renda Fixa/);
   assert.match(source, /onclick="go\('renda-fixa'\)"\>Ver Renda Fixa/);
   assert.doesNotMatch(source, /id="assets-premium-rf-table-desktop"/);
+  // A categoria RF renderiza o resumo por título e retorna antes da tabela genérica.
+  assert.match(source, /if \(type === 'Renda Fixa'\) \{[\s\S]*?const rfSummaryCards = typeDisplayAssets\.map\(a => \{[\s\S]*?rf-category-summary[\s\S]*?return `<details class="accordion-category ag" data-asset-group="\$\{esc\(type\)\}"/);
 });
 
 test('Phase 3.2.1: busca e limpeza controlam a abertura transitória sem persistir acordeão', () => {
-  assert.match(source, /if\(!normalized\) S\.activeAssetsGroup='';/);
+  assert.match(source, /S\.assetsSearch = normalized;\s*\r?\n\s*S\.activeAssetsGroup='';/);
   assert.match(source, /S\.activeAssetsGroup='';\s*S\.assetsFilterPanelOpen=false;/);
   assert.match(source, /function toggleAssetGroup\(type, evOrOpen\)/);
   assert.doesNotMatch(source, /save\(\)[^\n]*activeAssetsGroup/);
 });
 
 test('Phase 3.2.1: filtros continuam aplicados ao agrupamento por categoria', () => {
-  assert.match(source, /const displayItems = filterAssetsForDisplay\(items\);/);
-  assert.match(source, /groupNames\.filter\(type=>filterAssetsForDisplay\(grouped\.get\(type\)\)\.length\)/);
+  assert.match(source, /const displayAssets = filterAssetsForDisplay\(S\.assets\);/);
+  assert.match(source, /const filteredAssets = assets\.filter\(a => displayAssets\.includes\(a\)\);/);
+  assert.match(source, /if \(filteredAssets\.length === 0\) return '';/);
   assert.match(source, /setAssetsSectorFilter\(this\.value\)/);
   assert.match(source, /setAssetsPerformanceFilter\(this\.value\)/);
 });

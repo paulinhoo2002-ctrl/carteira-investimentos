@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const { startLocalHttpServer: startServer } = require('./local-http-server.js');
+const { applyV289VisualFixture } = require('./helpers/v289-visual-fixtures');
 
 function resolveBrowser() {
   return [
@@ -53,7 +54,6 @@ for (const viewport of viewports) {
         const rfGroup = page.locator('.ag[data-asset-group="Renda Fixa"]');
         if (!(await rfGroup.evaluate(element => element.open))) await rfGroup.locator(':scope > summary').click();
         await page.locator('.ag[data-asset-group="Ação"] .asset-mobile-cards details.asset-premium-card').first().locator(':scope > summary').click();
-        await page.locator('.ag[data-asset-group="Renda Fixa"] .asset-mobile-cards details.asset-premium-card').first().locator(':scope > summary').click();
       }
       // Slim UI: ações ficam atrás do menu ⋯ — abrir o menu da primeira linha antes do snapshot.
       await page.locator('.ag[open] .asset-action-trigger:visible').first().click();
@@ -66,7 +66,7 @@ for (const viewport of viewports) {
           return style.display !== 'none' && style.visibility !== 'hidden' && box.width > 0 && box.height > 0;
         };
         const rows = [...document.querySelectorAll('.ag-table tbody tr, .ag[data-asset-group="Ação"] .asset-mobile-cards details.asset-premium-card')].filter(visible);
-        const rfRows = [...document.querySelectorAll('.rf-table tbody tr, .ag[data-asset-group="Renda Fixa"] .asset-mobile-cards details.asset-premium-card')].filter(visible);
+        const rfRows = [...document.querySelectorAll('.ag[data-asset-group="Renda Fixa"] .rf-category-row')].filter(visible);
         const actions = [...document.querySelectorAll('.asset-actions button, .asset-action-menu-panel.open button')].filter(visible).map(button => ({
           text: button.textContent.trim(),
           width: button.getBoundingClientRect().width,
@@ -74,7 +74,7 @@ for (const viewport of viewports) {
         }));
         const categoryIcons = [...document.querySelectorAll('.assets-premium-shell .acc-icon')].filter(visible);
         const desktopTable = document.querySelector('.assets-table-wrap');
-        const categoryMetrics = document.querySelector('.assets-premium-shell .acc-metric-value');
+        const categoryMetrics = [...document.querySelectorAll('.assets-premium-shell details.ag[open] .acc-metric-value')].filter(visible);
         return {
           normalRows: rows.length,
           rfRows: rfRows.length,
@@ -88,7 +88,7 @@ for (const viewport of viewports) {
           hasRedeem: actions.some(action => action.text === 'Resgatar' || action.text === 'Vender'),
           actions,
           categoryIconsVisible: categoryIcons.length,
-          categoryMetricsVisible: Boolean(categoryMetrics && visible(categoryMetrics)),
+          visibleCategoryMetricCount: categoryMetrics.length,
           desktopTableVisible: Boolean(desktopTable && visible(desktopTable)),
           overflow: document.documentElement.scrollWidth > window.innerWidth,
         };
@@ -102,15 +102,15 @@ for (const viewport of viewports) {
       assert.equal(snapshot.hasRedeem, true, `acao de venda/resgatar ausente em ${viewport.label}`);
       assert.equal(snapshot.overflow, false, `overflow horizontal em ${viewport.label}`);
       assert.ok(snapshot.categoryIconsVisible > 0, `icone SVG de categoria ausente em ${viewport.label}`);
-      assert.equal(snapshot.categoryMetricsVisible, true, `métricas do grupo ausentes em ${viewport.label}`);
+      assert.ok(snapshot.visibleCategoryMetricCount >= (viewport.width <= 430 ? 4 : 5), `métricas do grupo ausentes em ${viewport.label}`);
       if (viewport.width > 640) assert.equal(snapshot.desktopTableVisible, true, `tabela principal ausente em ${viewport.label}`);
       for (const action of snapshot.actions) assert.ok(action.width >= 44 && action.height >= 44, `acao menor que 44px: ${action.text} (${action.width}x${action.height}) em ${viewport.label}`);
 
       const beforeData = { normal: snapshot.normalIdentity, rf: snapshot.rfIdentity };
       const afterData = await page.evaluate(({ isMobile, normalId, rfId }) => {
         const selectors = isMobile
-          ? { normal: '.ag[data-asset-group="Ação"] .asset-mobile-cards details.asset-premium-card', rf: '.ag[data-asset-group="Renda Fixa"] .asset-mobile-cards details.asset-premium-card' }
-          : { normal: '.ag-table tbody tr', rf: '.rf-table tbody tr' };
+          ? { normal: '.ag[data-asset-group="Ação"] .asset-mobile-cards details.asset-premium-card', rf: '.ag[data-asset-group="Renda Fixa"] .rf-category-row' }
+          : { normal: '.ag-table tbody tr', rf: '.ag[data-asset-group="Renda Fixa"] .rf-category-row' };
         const textFor = (selector, id) => [...document.querySelectorAll(selector)]
           .find(element => element.dataset.id === id)?.textContent.trim() || '';
         return { normal: textFor(selectors.normal, normalId), rf: textFor(selectors.rf, rfId) };
@@ -125,3 +125,57 @@ for (const viewport of viewports) {
     assert.deepEqual(requestFailures, [], `requestfailed em ${viewport.label}: ${requestFailures.join(' | ')}`);
   });
 }
+
+test('Novo Ativo abre a compra e cancelar não altera a carteira nem persiste dados', async () => {
+  const executablePath = resolveBrowser();
+  assert.ok(executablePath, 'Chrome/Edge nao encontrado para o smoke Playwright');
+  const harness = await startServer(path.join(__dirname, '..'));
+  const { chromium } = await import('playwright-core');
+  const browser = await chromium.launch({ executablePath, headless: true });
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const page = await context.newPage();
+  const pageErrors = [];
+  page.on('pageerror', error => pageErrors.push(error.message));
+  await page.addInitScript(() => {
+    window.__financialWrites = [];
+    for (const method of ['setItem', 'removeItem', 'clear']) {
+      const original = Storage.prototype[method];
+      Storage.prototype[method] = function (...args) {
+        if (this === localStorage) window.__financialWrites.push(method);
+        return original.apply(this, args);
+      };
+    }
+  });
+  try {
+    await page.goto(harness.url, { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => window.__LOCAL_TEST_MODE__ === true && typeof S !== 'undefined' && typeof go === 'function');
+    await applyV289VisualFixture(page, 'baseline');
+    await page.evaluate(() => go('ativos'));
+    const before = await page.evaluate(() => ({
+      assets: structuredClone(S.assets),
+      aportes: structuredClone(S.aportes),
+      proventos: structuredClone(S.proventos),
+      writes: window.__financialWrites.length,
+    }));
+    await page.getByRole('button', { name: /novo ativo/i }).click();
+    await page.getByRole('dialog', { name: /nova movimentação/i }).waitFor({ state: 'visible' });
+    await page.getByRole('button', { name: 'Cancelar' }).click();
+    await page.getByRole('dialog').waitFor({ state: 'hidden' });
+    const after = await page.evaluate(() => ({
+      assets: structuredClone(S.assets),
+      aportes: structuredClone(S.aportes),
+      proventos: structuredClone(S.proventos),
+      writes: window.__financialWrites.length,
+    }));
+    assert.deepEqual({ assets: after.assets, aportes: after.aportes, proventos: after.proventos }, {
+      assets: before.assets, aportes: before.aportes, proventos: before.proventos,
+    });
+    assert.equal(after.writes, before.writes, 'opening/canceling must not persist financial state');
+    assert.deepEqual(pageErrors, []);
+  } finally {
+    await context.close();
+    await browser.close();
+    harness.server.closeAllConnections();
+    harness.server.close();
+  }
+});
