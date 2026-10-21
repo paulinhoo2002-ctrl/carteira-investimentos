@@ -2559,7 +2559,7 @@ body.modal-open{overflow:hidden}
 .reports-data-row strong,.reports-stat-list strong{color:#edf3ff;font-size:12px;white-space:nowrap}
 .reports-data-row small{color:#8294ad;font-size:9px;font-weight:700}
 .reports-dot{display:inline-block;width:8px;height:8px;margin-right:7px;border-radius:50%;background:#67e8f9}.reports-dot-1{background:#818cf8}.reports-dot-2{background:#34d399}.reports-dot-3{background:#fbbf24}.reports-dot-4{background:#f472b6}.reports-dot-5{background:#fb7185}
-.reports-next-maturity{display:flex;flex-direction:column;gap:3px;margin-top:12px;padding-top:10px;border-top:1px solid #1c2a3f;color:#8294ad;font-size:10px}.reports-next-maturity strong{color:#edf3ff;font-size:11px}.reports-next-maturity small{color:#71849f}
+.reports-next-maturity{display:flex;flex-direction:column;gap:3px;margin-top:12px;padding-top:10px;border-top:1px solid #1c2a3f;color:#8294ad;font-size:10px}.reports-next-maturity strong{color:#edf3ff;font-size:11px}.reports-next-maturity small{color:#71849f;font-size:max(.833em,10px)}
 .reports-inline-link{display:inline-flex;margin-top:13px;color:#7dd3fc;font-size:10px;font-weight:900;text-decoration:none}.reports-inline-link:hover{text-decoration:underline}
 .reports-audit-count{display:flex;align-items:baseline;gap:7px;color:#fbbf24;font-size:25px;font-weight:900}.reports-audit-count span{color:#8294ad;font-size:10px;font-weight:600}
 .reports-details{border:1px solid #1a2940;border-radius:15px;background:#0b111d;overflow:hidden}.reports-details summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;color:#edf3ff;font-size:12px;font-weight:900;cursor:pointer;list-style:none}.reports-details summary::-webkit-details-marker{display:none}.reports-details summary span{color:#8294ad;font-size:10px;font-weight:600}.reports-details-body{padding:0 14px 13px;color:#8294ad;font-size:10px;line-height:1.5}.reports-details-body p{margin:0}
@@ -29331,7 +29331,7 @@ function navTabGroup(label, items, idSuffix='main'){
   const currentChild=items.some(([key])=>navTabActive(key));
   const parentActive=currentChild;
   const panelId=`nav-group-${idSuffix}-${items[0]?.[0] || 'menu'}`;
-  return `<details class="tab-menu"${navTabActive('auditoria') && items.some(([key])=>key==='auditoria')?' open':''} ontoggle="this.querySelector('summary')?.setAttribute('aria-expanded', this.open ? 'true' : 'false')">
+  return `<details class="tab-menu" ontoggle="this.querySelector('summary')?.setAttribute('aria-expanded', this.open ? 'true' : 'false')">
     <summary class="tab${parentActive?' on':''}" aria-controls="${panelId}" aria-expanded="${currentChild?'true':'false'}">${label}</summary>
     <div class="tab-menu-panel" id="${panelId}">
       ${items.map(([key,itemLabel])=>`<button class="tab${navTabActive(key)?' on':''}" onclick="go('${key}')"${navCurrentAttr(key)}>${itemLabel}</button>`).join('')}

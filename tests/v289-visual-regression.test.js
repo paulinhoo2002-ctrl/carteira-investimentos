@@ -1000,6 +1000,14 @@ test('Auditoria em tablet não amplia a página pelo submenu Relatórios', async
   try {
     await applyV289VisualFixture(runtime.page, 'baseline');
     await setThemeAndRoute(runtime.page, 'dark', 'auditoria');
+    // M567.2: submenu Relatórios agora inicia recolhido (default-collapsed);
+    // abre pelo summary para exercitar o mesmo estado aberto do contrato.
+    const reportsGroup = runtime.page.locator('.tabs-mobile details.tab-menu').last();
+    await reportsGroup.locator('summary').click();
+    await runtime.page.waitForFunction(() => {
+      const menus = document.querySelectorAll('.tabs-mobile details.tab-menu');
+      return menus.length > 0 && menus[menus.length - 1].open === true;
+    });
     const overflow = await runtime.page.evaluate(() => ({
       documentWidth: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
       viewportWidth: innerWidth,
