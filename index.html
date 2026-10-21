@@ -2899,7 +2899,7 @@ html[data-theme="light"] .reports-premium-shell .reports-filter button.on{backgr
 .div-dividend-more,.div-dividend-moreviews{border:1px solid var(--border);border-radius:12px;background:var(--panel);overflow:hidden}
 .div-dividend-more>summary,.div-dividend-moreviews>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;user-select:none}
 .div-dividend-more>summary::-webkit-details-marker,.div-dividend-moreviews>summary::-webkit-details-marker{display:none}
-.div-dividend-more-summary,.div-dividend-moreviews-summary{padding:7px 10px;font-size:10px;font-weight:850;color:var(--text)}
+.div-dividend-more-summary,.div-dividend-moreviews-summary{min-height:44px;padding:7px 10px;font-size:10px;font-weight:850;color:var(--text)}
 .div-dividend-more-meta,.div-dividend-moreviews-meta{font-size:9px;color:var(--muted);font-weight:800}
 .div-dividend-more-body,.div-dividend-moreviews-body{padding:8px;display:grid;gap:8px}
 .div-dividend-more-group{display:grid;gap:6px}
@@ -3286,7 +3286,7 @@ html[data-theme="light"] .div-premium-tab.on{color:#166534;background:#dcfce7}
 .div-empty-sub{font-size:10px;color:var(--muted);margin-top:5px}
 .div-collapsible{border:1px solid var(--border);border-radius:14px;background:var(--panel);overflow:hidden}
 .div-collapsible + .div-collapsible{margin-top:8px}
-.div-collapsible-summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 13px;cursor:pointer;user-select:none}
+.div-collapsible-summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:12px 13px;cursor:pointer;user-select:none}
 .div-collapsible-summary::-webkit-details-marker{display:none}
 .div-collapsible-main{min-width:0;display:flex;flex-direction:column;gap:4px}
 .div-collapsible-title{font-size:13px;font-weight:900;color:var(--text);line-height:1.15}
@@ -3363,7 +3363,7 @@ details.div-collapsible[open] .div-collapsible-chev{transform:rotate(90deg)}
 .div-monthly-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end}
 .div-monthly-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;min-width:0}
 .div-month-filter{display:grid;gap:5px;min-width:0}
-.div-month-filter-label{font-size:9px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.div-month-filter-label{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
 .div-month-filter-shell{position:relative}
 .div-month-filter-shell select{width:100%;min-height:36px;padding:0 34px 0 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font:inherit;appearance:none}
 .div-month-filter-actions{display:flex;align-items:end;justify-content:flex-end}
@@ -3566,7 +3566,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
 .div-premium .div-goal-track{height:7px;margin-top:8px}
 .div-premium .div-collapsible-summary{padding:9px 10px;gap:10px}
 .div-premium .div-collapsible-title{font-size:12px}
-.div-premium .div-collapsible-sub{font-size:9px;line-height:1.25}
+.div-premium .div-collapsible-sub{font-size:10px;line-height:1.25}
 .div-premium .div-collapsible-meta{font-size:9px}
 .div-premium .div-collapsible-chev{width:22px;height:22px;font-size:11px}
 .div-premium .div-collapsible-body{padding:8px 10px 10px}
@@ -3652,8 +3652,8 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
 .div-premium .div-collapsible-summary{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;padding:8px 10px;align-items:center}
 .div-premium .div-collapsible-main{gap:2px}
 .div-premium .div-collapsible-title{font-size:11px;line-height:1.1}
-.div-premium .div-collapsible-sub{font-size:8px;line-height:1.2;max-width:44ch}
-.div-premium .div-collapsible-meta{font-size:8px}
+.div-premium .div-collapsible-sub{font-size:10px;line-height:1.2;max-width:44ch}
+  .div-premium .div-collapsible-meta{font-size:9px}
 .div-premium .div-collapsible-chev{width:20px;height:20px;font-size:10px}
 .div-premium .div-collapsible-body{padding:7px 8px 8px}
 .div-premium .div-upcoming-shell{display:flex;flex-direction:column;gap:8px}
@@ -3697,7 +3697,7 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
 .div-premium .div-recent-more{font-size:8px;margin-top:4px}
 .div-premium .div-asset-group{border-radius:11px}
 .div-premium .div-asset-group>summary{padding:8px 9px;gap:7px}
-.div-premium .div-asset-rank{width:20px;height:20px;font-size:8px}
+.div-premium .div-asset-rank{width:22px;height:22px;font-size:9px}
 .div-premium .div-asset-name{font-size:11px}
 .div-premium .div-asset-sub{font-size:7px}
 .div-premium .div-asset-stat span{font-size:7px}
@@ -35880,12 +35880,12 @@ function canonDividendOverview(rows, kpisHtml){
     receivedRows.length ? dividendRecentList(receivedRows,6) : dividendEmptyState(rows.length
       ? 'Nenhum recebimento pago identificado.'
       : 'Sem dados de recebimentos no período.'),
-    true
+    false
   );
   const upcoming=dividendUpcomingSection(rows,false);
-  const monthlyHistory=dividendMonthlyTableBlock(rows,true);
+  const monthlyHistory=dividendMonthlyTableBlock(rows,false);
   const incomeEvolution=`<section class="dividend-mode-content" aria-label="Evolução da renda"><div class="dividend-history-heading"><strong>Evolução da renda</strong><span>Valores recebidos por mês · período observado, sem projeção no histórico.</span></div>${dividendMonthlyTimeline(rows)}</section>`;
-  const topAssets=dividendCompactSectionHeader('asset','Top ativos',dividendAssetSummary(rows),dividendsByAssetView(rows),true);
+  const topAssets=dividendCompactSectionHeader('asset','Top ativos',dividendAssetSummary(rows),dividendsByAssetView(rows),false);
   const annualSummary=`<section class="premium-panel dividend-annual-summary" aria-labelledby="dividend-annual-summary-title"><div class="premium-panel-head"><div><div class="premium-panel-title" id="dividend-annual-summary-title">Resumo por ano</div><div class="premium-panel-sub">Recebimentos registrados por ano; períodos sem cobertura permanecem indisponíveis.</div></div></div>${canonDividendYearSummary(rows)}</section>`;
   return `
     <div class="canon-dividends dividend-calendar-view dividend-daily-overview">
@@ -39378,7 +39378,7 @@ html[data-theme="light"] .premium-dividends-3 .div-premium-head .btn.bp:hover:no
   .premium-dividends-3 .div-premium-moreviews-summary,.premium-dividends-3 .div-dividend-moreviews-summary{min-height:44px;padding:5px 3px;justify-content:center;font-size:10px}
   .premium-dividends-3 .dividend-kpis-canon-grid{gap:6px}
   .premium-dividends-3 .canon-kpi-card{min-height:82px;padding:9px 9px}
-  .premium-dividends-3 .dividend-executive-kpi-label{font-size:9px;line-height:1.2}
+  .premium-dividends-3 .dividend-executive-kpi-label{font-size:10px;line-height:1.2}
   .premium-dividends-3 .dividend-executive-kpi-value{font-size:16px!important;line-height:1.2}
   .premium-dividends-3 .dividend-executive-kpi-sub{font-size:10px;line-height:1.25}
   .premium-dividends-3 .canon-div-history .dividend-history-heading{padding:10px 11px}
