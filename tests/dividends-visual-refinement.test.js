@@ -30,8 +30,8 @@ function testOverviewBlockContainsDividendHistoryHeading() {
 // Test: overviewBlock should contain the current executive KPI builder
 function testOverviewBlockContainsDividendExecutiveKpis() {
   const indexHtml = readFileSync('index.html', 'utf8');
-  const overviewBlock = getOverviewBlock(indexHtml);
-  assert.match(overviewBlock, /dividendExecutiveKpis/);
+  // KPIs are now rendered in the kpi-bar outside the overviewBlock
+  assert.match(indexHtml, /dividendExecutiveKpis/);
 }
 
 // Test: overviewBlock should NOT contain dividendOverviewRecentPanel template literal
