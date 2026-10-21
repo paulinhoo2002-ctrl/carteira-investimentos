@@ -103,3 +103,21 @@ Metodologia: probe `tests/qa-probes/m567-route-audit.js` (render, overflow, page
 6. Rollback: alias anterior (PRIMARY) ou redeploy do último commit certificado (FALLBACK).
 
 **Artefatos:** `tests/.qa-state/m567/route-audit.json` + 7 PNGs (`m567-{desktop1366,mobile390,tablet768}-*.png`); logs de bateria em `$TMPDIR/m567-*.log`; probes em `tests/qa-probes/`.
+
+## 10. M567.2 — Zero visual debt (2026-10-21, HEAD `ac874ee`)
+
+**Correções:**
+1. **Dropdown nav "Relatórios" preso aberto** (defeito real: painel de 202px aberto por padrão na rota auditoria em desktop/tablet): removida a injeção `open` condicionada à rota em `navTabGroup`; menu agora abre por mouse/toque/teclado como qualquer disclosure; grupo ativo continua destacado (`parentActive`). Contratos atualizados no mesmo commit: `audit-visual-canon` (pin do novo default-collapsed) e `v289` (setup abre via summary; asserções de intenção intactas) — v289 26/26.
+2. **Texto 8.33px em relatórios@390** (raiz: `<small>` com fator `smaller` do browser sob pai 10px em `.reports-next-maturity`): clamp localizado `font-size:max(.833em,10px)`. App inteiro: **0 textos <9px em ambos os temas**.
+3. **Disclosures default-open remanescentes classificados BY_DESIGN/essenciais:** metas (Distribuição = conteúdo principal), analise (alertas de concentração/risco — missão exige visíveis), renda-fixa@≥768 (painel de filtros sem gatilho no desktop — recolher tornaria filtros inacessíveis).
+
+**Código morto (FASE 4):** `saveDivGoal`/`saveMetaAtivos`/`saveMetaPatrimonio`/`saveMetaProventos` = DEAD_CODE_VERIFIED_UNREACHABLE (0 refs estáticas além das definições; 0 invocação dinâmica window[]/eval/template; 0 testes; 0 módulos sw/modern/scripts). Não removidos nesta missão (escopo visual); recomendação: remoção em fase própria de limpeza.
+
+**Preexistente (não regressão):** `utility-touch-targets.smoke.test.js` (4 falhas idênticas em `e0168c0` prístino — suite órfã de npm/CI com drift de contrato de boot; `#investBottomNav` existe e todas as suites de navegação reais passam). Classificado PREEXISTING_HARNESS_GAP.
+
+**Rotas (FASE 5):** 20 rotas reais + 1 alias (`rebalancear`→`ajudar`, verificado) + 2 renderers compartilhados (ranking/desempenho → ativos). Aceitação: verificação de overflow/erros/fontes/temas em 120 checks (20×3×2) + interações E2E certificadas em 10 rotas com fluxos de mutação; rotas somente-leitura (rentabilidade, ajudar, confiabilidade, ia, corporate-eventos, analise, auditoria) certificadas em render/navegação/teclado — suas ações de mutação de menor alcance (cenários de rebalanceamento, ações de qualidade de dados, sync B3) permanecem não executadas em sintético e não recebem nota de interação completa.
+
+**Bateria final no HEAD `ac874ee`:** `verify:release` 2061/2061 fail 0 (exit 0; inclui npm test completo, test:modern, qa:all+smoke, visual-regression com v289+v346); `test:auth-access-browser` 5/5; `test:ir2026` 197/197; `git diff --check` limpo. Auditoria de rotas re-executada: 120/120 render, overflow 0, pageerrors 0, console 0; Hide Values 0 vazamentos.
+
+**Commits M567.2:** `ac874ee` (fix disclosures + tipografia + contratos + probes) + commit de documentação.
+
