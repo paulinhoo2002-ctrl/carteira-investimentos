@@ -109,6 +109,89 @@ test('12-month average is shown only when all twelve months are complete', () =>
   assert.match(html, /12\/12 meses completos/);
 });
 
+test('missing complete-month count stays unavailable instead of becoming zero', () => {
+  const months = monthKeys.map(key => ({ key, total: null, coverage: 'UNKNOWN' }));
+  const stats = {
+    monthKeys,
+    currentMonthKey: monthKeys[11],
+    currentMonthTotal: null,
+    currentMonthCoverage: 'UNKNOWN',
+    total12: null,
+    monthlyAvg: null,
+    monthlyAverageStatus: 'UNKNOWN',
+    annualProjection: null,
+  };
+  const html = renderKpis(stats, months);
+
+  assert.match(html, /Cobertura de meses completos indisponível/);
+  assert.doesNotMatch(html, /0\/12 meses completos/);
+});
+
+function renderTimeline(matrix, hideValues = false) {
+  const start = source.indexOf('function dividendMonthlyTimeline(rows=filteredDividendRows()){');
+  const end = source.indexOf('function showDividendChartTooltip(', start);
+  assert.ok(start >= 0 && end > start, 'Dividendos timeline renderer must exist');
+  const state = { hideValues };
+  const context = {
+    S: state,
+    Date,
+    Math,
+    Number,
+    String,
+    Array,
+    Set,
+    Map,
+    JSON,
+    fmt: value => state.hideValues ? 'R$ ••••' : `R$ ${Number(value).toFixed(2)}`,
+    esc: value => String(value ?? ''),
+    dividendAnnualMatrixData: () => matrix,
+    dividendEmptyState: message => `<div>${message}</div>`,
+    lineChart: series => `<svg data-series="${series.length}"></svg>`,
+  };
+  vm.createContext(context);
+  vm.runInContext(source.slice(start, end), context);
+  return context.dividendMonthlyTimeline([]);
+}
+
+function timelineYear({ paidMonths }) {
+  const months = Array.from({ length: 12 }, (_, index) => ({
+    year: 2026,
+    month: index + 1,
+    key: `2026-${String(index + 1).padStart(2, '0')}`,
+    total: paidMonths[index + 1]?.total ?? null,
+    hasData: Boolean(paidMonths[index + 1]),
+    coverage: paidMonths[index + 1]?.coverage || 'UNKNOWN',
+  }));
+  const annualTotal = Object.values(paidMonths).reduce((sum, item) => sum + item.total, 0);
+  return [{ year: 2026, months, annualTotal }];
+}
+
+test('one received month uses a compact summary with month, value, and limited coverage', () => {
+  const html = renderTimeline(timelineYear({ paidMonths: { 4: { total: 42.5, coverage: 'PARTIAL' } } }));
+
+  assert.match(html, /Abr 2026/);
+  assert.match(html, /R\$ 42\.50/);
+  assert.match(html, /histórico limitado a um mês/i);
+  assert.doesNotMatch(html, /<svg/);
+});
+
+test('multiple received months keep the historical evolution chart', () => {
+  const html = renderTimeline(timelineYear({ paidMonths: {
+    3: { total: 20, coverage: 'PARTIAL' },
+    4: { total: 42.5, coverage: 'PARTIAL' },
+  } }));
+
+  assert.match(html, /<svg/);
+  assert.doesNotMatch(html, /cobertura limitada/i);
+});
+
+test('compact one-month summary respects Hide Values in visible and accessible text', () => {
+  const html = renderTimeline(timelineYear({ paidMonths: { 4: { total: 42.5, coverage: 'PARTIAL' } } }), true);
+
+  assert.match(html, /R\$ ••••/);
+  assert.doesNotMatch(html, /42\.50/);
+});
+
 test('historical summaries identify known subsets without implying a complete portfolio total', () => {
   const summaryStart = source.indexOf('function dividendMonthlyHistorySummaryLine(summary, groups){');
   const summaryEnd = source.indexOf('function setDividendMonthlyHistoryExpandedYears(', summaryStart);
@@ -126,4 +209,11 @@ test('light annual history keeps incomplete month labels readable on the light s
   const styleEnd = source.indexOf('</style>', styleStart);
   const style = source.slice(styleStart, styleEnd);
   assert.ok(style.includes('html[data-theme="light"] .premium-dividends-3 .div-year-card{background:var(--canon-panel);color:var(--canon-text);border-color:var(--canon-border)}'));
+});
+
+test('light-theme register-income action overrides the low-contrast inherited gradient', () => {
+  const styleStart = source.indexOf('<style id="m562-dividends-premium-slim">');
+  const styleEnd = source.indexOf('</style>', styleStart);
+  const style = source.slice(styleStart, styleEnd);
+  assert.match(style, /div-premium-head \.btn\.bp:not\(:disabled\):not\(\[aria-disabled="true"\]\)\{[^}]*background:#2f6fd1!important;[^}]*background-image:none!important;[^}]*color:#fff!important/);
 });

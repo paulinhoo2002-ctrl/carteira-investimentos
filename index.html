@@ -35542,6 +35542,13 @@ function dividendMonthlyTimeline(rows=filteredDividendRows()){
   if(!matrix.length) return dividendEmptyState('Sem evolução mensal no período selecionado.', 'Mude o filtro de período ou a busca para ver meses com dados.');
   const years=matrix.slice(0,5);
   const monthLabels=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const observedMonths=matrix.flatMap(year=>year.months||[]).filter(month=>month.hasData&&month.total!==null&&Number.isFinite(Number(month.total)));
+  if(observedMonths.length===1){
+    const month=observedMonths[0];
+    const label=`${monthLabels[month.month-1]} ${month.year}`;
+    const coverage=month.coverage==='COMPLETE'?'Mês completo confirmado':month.coverage==='PARTIAL'?'Cobertura parcial do mês':'Cobertura desconhecida';
+    return `<div class="dividend-timeline-summary div-timeline-summary" role="group" aria-label="Evolução mensal: ${esc(label)}, ${esc(fmt(month.total))}, histórico limitado a um mês."><div class="div-timeline-summary-title">Evolução mensal dos proventos</div><div class="div-premium-metric-value">${fmt(month.total)}</div><div class="div-timeline-summary-sub">${esc(label)} · histórico limitado a um mês</div><div class="div-timeline-summary-meta">${coverage}</div></div>`;
+  }
   const colors=['#10d981','#2f9bff','#a56bff','#ff9f1c','#1bb6b0'];
   const series=years.map((year,index)=>({
     name:String(year.year),
@@ -35595,8 +35602,8 @@ function dividendSummaryCards(){
 }
 function dividendExecutiveKpis(rows=dividendPremiumRows()){
   const stats=passiveIncomeGoalStats();
-  const complete=stats.monthlyAverageStatus==='COMPLETE' && stats.completeMonthCount===12;
-  const completeMonths=Number(stats.completeMonthCount)||0;
+  const completeMonths=Number.isInteger(stats.completeMonthCount)&&stats.completeMonthCount>=0?stats.completeMonthCount:null;
+  const complete=stats.monthlyAverageStatus==='COMPLETE' && completeMonths===12;
   const currentCoverage=stats.currentMonthCoverage||'UNKNOWN';
   const months=Array.isArray(stats.byMonth)
     ? stats.byMonth
@@ -35618,11 +35625,18 @@ function dividendExecutiveKpis(rows=dividendPremiumRows()){
     ? 'Sem total conhecido para o período · cobertura não confirmada'
     : complete
       ? 'Recebimentos dos 12 meses completos'
-      : `Subtotal conhecido · ${completeMonths}/12 meses completos`;
+      : completeMonths===null
+        ? 'Subtotal conhecido · cobertura mensal indisponível'
+        : `Subtotal conhecido · ${completeMonths}/12 meses completos`;
+  const monthlyAverageSub=complete
+    ? '12/12 meses completos'
+    : completeMonths===null
+      ? 'Cobertura de meses completos indisponível · média indisponível'
+      : `Cobertura confirmada: ${completeMonths}/12 meses · média indisponível`;
   const cards=[
     ['Recebido este mês',stats.currentMonthTotal==null?'—':fmt(stats.currentMonthTotal),currentSub,stats.currentMonthTotal>0?'good':''],
     ['Recebido nos últimos 12 meses',stats.total12==null?'—':fmt(stats.total12),total12Sub,stats.total12>0?'good':''],
-    ['Média mensal',complete&&stats.monthlyAvg!=null?fmt(stats.monthlyAvg):'—',complete?'12/12 meses completos':`Cobertura confirmada: ${completeMonths}/12 meses · média indisponível`,complete&&stats.monthlyAvg>0?'good':''],
+    ['Média mensal',complete&&stats.monthlyAvg!=null?fmt(stats.monthlyAvg):'—',monthlyAverageSub,complete&&stats.monthlyAvg>0?'good':''],
     ['Último mês',previousMonthKnown?fmt(previousMonth.total):'—',previousMonthSub,previousMonthKnown&&previousMonth.total>0?'good':''],
     ['Projeção anual',complete&&stats.annualProjection!=null?fmt(stats.annualProjection):'—',complete?'Estimativa · não recebida · somente meses completos':'Indisponível · exige 12 meses completos',complete&&stats.annualProjection>0?'good':'']
   ];
@@ -39366,7 +39380,7 @@ document.addEventListener('focusin',event=>{const nav=event.target?.closest?.('.
 .premium-dividends-3 .dividend-history-block .div-monthly-summaryline{gap:8px}
 html[data-theme="light"] .premium-dividends-3 .div-monthly-summaryline{background:var(--canon-panel-2);border-color:var(--canon-border)}
 html[data-theme="light"] .premium-dividends-3 .div-year-card{background:var(--canon-panel);color:var(--canon-text);border-color:var(--canon-border)}
-html[data-theme="light"] .premium-dividends-3 .div-premium-head .btn.bp:not(:disabled):not([aria-disabled="true"]){background:#2f6fd1;border-color:#2f6fd1;color:#fff;box-shadow:none}
+html[data-theme="light"] .premium-dividends-3 .div-premium-head .btn.bp:not(:disabled):not([aria-disabled="true"]){background:#2f6fd1!important;background-image:none!important;border-color:#2f6fd1!important;color:#fff!important;box-shadow:none}
 html[data-theme="light"] .premium-dividends-3 .div-premium-head .btn.bp:hover:not(:disabled):not([aria-disabled="true"]){background:#275fae;border-color:#275fae}
 @media(max-width:1180px){.premium-dividends-3 .canon-div-lower{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:767px){
