@@ -89,7 +89,7 @@ viewports.forEach(vp => {
       assert.ok(financialKpisBox && financialKpisBox.width > 0 && financialKpisBox.height > 0, 'Financial KPI card has no bounding box');
       const kpisText = await financialKpis.textContent();
       assert.ok(kpisText && kpisText.includes('Recebido'), 'Financial content missing received-income KPI');
-      assert.ok(kpisText && kpisText.includes('Pagamentos classificados como recebidos no ano atual'), 'Received-income period/source context must remain visible');
+      assert.ok(kpisText && /Mês completo confirmado|cobertura parcial|Cobertura desconhecida/i.test(kpisText), 'Received-income coverage context must remain available');
       assert.ok(kpisText && kpisText.includes('Projeção anual'), 'Annual projection must remain available as a separate secondary metric');
       // Receipts and filters stay reachable under the secondary route menu.
       const moreModes = page.locator('.div-dividend-moreviews > summary');

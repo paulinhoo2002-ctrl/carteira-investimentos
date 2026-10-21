@@ -217,3 +217,128 @@ test('Import Center lê CSV sintético e cancelar revisão não grava', async ()
     assertNoOutboundWrites(app.outboundRequests);
   } finally { await closeApp(app); }
 });
+
+test('venda sintética confirmada atualiza o ledger sem writes externos', async () => {
+  const app = await openApp();
+  try {
+    app.page.on('dialog', dialog => dialog.accept());
+    const storageBefore = await app.page.evaluate(() => localStorage.getItem('civ5'));
+    await app.page.evaluate(() => { fetchQuotes = async () => {}; scheduleAutoProventosGratis = () => {}; });
+    await app.page.evaluate(() => openQuickMovement('venda'));
+    const options = await app.page.locator('#qm-sale-asset option').count();
+    assert.ok(options > 1, 'fixture deve conter posição vendável');
+    await app.page.selectOption('#qm-sale-asset', { index: 1 });
+    const ticker = await app.page.evaluate(() => S.quickMovementDraft.ticker);
+    await app.page.locator('#qm-qty').fill('1');
+    await app.page.locator('#qm-price').fill('20');
+    await app.page.getByRole('button', { name: 'Confirmar venda' }).click();
+    await app.page.waitForFunction(symbol => S.aportes.some(item => item.operation === 'venda' && item.ticker === symbol), ticker);
+    const sale = await app.page.evaluate(symbol => S.aportes.find(item => item.operation === 'venda' && item.ticker === symbol), ticker);
+    assert.equal(Number(sale.qty), 1);
+    assert.equal(Number(sale.price), 20);
+    assert.equal(await app.page.evaluate(() => localStorage.getItem('civ5')), storageBefore);
+    assertNoOutboundWrites(app.outboundRequests);
+  } finally { await closeApp(app); }
+});
+
+test('aplicação e resgate parciais RF sintéticos preservam eventos e isolamento local', async () => {
+  const app = await openApp();
+  try {
+    app.page.on('dialog', dialog => dialog.accept());
+    const storageBefore = await app.page.evaluate(() => localStorage.getItem('civ5'));
+    await app.page.evaluate(() => { fetchQuotes = async () => {}; scheduleAutoProventosGratis = () => {}; });
+    await app.page.evaluate(() => openQuickMovement('renda-fixa'));
+    await app.page.getByRole('tab', { name: 'Novo título' }).click();
+    await app.page.locator('#qm-rf-name').fill('CDB QA sintético 2028');
+    await app.page.locator('#qm-rf-subtype').selectOption('CDB');
+    await app.page.locator('#qm-rf-app-date').fill('2026-06-01');
+    await app.page.locator('#qm-rf-due').fill('2028-06-01');
+    await app.page.locator('#qm-rf-applied').fill('1000');
+    await app.page.locator('.quick-movement-modal button.btn.bsv').click();
+    await app.page.waitForFunction(() => S.assets.some(asset => asset.name === 'CDB QA sintético 2028'));
+    const asset = await app.page.evaluate(() => {
+      const found = S.assets.find(item => item.name === 'CDB QA sintético 2028');
+      return found ? { id: rfAssetEventId(found), type: found.type, applied: Number(found.rf_applied_value || found.appliedValue || 0) } : null;
+    });
+    assert.ok(asset?.id, 'a aplicação deve criar um título RF sintético identificável');
+    assert.match(asset.type, /Renda Fixa/i);
+    const eventsBefore = await app.page.evaluate(() => S.rfEvents.length);
+
+    await app.page.evaluate(id => { go('renda-fixa'); openRfMovementEditor(id, 'aporte'); }, asset.id);
+    await app.page.locator('.rf-event-editor').waitFor({ state: 'visible', timeout: 5000 }).catch(async error => {
+      const state = await app.page.evaluate(id => ({ id, found: Boolean(getRfAssetByEventId(id)), editor: S.rfMovementEditor, quickOpen: S.quickMovementOpen, tab: S.tab }), asset.id);
+      assert.fail(`RF movement editor not rendered: ${JSON.stringify(state)}; ${error.message}`);
+    });
+    await app.page.locator('.rf-event-editor input[aria-label="Data da movimentação"]').fill('2026-07-01');
+    const principalInput = app.page.locator('.rf-event-editor input[aria-label="Valor do principal movimentado"]');
+    await principalInput.fill('100');
+    await principalInput.press('Tab');
+    const firstRfSave = app.page.getByRole('button', { name: 'Salvar movimentação' });
+    assert.equal(await firstRfSave.isEnabled(), true, `RF aporte incompleto: ${JSON.stringify(await app.page.evaluate(() => S.rfMovementEditor?.draft))}`);
+    await firstRfSave.click();
+    await app.page.waitForFunction(count => S.rfEvents.length > count, eventsBefore);
+    const afterApplication = await app.page.evaluate(id => ({
+      balance: rfPrincipalBalance(getRfAssetByEventId(id)).value,
+      event: S.rfEvents.find(item => item.assetId === id && item.date === '2026-07-01'),
+    }), asset.id);
+    assert.equal(afterApplication.balance, 1100);
+    assert.equal(afterApplication.event?.type, 'aporte');
+    assert.equal(afterApplication.event?.principalDelta, 100);
+
+    const redeemEventsBefore = await app.page.evaluate(() => S.rfEvents.length);
+    await app.page.evaluate(id => openRfMovementEditor(id, 'resgate_parcial'), asset.id);
+    await app.page.locator('.rf-event-editor').waitFor({ state: 'visible', timeout: 5000 }).catch(async error => {
+      const state = await app.page.evaluate(id => ({ id, found: Boolean(getRfAssetByEventId(id)), editor: S.rfMovementEditor, tab: S.tab }), asset.id);
+      assert.fail(`RF redemption editor not rendered: ${JSON.stringify(state)}; ${error.message}`);
+    });
+    await app.page.locator('.rf-event-editor input[aria-label="Data da movimentação"]').fill('2026-08-01');
+    const redemptionPrincipal = app.page.locator('.rf-event-editor input[aria-label="Valor do principal movimentado"]');
+    await redemptionPrincipal.fill('200');
+    await redemptionPrincipal.press('Tab');
+    await app.page.locator('.rf-event-editor input[aria-label="Valor bruto da movimentação"]').fill('200');
+    await app.page.locator('.rf-event-editor input[aria-label="Valor líquido da movimentação"]').fill('200');
+    const redemptionSave = app.page.getByRole('button', { name: 'Confirmar resgate' });
+    assert.equal(await redemptionSave.isEnabled(), true, `RF resgate incompleto: ${JSON.stringify(await app.page.evaluate(() => S.rfMovementEditor?.draft))}`);
+    await redemptionSave.click();
+    await app.page.waitForFunction(count => S.rfEvents.length > count, redeemEventsBefore);
+    const afterRedemption = await app.page.evaluate(id => ({
+      balance: rfPrincipalBalance(getRfAssetByEventId(id)).value,
+      event: S.rfEvents.find(item => item.assetId === id && item.date === '2026-08-01'),
+    }), asset.id);
+    assert.equal(afterRedemption.balance, 900);
+    assert.equal(afterRedemption.event.type, 'resgate_parcial');
+    assert.equal(afterRedemption.event.principalDelta, -200);
+    assert.equal(afterRedemption.event.grossValue, 200);
+    assert.equal(afterRedemption.event.netValue, 200);
+    assert.equal(await app.page.evaluate(() => localStorage.getItem('civ5')), storageBefore);
+    assertNoOutboundWrites(app.outboundRequests);
+  } finally { await closeApp(app); }
+});
+
+test('registro e cancelamento de provento sintético alteram somente a sessão QA', async () => {
+  const app = await openApp();
+  try {
+    const storageBefore = await app.page.evaluate(() => localStorage.getItem('civ5'));
+    const before = await app.page.evaluate(() => S.proventos.length);
+    await app.page.evaluate(() => openQuickMovement('provento'));
+    await app.page.locator('#qm-dt').fill('2026-09-30');
+    await app.page.locator('#qm-ti').fill('QASYN3');
+    await app.page.locator('#qm-value').fill('5,20');
+    await app.page.locator('#qm-event').selectOption({ label: 'Dividendo' });
+    await app.page.getByRole('button', { name: 'Registrar provento' }).click();
+    await app.page.waitForFunction(() => S.proventos.some(item => item.ticker === 'QASYN3'));
+    const received = await app.page.evaluate(() => S.proventos.find(item => item.ticker === 'QASYN3'));
+    assert.equal(Number(received.value), 5.2);
+    assert.equal(received.type, 'Dividendo');
+    assert.equal(await app.page.evaluate(() => localStorage.getItem('civ5')), storageBefore);
+
+    await app.page.evaluate(() => openQuickMovement('provento'));
+    await app.page.locator('#qm-ti').fill('QACANCEL3');
+    await app.page.locator('#qm-value').fill('9,90');
+    await app.page.getByRole('button', { name: 'Cancelar', exact: true }).click();
+    assert.equal(await app.page.evaluate(() => S.proventos.length), before + 1);
+    assert.equal(await app.page.evaluate(() => S.proventos.some(item => item.ticker === 'QACANCEL3')), false);
+    assert.equal(await app.page.evaluate(() => localStorage.getItem('civ5')), storageBefore);
+    assertNoOutboundWrites(app.outboundRequests);
+  } finally { await closeApp(app); }
+});

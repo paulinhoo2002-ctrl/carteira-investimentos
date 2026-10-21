@@ -4,6 +4,18 @@ const path = require('node:path');
 const test = require('node:test');
 const { startLocalHttpServer: startServer } = require('./local-http-server.js');
 
+function contrastRatio(foreground, background) {
+  const luminance = color => {
+    const rgb = color.match(/[\d.]+/g).slice(0, 3).map(Number).map(value => {
+      const channel = value / 255;
+      return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+  };
+  const [high, low] = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
+  return (high + 0.05) / (low + 0.05);
+}
+
 function resolveBrowser() {
   return [
     process.env.CHROME_PATH,
@@ -202,6 +214,52 @@ for (const viewport of viewports) {
       assert.equal(after.writes, before.writes, `interações não podem persistir estado financeiro em ${viewport.label}`);
       assert.deepEqual(errors, [], `erros de console em ${viewport.label}: ${errors.join(' | ')}`);
       assert.deepEqual(requestFailures, [], `requestfailed em ${viewport.label}: ${requestFailures.join(' | ')}`);
+    } finally {
+      await context.close();
+      await browser.close();
+      harness.server.closeAllConnections();
+      harness.server.close();
+    }
+  });
+
+  test(`Renda Fixa expandida mantém contraste AA em claro e escuro - ${viewport.label}`, async () => {
+    const executablePath = resolveBrowser();
+    assert.ok(executablePath, 'Chrome/Edge nao encontrado para o smoke Playwright');
+    const harness = await startServer(path.join(__dirname, '..'));
+    const { chromium } = await import('playwright-core');
+    const browser = await chromium.launch({ executablePath, headless: true });
+    const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height } });
+    const page = await context.newPage();
+    try {
+      await page.goto(harness.url, { waitUntil: 'domcontentloaded' });
+      await page.waitForFunction(() => window.__LOCAL_TEST_MODE__ === true && typeof S !== 'undefined');
+      await page.evaluate(assets => {
+        S.assets = JSON.parse(JSON.stringify(assets));
+        S.aportes = []; S.proventos = []; S.rfEvents = []; S.quotes = {};
+        render();
+      }, syntheticRfAssets());
+      await page.addScriptTag({ path: require.resolve('axe-core') });
+      await page.evaluate(() => go('ativos'));
+      const group = page.locator('.ag[data-asset-group="Renda Fixa"]');
+      if (!(await group.evaluate(element => element.open))) await group.locator(':scope > summary').click();
+      for (const theme of ['light', 'dark']) {
+        await page.evaluate(value => { document.documentElement.dataset.theme = value; }, theme);
+        const colors = await page.locator('.ag[data-asset-group="Renda Fixa"] .rf-category-summary .rf-category-row').first().evaluate(row => {
+          const background = getComputedStyle(row.closest('.rf-category-summary')).backgroundColor;
+          return [...row.querySelectorAll('.rf-category-identity strong, .rf-category-identity span, .rf-category-metric small, .rf-category-metric b')]
+            .map(node => ({ text: node.textContent.trim(), color: getComputedStyle(node).color, background, fontSize: Number.parseFloat(getComputedStyle(node).fontSize) }));
+        });
+        assert.ok(colors.length > 0, `detalhes RF sem textos auditáveis em ${theme}`);
+        assert.ok(colors.every(item => item.fontSize >= 12), `texto funcional RF abaixo de 12px em ${theme}: ${JSON.stringify(colors.filter(item => item.fontSize < 12))}`);
+        for (const item of colors) assert.ok(contrastRatio(item.color, item.background) >= 4.5,
+          `contraste abaixo de WCAG AA (${contrastRatio(item.color, item.background).toFixed(2)}:1) em ${theme}: ${item.text}`);
+        const axe = await page.evaluate(async () => {
+          const region = document.querySelector('.ag[data-asset-group="Renda Fixa"] .rf-category-summary');
+          const result = await window.axe.run(region, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] } });
+          return result.violations.map(({ id, impact, help }) => ({ id, impact, help }));
+        });
+        assert.deepEqual(axe, [], `Axe A/AA encontrou violações no detalhe RF em ${theme}: ${JSON.stringify(axe)}`);
+      }
     } finally {
       await context.close();
       await browser.close();
