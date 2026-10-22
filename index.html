@@ -6581,7 +6581,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       .premium-rf-review-empty{padding:8px 0 2px;color:var(--muted);font-size:var(--fs-caption);line-height:1.35}
       .premium-rf-ipca-diagnostics .premium-income-row{grid-template-columns:minmax(0,1fr) minmax(0,auto)}
       .premium-rf-ipca-diagnostics .premium-row-value{min-width:0;text-align:right;white-space:normal}
-      @media(max-width:1499px){.premium-rf-position-row,.premium-rf-maturity-row{flex-wrap:wrap}.premium-rf-row-main{flex:1 1 220px}.premium-rf-row-value{flex:1 1 220px}.premium-rf-row-actions{flex:1 1 100%;justify-content:flex-end;flex-wrap:wrap;gap:6px}}
+      @media(max-width:1599px){.premium-rf-position-row,.premium-rf-maturity-row{flex-wrap:wrap}.premium-rf-row-main{flex:1 1 220px}.premium-rf-row-value{flex:1 1 220px}.premium-rf-row-actions{flex:1 1 100%;justify-content:flex-end;flex-wrap:wrap;gap:6px}}
       @media(min-width:768px){.premium-rf-filter-details:not([open])>.premium-rf-filter-options{display:grid}.premium-rf-secondary-overview .premium-rf-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
       @media(max-width:1199px){.premium-rf-grid{grid-template-columns:1fr}.premium-rf-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.premium-rf-review-groups{grid-template-columns:repeat(2,minmax(0,1fr))}.premium-rf-review-group:nth-child(3){border-left:0;border-top:1px solid var(--border)}.premium-rf-review-group:nth-child(4){border-top:1px solid var(--border)}}
       @media(max-width:767px){
@@ -31342,7 +31342,7 @@ function rendaFixaTab(){
   const knownCurrentTotal=data.assets.filter(row=>row.explicit && Number.isFinite(row.current)).reduce((sum,row)=>sum+row.current,0);
   const kpiHtml=(items,extraClass='')=>items.map(([label,value,note,tone])=>`<div class="premium-rf-kpi ds-kpi ${extraClass}" style="--rf-kpi-tone:${tone}"><div class="premium-rf-kpi-label ds-kpi__label">${esc(label)}</div><div class="premium-rf-kpi-value ds-kpi__value" style="color:${tone}">${esc(value)}</div><div class="premium-rf-kpi-note ds-kpi__context">${esc(note)}</div></div>`).join('');
   const primaryKpis=[
-    ['Valor atual informado',data.explicitCount?fmt(knownCurrentTotal):'—',count?`${data.explicitCount}/${count} posições com valor explícito`:'Sem posições','#34d399'],
+    ['Valor atual informado',data.explicitCount?fmt(knownCurrentTotal):'—',count?`${data.explicitCount}/${count} posições com valor explícito`:'Sem posições','var(--text)'],
     ['Capital aplicado',count&&appliedCount===count?fmt(data.totalApplied):'—',count?`${appliedCount}/${count} bases informadas`:'Sem posições','#a78bfa'],
     ['Resultado da posição',count&&data.missingCurrent===0&&appliedCount===count&&Number.isFinite(data.totalProfit)?assetSignedMoneyText(data.totalProfit):'—',count?(data.missingCurrent===0&&appliedCount===count&&Number.isFinite(data.totalPct)?'Valor atual menos capital aplicado informado; não representa retorno total.':'Indisponível enquanto houver valores atuais ou bases ausentes'):'Sem posições',resultTone],
     ['Próximo vencimento',nextMaturity?(nextMaturity.days===0?'Hoje':nextMaturity.days===1?'Amanhã':`${nextMaturity.days} dias`):'—',nextMaturity?(nextMaturity.ticker||'Título RF'):'Nenhum vencimento futuro','#fbbf24']
@@ -31371,7 +31371,7 @@ function rendaFixaTab(){
       <div class="premium-rf-row-main">
         <div class="premium-rf-row-title">${esc(row.ticker)}${row.name&&row.name!==row.ticker?` · ${esc(row.name)}`:''}</div>
         <div class="premium-rf-row-meta">${esc(row.category)} · ${esc(row.indexer)} · ${S.hideValues&&valueVisibilityDepth===0?'••••':esc(row.rate||'taxa não informada')}</div>
-        <div class="premium-rf-row-meta premium-rf-row-issuer">Instituição: ${esc(row.issuer||'não informada')}</div>
+        <div class="premium-rf-row-meta premium-rf-row-issuer">Emissor: ${esc(row.issuer||'não informado')}</div>
       </div>
       <div class="premium-rf-row-value">
         <div class="premium-rf-row-financial"><span class="premium-rf-row-financial-label">Atual</span>${display.currentText}</div>
@@ -31571,8 +31571,8 @@ function rendaFixaTab(){
             <option value="UNAVAILABLE" ${S.rfTrustFilter==='UNAVAILABLE'?'selected':''}>Indisponível</option>
             <option value="STALE" ${S.rfTrustFilter==='STALE'?'selected':''}>Desatualizada</option>
           </select></label>
-          <label><span>Instituição</span><select aria-label="Filtrar por instituição" onchange="setRfIssuerFilter(this.value,this.closest('details').open)">
-            <option value="" ${!S.rfIssuerFilter?'selected':''}>Todas as instituições</option>
+          <label><span>Emissor</span><select aria-label="Filtrar por emissor" onchange="setRfIssuerFilter(this.value,this.closest('details').open)">
+            <option value="" ${!S.rfIssuerFilter?'selected':''}>Todos os emissores</option>
             ${issuerOptions.map(issuer=>`<option value="${esc(issuer)}" ${S.rfIssuerFilter===issuer?'selected':''}>${esc(issuer)}</option>`).join('')}
           </select></label>
           <label><span>Produto</span><select aria-label="Filtrar por produto de renda fixa" onchange="setRfCategoryFilter(this.value,this.closest('details').open)">
@@ -31584,7 +31584,7 @@ function rendaFixaTab(){
             <option value="value-desc" ${S.rfSort==='value-desc'?'selected':''}>Maior valor</option>
             <option value="value-asc" ${S.rfSort==='value-asc'?'selected':''}>Menor valor</option>
             <option value="maturity-asc" ${S.rfSort==='maturity-asc'?'selected':''}>Vencimento próximo</option>
-            <option value="issuer-asc" ${S.rfSort==='issuer-asc'?'selected':''}>Instituição A–Z</option>
+            <option value="issuer-asc" ${S.rfSort==='issuer-asc'?'selected':''}>Emissor A–Z</option>
             <option value="type-asc" ${S.rfSort==='type-asc'?'selected':''}>Tipo do produto A–Z</option>
           </select></label>
             </div>
