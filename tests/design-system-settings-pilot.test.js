@@ -15,7 +15,7 @@ test('settings pilot adopts primitives only in safe sections', () => {
 
 test('protected settings flows remain owned by existing handlers', () => {
   assert.match(html, /onclick="openBackupCenter\(\)"/);
-  assert.match(html, /onclick="resetPortfolio\(\)"/);
+  assert.match(html, /onclick="resetPortfolio\(event\)"/);
   assert.match(html, /onclick="deleteWallet\(\)"/);
   assert.match(html, /function confirmBackupImport\(\)/);
   assert.match(html, /function applyBackupData\(parsed\)/);

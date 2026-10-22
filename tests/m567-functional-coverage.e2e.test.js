@@ -378,6 +378,31 @@ it('M567 exportação de relatórios abre painel e dispara export sintético sem
   } finally { await closeApp(app); }
 });
 
+it('M579 relatórios exportam CSV e JSON com conteúdo sintético e sem escrita externa', async () => {
+  const app = await openApp();
+  try {
+    await app.page.evaluate(asset => { S.assets.push(asset); go('relatorios'); }, seedAsset());
+    const before = await storageSnapshot(app.page);
+    const exports = await app.page.evaluate(() => {
+      const captured = [];
+      const original = downloadTextFile;
+      downloadTextFile = (name, content, mime) => captured.push({ name, content, mime });
+      try {
+        exportReportCSV('assets');
+        exportReportJSON('assets');
+      } finally { downloadTextFile = original; }
+      return captured;
+    });
+    assert.equal(exports.length, 2);
+    assert.match(exports[0].name, /\.csv$/);
+    assert.match(exports[0].content, /M567QA/);
+    assert.match(exports[1].name, /\.json$/);
+    assert.ok(JSON.parse(exports[1].content).rows.some(row => JSON.stringify(row).includes('M567QA')));
+    assert.deepEqual(await storageSnapshot(app.page), before);
+    assertNoOutboundWrites(app.outboundRequests);
+  } finally { await closeApp(app); }
+});
+
 it('M567 período de relatórios e filtros mudam estado sem erros de página', async () => {
   const app = await openApp();
   try {

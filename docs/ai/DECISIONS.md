@@ -189,3 +189,19 @@ Este documento registra decisões arquiteturais que foram validadas pelo projeto
 - Facilita auditar e atualizar o conhecimento de IA separadamente do produto
 
 **Status**: Ativo e vinculante
+
+## Decision 009 — Posição encerrada preserva o ledger
+
+**Data**: 2026-10-22
+**Contexto**: A hipótese de que ativos e histórico precisariam de exclusão definitiva como ação comum bloqueava a revisão do ciclo de vida.
+
+**Decisão**: Exclusão definitiva do ativo e de seu histórico não é requisito do fluxo comum. Uma venda integral encerra a posição atual; os registros originais de compra e venda permanecem no ledger. A recompra do mesmo ticker reabre a posição a partir dos novos eventos. Lançamentos incorretos devem ser corrigidos pelos fluxos de edição/correção existentes, com confirmação e validação, em vez de apagar a entidade do ativo.
+
+**Evidência e limite**: Teste E2E sintético M579.1 comprova compra, venda total, ausência da posição encerrada nas visões atuais, preservação dos eventos, rejeição de venda acima do saldo e recompra com nova base. Isso não certifica carteiras reais nem todos os tipos de evento ou o fluxo de edição; esses continuam cobertos por seus testes e contratos específicos.
+
+**Consequências**:
+- Excluir definitivamente ativo/histórico não é blocker de publicação por si só.
+- Posição atual é derivada dos eventos; não remover o histórico quando a quantidade chega a zero.
+- Correções devem preservar identidade, validação e confirmação dos fluxos existentes.
+
+**Status**: Ativo e vinculante

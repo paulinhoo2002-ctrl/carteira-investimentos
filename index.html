@@ -241,9 +241,9 @@ html[data-theme="light"]{
   --fw-bold:700;
 }
 .ds-kpi{display:flex;min-width:0;flex-direction:column;justify-content:space-between;gap:var(--ds-space-2);padding:10px 12px;border:1px solid var(--ds-border);border-radius:var(--ds-radius-card);background:var(--ds-surface)}
-.ds-kpi__label{display:flex;min-width:0;align-items:center;gap:var(--ds-space-2);color:var(--ds-text-secondary);font-size:9px;font-weight:700;line-height:1.2;letter-spacing:.04em;text-transform:uppercase}
+.ds-kpi__label{display:flex;min-width:0;align-items:center;gap:var(--ds-space-2);color:var(--ds-text-secondary);font-size:var(--fs-label);font-weight:700;line-height:1.2;letter-spacing:.04em;text-transform:uppercase}
 .ds-kpi__value{color:var(--ds-text-primary);font-size:18px;font-weight:900;line-height:1.1;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
-.ds-kpi__context{color:var(--ds-text-secondary);font-size:9px;line-height:1.2}
+.ds-kpi__context{color:var(--ds-text-secondary);font-size:var(--fs-caption);line-height:1.2}
 .ds-kpi--positive .ds-kpi__value{color:var(--ds-positive)}
 .ds-kpi--negative .ds-kpi__value{color:var(--ds-negative)}
 .ds-kpi--warning .ds-kpi__value{color:var(--ds-warning)}
@@ -5689,7 +5689,7 @@ html[data-theme="dark"] .quick-movement-error{
 .asset-premium-sub,
 .patrimony-panel-sub,
 .div-overview-panel-sub {
-  font-size: 10px !important;
+  font-size: var(--fs-caption) !important;
   color: var(--muted) !important;
   line-height: 1.35 !important;
   margin-top: 2px !important;
@@ -5709,7 +5709,7 @@ html[data-theme="dark"] .quick-movement-error{
 .patrimony-insight-label,
 .ap-summary .cl,
 .backup-card .cl {
-  font-size: 10px !important;
+  font-size: var(--fs-label) !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
   letter-spacing: .06em !important;
@@ -5744,7 +5744,7 @@ html[data-theme="dark"] .quick-movement-error{
 .patrimony-insight-note,
 .analysis-summary-sub,
 .rf-summary-sub {
-  font-size: 10px !important;
+  font-size: var(--fs-caption) !important;
   color: var(--muted) !important;
   line-height: 1.2 !important;
   margin-top: 4px !important;
@@ -6498,7 +6498,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 /* PREMIUM FIXED INCOME 4 */
       .premium-rf-page{display:flex;flex-direction:column;gap:14px}
       .premium-rf-header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:2px 2px 0}
-      .premium-rf-kicker{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800}
+      .premium-rf-kicker{font-size:var(--fs-caption);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800}
       .premium-rf-title{margin:3px 0 0;font-size:22px;line-height:1.1;color:var(--text);font-weight:900;letter-spacing:-.025em}
       .premium-rf-subtitle{margin-top:5px;color:var(--muted);font-size:12px;line-height:1.45}
       .premium-rf-header .btn{min-height:44px}
@@ -6506,15 +6506,15 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       .premium-rf-header .btn.bs:hover{background:var(--panel)}
       .premium-rf-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
       .premium-rf-kpi{min-width:0;padding:12px 13px;border:1px solid var(--border);border-radius:14px;background:linear-gradient(145deg,var(--panel),var(--surface));box-shadow:0 10px 24px rgba(0,0,0,.08)}
-      .premium-rf-kpi-label{font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+      .premium-rf-kpi-label{font-size:var(--fs-label);color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.04em}
       .premium-rf-kpi-value{margin-top:7px;color:var(--text);font-size:17px;font-weight:900;line-height:1.1;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
-      .premium-rf-kpi-note{margin-top:5px;color:var(--muted);font-size:10px;line-height:1.3}
+      .premium-rf-kpi-note{margin-top:5px;color:var(--muted);font-size:var(--fs-caption);line-height:1.3}
       .premium-rf-grid{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(260px,1fr);gap:12px;align-items:start}
       .premium-rf-panel{min-width:0;border:1px solid var(--border);border-radius:16px;background:var(--panel);overflow:hidden}
       .premium-rf-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:14px 15px 11px;border-bottom:1px solid var(--border)}
       .premium-rf-panel-title{color:var(--text);font-size:13px;font-weight:900}
-      .premium-rf-panel-sub{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.35}
-      .premium-rf-panel-badge{flex:none;padding:5px 8px;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:10px;font-weight:800}
+      .premium-rf-panel-sub{margin-top:3px;color:var(--muted);font-size:var(--fs-caption);line-height:1.35}
+      .premium-rf-panel-badge{flex:none;padding:5px 8px;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:var(--fs-caption);font-weight:800}
       .premium-rf-position-list,.premium-rf-maturity-list{display:flex;flex-direction:column}
       .premium-rf-position-row,.premium-rf-maturity-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 15px;border-bottom:1px solid var(--border)}
       .premium-rf-position-row:last-child,.premium-rf-maturity-row:last-child{border-bottom:0}
@@ -6524,30 +6524,30 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       .premium-rf-primary-kpi .premium-rf-kpi-note{min-height:2.5em}
       .premium-rf-row-main{min-width:0;flex:1}
       .premium-rf-row-title{color:var(--text);font-size:12px;font-weight:850;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
-      .premium-rf-row-meta{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.35;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
-      .premium-rf-provenance{display:inline-flex;align-items:center;margin-right:4px;padding:2px 5px;border:1px solid currentColor;border-radius:999px;font-size:9px;font-weight:800;line-height:1.1;white-space:nowrap}
+      .premium-rf-row-meta{margin-top:3px;color:var(--muted);font-size:var(--fs-caption);line-height:1.35;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
+      .premium-rf-provenance{display:inline-flex;align-items:center;margin-right:4px;padding:2px 5px;border:1px solid currentColor;border-radius:999px;font-size:var(--fs-caption);font-weight:800;line-height:1.1;white-space:nowrap}
       .premium-rf-provenance.ok{color:#86efac}.premium-rf-provenance.info{color:#7dd3fc}.premium-rf-provenance.warn{color:#fcd34d}.premium-rf-provenance.muted{color:var(--muted)}
       .premium-rf-trust-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:11px 13px;border:1px solid rgba(96,165,250,.22);border-radius:14px;background:rgba(96,165,250,.06)}
-      .premium-rf-trust-copy{display:flex;flex-direction:column;gap:3px;min-width:220px;color:var(--muted);font-size:10px;line-height:1.35}.premium-rf-trust-copy strong{color:var(--text);font-size:12px}
-      .premium-rf-trust-counts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.premium-rf-trust-count{padding:4px 7px;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:10px;white-space:nowrap}.premium-rf-trust-count b{color:var(--text);margin-left:3px}.premium-rf-trust-count.warn{color:#fcd34d}
+      .premium-rf-trust-copy{display:flex;flex-direction:column;gap:3px;min-width:220px;color:var(--muted);font-size:var(--fs-caption);line-height:1.35}.premium-rf-trust-copy strong{color:var(--text);font-size:12px}
+      .premium-rf-trust-counts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.premium-rf-trust-count{padding:4px 7px;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:var(--fs-caption);white-space:nowrap}.premium-rf-trust-count b{color:var(--text);margin-left:3px}.premium-rf-trust-count.warn{color:#fcd34d}
       .premium-rf-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:10px 15px;border-bottom:1px solid var(--border);background:var(--surface)}
       .premium-rf-controls .premium-rf-search-control{grid-column:span 2}
       .premium-rf-filter-details{grid-column:1/-1;min-width:0}
       .premium-rf-filter-details>summary{display:none;align-items:center;justify-content:space-between;gap:8px;min-height:44px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:var(--panel);color:var(--text);font-size:12px;font-weight:800;cursor:pointer;list-style:none}
       .premium-rf-filter-details>summary::-webkit-details-marker{display:none}
-      .premium-rf-active-filter-count{color:var(--muted);font-size:10px;font-weight:750}
+      .premium-rf-active-filter-count{color:var(--muted);font-size:var(--fs-caption);font-weight:750}
       .premium-rf-filter-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-      .premium-rf-controls label{display:grid;gap:4px;color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}.premium-rf-controls input,.premium-rf-controls select{width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:var(--panel);color:var(--text);font:inherit;font-size:11px;text-transform:none;letter-spacing:normal}.premium-rf-controls input:focus-visible,.premium-rf-controls select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+      .premium-rf-controls label{display:grid;gap:4px;color:var(--muted);font-size:var(--fs-label);font-weight:800;text-transform:uppercase;letter-spacing:.04em}.premium-rf-controls input,.premium-rf-controls select{width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:var(--panel);color:var(--text);font:inherit;font-size:var(--fs-body);text-transform:none;letter-spacing:normal}.premium-rf-controls input:focus-visible,.premium-rf-controls select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       .premium-rf-row-meta.pos{color:var(--success)}
             .premium-rf-row-meta.neg{color:#f87171}
             .premium-rf-row-meta.neutral{color:var(--muted)}
       .premium-rf-row-value{min-width:174px;text-align:right;flex:none;color:var(--text);font-size:12px;font-weight:850;font-variant-numeric:tabular-nums}
       .premium-rf-row-financial{display:flex;align-items:baseline;justify-content:flex-end;gap:6px}
-      .premium-rf-row-financial-label{color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+      .premium-rf-row-financial-label{color:var(--muted);font-size:var(--fs-caption);font-weight:800;text-transform:uppercase;letter-spacing:.04em}
       .premium-rf-row-results{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
       .premium-rf-row-actions{flex:none;display:flex;align-items:center}
       .premium-rf-row-actions .asset-action-menu-panel{right:0;left:auto}
-      .premium-rf-maturity-badge{display:inline-flex;align-items:center;min-height:24px;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:800;white-space:nowrap}
+      .premium-rf-maturity-badge{display:inline-flex;align-items:center;min-height:24px;padding:3px 8px;border-radius:999px;font-size:var(--fs-caption);font-weight:800;white-space:nowrap}
       .premium-rf-maturity-badge.danger{color:#fecaca;background:#3f1d24;border:1px solid rgba(248,113,113,.24)}
       .premium-rf-maturity-badge.warn{color:#fde68a;background:#3d2f12;border:1px solid rgba(251,191,36,.24)}
       .premium-rf-maturity-badge.info{color:#bfdbfe;background:#1e3a5f;border:1px solid rgba(96,165,250,.24)}
@@ -6567,21 +6567,21 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       .premium-rf-review-group+.premium-rf-review-group{border-left:1px solid var(--border)}
       .premium-rf-review-group-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
       .premium-rf-review-group-title{color:var(--text);font-size:11px;font-weight:900}
-      .premium-rf-review-group-count{min-width:22px;padding:3px 6px;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:10px;font-weight:900;text-align:center}
-      .premium-rf-review-group-sub{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.3}
+      .premium-rf-review-group-count{min-width:22px;padding:3px 6px;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:var(--fs-caption);font-weight:900;text-align:center}
+      .premium-rf-review-group-sub{margin-top:3px;color:var(--muted);font-size:var(--fs-caption);line-height:1.3}
       .premium-rf-review-list{display:flex;flex-direction:column;margin-top:8px}
       .premium-rf-review-item{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--border)}
       .premium-rf-review-item-main{min-width:0}
       .premium-rf-review-item-title{color:var(--text);font-size:11px;font-weight:850;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
-      .premium-rf-review-item-meta{margin-top:2px;color:var(--muted);font-size:10px;line-height:1.3;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
-      .premium-rf-review-item-value{margin-top:2px;color:var(--text);font-size:10px;font-weight:800;font-variant-numeric:tabular-nums}
-      .premium-rf-review-action{min-height:34px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text);font-size:10px;font-weight:800;cursor:pointer}
+      .premium-rf-review-item-meta{margin-top:2px;color:var(--muted);font-size:var(--fs-caption);line-height:1.3;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
+      .premium-rf-review-item-value{margin-top:2px;color:var(--text);font-size:var(--fs-label);font-weight:800;font-variant-numeric:tabular-nums}
+      .premium-rf-review-action{min-height:44px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text);font-size:var(--fs-label);font-weight:800;cursor:pointer}
       .premium-rf-review-action:hover{background:var(--surface);border-color:var(--accent)}
       .premium-rf-review-action:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-      .premium-rf-review-empty{padding:8px 0 2px;color:var(--muted);font-size:10px;line-height:1.35}
+      .premium-rf-review-empty{padding:8px 0 2px;color:var(--muted);font-size:var(--fs-caption);line-height:1.35}
       .premium-rf-ipca-diagnostics .premium-income-row{grid-template-columns:minmax(0,1fr) minmax(0,auto)}
       .premium-rf-ipca-diagnostics .premium-row-value{min-width:0;text-align:right;white-space:normal}
-      @media(max-width:1499px){.premium-rf-position-row,.premium-rf-maturity-row{flex-wrap:wrap}.premium-rf-row-main{flex:1 1 220px}.premium-rf-row-value{flex:1 1 220px}.premium-rf-row-actions{flex:1 1 100%;justify-content:flex-end;flex-wrap:wrap;gap:6px}}
+      @media(max-width:1599px){.premium-rf-position-row,.premium-rf-maturity-row{flex-wrap:wrap}.premium-rf-row-main{flex:1 1 220px}.premium-rf-row-value{flex:1 1 220px}.premium-rf-row-actions{flex:1 1 100%;justify-content:flex-end;flex-wrap:wrap;gap:6px}}
       @media(min-width:768px){.premium-rf-filter-details:not([open])>.premium-rf-filter-options{display:grid}.premium-rf-secondary-overview .premium-rf-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
       @media(max-width:1199px){.premium-rf-grid{grid-template-columns:1fr}.premium-rf-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.premium-rf-review-groups{grid-template-columns:repeat(2,minmax(0,1fr))}.premium-rf-review-group:nth-child(3){border-left:0;border-top:1px solid var(--border)}.premium-rf-review-group:nth-child(4){border-top:1px solid var(--border)}}
       @media(max-width:767px){
@@ -6597,7 +6597,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
         .premium-rf-primary-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
         .premium-rf-primary-kpi{padding:9px}
         .premium-rf-primary-kpi .premium-rf-kpi-value{font-size:13px}
-        .premium-rf-primary-kpi .premium-rf-kpi-note{min-height:0;font-size:9px;line-height:1.3}
+        .premium-rf-primary-kpi .premium-rf-kpi-note{min-height:0;font-size:var(--fs-caption);line-height:1.3}
         .premium-rf-controls{grid-template-columns:1fr;padding:10px 12px}
         .premium-rf-controls .premium-rf-search-control{grid-column:auto}
         .premium-rf-filter-details{grid-column:auto}
@@ -7021,9 +7021,10 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     .asset-premium-card-summary { padding: 12px; display: grid; grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr); align-items:start; gap:9px; cursor: pointer; }
     .asset-premium-card-summary .asset-info { gap: 10px; }
     .asset-premium-card-summary .asset-logo { width: 32px; height: 32px; font-size: 12px; }
+    .asset-premium-card-summary .asset-ticker { font-size: 12px; }
     .asset-premium-card-meta { min-width:0; display:grid; gap:5px; text-align:right; }
     .asset-premium-card-meta>div{display:flex;flex-direction:column;gap:1px;min-width:0}
-    .asset-premium-card-meta span{font-size:9px;line-height:1.2}
+    .asset-premium-card-meta span{font-size:12px;line-height:1.2}
     .asset-premium-card-meta span:not(.asset-type){color:var(--muted)}
     .asset-premium-card-meta strong{font-size:12px;line-height:1.25;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
     .asset-premium-card-details { padding: 12px; border-top: 1px solid var(--border); background: var(--bg); }
@@ -31341,7 +31342,7 @@ function rendaFixaTab(){
   const knownCurrentTotal=data.assets.filter(row=>row.explicit && Number.isFinite(row.current)).reduce((sum,row)=>sum+row.current,0);
   const kpiHtml=(items,extraClass='')=>items.map(([label,value,note,tone])=>`<div class="premium-rf-kpi ds-kpi ${extraClass}" style="--rf-kpi-tone:${tone}"><div class="premium-rf-kpi-label ds-kpi__label">${esc(label)}</div><div class="premium-rf-kpi-value ds-kpi__value" style="color:${tone}">${esc(value)}</div><div class="premium-rf-kpi-note ds-kpi__context">${esc(note)}</div></div>`).join('');
   const primaryKpis=[
-    ['Valor atual informado',data.explicitCount?fmt(knownCurrentTotal):'—',count?`${data.explicitCount}/${count} posições com valor explícito`:'Sem posições','#34d399'],
+    ['Valor atual informado',data.explicitCount?fmt(knownCurrentTotal):'—',count?`${data.explicitCount}/${count} posições com valor explícito`:'Sem posições','var(--text)'],
     ['Capital aplicado',count&&appliedCount===count?fmt(data.totalApplied):'—',count?`${appliedCount}/${count} bases informadas`:'Sem posições','#a78bfa'],
     ['Resultado da posição',count&&data.missingCurrent===0&&appliedCount===count&&Number.isFinite(data.totalProfit)?assetSignedMoneyText(data.totalProfit):'—',count?(data.missingCurrent===0&&appliedCount===count&&Number.isFinite(data.totalPct)?'Valor atual menos capital aplicado informado; não representa retorno total.':'Indisponível enquanto houver valores atuais ou bases ausentes'):'Sem posições',resultTone],
     ['Próximo vencimento',nextMaturity?(nextMaturity.days===0?'Hoje':nextMaturity.days===1?'Amanhã':`${nextMaturity.days} dias`):'—',nextMaturity?(nextMaturity.ticker||'Título RF'):'Nenhum vencimento futuro','#fbbf24']
@@ -31370,7 +31371,7 @@ function rendaFixaTab(){
       <div class="premium-rf-row-main">
         <div class="premium-rf-row-title">${esc(row.ticker)}${row.name&&row.name!==row.ticker?` · ${esc(row.name)}`:''}</div>
         <div class="premium-rf-row-meta">${esc(row.category)} · ${esc(row.indexer)} · ${S.hideValues&&valueVisibilityDepth===0?'••••':esc(row.rate||'taxa não informada')}</div>
-        <div class="premium-rf-row-meta premium-rf-row-issuer">Instituição: ${esc(row.issuer||'não informada')}</div>
+        <div class="premium-rf-row-meta premium-rf-row-issuer">Emissor: ${esc(row.issuer||'não informado')}</div>
       </div>
       <div class="premium-rf-row-value">
         <div class="premium-rf-row-financial"><span class="premium-rf-row-financial-label">Atual</span>${display.currentText}</div>
@@ -31560,7 +31561,7 @@ function rendaFixaTab(){
         <div class="premium-rf-controls" aria-label="Controles de leitura de renda fixa">
           <label class="premium-rf-search-control"><span>Buscar</span><input type="search" aria-label="Buscar título de renda fixa" placeholder="Nome, emissor ou indexador" value="${esc(S.rfSearch||'')}" oninput="setRfTrustSearch(this.value)"></label>
           <details class="premium-rf-filter-details" ${typeof window==='undefined'||window.innerWidth>=768||S.rfFilterPanelOpen?'open':''} ontoggle="setRfFilterPanelOpen(this.open)">
-            <summary aria-label="Filtros de posições de renda fixa"><span>Filtros <span class="premium-rf-active-filter-count">${activeRfFilters?`${activeRfFilters} ativo${activeRfFilters===1?'':'s'}`:'Nenhum ativo'}</span></span><span aria-hidden="true">⌄</span></summary>
+            <summary aria-label="Filtros de posições de renda fixa"><span>Filtros <span class="premium-rf-active-filter-count">${activeRfFilters?`${activeRfFilters} filtro${activeRfFilters===1?'':'s'}`:'Nenhum filtro'}</span></span><span aria-hidden="true">⌄</span></summary>
             <div class="premium-rf-filter-options">
           <label><span>Status do valuation</span><select aria-label="Filtrar status do valuation" onchange="setRfTrustFilter(this.value,this.closest('details').open)">
             <option value="all" ${S.rfTrustFilter==='all'?'selected':''}>Todos</option>
@@ -31570,8 +31571,8 @@ function rendaFixaTab(){
             <option value="UNAVAILABLE" ${S.rfTrustFilter==='UNAVAILABLE'?'selected':''}>Indisponível</option>
             <option value="STALE" ${S.rfTrustFilter==='STALE'?'selected':''}>Desatualizada</option>
           </select></label>
-          <label><span>Instituição</span><select aria-label="Filtrar por instituição" onchange="setRfIssuerFilter(this.value,this.closest('details').open)">
-            <option value="" ${!S.rfIssuerFilter?'selected':''}>Todas as instituições</option>
+          <label><span>Emissor</span><select aria-label="Filtrar por emissor" onchange="setRfIssuerFilter(this.value,this.closest('details').open)">
+            <option value="" ${!S.rfIssuerFilter?'selected':''}>Todos os emissores</option>
             ${issuerOptions.map(issuer=>`<option value="${esc(issuer)}" ${S.rfIssuerFilter===issuer?'selected':''}>${esc(issuer)}</option>`).join('')}
           </select></label>
           <label><span>Produto</span><select aria-label="Filtrar por produto de renda fixa" onchange="setRfCategoryFilter(this.value,this.closest('details').open)">
@@ -31583,7 +31584,7 @@ function rendaFixaTab(){
             <option value="value-desc" ${S.rfSort==='value-desc'?'selected':''}>Maior valor</option>
             <option value="value-asc" ${S.rfSort==='value-asc'?'selected':''}>Menor valor</option>
             <option value="maturity-asc" ${S.rfSort==='maturity-asc'?'selected':''}>Vencimento próximo</option>
-            <option value="issuer-asc" ${S.rfSort==='issuer-asc'?'selected':''}>Instituição A–Z</option>
+            <option value="issuer-asc" ${S.rfSort==='issuer-asc'?'selected':''}>Emissor A–Z</option>
             <option value="type-asc" ${S.rfSort==='type-asc'?'selected':''}>Tipo do produto A–Z</option>
           </select></label>
             </div>
@@ -32299,10 +32300,11 @@ function dashboardEvolutionPanel(data){
       ?`${monthsWithData} de ${totalMonths} meses com movimento registrado (${movementPct}%). Meses sem registro não são preenchidos; a cobertura do histórico permanece desconhecida.`
       :'Histórico patrimonial ainda não disponível; a cobertura do histórico é desconhecida.';
   if(hasHistory){
+    const singleMonth=validPoints===1?observedMonths[0]:null;
     return `
-      <div class="dashboard-evolution-card${isCompact?' dashboard-evolution-compact':''}${sparse?' dashboard-evolution-sparse':''}">
+      <div class="dashboard-evolution-card${isCompact?' dashboard-evolution-compact':''}${sparse?' dashboard-evolution-sparse':''}${singleMonth?' dashboard-evolution-single':''}">
         <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Aportes líquidos registrados</div><details class="dashboard-history-disclosure"><summary>Movimento registrado</summary><div class="dashboard-history-disclosure-body">${coverageNote}</div></details></div></div>
-        ${lineChart([{name:'Aportes líquidos registrados',tooltipLabel:'Aportes registrados',values:chartMonths.map(row=>row.cumulative),color:'#34d399',fill:'rgba(52,211,153,.16)',width:2.4,points:!(isCompact&&!sparse)}],chartMonths.map(row=>row.label),'dashboard-patrimony-chart',fmt)}
+        ${singleMonth?`<div class="dashboard-single-observation"><div><span>Acumulado até ${singleMonth.label}</span><strong>${S.hideValues?'••••':fmt(singleMonth.cumulative)}</strong></div><p>Sem série temporal suficiente para mostrar evolução. Apenas o mês com movimento registrado é exibido; a cobertura do histórico permanece desconhecida.</p></div>`:lineChart([{name:'Aportes líquidos registrados',tooltipLabel:'Aportes registrados',values:chartMonths.map(row=>row.cumulative),color:'#34d399',fill:'rgba(52,211,153,.16)',width:2.4,points:!(isCompact&&!sparse)}],chartMonths.map(row=>row.label),'dashboard-patrimony-chart',fmt)}
       </div>
     `;
   }
@@ -35907,6 +35909,10 @@ function canonDividendYearSummary(rows){
   const ordered=[...groups.values()].sort((a,b)=>b.year-a.year);
   if(!ordered.length) return `<div class="premium-empty">Sem histórico anual ainda.</div>`;
   const total=ordered.reduce((s,g)=>s+g.total,0);
+  if(ordered.length===1){
+    const year=ordered[0];
+    return `<div class="canon-year-summary-single"><strong>${year.year}</strong><span>Total conhecido</span><b>${fmt(year.total)}</b><small>${year.count} lançamento(s) pago(s) registrado(s)</small></div>`;
+  }
   const donut=canonDonutInteractive(ordered.map(g=>({name:String(g.year),value:g.total})),{fmt,id:'yearsum',centerText:fmt(total),centerSub:'Total conhecido'});
   return `<div class="canon-year-summary-body">
     <div class="canon-year-summary-donut">${donut}</div>
@@ -39436,17 +39442,23 @@ document.addEventListener('focusin',event=>{const nav=event.target?.closest?.('.
 <style id="m562-dividends-premium-slim">
 .premium-dividends-3 .canon-dividends{width:100%;max-width:1480px;margin-inline:auto;gap:10px}
 .premium-dividends-3 .dividend-kpis-canon-grid{gap:9px}
+.premium-dividends-3 .div-premium-kpi-bar>.dividend-executive-kpis{flex:1;min-width:0}
 .premium-dividends-3 .canon-kpi-card{min-height:0;padding:11px 12px}
 .premium-dividends-3 .canon-div-panel{min-height:0}
 .premium-dividends-3 .canon-div-lower{gap:10px}
 .premium-dividends-3 .dividend-evolution-chart{max-height:210px}
 .premium-dividends-3 .div-premium-canon-actions{gap:7px}
 .premium-dividends-3 .dividend-history-block .div-monthly-summaryline{gap:8px}
+.premium-dividends-3 .canon-year-summary-single{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:4px 12px;padding:10px 12px;border:1px solid var(--canon-border);border-radius:10px;background:var(--canon-panel)}
+.premium-dividends-3 .canon-year-summary-single>strong{grid-row:span 2;color:var(--canon-text);font-size:18px}
+.premium-dividends-3 .canon-year-summary-single>span,.premium-dividends-3 .canon-year-summary-single>small{color:var(--canon-muted);font-size:12px}
+.premium-dividends-3 .canon-year-summary-single>b{grid-column:3;grid-row:1/3;color:var(--canon-text);font-size:16px;font-variant-numeric:tabular-nums}
 html[data-theme="light"] .premium-dividends-3 .div-monthly-summaryline{background:var(--canon-panel-2);border-color:var(--canon-border)}
 html[data-theme="light"] .premium-dividends-3 .div-year-card{background:var(--canon-panel);color:var(--canon-text);border-color:var(--canon-border)}
 html[data-theme="light"] .premium-dividends-3 .div-premium-head .btn.bp:not(:disabled):not([aria-disabled="true"]){background:#2f6fd1!important;background-image:none!important;border-color:#2f6fd1!important;color:#fff!important;box-shadow:none}
 html[data-theme="light"] .premium-dividends-3 .div-premium-head .btn.bp:hover:not(:disabled):not([aria-disabled="true"]){background:#275fae;border-color:#275fae}
 @media(max-width:1180px){.premium-dividends-3 .canon-div-lower{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:768px) and (max-width:1439px){.premium-dividends-3 .dividend-kpis-canon-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:767px){
   .premium-dividends-3 .canon-dividends{gap:8px}
   .premium-dividends-3 .div-premium-head{display:grid;grid-template-columns:minmax(0,1fr);gap:7px;align-items:start}
@@ -39471,6 +39483,28 @@ html[data-theme="light"] .premium-dividends-3 .div-premium-head .btn.bp:hover:no
   .premium-dividends-3 .canon-div-lower{grid-template-columns:minmax(0,1fr);gap:8px}
   .premium-dividends-3 .canon-div-panel{padding:10px}
   .premium-dividends-3 .dividend-evolution-chart{max-height:none}
+}
+/* M586: compact a single observed month without implying a trend. */
+.canon-dashboard .dashboard-evolution-card.dashboard-evolution-single{height:auto;min-height:0}
+.dashboard-single-observation{display:flex;align-items:center;gap:16px;padding:12px 2px 3px;color:var(--dash-ink)}
+.dashboard-single-observation>div{display:grid;gap:3px;min-width:120px}
+.dashboard-single-observation span,.dashboard-single-observation p{color:var(--dash-muted);font-size:12px;line-height:1.4}
+.dashboard-single-observation strong{font-size:21px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.dashboard-single-observation p{margin:0;max-width:38ch}
+@media(max-width:767px){.dashboard-single-observation{align-items:flex-start;flex-direction:column;gap:7px;padding-top:9px}}
+@media(min-width:1181px){
+  .premium-dividends-3 .canon-dividends{max-width:1600px}
+  .premium-dividends-3 .canon-kpi-card{min-height:0;padding:12px 14px}
+  .premium-dividends-3 .dividend-executive-kpi-label,.premium-dividends-3 .dividend-executive-kpi-sub,
+  .premium-dividends-3 .dividend-history-heading span,.premium-dividends-3 .canon-div-panel .premium-panel-sub,
+  .premium-dividends-3 .div-timeline-summary-sub,.premium-dividends-3 .div-timeline-summary-meta{font-size:12px;line-height:1.4}
+  .premium-dividends-3 .canon-div-panel{min-height:0}
+}
+@media(min-width:1280px){.premium-dividends-3 .dividend-kpis-canon-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media(max-width:767px){
+  .premium-rf-page .premium-rf-controls{gap:6px;padding:8px 10px}
+  .premium-rf-page .premium-rf-filter-details>summary{min-height:44px;padding:7px 10px}
+  .premium-rf-page .premium-rf-active-filter-count{color:var(--text);font-size:12px;font-weight:600}
 }
 </style>
 </body>

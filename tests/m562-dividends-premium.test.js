@@ -217,3 +217,60 @@ test('light-theme register-income action overrides the low-contrast inherited gr
   const style = source.slice(styleStart, styleEnd);
   assert.match(style, /div-premium-head \.btn\.bp:not\(:disabled\):not\(\[aria-disabled="true"\]\)\{[^}]*background:#2f6fd1!important;[^}]*background-image:none!important;[^}]*color:#fff!important/);
 });
+
+function renderYearSummary(rows, hideValues = false) {
+  const start = source.indexOf('function canonDividendYearSummary(rows){');
+  const end = source.indexOf('function v253DividendIntelligencePanel(', start);
+  assert.ok(start >= 0 && end > start, 'annual dividend summary renderer must exist');
+  const context = {
+    S: { hideValues },
+    Date,
+    Map,
+    Number,
+    String,
+    Math,
+    Array,
+    globalThis: { DividendIntelligence: { classifyIncomeState: row => row.state || 'PAID' } },
+    fmt: value => hideValues ? 'R$ ••••' : `R$ ${Number(value).toFixed(2)}`,
+    canonDonutInteractive: () => '<svg class="year-summary-chart"></svg>',
+  };
+  vm.createContext(context);
+  vm.runInContext(source.slice(start, end), context);
+  return context.canonDividendYearSummary(rows);
+}
+
+test('annual dividend summary stays compact when only one year is represented', () => {
+  const html = renderYearSummary([{ value: 42.5, monthKey: '2026-04' }]);
+
+  assert.match(html, /2026/);
+  assert.match(html, /R\$ 42\.50/);
+  assert.match(html, /Total conhecido/);
+  assert.doesNotMatch(html, /<svg/);
+});
+
+test('annual dividend summary keeps its comparison chart when multiple years are represented', () => {
+  const html = renderYearSummary([
+    { value: 42.5, monthKey: '2025-04' },
+    { value: 50, monthKey: '2026-04' },
+  ]);
+
+  assert.match(html, /<svg/);
+  assert.match(html, /2025/);
+  assert.match(html, /2026/);
+});
+
+test('single-year dividend summary respects Hide Values', () => {
+  const html = renderYearSummary([{ value: 42.5, monthKey: '2026-04' }], true);
+
+  assert.match(html, /R\$ ••••/);
+  assert.doesNotMatch(html, /42\.50/);
+});
+
+test('desktop dividend KPIs use a readable three-column grid across available width', () => {
+  const styleStart = source.indexOf('<style id="m562-dividends-premium-slim">');
+  const styleEnd = source.indexOf('</style>', styleStart);
+  const style = source.slice(styleStart, styleEnd);
+
+  assert.match(style, /\.div-premium-kpi-bar>\.dividend-executive-kpis\{flex:1;min-width:0\}/);
+  assert.match(style, /@media\s*\(min-width:768px\)\s+and\s+\(max-width:1439px\)\{[^}]*dividend-kpis-canon-grid\{grid-template-columns:repeat\(3,minmax\(0,1fr\)\)\}/);
+});
