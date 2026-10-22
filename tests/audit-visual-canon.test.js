@@ -54,7 +54,8 @@ test('ações da fila continuam usando resolvedor canônico e não criam escrita
 test('Auditoria identifica somente o destino atual, sem ativar Relatórios', () => {
   assert.match(source, /const currentChild=items\.some\(\(\[key\]\)=>navTabActive\(key\)\)/);
   assert.match(source, /const parentActive=currentChild/);
-  assert.match(source, /navTabActive\('auditoria'\) && items\.some/);
+  assert.doesNotMatch(source, /tab-menu"\$\{navTabActive/);
+  assert.match(source, /<details class="tab-menu" ontoggle=/);
   assert.match(source, /<summary class="tab\$\{parentActive\?' on':''\}/);
 });
 

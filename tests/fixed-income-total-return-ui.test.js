@@ -123,7 +123,7 @@ test('fixed-income cards, category summary, and table identify position-scope re
   assert.match(source,/const returnLabel = isRF \? 'Rentabilidade da posição' : 'Rentabilidade'/);
   assert.match(source,/\['Resultado da posição',count&&data\.missingCurrent===0/);
   assert.match(source,/Rentabilidade da posição \$\{display\.rentabilityText\}/);
-  assert.match(source,/Resultado da posição R\$/);
+  assert.match(source,/Resultado da posição<\/small><b>\$\{Number\.isFinite\(profit\)\?assetSignedMoneyText\(profit\):'—'\}<\/b>/);
   assert.match(source,/Rentabilidade da posição/);
 });
 

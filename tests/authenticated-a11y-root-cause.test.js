@@ -18,9 +18,10 @@ test('shared header status and quote metadata use theme-aware semantic colors', 
   assert.ok(/font-size:10px;color:var\(--muted\)/.test(appHeader), 'quote metadata must use theme-aware muted color');
 });
 
-test('asset actions use existing primary and secondary button variants', () => {
+test('asset actions use existing button variants and open the supported purchase flow', () => {
   assert.ok(/<button class="btn bgh" onclick="exportData\(\)"/.test(html), 'Export must use the existing ghost button style');
-  assert.ok(/<button class="btn bp" onclick="openAssetModal\(\)"/.test(html), 'New Asset must use the existing primary button style');
+  assert.ok(/<button class="btn bp" onclick="openQuickMovement\('compra'\)">\+ Novo Ativo<\/button>/.test(html), 'New Asset must open the existing purchase flow');
+  assert.ok(/function openQuickMovement\(kind='compra'\)/.test(html), 'purchase flow handler must exist');
 });
 
 test('patrimony month history is a named keyboard-focusable region', () => {

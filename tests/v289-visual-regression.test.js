@@ -331,9 +331,12 @@ test('V330 daily-use visual evidence captures premium screens with synthetic dat
         for (const label of ['Recebido', 'Média mensal', 'Último mês', 'Projeção anual', 'Histórico mensal', 'Evolução da renda', 'Top ativos', 'Resumo por ano']) {
           assert.ok(dividendText.includes(label.toLocaleLowerCase('pt-BR')), `Dividendos overview is missing ${label}`);
         }
-        const receivedKpi = await runtime.page.locator('.dividend-executive-kpi').first().innerText();
-        assert.match(receivedKpi, /Recebido no ano/i, 'primary Dividendos KPI must report confirmed receipts for the current year');
-        assert.match(receivedKpi, /R\$\s*19,37/, 'synthetic paid receipt in the current year must be included once');
+        const currentMonthKpi = await runtime.page.locator('.dividend-executive-kpi').nth(0).innerText();
+        assert.match(currentMonthKpi, /Recebido este mês/i, 'primary Dividendos KPI must identify the current calendar month');
+        assert.match(currentMonthKpi, /—/, 'a month without complete evidence must remain unavailable');
+        const received12MonthsKpi = await runtime.page.locator('.dividend-executive-kpi').nth(1).innerText();
+        assert.match(received12MonthsKpi, /Recebido nos últimos 12 meses/i, 'Dividendos must expose received income over the rolling 12-month period');
+        assert.match(received12MonthsKpi, /R\$\s*19,37/, 'synthetic paid receipt in the known 12-month period must be included once');
       }
       await runtime.page.screenshot({
         path: path.join(screenshotDir, `${item.route}-${item.width}x${item.height}.png`),
@@ -997,6 +1000,14 @@ test('Auditoria em tablet não amplia a página pelo submenu Relatórios', async
   try {
     await applyV289VisualFixture(runtime.page, 'baseline');
     await setThemeAndRoute(runtime.page, 'dark', 'auditoria');
+    // M567.2: submenu Relatórios agora inicia recolhido (default-collapsed);
+    // abre pelo summary para exercitar o mesmo estado aberto do contrato.
+    const reportsGroup = runtime.page.locator('.tabs-mobile details.tab-menu').last();
+    await reportsGroup.locator('summary').click();
+    await runtime.page.waitForFunction(() => {
+      const menus = document.querySelectorAll('.tabs-mobile details.tab-menu');
+      return menus.length > 0 && menus[menus.length - 1].open === true;
+    });
     const overflow = await runtime.page.evaluate(() => ({
       documentWidth: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
       viewportWidth: innerWidth,

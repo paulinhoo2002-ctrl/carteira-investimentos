@@ -40,7 +40,7 @@ for (const viewport of [{ width: 1366, height: 768 }, { width: 390, height: 844 
       await matrix.scrollIntoViewIfNeeded();
       await page.screenshot({ path: path.join(out, `matriz-${viewport.width}.png`), fullPage: true });
       await page.evaluate(() => setDividendViewMode('overview'));
-      const kpiDetails = page.locator('.div-exec-kpis .dividend-executive-kpi-info').nth(1);
+      const kpiDetails = page.locator('.div-exec-kpis .dividend-executive-kpi-info').nth(2);
       const coverageSummary = kpiDetails.locator('summary');
       const coverageDetail = kpiDetails.locator('.dividend-executive-kpi-sub');
       assert.equal(await coverageSummary.getAttribute('aria-label'), 'Mais informações sobre Média mensal');
@@ -58,7 +58,7 @@ for (const viewport of [{ width: 1366, height: 768 }, { width: 390, height: 844 
       assert.equal(await coverageDetail.isVisible(), true, 'pointer opens the coverage explanation');
       const kpis = await page.locator('.div-exec-kpis').textContent();
       assert.match(kpis, /Cobertura confirmada: 0\/12 meses/);
-      assert.match(kpis, /Estimativa · não recebida · somente meses completos/);
+      assert.match(kpis, /Projeção anual—ⓘIndisponível · exige 12 meses completos/);
       const result = await page.evaluate(() => dividendAnnualMatrixData([], { '2024-01': { state: 'COMPLETE', fullMonthConfirmed: true, source: 'QA_SYNTHETIC_FULL_MONTH' } })[0]);
       assert.equal(result.months[0].total, 0);
       assert.equal(result.months[1].total, null);

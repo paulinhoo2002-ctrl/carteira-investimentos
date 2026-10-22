@@ -17,7 +17,10 @@ test('Análise é acessível no mobile e na busca global', () => {
   assert.match(source, /PORTFOLIO_SEARCH_GROUPS=.*analysis:'Análise'/);
   assert.match(source, /kind:'analysis',id:'analise'.*route:'analise'/);
   assert.match(source, /'ia','analise','irpf','settings'/);
-  assert.doesNotMatch(source, /class="asset-inner-tab[^>]*>Análise<\/button>/);
+  // A sub-aba Análise dentro de Ativos foi reintroduzida pelo redesign premium
+  // aprovado (d3170e9/V328); o acesso canônico por rota dedicada continua.
+  assert.match(source, /setAssetsInnerTab\('analise'\)/);
+  assert.match(source, /if\(S\.tab==='analise'\)\s+return analysisDestination\(\);/);
 });
 
 test('Análise não inventa dados nem cria caminho de persistência', () => {
