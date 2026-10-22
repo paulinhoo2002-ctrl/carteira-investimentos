@@ -49,6 +49,7 @@
     "pretest:functional-e2e": "npm run build:modern",
     "test:functional-e2e": "node --test tests/v317-financial-action-e2e.test.js tests/m567-functional-coverage.e2e.test.js tests/m568-provento-edit.e2e.test.js tests/a11y-functional.test.js",
     "test:auth-access-emulator": "firebase emulators:exec --config firebase.auth-demo-emulator.json --only auth,firestore --project demo-auth-demo-phase2 \"node --test tests/auth-access-security.test.js tests/auth-access-realtime.test.js\"",
+    "test:m594-real-rules-emulator": "firebase emulators:exec --config firebase.m594-real-rules.emulator.json --only auth,firestore --project demo-m594-real-rules \"node --test tests/m594-real-rules-matrix.test.js\"",
     "test:zero-cost-guards": "node --test tests/zero-cost-guards.test.js"
   },
   "dependencies": {
