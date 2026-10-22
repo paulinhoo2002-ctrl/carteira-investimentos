@@ -127,6 +127,7 @@ function saleFlowContext(draft, overrides = {}) {
 }
 
 const SALE_FLOW_SOURCES = [
+  ['parseQuickMovementNumber', 'function quickMovementNumberField'],
   ['quickMovementContract', 'function quickMovementSellableAssets'],
   ['quickMovementSellableAssets', 'function quickMovementSaleAssetById'],
   ['quickMovementSaleAssetById', 'function quickMovementSaleOptionsHtml'],

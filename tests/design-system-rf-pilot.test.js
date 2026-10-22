@@ -13,7 +13,7 @@ test('Renda Fixa adopts visual primitives without replacing official sources', (
   assert.match(source, /function rfValues\(a\)/);
   assert.match(source, /function assetRfMaturityDate\(a\)/);
   assert.match(source, /function edA\(/);
-  assert.match(renderer, /class="premium-rf-kpi ds-kpi"/);
+  assert.match(renderer, /class="premium-rf-kpi ds-kpi(?:\s|`)/);
   assert.match(renderer, /class="premium-rf-panel ds-panel ds-panel--readonly"/);
   assert.match(renderer, /class="btn bs ds-button ds-button--secondary"/);
   assert.match(renderer, /class="btn bp ds-button ds-button--primary"/);
@@ -29,4 +29,18 @@ test('Renda Fixa keeps row semantics, explicit identity and editor handlers', ()
   assert.match(renderer, /openRfMovementEditor\(.*assetId/);
   assert.match(renderer, /rfIntelligenceSnapshot\(\)/);
   assert.doesNotMatch(renderer, /modern\/src|createRoot|ReactDOM/);
+});
+
+test('financial KPI labels and context use the documented readable type scale', () => {
+  assert.match(source, /\.ds-kpi__label\{[^}]*font-size:var\(--fs-label\)/);
+  assert.match(source, /\.ds-kpi__context\{[^}]*font-size:var\(--fs-caption\)/);
+  assert.match(source, /\.premium-rf-kpi-label\{font-size:var\(--fs-label\)/);
+  assert.match(source, /\.premium-rf-kpi-note\{[^}]*font-size:var\(--fs-caption\)/);
+  assert.match(source, /\.premium-rf-controls label\{[^}]*font-size:var\(--fs-label\)/);
+  assert.match(source, /\.premium-rf-primary-kpi \.premium-rf-kpi-note\{[^}]*font-size:var\(--fs-caption\)/);
+  assert.match(source, /\.premium-rf-row-meta\{[^}]*font-size:var\(--fs-caption\)/);
+  assert.match(source, /\.premium-rf-review-item-value\{[^}]*font-size:var\(--fs-label\)/);
+  assert.match(source, /\.premium-rf-review-action\{min-height:44px;[^}]*font-size:var\(--fs-label\)/);
+  assert.match(source, /\.analysis-summary-kicker,[\s\S]*?font-size: var\(--fs-label\) !important;/);
+  assert.match(source, /\.analysis-summary-sub,[\s\S]*?font-size: var\(--fs-caption\) !important;/);
 });

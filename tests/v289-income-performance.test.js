@@ -304,3 +304,24 @@ test('V292 D3 Renda Fixa remains readable across approved viewport sizes and the
     assert.deepEqual(page.__v289Errors.page, []);
   });
 });
+
+test('Renda Fixa labels its issuer filter and position truthfully', async () => {
+  await withPage({ width: 390, height: 844 }, async page => {
+    await page.evaluate(() => {
+      S.assets = S.assets.map(asset => asset.id === 'QA_ASSET_RF' ? {
+        ...asset, fixed_issuer: 'Emissor sintético', institution: 'Custódia sintética',
+      } : asset);
+      go('renda-fixa');
+    });
+    await page.locator('.premium-rf-filter-details summary').click();
+    const filter = page.getByRole('combobox', { name: 'Filtrar por emissor' });
+    assert.equal(await filter.locator('option', { hasText: 'Emissor sintético' }).count(), 1);
+    assert.equal(await filter.locator('option', { hasText: 'Custódia sintética' }).count(), 0);
+    await filter.selectOption({ label: 'Emissor sintético' });
+    assert.match(await page.locator('.premium-rf-position-row').first().innerText(), /Emissor: Emissor sintético/);
+    const kpiColors = await page.locator('.premium-rf-primary-kpi .premium-rf-kpi-value').evaluateAll(nodes => nodes.map(node => getComputedStyle(node).color));
+    assert.notEqual(kpiColors[0], kpiColors[2], 'valor atual não deve usar a cor de lucro');
+    assert.deepEqual(page.__v289Errors.console, []);
+    assert.deepEqual(page.__v289Errors.page, []);
+  });
+});

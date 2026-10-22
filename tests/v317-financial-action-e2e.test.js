@@ -258,6 +258,126 @@ it('venda sintética confirmada atualiza o ledger sem writes externos', async ()
   } finally { await closeApp(app); }
 });
 
+it('ciclo sintético compra, venda total e recompra preserva o ledger e fecha a posição atual', async () => {
+  const app = await openApp();
+  const ticker = 'M579LIFE';
+  try {
+    app.page.on('dialog', dialog => dialog.accept());
+    await app.page.evaluate(() => {
+      const wallet = activeWallet();
+      S.assets = []; S.aportes = []; S.proventos = []; S.rfEvents = [];
+      wallet.assets = S.assets; wallet.aportes = S.aportes; wallet.proventos = S.proventos; wallet.rfEvents = S.rfEvents;
+      S.assetsSearch = ''; S.assetsFilterClasses = []; S.assetsSectorFilter = 'all'; S.assetsClassFilter = 'all'; S.assetsPerformanceFilter = 'all';
+      render();
+    });
+    const storageBefore = await app.page.evaluate(() => localStorage.getItem('civ5'));
+    await app.page.evaluate(() => { fetchQuotes = async () => {}; scheduleAutoProventosGratis = () => {}; });
+    const portfolioBefore = await app.page.evaluate(() => cx().tC);
+
+    await fillPurchase(app.page, ticker);
+    await app.page.locator('.quick-movement-modal button.btn.bsv').click();
+    await app.page.waitForFunction(symbol => S.aportes.some(item => item.ticker === symbol && item.operation === 'compra'), ticker);
+    const bought = await app.page.evaluate(symbol => {
+      const asset = S.assets.find(item => item.ticker === symbol);
+      return asset ? { id: asset.id, quantity: Number(asset.qty), average: asset.avg_price, current: asset.current_price, total: cx().tC } : null;
+    }, ticker);
+    assert.ok(bought?.id, 'compra confirmada deve abrir a posição atual');
+    assert.equal(bought.quantity, 2);
+    assert.equal(bought.average, 10.25);
+    assert.equal(bought.total, portfolioBefore + 20.5);
+
+    await app.page.evaluate(() => openQuickMovement('venda'));
+    const firstAssetId = await app.page.evaluate(symbol => S.assets.find(item => item.ticker === symbol)?.id, ticker);
+    await app.page.selectOption('#qm-sale-asset', String(firstAssetId));
+    await app.page.locator('#qm-qty').fill('3');
+    await app.page.locator('#qm-price').fill('12');
+    await app.page.getByRole('button', { name: 'Confirmar venda' }).click();
+    assert.match(await app.page.locator('.quick-movement-modal').innerText(), /acima da posição/i);
+    assert.equal(await app.page.evaluate(symbol => S.aportes.filter(item => item.ticker === symbol).length, ticker), 1);
+    await app.page.getByRole('button', { name: 'Cancelar', exact: true }).click();
+    assert.equal(await app.page.evaluate(symbol => Number(S.assets.find(item => item.ticker === symbol)?.qty), ticker), 2);
+
+    await app.page.evaluate(() => openQuickMovement('venda'));
+    await app.page.selectOption('#qm-sale-asset', String(firstAssetId));
+    await app.page.getByRole('button', { name: 'Vender tudo' }).click();
+    await app.page.locator('#qm-price').fill('12');
+    await app.page.getByRole('button', { name: 'Confirmar venda' }).click();
+    await app.page.waitForFunction(symbol => S.aportes.some(item => item.ticker === symbol && item.operation === 'venda'), ticker);
+
+    const closed = await app.page.evaluate(symbol => ({
+      entries: S.aportes.filter(item => item.ticker === symbol).map(item => ({ operation: item.operation, quantity: Number(item.qty), price: Number(item.price) })),
+      currentPosition: S.assets.some(item => item.ticker === symbol),
+      analysisPosition: assetAnalysisRows().some(item => item.ticker === symbol),
+      dashboardPosition: dashboardSnapshot().analysis.some(item => item.ticker === symbol),
+      currentValue: cx().tC,
+      patrimonyValue: patrimonySnapshot().summary.tC,
+      sellable: quickMovementSellableAssets().some(item => item.ticker === symbol),
+    }), ticker);
+    assert.deepEqual(closed.entries, [
+      { operation: 'venda', quantity: 2, price: 12 },
+      { operation: 'compra', quantity: 2, price: 10.25 },
+    ]);
+    assert.equal(closed.currentPosition, false, 'posição zerada não deve aparecer na lista atual');
+    assert.equal(closed.analysisPosition, false);
+    assert.equal(closed.dashboardPosition, false);
+    assert.equal(closed.currentValue, portfolioBefore, 'valor corrente da carteira deve voltar ao baseline da posição');
+    assert.equal(closed.patrimonyValue, portfolioBefore);
+    assert.equal(closed.sellable, false);
+    await app.page.evaluate(() => go('ativos'));
+    await app.page.locator('#assets-premium-search').fill(ticker);
+    await app.page.waitForTimeout(200);
+    assert.equal(await app.page.locator('.assets-premium-shell tr[data-id]').filter({ hasText: ticker }).count(), 0);
+    assert.equal(await app.page.evaluate(symbol => S.aportes.filter(item => item.ticker === symbol).length, ticker), 2, 'filtros da posição atual não podem apagar o histórico');
+
+    await fillPurchase(app.page, ticker);
+    await app.page.locator('#qm-price').fill('11');
+    await app.page.locator('.quick-movement-modal button.btn.bsv').click();
+    await app.page.waitForFunction(symbol => S.assets.some(item => item.ticker === symbol), ticker);
+    const rebought = await app.page.evaluate(symbol => {
+      const asset = S.assets.find(item => item.ticker === symbol);
+      return { id: asset?.id, quantity: Number(asset?.qty), average: asset?.avg_price, applied: assetAppliedValue(asset), rows: S.aportes.filter(item => item.ticker === symbol).map(item => item.operation) };
+    }, ticker);
+    assert.notEqual(rebought.id, bought.id, 'recompra após posição encerrada inicia novo cadastro de posição');
+    assert.equal(rebought.quantity, 2);
+    assert.equal(rebought.average, 11);
+    assert.equal(rebought.applied, 22);
+    assert.deepEqual(rebought.rows, ['compra', 'venda', 'compra']);
+
+    await app.page.evaluate(() => { S.assetsSearch = ''; S.assetsFilterClasses = []; S.assetsSectorFilter = 'all'; S.assetsClassFilter = 'all'; S.assetsPerformanceFilter = 'all'; applyTheme('light'); go('ativos'); });
+    const assetId = await app.page.evaluate(symbol => S.assets.find(item => item.ticker === symbol)?.id, ticker);
+    const desktopRow = app.page.locator(`.assets-premium-shell tr[data-id="${assetId}"]`);
+    assert.equal(await desktopRow.count(), 1);
+    const desktopColumns = await desktopRow.evaluate(row => [...row.closest('table').querySelectorAll('thead th')].map(header => header.textContent.trim()));
+    for (const label of ['Quantidade', 'Preço médio', 'Preço atual / posição', 'Resultado R$', 'Rentabilidade', 'Valor total', 'Ações']) assert.ok(desktopColumns.includes(label), `tabela desktop deve preservar ${label}`);
+
+    for (const theme of ['light', 'dark']) {
+      await app.page.evaluate(value => { applyTheme(value); render(); }, theme);
+      const desktopLayout = await app.page.evaluate(() => ({ width: window.innerWidth, scrollWidth: document.documentElement.scrollWidth, theme: document.documentElement.dataset.theme }));
+      assert.equal(desktopLayout.theme, theme);
+      assert.ok(desktopLayout.scrollWidth <= desktopLayout.width, `sem overflow desktop ${theme}: ${JSON.stringify(desktopLayout)}`);
+      await app.page.setViewportSize({ width: 390, height: 844 });
+      await app.page.evaluate(() => render());
+      const mobileLayout = await app.page.evaluate(() => ({ width: window.innerWidth, scrollWidth: document.documentElement.scrollWidth, theme: document.documentElement.dataset.theme }));
+      assert.equal(mobileLayout.theme, theme);
+      assert.ok(mobileLayout.scrollWidth <= mobileLayout.width, `sem overflow mobile ${theme}: ${JSON.stringify(mobileLayout)}`);
+      const category = app.page.locator('.assets-premium-shell details.ag[data-asset-group="Ação"]');
+      if (!(await category.evaluate(element => element.open))) await category.locator('summary.accordion-header').click();
+      const card = app.page.locator(`.assets-premium-shell .asset-mobile-cards details[data-id="${assetId}"]`);
+      assert.equal(await card.count(), 1, 'posição ativa deve ser apresentada no card mobile');
+      await card.locator('summary').click();
+      assert.match(await card.innerText(), /Quantidade[\s\S]*2[\s\S]*Preço médio[\s\S]*11/);
+      await card.getByRole('button', { name: `Mais ações para ${ticker}` }).click();
+      const actionMenu = app.page.getByRole('menu', { name: `Ações para ${ticker}` });
+      const actionsText = await actionMenu.innerText();
+      for (const action of ['Comprar', 'Vender', 'Editar']) assert.ok(actionsText.includes(action), `card mobile deve oferecer ${action}`);
+      assertNoOutboundWrites(app.outboundRequests);
+      await app.page.setViewportSize({ width: 1366, height: 768 });
+    }
+    assert.equal(await app.page.evaluate(() => localStorage.getItem('civ5')), storageBefore);
+    assertNoOutboundWrites(app.outboundRequests);
+  } finally { await closeApp(app); }
+});
+
 it('aplicação e resgate parciais RF sintéticos preservam eventos e isolamento local', async () => {
   const app = await openApp();
   try {
