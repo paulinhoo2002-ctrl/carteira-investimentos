@@ -330,6 +330,37 @@ test('M567 IRPF navega etapas com clamp e exporta CSV do ano-base', async () => 
   } finally { await closeApp(app); }
 });
 
+test('M567 exportação de relatórios abre painel e dispara export sintético sem dados reais', async () => {
+  const app = await openApp();
+  try {
+    const before = await storageSnapshot(app.page);
+    await app.page.evaluate(() => { go('relatorios'); });
+    await app.page.waitForFunction(() => S.tab === 'relatorios');
+    await app.page.locator('.reports-export-cta').click();
+    await app.page.locator('#reports-export-details').waitFor({ state: 'visible', timeout: 5000 });
+    assert.equal(await app.page.evaluate(() => document.getElementById('reports-export-details').open), true, 'CTA Exportar deve abrir o painel');
+    const captured = await app.page.evaluate(() => {
+      window.__m567Exports = [];
+      const wrap = name => (...args) => { window.__m567Exports.push({ name, args: args.map(String) }); };
+      exportReportCSV = wrap('csv');
+      exportReportJSON = wrap('json');
+      const buttons = [...document.querySelectorAll('.reports-export-grid button')];
+      const csvBtn = buttons.find(b => /Exportar CSV/.test(b.textContent));
+      const jsonBtn = buttons.find(b => /Exportar JSON/.test(b.textContent));
+      if (csvBtn) csvBtn.click();
+      if (jsonBtn) jsonBtn.click();
+      return { total: buttons.length, clicked: [csvBtn, jsonBtn].filter(Boolean).length };
+    });
+    assert.ok(captured.total > 0, 'painel de exportação deve oferecer relatórios');
+    assert.ok(captured.clicked > 0, 'deve haver botão de exportação clicável');
+    const exports = await app.page.evaluate(() => window.__m567Exports);
+    assert.ok(exports.length >= 1, 'exportação sintética deve disparar sem dados reais');
+    assert.ok(exports.every(e => e.name === 'csv' || e.name === 'json'));
+    assert.deepEqual(await storageSnapshot(app.page), before, 'exportação sintética não persiste nada');
+    assertNoOutboundWrites(app.outboundRequests);
+  } finally { await closeApp(app); }
+});
+
 test('M567 período de relatórios e filtros mudam estado sem erros de página', async () => {
   const app = await openApp();
   try {
