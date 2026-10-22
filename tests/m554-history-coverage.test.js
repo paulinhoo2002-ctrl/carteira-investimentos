@@ -17,11 +17,11 @@ function extractSnippet(startMarker, endMarker) {
   return html.slice(start, end);
 }
 
-function renderEvolutionPanel(months) {
+function renderEvolutionPanel(months, hideValues = false) {
   const snippet = extractSnippet('function dashboardEvolutionPanel(data){', 'function dashboardIncomePanel(data){');
   let chartInput;
   const renderPanel = vm.runInNewContext(`${snippet}\ndashboardEvolutionPanel`, {
-    S: { dashPeriod: 12 },
+    S: { dashPeriod: 12, hideValues },
     patrimonySnapshot: () => ({ months }),
     lineChart(series, labels) { chartInput = { series, labels }; return '<svg></svg>'; },
     fmt: value => String(value)
@@ -55,8 +55,12 @@ test('M554: evolution panel with one month of movement renders compact', () => {
   assert.match(html, /Exibe somente o mês com movimento registrado \(Mar\/26\) de 3 \(33%\)/);
   assert.match(html, /Meses sem registro não aparecem/);
   assert.match(html, /[Aa] cobertura do histórico permanece desconhecida/);
-  assert.deepEqual(Array.from(chartInput.series[0].values), [150]);
-  assert.deepEqual(Array.from(chartInput.labels), ['Mar/26']);
+  assert.match(html, /Mar\/26/);
+  assert.match(html, /Acumulado até Mar\/26/);
+  assert.match(html, /150/);
+  assert.match(html, /Sem série temporal suficiente/);
+  assert.doesNotMatch(html, /<svg/);
+  assert.equal(chartInput, undefined);
 });
 
 test('M554: evolution panel with two months of movement renders compact without sparse', () => {
@@ -72,6 +76,16 @@ test('M554: evolution panel with two months of movement renders compact without 
   assert.match(html, /a cobertura do histórico permanece desconhecida/);
   assert.deepEqual(Array.from(chartInput.series[0].values), [100, 130, null]);
   assert.deepEqual(Array.from(chartInput.labels), ['Jan/26', 'Fev/26', 'Mar/26']);
+});
+
+test('M586: one observed month hides its amount without leaking it into attributes', () => {
+  const { html, chartInput } = renderEvolutionPanel([
+    { movementCount: 1, cumulative: 123456.78, label: 'Out/26' }
+  ], true);
+  assert.match(html, /Out\/26/);
+  assert.match(html, /••••/);
+  assert.doesNotMatch(html, /123456|<svg|aria-label="[^"]*123456/);
+  assert.equal(chartInput, undefined);
 });
 
 test('M554: evolution panel with sufficient history renders full', () => {

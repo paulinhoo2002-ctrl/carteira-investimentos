@@ -64,14 +64,14 @@ for (const viewport of [
         const actionHeights=await page.locator('.premium-rf-row-actions button').evaluateAll(nodes=>nodes.map(node=>node.getBoundingClientRect().height));
         assert.ok(actionHeights.length>0 && actionHeights.every(height=>height>=44),`ação com alvo abaixo de 44px: ${actionHeights.join(', ')}`);
       }
-      const issuerSelect=page.getByLabel('Filtrar por instituição');
+      const issuerSelect=page.getByLabel('Filtrar por emissor');
       const issuerOption=await issuerSelect.locator('option').evaluateAll(options=>options.find(option=>option.value)?.value||'');
-      assert.ok(issuerOption, 'nenhuma instituição sintética disponível para validar o filtro');
+      assert.ok(issuerOption, 'nenhum emissor sintético disponível para validar o filtro');
       await issuerSelect.selectOption(issuerOption);
-      if(viewport.width<768) assert.match(await page.locator('.premium-rf-active-filter-count').textContent(),/1 ativo/);
+      if(viewport.width<768) assert.match(await page.locator('.premium-rf-active-filter-count').textContent(),/1 filtro/);
       const issuerSnapshot=await page.locator('.premium-rf-position-row .premium-rf-row-issuer').allTextContents();
-      assert.ok(issuerSnapshot.length > 0, 'filtro por instituição não retornou posições');
-      assert.ok(issuerSnapshot.every(text=>text.includes(issuerOption)), 'filtro exibiu posição de outra instituição');
+      assert.ok(issuerSnapshot.length > 0, 'filtro por emissor não retornou posições');
+      assert.ok(issuerSnapshot.every(text=>text.includes(issuerOption)), 'filtro exibiu posição de outro emissor');
       const productSelect=page.getByLabel('Filtrar por produto de renda fixa');
       const category=await page.locator('.premium-rf-position-row .premium-rf-row-main .premium-rf-row-meta').first().evaluate(node=>node.textContent.trim().split(' · ')[0]);
       const categoryOption=await productSelect.locator('option').evaluateAll((options,selected)=>options.find(option=>option.value===selected)?.value||'',category);
@@ -127,11 +127,11 @@ test('mobile fixed income filters collapse, stay usable, and unknown values stay
     const filters = page.locator('.premium-rf-filter-details');
     assert.equal(await filters.evaluate(node => node.open), false, 'filtros devem iniciar recolhidos no celular');
     assert.equal(await page.getByLabel('Buscar título de renda fixa').isVisible(), true);
-    assert.equal(await filters.getByLabel('Filtrar por instituição').isVisible(), false);
+    assert.equal(await filters.getByLabel('Filtrar por emissor').isVisible(), false);
     assert.equal(await page.locator('.premium-rf-position-row').count() > 0, true, 'posições devem continuar visíveis');
     await filters.locator('summary').click();
-    assert.equal(await filters.getByLabel('Filtrar por instituição').isVisible(), true);
-    await filters.getByLabel('Filtrar por instituição').selectOption({ index: 1 });
+    assert.equal(await filters.getByLabel('Filtrar por emissor').isVisible(), true);
+    await filters.getByLabel('Filtrar por emissor').selectOption({ index: 1 });
     assert.equal(await filters.evaluate(node => node.open), true, 'painel deve permanecer aberto após aplicar filtro');
 
     const coverage = await page.evaluate(() => {
@@ -148,7 +148,7 @@ test('mobile fixed income filters collapse, stay usable, and unknown values stay
       }));
     });
     const current = coverage.find(item => item.label === 'Valor atual informado');
-    const result = coverage.find(item => item.label === 'Resultado');
+    const result = coverage.find(item => item.label === 'Resultado da posição');
     assert.ok(current?.note.includes('explícit'), 'subtotal deve identificar cobertura explícita');
     assert.equal(result?.value, '—', 'resultado agregado não deve converter valuation ausente em zero');
     assert.ok(result?.note.toLocaleLowerCase('pt-BR').includes('indisponível'));
@@ -191,7 +191,7 @@ test('fixed income result stays unknown when the applied base is missing', async
     });
     assert.equal(kpis.kpis.find(item => item.label === 'Valor atual informado')?.value, kpis.explicitTotal);
     assert.equal(kpis.kpis.find(item => item.label === 'Capital aplicado')?.value, '—');
-    assert.equal(kpis.kpis.find(item => item.label === 'Resultado')?.value, '—', 'base aplicada ausente não pode virar zero para calcular resultado');
+    assert.equal(kpis.kpis.find(item => item.label === 'Resultado da posição')?.value, '—', 'base aplicada ausente não pode virar zero para calcular resultado');
     assert.deepEqual(errors, []);
   } finally {
     await context.close();
