@@ -1,30 +1,36 @@
 'use strict';
 
 /**
- * M594 — REAL-RULES security matrix (canonical firestore.rules, emulator-only).
+ * M594/M595 — REAL-RULES security matrix (canonical firestore.rules, emulator-only).
  * Runs inside `firebase emulators:exec` via `npm run test:m594-real-rules-emulator`
  * (firebase.m594-real-rules.emulator.json loads ./firestore.rules — the CANONICAL
  * production rules file — into the emulator; project demo-m594-real-rules; ZERO
  * cost, localhost-only, synthetic identities, no production contact).
  *
- * Matrix (canonical semantics: owner-only by uid; admin = paulinhoo2002@gmail.com
- * verified for /meta/access):
- *   R01 unauthenticated read/write portfolio      => DENIED
- *   R02 verified owner reads own portfolio        => ALLOWED
- *   R03 verified owner writes own portfolio       => ALLOWED
- *   R04 cross-user read/write both directions     => DENIED
- *   R05 unverified owner reads own portfolio      => ALLOWED at rules level
- *       (CANONICAL RULES DO NOT require email_verified on owner paths —
- *        documented M597 revision target; the app layer enforces the
- *        verified gate client-side, rules rely on uid isolation only)
- *   R06 unverified owner writes own portfolio     => ALLOWED at rules level (same finding)
- *   R07 verified non-owner email reads own sandbox=> ALLOWED (per-uid isolation holds)
- *   R08 admin (owner email, verified) reads meta/access  => ALLOWED
- *   R09 admin (owner email, verified) writes meta/access => ALLOWED
- *   R10 non-admin verified user meta/access       => DENIED
- *   R11 UNVERIFIED owner-email account meta/access=> DENIED (rules DO enforce
- *        email_verified on the admin surface — the "unverified denied" case)
- *   R12 anonymous (no token) meta/access          => DENIED
+ * M595 contract (owner decision, implemented in isOwnerAccount()):
+ * the ONLY account that may touch financial/admin documents is the OWNER —
+ * verified email paulinhoo2002@gmail.com — AND only on paths matching its own uid.
+ *
+ * Matrix:
+ *   R01 unauthenticated read/write portfolio        => DENIED
+ *   R05 unverified OWNER-EMAIL on own uid           => DENIED (verified gate)
+ *   R11 unverified OWNER-EMAIL on meta/access        => DENIED
+ *   R02 verified OWNER reads own portfolio          => ALLOWED
+ *   R03 verified OWNER writes own portfolio         => ALLOWED
+ *   R03b verified OWNER writes own /users doc       => ALLOWED
+ *   R08 verified OWNER (admin) reads meta/access    => ALLOWED
+ *   R09 verified OWNER (admin) writes meta/access   => ALLOWED
+ *   R13 verified OWNER on a FOREIGN uid path        => DENIED (uid scoping)
+ *   R04 cross-user (any two non-owners)             => DENIED both directions
+ *   R06 unverified NON-OWNER on own uid             => DENIED (no sandbox)
+ *   R07 verified NON-OWNER on own uid               => DENIED (owner-only; no sandbox)
+ *   R10 non-owner verified user on meta/access      => DENIED
+ *   R12 anonymous (no token) meta/access            => DENIED
+ *   R14 unauthorized collection (default-deny)      => DENIED even for the owner
+ *
+ * Test order matters: the owner lifecycle test OWNS the OWNER_EMAIL account
+ * (creates it UNVERIFIED, denies, verifies, then allows). Every other test
+ * uses synthetic non-owner identities.
  */
 
 const assert = require('node:assert/strict');
@@ -34,7 +40,8 @@ const PROJECT = 'demo-m594-real-rules';
 const AUTH = 'http://127.0.0.1:9101';
 const FS = `http://127.0.0.1:8086/v1/projects/${PROJECT}/databases/(default)/documents`;
 const KEY = 'demo-api-key';
-const OWNER_EMAIL = 'paulinhoo2002@gmail.com'; // hardcoded in canonical firestore.rules (isAdmin)
+const OWNER_EMAIL = 'paulinhoo2002@gmail.com'; // hardcoded in canonical firestore.rules (isOwnerAccount)
+const OWNER_PASS = 'M594-Pass-123';
 
 async function request(url, options = {}) {
   return fetch(url, { ...options, signal: AbortSignal.timeout(12000) });
@@ -59,15 +66,7 @@ async function signUpOrIn(email, password) {
   if (res.ok) return res.json();
   const body = await res.json().catch(() => ({}));
   const msg = body && body.error && body.error.message ? body.error.message : '';
-  if (msg.includes('EMAIL_EXISTS')) {
-    const signin = await request(`${AUTH}/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${KEY}`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ email, password, returnSecureToken: true }),
-    });
-    assert.equal(signin.ok, true, `signIn failed for ${email}: HTTP ${signin.status}`);
-    return signin.json();
-  }
+  if (msg.includes('EMAIL_EXISTS')) return signIn(email, password);
   assert.fail(`signUp failed for ${email}: HTTP ${res.status} ${msg}`);
 }
 
@@ -128,18 +127,62 @@ test('R01: unauthenticated read and write of portfolio are denied', async () => 
   denied(write.status, 'R01 unauthenticated write');
 });
 
-test('R02+R03: verified owner reads and writes own portfolio (allowed)', async () => {
-  const owner = await freshVerifiedAccount('m594.owner@example.invalid');
+test('OWNER LIFECYCLE: unverified owner-email DENIED everywhere, verified owner ALLOWED (R05,R11 → R02,R03,R03b,R08,R09)', async () => {
+  // Phase 1 — fresh UNVERIFIED account bearing the owner email: denied on the
+  // admin registry AND on its own financial documents (M595 verified gate).
+  const unverifiedOwner = await signUpOrIn(OWNER_EMAIL, OWNER_PASS);
+  const unvPortfolioRead = await fsGet(unverifiedOwner.idToken, `portfolios/${unverifiedOwner.localId}`);
+  denied(unvPortfolioRead.status, 'R05 unverified owner-email read own portfolio');
+  const unvPortfolioWrite = await fsWrite(unverifiedOwner.idToken, `portfolios/${unverifiedOwner.localId}`, { probe: { stringValue: 'nope' } });
+  denied(unvPortfolioWrite.status, 'R05 unverified owner-email write own portfolio');
+  const unvMetaRead = await fsGet(unverifiedOwner.idToken, 'meta/access');
+  denied(unvMetaRead.status, 'R11 unverified owner-email read meta/access');
+  const unvMetaWrite = await fsWrite(unverifiedOwner.idToken, 'meta/access', { policy: { stringValue: 'hijack' } });
+  denied(unvMetaWrite.status, 'R11 unverified owner-email write meta/access');
+
+  // Phase 2 — verify via the emulator oob flow, re-sign-in (fresh token mints
+  // email_verified=true): the positive authorization of the verified owner.
+  await markEmailVerified(unverifiedOwner.idToken);
+  const owner = await signIn(OWNER_EMAIL, OWNER_PASS);
   const write = await fsWrite(owner.idToken, `portfolios/${owner.localId}`, { probe: { stringValue: 'owner-write-ok' } });
-  allowed(write.status, 'R03 verified owner write own');
+  allowed(write.status, 'R03 verified owner write own portfolio');
   const read = await fsGet(owner.idToken, `portfolios/${owner.localId}`);
-  allowed(read.status, 'R02 verified owner read own');
+  allowed(read.status, 'R02 verified owner read own portfolio');
+  const usersWrite = await fsWrite(owner.idToken, `users/${owner.localId}`, { probe: { stringValue: 'users-write-ok' } });
+  allowed(usersWrite.status, 'R03b verified owner write own /users doc');
+  const metaWrite = await fsWrite(owner.idToken, 'meta/access', { policy: { stringValue: 'm594-admin-seed' } });
+  allowed(metaWrite.status, 'R09 admin write meta/access');
+  const metaRead = await fsGet(owner.idToken, 'meta/access');
+  allowed(metaRead.status, 'R08 admin read meta/access');
 });
 
-test('R04: cross-user read and write are denied in both directions', async () => {
-  const a = await freshVerifiedAccount('m594.cross.a@example.invalid');
-  const b = await freshVerifiedAccount('m594.cross.b@example.invalid');
-  await fsWrite(a.idToken, `portfolios/${a.localId}`, { probe: { stringValue: 'a-doc' } });
+test('R13: verified owner on a FOREIGN uid path is denied (uid scoping still required)', async () => {
+  const owner = await signIn(OWNER_EMAIL, OWNER_PASS); // verified by the lifecycle test
+  const foreignRead = await fsGet(owner.idToken, 'portfolios/someone-else-uid');
+  denied(foreignRead.status, 'R13 owner reads foreign uid');
+  const foreignWrite = await fsWrite(owner.idToken, 'portfolios/someone-else-uid', { probe: { stringValue: 'hijack' } });
+  denied(foreignWrite.status, 'R13 owner writes foreign uid');
+});
+
+test('R06: unverified NON-OWNER account is denied even on its own uid', async () => {
+  const unverified = await signUpOrIn('m595.unverified.other@example.invalid', 'M594-Pass-123'); // NO oob verification
+  const write = await fsWrite(unverified.idToken, `portfolios/${unverified.localId}`, { probe: { stringValue: 'x' } });
+  denied(write.status, 'R06 unverified non-owner write own uid');
+  const read = await fsGet(unverified.idToken, `portfolios/${unverified.localId}`);
+  denied(read.status, 'R06 unverified non-owner read own uid');
+});
+
+test('R07: verified NON-OWNER account is denied even on its own uid (owner-only model)', async () => {
+  const other = await freshVerifiedAccount('m595.verified.other@example.invalid');
+  const write = await fsWrite(other.idToken, `portfolios/${other.localId}`, { probe: { stringValue: 'sandbox' } });
+  denied(write.status, 'R07 verified non-owner write own uid (no sandbox)');
+  const read = await fsGet(other.idToken, `portfolios/${other.localId}`);
+  denied(read.status, 'R07 verified non-owner read own uid (no sandbox)');
+});
+
+test('R04: cross-user access between non-owners is denied in both directions', async () => {
+  const a = await freshVerifiedAccount('m595.cross.a@example.invalid');
+  const b = await freshVerifiedAccount('m595.cross.b@example.invalid');
   const aReadsB = await fsGet(a.idToken, `portfolios/${b.localId}`);
   denied(aReadsB.status, 'R04 A reads B');
   const bWritesA = await fsWrite(b.idToken, `portfolios/${a.localId}`, { probe: { stringValue: 'hijack' } });
@@ -148,47 +191,8 @@ test('R04: cross-user read and write are denied in both directions', async () =>
   denied(bReadsA.status, 'R04 B reads A');
 });
 
-test('R05+R06: unverified owner reads and writes own portfolio (rules allow — documented M597 target)', async () => {
-  const unverified = await signUpOrIn('m594.unverified@example.invalid', 'M594-Pass-123'); // NO oob verification
-  // Write first (creates the doc), then read — a GET on a nonexistent doc returns
-  // 404 even when the rules ALLOW the read, which would mask the real verdict.
-  const write = await fsWrite(unverified.idToken, `portfolios/${unverified.localId}`, { probe: { stringValue: 'unverified-write' } });
-  allowed(write.status, 'R06 unverified owner write own (rules-level reality)');
-  const read = await fsGet(unverified.idToken, `portfolios/${unverified.localId}`);
-  // Canonical firestore.rules: isOwner() checks ONLY uid — email_verified is NOT
-  // required on owner paths. This documents the CURRENT contract; the verified gate
-  // is enforced by the app layer (auth/boot fail-closed for unverified users).
-  // M597 revision candidate: require email_verified in isOwner().
-  allowed(read.status, 'R05 unverified owner read own (rules-level reality)');
-});
-
-test('R07: verified non-owner email gets its own uid sandbox (isolation holds)', async () => {
-  const other = await freshVerifiedAccount('m594.other.user@example.invalid');
-  const write = await fsWrite(other.idToken, `portfolios/${other.localId}`, { probe: { stringValue: 'sandbox' } });
-  allowed(write.status, 'R07 non-owner writes own sandbox');
-  const cross = await fsGet(other.idToken, `portfolios/someone-else-uid`);
-  denied(cross.status, 'R07 non-owner cannot read foreign uid');
-});
-
-test('R11→R08/R09 admin surface lifecycle: unverified owner-email DENIED, then verified ALLOWED', async () => {
-  // R11 first: fresh UNVERIFIED account bearing the admin email must be denied —
-  // canonical rules enforce email_verified on the admin surface ("unverified denied").
-  const unverifiedAdmin = await signUpOrIn(OWNER_EMAIL, 'M594-Pass-123');
-  const deniedRead = await fsGet(unverifiedAdmin.idToken, 'meta/access');
-  denied(deniedRead.status, 'R11 unverified owner-email read meta/access');
-  const deniedWrite = await fsWrite(unverifiedAdmin.idToken, 'meta/access', { policy: { stringValue: 'hijack' } });
-  denied(deniedWrite.status, 'R11 unverified owner-email write meta/access');
-  // Then verify and re-sign-in: admin operations become allowed (R08/R09).
-  await markEmailVerified(unverifiedAdmin.idToken);
-  const admin = await signIn(OWNER_EMAIL, 'M594-Pass-123');
-  const write = await fsWrite(admin.idToken, 'meta/access', { policy: { stringValue: 'm594-admin-seed' } });
-  allowed(write.status, 'R09 admin write meta/access');
-  const read = await fsGet(admin.idToken, 'meta/access');
-  allowed(read.status, 'R08 admin read meta/access');
-});
-
-test('R10: non-admin verified user cannot read or write meta/access', async () => {
-  const other = await freshVerifiedAccount('m594.notadmin@example.invalid');
+test('R10: non-owner verified user cannot read or write meta/access', async () => {
+  const other = await freshVerifiedAccount('m595.notadmin@example.invalid');
   const read = await fsGet(other.idToken, 'meta/access');
   denied(read.status, 'R10 non-admin read meta/access');
   const write = await fsWrite(other.idToken, 'meta/access', { policy: { stringValue: 'hijack' } });
@@ -198,4 +202,18 @@ test('R10: non-admin verified user cannot read or write meta/access', async () =
 test('R12: anonymous (no token) meta/access is denied', async () => {
   const read = await request(`${FS}/meta/access`);
   denied(read.status, 'R12 anonymous meta/access');
+});
+
+test('R14: unauthorized collection is denied for everyone (default-deny)', async () => {
+  // No match block exists for /unauthorized/* — Firestore default-denies it,
+  // including for the verified owner.
+  const owner = await signIn(OWNER_EMAIL, OWNER_PASS);
+  const ownerWrite = await fsWrite(owner.idToken, 'unauthorized/doc', { probe: { stringValue: 'x' } });
+  denied(ownerWrite.status, 'R14 owner write unauthorized collection');
+  const anonWrite = await request(`${FS}/unauthorized/doc`, {
+    method: 'PATCH',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ fields: { m: { stringValue: 'x' } } }),
+  });
+  denied(anonWrite.status, 'R14 anonymous write unauthorized collection');
 });
