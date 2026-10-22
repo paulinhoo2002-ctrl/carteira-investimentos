@@ -68,7 +68,7 @@ for (const viewport of [
       const issuerOption=await issuerSelect.locator('option').evaluateAll(options=>options.find(option=>option.value)?.value||'');
       assert.ok(issuerOption, 'nenhum emissor sintético disponível para validar o filtro');
       await issuerSelect.selectOption(issuerOption);
-      if(viewport.width<768) assert.match(await page.locator('.premium-rf-active-filter-count').textContent(),/1 ativo/);
+      if(viewport.width<768) assert.match(await page.locator('.premium-rf-active-filter-count').textContent(),/1 filtro/);
       const issuerSnapshot=await page.locator('.premium-rf-position-row .premium-rf-row-issuer').allTextContents();
       assert.ok(issuerSnapshot.length > 0, 'filtro por emissor não retornou posições');
       assert.ok(issuerSnapshot.every(text=>text.includes(issuerOption)), 'filtro exibiu posição de outro emissor');

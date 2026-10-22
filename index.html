@@ -31561,7 +31561,7 @@ function rendaFixaTab(){
         <div class="premium-rf-controls" aria-label="Controles de leitura de renda fixa">
           <label class="premium-rf-search-control"><span>Buscar</span><input type="search" aria-label="Buscar título de renda fixa" placeholder="Nome, emissor ou indexador" value="${esc(S.rfSearch||'')}" oninput="setRfTrustSearch(this.value)"></label>
           <details class="premium-rf-filter-details" ${typeof window==='undefined'||window.innerWidth>=768||S.rfFilterPanelOpen?'open':''} ontoggle="setRfFilterPanelOpen(this.open)">
-            <summary aria-label="Filtros de posições de renda fixa"><span>Filtros <span class="premium-rf-active-filter-count">${activeRfFilters?`${activeRfFilters} ativo${activeRfFilters===1?'':'s'}`:'Nenhum ativo'}</span></span><span aria-hidden="true">⌄</span></summary>
+            <summary aria-label="Filtros de posições de renda fixa"><span>Filtros <span class="premium-rf-active-filter-count">${activeRfFilters?`${activeRfFilters} filtro${activeRfFilters===1?'':'s'}`:'Nenhum filtro'}</span></span><span aria-hidden="true">⌄</span></summary>
             <div class="premium-rf-filter-options">
           <label><span>Status do valuation</span><select aria-label="Filtrar status do valuation" onchange="setRfTrustFilter(this.value,this.closest('details').open)">
             <option value="all" ${S.rfTrustFilter==='all'?'selected':''}>Todos</option>
@@ -32300,10 +32300,11 @@ function dashboardEvolutionPanel(data){
       ?`${monthsWithData} de ${totalMonths} meses com movimento registrado (${movementPct}%). Meses sem registro não são preenchidos; a cobertura do histórico permanece desconhecida.`
       :'Histórico patrimonial ainda não disponível; a cobertura do histórico é desconhecida.';
   if(hasHistory){
+    const singleMonth=validPoints===1?observedMonths[0]:null;
     return `
-      <div class="dashboard-evolution-card${isCompact?' dashboard-evolution-compact':''}${sparse?' dashboard-evolution-sparse':''}">
+      <div class="dashboard-evolution-card${isCompact?' dashboard-evolution-compact':''}${sparse?' dashboard-evolution-sparse':''}${singleMonth?' dashboard-evolution-single':''}">
         <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Aportes líquidos registrados</div><details class="dashboard-history-disclosure"><summary>Movimento registrado</summary><div class="dashboard-history-disclosure-body">${coverageNote}</div></details></div></div>
-        ${lineChart([{name:'Aportes líquidos registrados',tooltipLabel:'Aportes registrados',values:chartMonths.map(row=>row.cumulative),color:'#34d399',fill:'rgba(52,211,153,.16)',width:2.4,points:!(isCompact&&!sparse)}],chartMonths.map(row=>row.label),'dashboard-patrimony-chart',fmt)}
+        ${singleMonth?`<div class="dashboard-single-observation"><div><span>Acumulado até ${singleMonth.label}</span><strong>${S.hideValues?'••••':fmt(singleMonth.cumulative)}</strong></div><p>Sem série temporal suficiente para mostrar evolução. Apenas o mês com movimento registrado é exibido; a cobertura do histórico permanece desconhecida.</p></div>`:lineChart([{name:'Aportes líquidos registrados',tooltipLabel:'Aportes registrados',values:chartMonths.map(row=>row.cumulative),color:'#34d399',fill:'rgba(52,211,153,.16)',width:2.4,points:!(isCompact&&!sparse)}],chartMonths.map(row=>row.label),'dashboard-patrimony-chart',fmt)}
       </div>
     `;
   }
@@ -39482,6 +39483,28 @@ html[data-theme="light"] .premium-dividends-3 .div-premium-head .btn.bp:hover:no
   .premium-dividends-3 .canon-div-lower{grid-template-columns:minmax(0,1fr);gap:8px}
   .premium-dividends-3 .canon-div-panel{padding:10px}
   .premium-dividends-3 .dividend-evolution-chart{max-height:none}
+}
+/* M586: compact a single observed month without implying a trend. */
+.canon-dashboard .dashboard-evolution-card.dashboard-evolution-single{height:auto;min-height:0}
+.dashboard-single-observation{display:flex;align-items:center;gap:16px;padding:12px 2px 3px;color:var(--dash-ink)}
+.dashboard-single-observation>div{display:grid;gap:3px;min-width:120px}
+.dashboard-single-observation span,.dashboard-single-observation p{color:var(--dash-muted);font-size:12px;line-height:1.4}
+.dashboard-single-observation strong{font-size:21px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.dashboard-single-observation p{margin:0;max-width:38ch}
+@media(max-width:767px){.dashboard-single-observation{align-items:flex-start;flex-direction:column;gap:7px;padding-top:9px}}
+@media(min-width:1181px){
+  .premium-dividends-3 .canon-dividends{max-width:1600px}
+  .premium-dividends-3 .canon-kpi-card{min-height:0;padding:12px 14px}
+  .premium-dividends-3 .dividend-executive-kpi-label,.premium-dividends-3 .dividend-executive-kpi-sub,
+  .premium-dividends-3 .dividend-history-heading span,.premium-dividends-3 .canon-div-panel .premium-panel-sub,
+  .premium-dividends-3 .div-timeline-summary-sub,.premium-dividends-3 .div-timeline-summary-meta{font-size:12px;line-height:1.4}
+  .premium-dividends-3 .canon-div-panel{min-height:0}
+}
+@media(min-width:1280px){.premium-dividends-3 .dividend-kpis-canon-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media(max-width:767px){
+  .premium-rf-page .premium-rf-controls{gap:6px;padding:8px 10px}
+  .premium-rf-page .premium-rf-filter-details>summary{min-height:44px;padding:7px 10px}
+  .premium-rf-page .premium-rf-active-filter-count{color:var(--text);font-size:12px;font-weight:600}
 }
 </style>
 </body>
