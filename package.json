@@ -47,7 +47,7 @@
     "test:auth-access": "node --test tests/auth-account-mode.test.js tests/auth-boot.test.js tests/auth-access-wiring.test.js",
     "test:auth-access-browser": "node --test tests/auth-access-browser.test.js",
     "pretest:functional-e2e": "npm run build:modern",
-    "test:functional-e2e": "node --test tests/v317-financial-action-e2e.test.js tests/m567-functional-coverage.e2e.test.js tests/a11y-functional.test.js",
+    "test:functional-e2e": "node --test tests/v317-financial-action-e2e.test.js tests/m567-functional-coverage.e2e.test.js tests/m568-provento-edit.e2e.test.js tests/a11y-functional.test.js",
     "test:auth-access-emulator": "firebase emulators:exec --config firebase.auth-demo-emulator.json --only auth,firestore --project demo-auth-demo-phase2 \"node --test tests/auth-access-security.test.js tests/auth-access-realtime.test.js\"",
     "test:zero-cost-guards": "node --test tests/zero-cost-guards.test.js"
   },

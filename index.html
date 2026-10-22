@@ -24719,8 +24719,8 @@ function dataQualityTab(){
         <span class="data-quality-filter-count">${activeFilterCount ? `${activeFilterCount} filtro${activeFilterCount===1?'':'s'} ativo${activeFilterCount===1?'':'s'}` : 'Filtros principais'}</span>
         ${activeFilterCount ? '<button class="data-quality-chip" onclick="clearDataQualityFilters()">Limpar</button>' : ''}
       </div>
-      <details class="data-quality-more-filters">
-        <summary>Mais filtros</summary>
+      <details class="data-quality-more-filters" style="width:fit-content">
+        <summary style="min-height:44px;display:flex;align-items:center;cursor:pointer">Mais filtros</summary>
         <div class="data-quality-more-filters-body">
           <div class="data-quality-filter-group"><span class="data-quality-filter-label">Categoria</span>${categoryChips}</div>
           <div class="data-quality-filter-group"><span class="data-quality-filter-label">Tipo de registro</span>${typeChips}</div>
@@ -36797,7 +36797,7 @@ function v248HistoricalPerformancePanel(){
     </div>
     ${readiness.dataReady?'':`<div class="mu" role="status" style="margin-top:10px">Métricas de performance indisponíveis: ${esc(v272ReadinessReasonText(readiness.reason))} Ausência de evidência não é zero.</div>`}
     <div class="mu" style="margin-top:12px">Benchmarks históricos só aparecem quando houver série alinhada; preço atual, benchmark estático e lacuna de dados não são usados como histórico.</div>
-    <details style="margin-top:14px"><summary style="cursor:pointer;font-weight:700">Posições em 31/12</summary><div class="table-wrap" style="margin-top:10px"><table><thead><tr><th>Ano</th><th>Ativo</th><th>Valor</th><th>Cobertura</th></tr></thead><tbody>${yearEndRows||'<tr><td colspan="4">Sem snapshot de 31/12 com cobertura suficiente.</td></tr>'}</tbody></table></div></details>
+    <details style="margin-top:14px"><summary style="cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center">Posições em 31/12</summary><div class="table-wrap" style="margin-top:10px"><table><thead><tr><th>Ano</th><th>Ativo</th><th>Valor</th><th>Cobertura</th></tr></thead><tbody>${yearEndRows||'<tr><td colspan="4">Sem snapshot de 31/12 com cobertura suficiente.</td></tr>'}</tbody></table></div></details>
   </section>`;
 }
 
@@ -36853,7 +36853,7 @@ function v252PerformanceIntelligence(){
       <div><span>Resultado realizado</span><strong>${model.realized.status==='PASS'?assetSignedMoneyText(model.realized.value):'Indisponível · sem resultado explícito'}</strong></div>
       <div><span>Modo</span><strong>Read-only · sem persistência nova</strong></div>
     </div>
-    <details style="margin-top:14px"><summary style="cursor:pointer;font-weight:700">Contribuição por classe</summary><div class="table-wrap" style="margin-top:10px"><table><thead><tr><th>Classe</th><th>Atual</th><th>Resultado</th><th>Cobertura</th></tr></thead><tbody>${classRows||'<tr><td colspan="4">Sem dados suficientes por classe.</td></tr>'}</tbody></table></div></details>
+    <details style="margin-top:14px"><summary style="cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center">Contribuição por classe</summary><div class="table-wrap" style="margin-top:10px"><table><thead><tr><th>Classe</th><th>Atual</th><th>Resultado</th><th>Cobertura</th></tr></thead><tbody>${classRows||'<tr><td colspan="4">Sem dados suficientes por classe.</td></tr>'}</tbody></table></div></details>
   </section>`;
 }
 
