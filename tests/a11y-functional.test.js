@@ -8,12 +8,21 @@ const { startLocalHttpServer } = require('./local-http-server');
 // Load index.html
 const indexHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
+// M568: em npm test no CI, esta suite roda ANTES de "Resolve Chromium" — resolver
+// multi-plataforma (env primeiro, Windows local, Linux CI) em vez de path fixo.
+const CHROME_CANDIDATES = [
+  'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+  '/usr/bin/chromium', '/usr/bin/chromium-browser',
+  '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable',
+];
+const CHROME = process.env.CHROME_PATH || CHROME_CANDIDATES.find(p => fs.existsSync(p)) || CHROME_CANDIDATES[0];
+
 test('A11Y: synthetic browser runtime initializes before accessibility checks', async () => {
   const harness = await startLocalHttpServer(path.join(__dirname, '..'));
   let browser;
   try {
     browser = await chromium.launch({
-      executablePath: process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+      executablePath: CHROME,
       headless: true,
     });
     const page = await browser.newPage();

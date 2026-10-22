@@ -7,17 +7,34 @@
 // (aportes/ativos/dividendos). Isolamento: carteira sintética M567, zero
 // escritas externas (rotas não-locais bloqueadas), localStorage preservado.
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const { chromium } = require('playwright-core');
 const { startLocalHttpServer } = require('./local-http-server');
 
 const ROOT = path.join(__dirname, '..');
-const CHROME = process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+// M568: browsers em npm test no CI rodam ANTES da etapa "Resolve Chromium" do workflow —
+// resolver por env, depois paths conhecidos (Windows local, Linux CI); sem browser, skip
+// graceful em vez de travar o runner com servidores HTTP vazados.
+const CHROME_CANDIDATES = [
+  'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+  '/usr/bin/chromium', '/usr/bin/chromium-browser',
+  '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable',
+];
+const CHROME = process.env.CHROME_PATH || CHROME_CANDIDATES.find(p => fs.existsSync(p)) || CHROME_CANDIDATES[0];
+const BROWSER_AVAILABLE = Boolean(process.env.CHROME_PATH) || fs.existsSync(CHROME);
+const it = BROWSER_AVAILABLE ? test : test.skip;
 
 async function openApp() {
   const harness = await startLocalHttpServer(ROOT);
-  const browser = await chromium.launch({ executablePath: CHROME, headless: true });
+  let browser;
+  try {
+    browser = await chromium.launch({ executablePath: CHROME, headless: true });
+  } catch (error) {
+    await new Promise(resolve => harness.server.close(resolve));
+    throw error;
+  }
   const context = await browser.newContext();
   const page = await context.newPage();
   const outboundRequests = [];
@@ -70,7 +87,7 @@ function seedAsset() {
   return { id: 'M567_ASSET1', ticker: 'M567QA', name: 'M567 QA Ação', type: 'Ação', sector: 'Bancos', avg_price: 10, current_price: 11, dy: 0, price_target: 0, qty: 5 };
 }
 
-test('M567 editar ativo salva preço médio, DY e alvo com uma única persistência', async () => {
+it('M567 editar ativo salva preço médio, DY e alvo com uma única persistência', async () => {
   const app = await openApp();
   try {
     await app.page.evaluate(asset => { S.assets.push(asset); go('ativos'); }, seedAsset());
@@ -94,7 +111,7 @@ test('M567 editar ativo salva preço médio, DY e alvo com uma única persistên
   } finally { await closeApp(app); }
 });
 
-test('M567 cancelar edição de ativo preserva valores originais', async () => {
+it('M567 cancelar edição de ativo preserva valores originais', async () => {
   const app = await openApp();
   try {
     await app.page.evaluate(asset => { S.assets.push(asset); go('ativos'); }, seedAsset());
@@ -112,7 +129,7 @@ test('M567 cancelar edição de ativo preserva valores originais', async () => {
   } finally { await closeApp(app); }
 });
 
-test('M567 excluir operação exige confirmação e remove apenas o alvo', async () => {
+it('M567 excluir operação exige confirmação e remove apenas o alvo', async () => {
   const app = await openApp();
   try {
     await app.page.evaluate(() => {
@@ -134,7 +151,7 @@ test('M567 excluir operação exige confirmação e remove apenas o alvo', async
   } finally { await closeApp(app); }
 });
 
-test('M567 excluir provento exige confirmação e persiste apenas quando confirmado', async () => {
+it('M567 excluir provento exige confirmação e persiste apenas quando confirmado', async () => {
   const app = await openApp();
   try {
     await app.page.evaluate(() => {
@@ -154,7 +171,7 @@ test('M567 excluir provento exige confirmação e persiste apenas quando confirm
   } finally { await closeApp(app); }
 });
 
-test('M567 excluir lançamento (extrato) exige confirmação para aporte e provento', async () => {
+it('M567 excluir lançamento (extrato) exige confirmação para aporte e provento', async () => {
   const app = await openApp();
   try {
     await app.page.evaluate(() => {
@@ -174,7 +191,7 @@ test('M567 excluir lançamento (extrato) exige confirmação para aporte e prove
   } finally { await closeApp(app); }
 });
 
-test('M567 editar lançamento atualiza quantidade e preço com validação de erro', async () => {
+it('M567 editar lançamento atualiza quantidade e preço com validação de erro', async () => {
   const app = await openApp();
   try {
     await app.page.evaluate(() => {
@@ -213,7 +230,7 @@ test('M567 editar lançamento atualiza quantidade e preço com validação de er
   } finally { await closeApp(app); }
 });
 
-test('M567 meta de patrimônio salva alvo pelo input do cabeçalho e permite remover', async () => {
+it('M567 meta de patrimônio salva alvo pelo input do cabeçalho e permite remover', async () => {
   const app = await openApp();
   try {
     await app.page.evaluate(() => { go('metas'); document.querySelectorAll('details').forEach(d => { d.open = true; }); });
@@ -231,7 +248,7 @@ test('M567 meta de patrimônio salva alvo pelo input do cabeçalho e permite rem
   } finally { await closeApp(app); }
 });
 
-test('M567 meta de renda passiva salva mensalidade e sincroniza divGoal', async () => {
+it('M567 meta de renda passiva salva mensalidade e sincroniza divGoal', async () => {
   const app = await openApp();
   try {
     await app.page.evaluate(() => { go('metas'); document.querySelectorAll('details').forEach(d => { d.open = true; }); });
@@ -245,7 +262,7 @@ test('M567 meta de renda passiva salva mensalidade e sincroniza divGoal', async 
   } finally { await closeApp(app); }
 });
 
-test('M567 toggle de tipos de provento da meta alterna estado sem escritas', async () => {
+it('M567 toggle de tipos de provento da meta alterna estado sem escritas', async () => {
   const app = await openApp();
   try {
     await app.page.evaluate(() => { go('metas'); });
@@ -261,7 +278,7 @@ test('M567 toggle de tipos de provento da meta alterna estado sem escritas', asy
   } finally { await closeApp(app); }
 });
 
-test('M567 modal de distribuição da carteira (meta de alocação) abre e fecha', async () => {
+it('M567 modal de distribuição da carteira (meta de alocação) abre e fecha', async () => {
   const app = await openApp();
   try {
     await app.page.evaluate(() => { go('metas'); openAllocationGoal(); });
@@ -274,7 +291,7 @@ test('M567 modal de distribuição da carteira (meta de alocação) abre e fecha
   } finally { await closeApp(app); }
 });
 
-test('M567 tema alterna claro/escuro e ocultar valores não vaza valores monetários', async () => {
+it('M567 tema alterna claro/escuro e ocultar valores não vaza valores monetários', async () => {
   const app = await openApp();
   try {
     const before = await storageSnapshot(app.page);
@@ -304,7 +321,7 @@ test('M567 tema alterna claro/escuro e ocultar valores não vaza valores monetá
   } finally { await closeApp(app); }
 });
 
-test('M567 IRPF navega etapas com clamp e exporta CSV do ano-base', async () => {
+it('M567 IRPF navega etapas com clamp e exporta CSV do ano-base', async () => {
   const app = await openApp();
   try {
     await app.page.evaluate(() => { go('irpf'); });
@@ -330,7 +347,7 @@ test('M567 IRPF navega etapas com clamp e exporta CSV do ano-base', async () => 
   } finally { await closeApp(app); }
 });
 
-test('M567 exportação de relatórios abre painel e dispara export sintético sem dados reais', async () => {
+it('M567 exportação de relatórios abre painel e dispara export sintético sem dados reais', async () => {
   const app = await openApp();
   try {
     const before = await storageSnapshot(app.page);
@@ -361,7 +378,7 @@ test('M567 exportação de relatórios abre painel e dispara export sintético s
   } finally { await closeApp(app); }
 });
 
-test('M567 período de relatórios e filtros mudam estado sem erros de página', async () => {
+it('M567 período de relatórios e filtros mudam estado sem erros de página', async () => {
   const app = await openApp();
   try {
     await app.page.evaluate(() => { go('relatorios'); });

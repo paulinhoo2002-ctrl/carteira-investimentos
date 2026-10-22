@@ -1,15 +1,32 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const { chromium } = require('playwright-core');
 const { startLocalHttpServer } = require('./local-http-server');
 
 const ROOT = path.join(__dirname, '..');
-const CHROME = process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+// M568: browsers em npm test no CI rodam ANTES da etapa "Resolve Chromium" do workflow —
+// resolver por env, depois paths conhecidos (Windows local, Linux CI); sem browser, skip
+// graceful em vez de travar o runner com servidores HTTP vazados.
+const CHROME_CANDIDATES = [
+  'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+  '/usr/bin/chromium', '/usr/bin/chromium-browser',
+  '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable',
+];
+const CHROME = process.env.CHROME_PATH || CHROME_CANDIDATES.find(p => fs.existsSync(p)) || CHROME_CANDIDATES[0];
+const BROWSER_AVAILABLE = Boolean(process.env.CHROME_PATH) || fs.existsSync(CHROME);
+const it = BROWSER_AVAILABLE ? test : test.skip;
 
 async function openApp() {
   const harness = await startLocalHttpServer(ROOT);
-  const browser = await chromium.launch({ executablePath: CHROME, headless: true });
+  let browser;
+  try {
+    browser = await chromium.launch({ executablePath: CHROME, headless: true });
+  } catch (error) {
+    await new Promise(resolve => harness.server.close(resolve));
+    throw error;
+  }
   const context = await browser.newContext();
   const page = await context.newPage();
   const outboundRequests = [];
@@ -72,7 +89,7 @@ function assertNoOutboundWrites(outboundRequests) {
   assert.deepEqual(writes, [], 'nenhuma escrita deve sair do navegador isolado');
 }
 
-test('compra sintética altera apenas sessão QA e não persiste dados financeiros', async () => {
+it('compra sintética altera apenas sessão QA e não persiste dados financeiros', async () => {
   const app = await openApp();
   try {
     const storageBefore = await app.page.evaluate(() => localStorage.getItem('civ5'));
@@ -96,7 +113,7 @@ test('compra sintética altera apenas sessão QA e não persiste dados financeir
   } finally { await closeApp(app); }
 });
 
-test('cancelar compra sintética deixa histórico financeiro igual antes e depois da recarga', async () => {
+it('cancelar compra sintética deixa histórico financeiro igual antes e depois da recarga', async () => {
   const app = await openApp();
   try {
     const before = await app.page.evaluate(() => S.aportes.length);
@@ -113,7 +130,7 @@ test('cancelar compra sintética deixa histórico financeiro igual antes e depoi
   } finally { await closeApp(app); }
 });
 
-test('falha de persistência reverte compra e mantém revisão visível', async () => {
+it('falha de persistência reverte compra e mantém revisão visível', async () => {
   const app = await openApp();
   try {
     const before = await app.page.evaluate(() => S.aportes.length);
@@ -129,7 +146,7 @@ test('falha de persistência reverte compra e mantém revisão visível', async 
   } finally { await closeApp(app); }
 });
 
-test('Import Center lê CSV sintético e cancelar revisão não grava', async () => {
+it('Import Center lê CSV sintético e cancelar revisão não grava', async () => {
   const app = await openApp();
   try {
     await app.page.evaluate(() => S.aportes.push({ id: 'V317_SEEDED_DUPLICATE', date: '15/09/2026', ticker: 'SYNTH3', qty: 2, price: 10, operation: 'compra' }));
@@ -218,7 +235,7 @@ test('Import Center lê CSV sintético e cancelar revisão não grava', async ()
   } finally { await closeApp(app); }
 });
 
-test('venda sintética confirmada atualiza o ledger sem writes externos', async () => {
+it('venda sintética confirmada atualiza o ledger sem writes externos', async () => {
   const app = await openApp();
   try {
     app.page.on('dialog', dialog => dialog.accept());
@@ -241,7 +258,7 @@ test('venda sintética confirmada atualiza o ledger sem writes externos', async 
   } finally { await closeApp(app); }
 });
 
-test('aplicação e resgate parciais RF sintéticos preservam eventos e isolamento local', async () => {
+it('aplicação e resgate parciais RF sintéticos preservam eventos e isolamento local', async () => {
   const app = await openApp();
   try {
     app.page.on('dialog', dialog => dialog.accept());
@@ -315,7 +332,7 @@ test('aplicação e resgate parciais RF sintéticos preservam eventos e isolamen
   } finally { await closeApp(app); }
 });
 
-test('registro e cancelamento de provento sintético alteram somente a sessão QA', async () => {
+it('registro e cancelamento de provento sintético alteram somente a sessão QA', async () => {
   const app = await openApp();
   try {
     const storageBefore = await app.page.evaluate(() => localStorage.getItem('civ5'));
