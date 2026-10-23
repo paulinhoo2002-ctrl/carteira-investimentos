@@ -12165,15 +12165,18 @@ function backupManagerModal(){
             <div class="sh" style="margin-bottom:8px;gap:10px">
               <div>
                 <div class="st">Exportação</div>
-                <div class="mu" style="font-size:11px;margin-top:2px">Gera arquivo AES-GCM; senha nunca é armazenada.</div>
+                <div class="mu" style="font-size:11px;margin-top:2px">Exportar protegido é recomendado; senha nunca é armazenada.</div>
               </div>
-              <button class="btn bexp" onclick="exportBackup()">Exportar protegido</button>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn bexp" onclick="exportBackup()">Exportar protegido</button>
+                <button class="btn bgh" onclick="exportBackup({encrypted:false})">Exportar sem senha</button>
+              </div>
             </div>
             <div class="backup-encryption-fields">
               <label class="fg"><span class="fl">Senha do arquivo (mínimo 6 caracteres)</span><input id="backup-encryption-passphrase" class="inp" type="password" autocomplete="new-password" minlength="6" aria-label="Senha para criptografar o arquivo de backup"></label>
               <label class="fg"><span class="fl">Confirme a senha</span><input id="backup-encryption-confirm" class="inp" type="password" autocomplete="new-password" minlength="6" aria-label="Confirme a senha do arquivo de backup"></label>
             </div>
-            <div class="backup-note">Inclui os domínios obrigatórios. Senhas curtas oferecem menor proteção; recomendamos 12 caracteres ou mais. Arquivo baixado é criptografado; senha perdida não pode ser recuperada. Histórico local neste navegador não recebe esta criptografia.</div>
+            <div class="backup-note">Inclui os domínios obrigatórios. Senhas curtas oferecem menor proteção; recomendamos 12 caracteres ou mais. A opção protegida usa AES-GCM; senha perdida não pode ser recuperada. Exportar sem senha gera arquivo sem criptografia: guarde-o somente em local privado. Histórico local neste navegador não recebe esta criptografia.</div>
           </div>
           <div class="cc" style="padding:12px 12px 11px">
             <div class="sh" style="margin-bottom:8px;gap:10px">
@@ -12192,7 +12195,7 @@ function backupManagerModal(){
                 <div class="card backup-card"><div class="cl">Renda Fixa</div><div class="cv">${draftStats.fixed}</div><div class="cs">Posições de renda fixa</div></div>
                 <div class="card backup-card"><div class="cl">Carteiras</div><div class="cv">${draftStats.wallets}</div><div class="cs">Estrutura de carteiras</div></div>
               </div>
-            <div class="backup-note">Metas configuradas: ${draftStats.goals} · ${draft?.v249?'Material de autenticação: não exportado':`Token Brapi: ${draftStats.hasToken ? 'presente' : 'ausente'}`}</div>
+            <div class="backup-note">Proteção do arquivo: <strong>${esc(draft?.protection||'Legado')}</strong> · Metas configuradas: ${draftStats.goals} · ${draft?.v249?'Material de autenticação: não exportado':`Token Brapi: ${draftStats.hasToken ? 'presente' : 'ausente'}`}</div>
               ${draft?.v249?`<div class="backup-warning" role="status">Formato V249 · Integridade: <strong>${esc(v249Status||'UNKNOWN')}</strong> · Prévia sem escrita: ${v249Diff.filter(x=>x.kind==='ADD').length} adicionar, ${v249Diff.filter(x=>x.kind==='UPDATE').length} atualizar, ${v249Diff.filter(x=>x.kind==='CONFLICT').length} conflito, ${v249Diff.filter(x=>x.kind==='UNCHANGED').length} inalterado. Restauração real não é executada nesta fase.</div>`:''}
               <div class="backup-note" style="margin-top:2px">A prévia preserva IDs, datas, valores desconhecidos e autoridade manual. Nenhum dado é aplicado antes de uma confirmação futura.</div>
             `:`
@@ -12767,36 +12770,37 @@ function closeBackupCenter(){
     render();
   });
 }
-async function exportBackup(){
+async function exportBackup({encrypted=true}={}){
   if(isLocalTestMode()){
     toast('🧪 Modo de teste local: exportação desativada.');
     return;
   }
   if(!S.backupOpen){
     openBackupCenter();
-    toast('No centro de backup, defina uma senha de pelo menos 6 caracteres para exportar o arquivo protegido. Recomendamos 12 ou mais.');
+    toast(encrypted?'No centro de backup, defina uma senha para exportar o arquivo protegido. Recomendamos 12 caracteres ou mais.':'No centro de backup, escolha Exportar sem senha para baixar um arquivo sem criptografia.');
     return;
   }
-  const passphrase=document.getElementById('backup-encryption-passphrase')?.value||'';
-  const confirmation=document.getElementById('backup-encryption-confirm')?.value||'';
-  if(passphrase.length<6){toast('Use uma senha com pelo menos 6 caracteres; recomendamos 12 ou mais.','#fbbf24');document.getElementById('backup-encryption-passphrase')?.focus();return;}
-  if(passphrase!==confirmation){toast('As senhas não conferem. Nenhum arquivo foi exportado.','#f87171');document.getElementById('backup-encryption-confirm')?.focus();return;}
+  const passphrase=encrypted?(document.getElementById('backup-encryption-passphrase')?.value||''):'';
+  const confirmation=encrypted?(document.getElementById('backup-encryption-confirm')?.value||''):'';
+  if(encrypted&&passphrase.length<6){toast('Use uma senha com pelo menos 6 caracteres; recomendamos 12 ou mais.','#fbbf24');document.getElementById('backup-encryption-passphrase')?.focus();return;}
+  if(encrypted&&passphrase!==confirmation){toast('As senhas não conferem. Nenhum arquivo foi exportado.','#f87171');document.getElementById('backup-encryption-confirm')?.focus();return;}
   let payload;
-  let encrypted;
+  let fileContent;
   const ownerId=FB?.user?.uid;
   try{
     payload=await backupPortabilityPayload();
     const integrity=await BackupPortability.verifyBackup(payload,{supportedAssetTypes:TYPE_CHOICES,ownerId});
     if(integrity.status!=='SUPPORTED') throw new Error(`BACKUP_${integrity.status}`);
     if(FB?.user?.uid!==ownerId||FB?.access?.allowed!==true) throw new Error('BACKUP_OWNER_CHANGED');
-    encrypted=await BackupPortability.encryptBackup(payload,passphrase);
+    fileContent=encrypted?await BackupPortability.encryptBackup(payload,passphrase):payload;
   }catch(error){
     debugError('backup V249 export error:',error?.message||'UNKNOWN');
-    toast('Não foi possível preparar o backup criptografado. Nenhum dado foi alterado.','#f87171');
+    toast('Não foi possível validar o backup. Nenhum dado foi alterado.','#f87171');
     return;
   }
-  const data=JSON.stringify(encrypted, null, 2);
-  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([data],{type:'application/json'})),download:`carteira-investimentos-backup-protegido-${backupStamp()}.json`});
+  const data=JSON.stringify(fileContent, null, 2);
+  const protection=encrypted?'protegido':'sem-senha';
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([data],{type:'application/json'})),download:`carteira-investimentos-backup-${protection}-${backupStamp()}.json`});
   a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),1000);
   document.getElementById('backup-encryption-passphrase').value='';
@@ -12805,7 +12809,7 @@ async function exportBackup(){
     const archived=await BackupPortability.saveLocalBackup(payload,{cadence:'manual',supportedAssetTypes:TYPE_CHOICES,ownerId});
     if(!archived.ok) debugWarn('backup local archive skipped:',archived.status);
   }catch(error){debugWarn('backup local archive unavailable:',error?.name||'UNKNOWN');}
-  toast('💾 Arquivo exportado com AES-GCM e integridade SHA-256. Guarde a senha: ela não pode ser recuperada.');
+  toast(encrypted?'💾 Arquivo protegido exportado com AES-GCM e integridade SHA-256. Guarde a senha: ela não pode ser recuperada.':'⚠️ Arquivo sem senha exportado sem criptografia. Guarde-o somente em local privado.');
 }
 function v324PeriodicBackupEligible(){
   return typeof BackupPortability!=='undefined'&&typeof FB!=='undefined'&&!!FB.user&&FB.access?.allowed===true&&FB.cloudLoaded===true&&!FB.pendingCloudSave&&!FB.syncInFlight&&!FB.applying&&!FB.lastCloudError&&!isLocalTestMode()&&!isActiveWalletHostMode()&&!isAuthoritativeLocalRecoveryBoot()&&!isProtectedReadOnlyQaBoot();
@@ -12936,10 +12940,16 @@ document.getElementById('imp-file').addEventListener('change',e=>{
   r.onload=async ev=>{
     try{
       let d=JSON.parse(ev.target.result);
+      let encryptedSource=false;
       if(d?.format==='carteira-investimentos-backup-encrypted'){
+        encryptedSource=true;
         const passphrase=window.prompt('Digite a senha usada ao exportar este backup. Senha perdida não pode ser recuperada.');
         if(passphrase===null) return;
         d=await BackupPortability.decryptBackup(d,passphrase);
+      }
+      if(d?.manifest&&d.manifest.backupFormat!==BackupPortability.FORMAT){
+        toast('Formato de backup desconhecido ou não compatível. Nenhum dado foi aplicado.','#f87171');
+        return;
       }
       if(typeof BackupPortability!=='undefined' && d?.manifest?.backupFormat===BackupPortability.FORMAT){
               const ownerId=FB?.user?.uid;
@@ -12950,7 +12960,7 @@ document.getElementById('imp-file').addEventListener('change',e=>{
               }
               const preview=await BackupPortability.previewRestore(d,backupCurrentState(),{supportedAssetTypes:TYPE_CHOICES,ownerId});
               const parsedState=d.payload?.state||{};
-              S.backupImportDraft={fileName:f.name,parsed:d,summary:backupStats(parsedState),importedAt:backupImportedAt({meta:{exportedAt:d.manifest?.createdAt}}),v249:true,v249Preview:preview};
+              S.backupImportDraft={fileName:f.name,parsed:d,summary:backupStats(parsedState),importedAt:backupImportedAt({meta:{exportedAt:d.manifest?.createdAt}}),protection:encryptedSource?'Criptografado':'Sem criptografia',v249:true,v249Preview:preview};
               S.backupOpen=true;
               render();
               return;
@@ -12986,7 +12996,7 @@ document.getElementById('imp-file').addEventListener('change',e=>{
             }
             const legacyPreview=await BackupPortability.previewRestore(legacyBackup,backupCurrentState(),{supportedAssetTypes:TYPE_CHOICES});
             const legacySummary=backupStats(legacyParsed.data);
-            S.backupImportDraft={fileName:f.name, parsed:legacyBackup, summary:legacySummary, importedAt:backupImportedAt(legacyParsed), v249:false, v249Preview:legacyPreview};
+            S.backupImportDraft={fileName:f.name, parsed:legacyBackup, summary:legacySummary, importedAt:backupImportedAt(legacyParsed), protection:encryptedSource?'Criptografado':'Legado sem criptografia', v249:false, v249Preview:legacyPreview};
             S.backupOpen=true;
             render();
     }catch(err){
