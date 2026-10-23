@@ -8,7 +8,8 @@ const { before, test } = require('node:test');
 
 const PROJECT = 'demo-owner-only-rules';
 const AUTH = 'http://127.0.0.1:19099';
-const DOCS = `http://127.0.0.1:19080/v1/projects/${PROJECT}/databases/(default)/documents`;
+const DOCUMENTS_RESOURCE = `projects/${PROJECT}/databases/(default)/documents`;
+const DOCS = `http://127.0.0.1:19080/v1/${DOCUMENTS_RESOURCE}`;
 const rules = fs.readFileSync(path.join(__dirname, '..', 'firestore.rules'), 'utf8').replace(/\r\n/g, '\n');
 const rulesSha256 = createHash('sha256').update(rules).digest('hex');
 const EXPECTED_RULES_SHA256 = 'e12421433d543344c843434862a21293f79cd71e1245d33bfc9b29374a93602b';
@@ -130,6 +131,27 @@ async function documentRequest(method, document, idToken) {
   return request(`${DOCS}/${document}`, options);
 }
 
+async function collectionRequest(collection, idToken) {
+  const headers = idToken ? { authorization: `Bearer ${idToken}` } : {};
+  return request(`${DOCS}/${collection}?pageSize=1`, { headers });
+}
+
+async function queryRequest(collection, documentId, idToken) {
+  const headers = { 'content-type': 'application/json' };
+  if (idToken) headers.authorization = `Bearer ${idToken}`;
+  const structuredQuery = { from: [{ collectionId: collection }] };
+  if (documentId) structuredQuery.where = { fieldFilter: {
+    field: { fieldPath: '__name__' },
+    op: 'EQUAL',
+    value: { referenceValue: `${DOCUMENTS_RESOURCE}/${collection}/${documentId}` },
+  } };
+  return request(`${DOCS}:runQuery`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ structuredQuery }),
+  });
+}
+
 async function expectAccess(identity, method, document, allowed, label) {
   const response = await documentRequest(method, document, identity?.idToken);
   assert.equal(response.status, allowed ? 200 : 403, `${label}: ${method} ${document.split('/')[0]} must be ${allowed ? 'allowed' : 'denied'}`);
@@ -203,4 +225,55 @@ test('even the verified owner is denied on another UID and unlisted paths', asyn
     await expectAccess(owner, 'GET', document, false, 'cross-UID/default-deny');
     await expectAccess(owner, 'PATCH', document, false, 'cross-UID/default-deny');
   }
+});
+
+test('delete is limited to the verified owner on authorized documents', async () => {
+  for (const document of [`portfolios/${ownerUid}`, `users/${ownerUid}`, 'meta/access']) {
+    for (const identity of [null, ownerUnverified, ownerWrongEmail, sameEmailOtherUid, ordinaryUser]) {
+      await expectAccess(identity, 'DELETE', document, false, 'unauthorized delete');
+    }
+    try {
+      await expectAccess(owner, 'DELETE', document, true, 'verified owner delete');
+    } finally {
+      await expectAccess(owner, 'PATCH', document, true, 'restore synthetic seed');
+    }
+  }
+  for (const document of [`portfolios/${otherUid}`, `users/${otherUid}`, 'unlisted/private']) {
+    await expectAccess(owner, 'DELETE', document, false, 'cross-UID/default-deny delete');
+  }
+  for (const document of [`portfolios/${otherUid}`, `users/${otherUid}`]) {
+    await expectAccess(sameEmailOtherUid, 'DELETE', document, false, 'different UID own-path delete');
+  }
+  for (const document of [`portfolios/${ordinaryUser.localId}`, `users/${ordinaryUser.localId}`]) {
+    await expectAccess(ordinaryUser, 'DELETE', document, false, 'ordinary user own-path delete');
+  }
+});
+
+test('unbounded collection lists are denied even when only owner documents exist', async () => {
+  for (const identity of [null, owner, ownerUnverified, sameEmailOtherUid, ordinaryUser]) {
+    for (const collection of ['portfolios', 'users', 'meta', 'unlisted']) {
+      const response = await collectionRequest(collection, identity?.idToken);
+      assert.equal(response.status, 403, `${collection} list must be denied for every identity`);
+    }
+  }
+});
+
+test('queries must restrict every possible document to the verified owner UID', async () => {
+  for (const collection of ['portfolios', 'users']) {
+    const allowed = await queryRequest(collection, ownerUid, owner.idToken);
+    assert.equal(allowed.status, 200, `${collection} owner-UID query must be allowed`);
+    const body = await allowed.text();
+    assert.ok(body.includes(`/${collection}/${ownerUid}`), `${collection} query must return the seeded owner document`);
+    assert.ok(!body.includes(`/${collection}/${otherUid}`), `${collection} query must not return a cross-UID document`);
+    const unbounded = await queryRequest(collection, null, owner.idToken);
+    assert.equal(unbounded.status, 403, `${collection} unbounded query must be denied`);
+    for (const identity of [null, ownerUnverified, ownerWrongEmail, sameEmailOtherUid, ordinaryUser]) {
+      const response = await queryRequest(collection, ownerUid, identity?.idToken);
+      assert.equal(response.status, 403, `${collection} owner-UID query must deny unauthorized identity`);
+    }
+    const crossUid = await queryRequest(collection, otherUid, owner.idToken);
+    assert.equal(crossUid.status, 403, `${collection} cross-UID query must be denied`);
+  }
+  const unknown = await queryRequest('unlisted', 'private', owner.idToken);
+  assert.equal(unknown.status, 403, 'unknown collection query must be denied');
 });
