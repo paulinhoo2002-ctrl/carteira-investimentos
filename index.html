@@ -8867,7 +8867,8 @@ const STOR         = 'civ5';
 const APP_NAME     = 'Carteira de Investimentos';
 const BACKUP_VER   = 1;
 const DEFAULT_BRAPI = ''; // brapi fica opcional; cotações usam Yahoo Finance via /api/yahoo-quote sem token
-const ACCESS_ADMIN_EMAILS = ['paulinhoo2002@gmail.com'];
+const OWNER_FIREBASE_UID = 'yaypxiiv7Ye7pwpDZ0nqhG3Yj7E3';
+const OWNER_FIREBASE_EMAIL = 'paulinhoo2002@gmail.com';
 const THEME_STOR   = 'carteira_theme';
 const HIDE_VALUES_STOR = 'carteira_hide_values';
 const THEME_COLOR  = { dark:'#07090f', light:'#e8eff6' };
@@ -9005,7 +9006,7 @@ const firebaseConfig = {
 let FB = {
   ready:false, app:null, auth:null, db:null, user:null,
   unsub:null, cloudLoaded:false, localPortfolioLoaded:false, cloudStateModel:null, cloudSyncTimeoutTimer:null, applying:false, saveTimer:null, cloudRetryTimer:null, pendingCloudSave:false, lastCloudUpdate:null, lastCloudError:null,
-  lastCloudSignature:'', authResolved:false, syncInFlight:false, securitySaving:false,
+  lastCloudSignature:'', authResolved:false, syncInFlight:false,
   readOnlyOfflineSnapshotReady:false, readOnlyOfflineSnapshotScope:'', readOnlyOfflineSnapshotSignature:'',
   access:{loaded:false,loading:true,allowed:false,reason:'',cfg:null,lastDeniedAt:null}
 };
@@ -9191,7 +9192,6 @@ let S = {
   portfolioSearchQuery:'',
   portfolioSearchIndex:0,
   portfolioSearchTrigger:null,
-  accessSettingsOpen:false,
   backupOpen:false,
   backupImportDraft:null,
   backupImportValidating:false,
@@ -9410,7 +9410,6 @@ function resetTransientRuntimeState(){
   S.qInFlight=false;
   S.qLoad=false;
   S.backupOpen=false;
-  S.accessSettingsOpen=false;
   S.mobileMenuOpen=false;
   S.mobileTopMenuOpen=false;
   S.quickMovementOpen=false;
@@ -9558,7 +9557,6 @@ const LOCAL_TEST_FIXTURE_RUNTIME=(()=>{
   S.irpfStep=1;
   S.mobileMenuOpen=false;
   S.mobileTopMenuOpen=false;
-  S.accessSettingsOpen=false;
   S.backupOpen=false;
   S.pdfReportOpen=false;
   S.quickMovementOpen=false;
@@ -9592,17 +9590,13 @@ function restoreLocalTestData(){
   toast('🧪 Dados de teste restaurados.', '#60a5fa');
 }
 function normalizeEmail(v){ return String(v||'').toLowerCase().trim(); }
-function normalizeAccessList(v){
-  return Array.isArray(v)
-    ? v.map(x=>normalizeEmail(x)).filter(Boolean)
-    : [];
-}
-function isAccessAdmin(email){
-  return ACCESS_ADMIN_EMAILS.includes(normalizeEmail(email));
+function isAccessAdmin(user){
+  return !!user && user.uid === OWNER_FIREBASE_UID && normalizeEmail(user.email) === OWNER_FIREBASE_EMAIL && user.emailVerified === true;
 }
 function canManageSecurity(){
-  return !!FB.user && isAccessAdmin(FB.user.email);
+  return isAccessAdmin(FB.user);
 }
+
 function makeWalletId(){ return `w_${Date.now()}_${Math.random().toString(16).slice(2,8)}`; }
 function emptyWallet(name='Carteira principal'){
   return {
@@ -11449,53 +11443,20 @@ async function loadAccessControl(user,authSession=null){
   const setAccess = value => {
     if(!authSession || authSession.isCurrent()) FB.access=value;
   };
-  const email = normalizeEmail(user?.email);
-  if(!FB.db || !email){
-    setAccess({loaded:true,loading:false,allowed:false,reason:'Conecte sua conta Google autorizada para acessar o sistema.',cfg:null,lastDeniedAt:new Date().toISOString()});
+  if(!isAccessAdmin(user)){
+    setAccess({loaded:true,loading:false,allowed:false,reason:'Acesso restrito à conta autorizada do proprietário.',cfg:null,lastDeniedAt:new Date().toISOString()});
     return false;
   }
-  try{
-    const snap = await FB.db.collection('meta').doc('access').get();
-    if(authSession && !authSession.isCurrent()) return false;
-    if(!snap.exists){
-      const isAdmin = isAccessAdmin(email);
-      setAccess({
-        loaded:true,
-        loading:false,
-        allowed:isAdmin,
-        reason:isAdmin ? '' : 'O controle de acesso ainda não foi configurado neste ambiente.',
-        cfg:null,
-        lastDeniedAt:isAdmin ? null : new Date().toISOString()
-      });
-      return isAdmin;
-    }
-    const cfg = snap.exists ? (snap.data() || {}) : {};
-    const enabled = cfg.enabled !== false;
-    const allowedEmails = normalizeAccessList(cfg.allowedEmails);
-    const blockedEmails = normalizeAccessList(cfg.blockedEmails);
-    const allowedDomains = normalizeAccessList(cfg.allowedDomains);
-    const domain = email.includes('@') ? email.split('@').pop() : '';
-    const isBlocked = blockedEmails.includes(email);
-    const isAllowed = enabled && !isBlocked && (
-      allowedEmails.includes(email) ||
-      (domain && allowedDomains.includes(domain))
-    );
-    setAccess({
-      loaded:true,
-      loading:false,
-      allowed:isAllowed,
-      reason:isAllowed ? '' : String(cfg.message || 'Acesso restrito a usuários aprovados.'),
-      cfg,
-      lastDeniedAt:isAllowed ? null : new Date().toISOString()
-    });
-    return isAllowed;
-  }catch(e){
-    debugWarn('Acesso:', e);
+  if(!FB.db){
     setAccess({loaded:true,loading:false,allowed:false,authFailure:true,reason:'Não foi possível validar o acesso agora.',cfg:null,lastDeniedAt:new Date().toISOString()});
     return false;
   }
+  if(authSession && !authSession.isCurrent()) return false;
+  setAccess({loaded:true,loading:false,allowed:true,reason:'',cfg:null,lastDeniedAt:null});
+  return true;
 }
 async function recordAccessAttempt(user, allowed, reason=''){
+  if(!allowed || !isAccessAdmin(user)) return;
   if(isProtectedReadOnlyQaBoot()) return {ok:false,reason:'PROTECTED_READ_ONLY_QA_BOOT'};
   try{
     if(!FB.db || !user?.uid) return;
@@ -11519,33 +11480,16 @@ function portfolioRef(){
   if(!FB.db || !FB.user) return null;
   return FB.db.collection('portfolios').doc(FB.user.uid);
 }
-// ===== Account-mode compatibility adapter =====
-// Registry (authorizedUsers/{uid}, future rules) is authoritative; in
-// production (registry rules not deployed) the legacy access control
-// (meta/access + admin allowlist) feeds the resolver so the current owner
-// keeps loading normally. No portfolio source is created for unauthorized users.
 async function resolveAccountModeCompat(user, accessOk, authSession=null){
   if(!user) return 'LOGIN_REQUIRED';
   if(authSession && !authSession.isCurrent()) return 'AUTH_FAILURE';
   if(!window.AccountMode || !FB.db || FB.access?.authFailure) return 'AUTH_FAILURE';
-  let authorization = null;
-  try{
-    const snap = await FB.db.collection('authorizedUsers').doc(user.uid).get();
-    if(authSession && !authSession.isCurrent()) return 'AUTH_FAILURE';
-    if(snap.exists){
-      const d = snap.data() || {};
-      authorization = { enabled: d.enabled !== false, blocked: d.blocked === true, role: String(d.role || 'user') };
-    }
-  }catch(e){
-    // permission-denied in production (registry rules not deployed) → legacy path
-    if(authSession && !authSession.isCurrent()) return 'AUTH_FAILURE';
-  }
-  if(!authorization){
-    const email = normalizeEmail(user && user.email);
-    if(isAccessAdmin(email)) authorization = { enabled: true, blocked: false, role: 'owner' };
-    else if(accessOk) authorization = { enabled: true, blocked: false, role: 'user' };
-  }
-  return AccountMode.resolveAccountMode({ authUser: user, emailVerified: !!(user && user.emailVerified), authorization });
+  if(!isAccessAdmin(user) || !accessOk) return 'BLOCKED';
+  return AccountMode.resolveAccountMode({
+    authUser:user,
+    emailVerified:user.emailVerified === true,
+    authorization:{enabled:true,blocked:false,role:'owner'}
+  });
 }
 function clearRealStateInMemory(){
   const hideValues=!!S.hideValues;
@@ -12182,155 +12126,6 @@ function shouldShowAccessGate(){
   if(isLocalTestMode()) return false;
   return !FB.authResolved || FB.access.loading || !FB.access.loaded || !FB.access.allowed;
 }
-function normalizeListFromText(text){
-  return Array.from(new Set(String(text||'')
-    .split(/[\n,;]+/g)
-    .map(s=>normalizeEmail(s))
-    .filter(Boolean)));
-}
-function listToText(arr){
-  return Array.isArray(arr) ? arr.join('\n') : '';
-}
-function openAccessSettings(){
-  if(!canManageSecurity()){
-    toast('🔒 Acesso restrito ao administrador.','#fbbf24');
-    return;
-  }
-  S.accessSettingsOpen=true;
-  render();
-}
-function closeAccessSettings(){
-  withScrollPreserved(()=>{
-    S.accessSettingsOpen=false;
-    render();
-  });
-}
-async function saveAccessSettings(event){
-  if(!canEditFromThisTab('salvar segurança')) return;
-  if(!FB.db || !FB.user){
-    toast('Entre com Google para salvar a segurança.','#fbbf24');
-    return;
-  }
-  if(!canManageSecurity()){
-    toast('🔒 Somente o administrador pode alterar a segurança.','#f87171');
-    return;
-  }
-  const enabled = !!document.getElementById('acc-enabled')?.checked;
-  const message = String(document.getElementById('acc-message')?.value || '').trim();
-  const allowedEmails = normalizeListFromText(document.getElementById('acc-emails')?.value);
-  const blockedEmails = normalizeListFromText(document.getElementById('acc-blocked')?.value);
-  const allowedDomains = normalizeListFromText(document.getElementById('acc-domains')?.value);
-  const me = normalizeEmail(FB.user.email);
-  if(me && !allowedEmails.includes(me)) allowedEmails.unshift(me);
-  const cfg = {
-    enabled,
-    allowedEmails,
-    blockedEmails: blockedEmails.filter(v=>v!==me),
-    allowedDomains,
-    message,
-    updatedAtLocal:new Date().toISOString(),
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
-  if(FB.securitySaving) return;
-  FB.securitySaving=true;
-  const button=event?.currentTarget || document.querySelector('[data-security-save]');
-  if(button){
-    button.disabled=true;
-    button.setAttribute('aria-busy','true');
-    button.textContent='Salvando segurança...';
-  }
-  try{
-    await FB.db.collection('meta').doc('access').set(cfg,{merge:true});
-    FB.access.cfg = cfg;
-    FB.access.allowed = true;
-    FB.access.loaded = true;
-    FB.access.reason = '';
-    toast('🔐 Segurança salva com sucesso.');
-    closeAccessSettings();
-  }catch(e){
-    debugWarn(e);
-    toast('❌ Não foi possível salvar a segurança.','#f87171');
-  }finally{
-    FB.securitySaving=false;
-    if(button && button.isConnected){
-      button.disabled=false;
-      button.setAttribute('aria-busy','false');
-      button.textContent='Salvar segurança';
-    }
-  }
-}
-function accessSettingsModal(){
-  if(!canManageSecurity()) return '';
-  const cfg = FB.access.cfg || {};
-  const enabled = cfg.enabled !== false;
-  const allowedEmails = listToText(cfg.allowedEmails || []);
-    const blockedEmails = listToText(cfg.blockedEmails || []);
-    const allowedDomains = listToText(cfg.allowedDomains || []);
-    const message = esc(cfg.message || 'Acesso restrito a usuários aprovados.');
-    return `<div class="note-overlay" onclick="if(event.target===this) closeAccessSettings()" role="dialog" aria-modal="true" aria-label="Configurações de acesso">
-    <div class="note-modal" style="max-width:740px;max-height:84vh;display:flex;flex-direction:column" aria-busy="${FB.securitySaving?'true':'false'}">
-      <div class="note-head" style="padding:13px 16px 11px">
-        <div class="note-title">
-          <div>
-            <h3 style="font-size:17px">Segurança de acesso</h3>
-            <p style="font-size:11px">Defina quem entra e quem mantém a carteira sincronizada.</p>
-          </div>
-          <div class="note-pill">${FB.access.allowed ? 'Ativo' : 'Bloqueado'}</div>
-        </div>
-      </div>
-      <div class="sec-body" style="display:grid;grid-template-columns:1fr;gap:8px;overflow:auto;min-height:0;padding:11px 16px 12px">
-        <label class="card" style="padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px">
-          <div>
-            <div class="sec-title" style="font-size:13px">Ativar trava de acesso</div>
-            <div class="sec-meta" style="font-size:11px">Quando ligado, só os e-mails listados entram.</div>
-          </div>
-          <input id="acc-enabled" type="checkbox" ${enabled?'checked':''} style="width:auto;transform:scale(1.1)">
-        </label>
-        <div class="fg" style="grid-template-columns:1fr 1fr;gap:8px">
-          <div>
-            <div class="fl" style="margin-bottom:3px">E-mails aprovados</div>
-            <textarea id="acc-emails" rows="3" style="min-height:88px;resize:vertical;width:100%;padding:9px 10px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${esc(allowedEmails)}</textarea>
-            <div class="mu" style="font-size:9px;margin-top:3px;line-height:1.25">Um por linha. O seu e-mail atual é mantido automaticamente.</div>
-          </div>
-          <div>
-            <div class="fl" style="margin-bottom:3px">Domínios aprovados</div>
-            <textarea id="acc-domains" rows="3" style="min-height:88px;resize:vertical;width:100%;padding:9px 10px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${esc(allowedDomains)}</textarea>
-            <div class="mu" style="font-size:9px;margin-top:3px;line-height:1.25">Ex.: empresa.com.br. Se preferir, deixe vazio.</div>
-          </div>
-        </div>
-        <div>
-          <div class="fl" style="margin-bottom:3px">E-mails bloqueados</div>
-          <textarea id="acc-blocked" rows="2" style="min-height:66px;resize:vertical;width:100%;padding:9px 10px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${esc(blockedEmails)}</textarea>
-          <div class="mu" style="font-size:9px;margin-top:3px;line-height:1.25">Mesmo com domínio liberado, estes e-mails continuam negados.</div>
-        </div>
-        <div>
-          <div class="fl" style="margin-bottom:3px">Mensagem de bloqueio</div>
-          <textarea id="acc-message" rows="2" style="min-height:58px;resize:vertical;width:100%;padding:9px 10px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${message}</textarea>
-        </div>
-        <details class="sec" style="margin:0">
-          <summary style="padding:10px 12px;min-height:42px">
-            <div>
-              <div class="sec-title" style="font-size:13px">Como funciona</div>
-              <div class="sec-meta" style="font-size:11px">ver passos rápidos de validação</div>
-            </div>
-            <div class="sec-meta">abrir</div>
-          </summary>
-          <div class="sec-body" style="padding:10px 12px 12px">
-            <div class="sec-meta" style="line-height:1.45;margin-top:0">
-            1. A pessoa faz login com Google.<br>
-            2. O sistema confere e-mail e domínio na lista.<br>
-            3. Se não estiver aprovado, a carteira não aparece.
-          </div>
-          </div>
-        </details>
-      </div>
-      <div style="display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px">
-        <button class="btn bgh" onclick="closeAccessSettings()">Cancelar</button>
-        <button class="btn bp" data-security-save onclick="saveAccessSettings(event)" ${FB.securitySaving?'disabled':''}>${FB.securitySaving?'Salvando segurança...':'Salvar segurança'}</button>
-      </div>
-    </div>
-  </div>`;
-}
 function backupManagerModal(){
   if(!S.backupOpen) return '';
   const current=backupPayload();
@@ -12568,8 +12363,7 @@ function settingsTab(){
             <div><h2 class="premium-settings-section-title">Segurança</h2><div class="premium-settings-section-sub">Controle de acesso ao aplicativo</div></div>
           </div>
           <div class="premium-settings-row">
-            <div class="premium-settings-row-info"><div class="premium-settings-row-label">Controle de acesso</div><div class="premium-settings-row-desc">Defina quem entra e quem mantém a carteira sincronizada.</div></div>
-            <button class="btn bgh" onclick="openAccessSettings()" style="font-size:11px;min-height:34px;padding:0 10px">Configurar</button>
+            <div class="premium-settings-row-info"><div class="premium-settings-row-label">Acesso exclusivo do proprietário</div><div class="premium-settings-row-desc">Acesso exige a identidade do proprietário e e-mail verificado; listas de e-mails e domínios não concedem acesso.</div></div>
           </div>
         </div>` : ''}
 
@@ -12632,9 +12426,7 @@ function mobileTopActionButton(){
   return `<button class="btn bgh hdr-top-fab" onclick="toggleMobileTopMenu()" aria-label="Abrir menu rápido" aria-controls="investTopDrawer" aria-expanded="${S.mobileTopMenuOpen?'true':'false'}"><span class="hdr-mobile-icon">⋯</span><span class="hdr-mobile-label">Menu</span></button>`;
 }
 function configMenu(){
-  const securityBtn = canManageSecurity()
-    ? `<button class="btn bgh" onclick="openAccessSettings();closeConfigMenus()">🔐 Segurança</button>`
-    : '';
+
   // Recurso B3 experimental preservado no código, mas oculto da produção até nova validação.
   return `<details class="cfg-menu" style="position:relative">
     <summary class="btn bimp hdr-mobile-btn" style="list-style:none;cursor:pointer;font-size:12px;padding:7px 12px"><span class="hdr-mobile-icon">⚙️</span><span class="hdr-mobile-label">Configurações</span></summary>
@@ -12643,7 +12435,6 @@ function configMenu(){
         <div class="cfg-menu-group-title">Ações comuns</div>
         <button class="btn bgh" onclick="toggleThemeFromMenu()">${themeActionLabel()}</button>
         <button class="btn bgh" style="min-height:44px;line-height:1.15" onclick="checkForAppUpdate({manual:true});closeConfigMenus()">Verificar atualizações<span class="mu" style="display:block;margin-top:3px;text-align:left">Procura uma versão mais recente do aplicativo.</span></button>
-        ${securityBtn}
         <button class="btn bgh" onclick="openBackupCenter();closeConfigMenus()">💾 Backup e restauração</button>
       </div>
       <div class="cfg-menu-divider"></div>
@@ -12913,7 +12704,7 @@ function restoreScroll(){
   requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({left:x, top:y, behavior:'auto'})));
 }
 function bodyModalLockActive(){
-  return !!(S.accessSettingsOpen || S.backupOpen || S.externalFlowOpen || S.pdfReportOpen || S.reportCardPdfType || S.brokerNoteImport || S.brokerNoteImportSuccess || S.noteReview || S.b3Review || S.rfPositionReview || S.b3ProventosReview || S.b3MovementReview || S.allocGoalOpen || S.quickMovementOpen || S.showA || S.mobileMenuOpen || S.mobileTopMenuOpen);
+  return !!(S.backupOpen || S.externalFlowOpen || S.pdfReportOpen || S.reportCardPdfType || S.brokerNoteImport || S.brokerNoteImportSuccess || S.noteReview || S.b3Review || S.rfPositionReview || S.b3ProventosReview || S.b3MovementReview || S.allocGoalOpen || S.quickMovementOpen || S.showA || S.mobileMenuOpen || S.mobileTopMenuOpen);
 }
 function scrollPreserveActive(){
   return !!(bodyModalLockActive() || S.showA || S.showP || S.showD);
@@ -29440,7 +29231,6 @@ function app(){
   ${mobileTopDrawer()}
   ${mobileBottomNav()}
   ${mobileMenuDrawer()}
-  ${S.accessSettingsOpen?accessSettingsModal():''}
   ${S.backupOpen?backupManagerModal():''}
   ${S.externalFlowOpen?externalFlowModal():''}
   ${S.pdfReportOpen?reportPdfPreview():''}
@@ -38450,7 +38240,7 @@ function showPwaUpdateNotice(registration){
   document.body.appendChild(notice);
 }
 function pwaHasActiveEdit(){
-  return !!(S.quickMovementOpen || S.showA || S.showP || S.showD || S.editId || S.editPId || S.editDId || S.rfMovementEditor || S.backupOpen || S.backupImportDraft || S.accessSettingsOpen || S.allocGoalOpen || S.pdfReportOpen || S.proventoReviewOpen || S.irpfFinalOpen);
+  return !!(S.quickMovementOpen || S.showA || S.showP || S.showD || S.editId || S.editPId || S.editDId || S.rfMovementEditor || S.backupOpen || S.backupImportDraft || S.allocGoalOpen || S.pdfReportOpen || S.proventoReviewOpen || S.irpfFinalOpen);
 }
 function requestPwaUpdate(registration, button){
   if(!registration?.waiting) return;

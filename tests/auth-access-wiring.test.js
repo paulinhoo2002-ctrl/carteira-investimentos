@@ -6,6 +6,7 @@ const path = require('node:path');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const sw = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
+const rules = fs.readFileSync(path.join(__dirname, '..', 'firestore.rules'), 'utf8');
 
 test('auth modules load in order and the Demo fixture is absent', () => {
   const expected = ['auth/account-mode.js', 'auth/data-source.js', 'auth/boot.js', 'auth/boot-ui.js'];
@@ -41,8 +42,45 @@ test('stale auth callbacks cannot reuse another session authorization result', (
   assert.match(callback, /resolveAccountModeCompat\(user, ok, authSession\)/);
   assert.match(callback, /await recordAccessAttempt\(user, ok, FB\.access\.reason\);\s*if\(!authSession\.isCurrent\(\) \|\| FB\.user\?\.uid !== user\.uid\) return;/);
   assert.match(html, /async function loadAccessControl\(user,authSession=null\)\{\s*if\(authSession && !authSession\.isCurrent\(\)\) return false;/);
-  assert.match(html, /const snap = await FB\.db\.collection\('meta'\)\.doc\('access'\)\.get\(\);\s*if\(authSession && !authSession\.isCurrent\(\)\) return false;/);
-  assert.match(html, /const snap = await FB\.db\.collection\('authorizedUsers'\)\.doc\(user\.uid\)\.get\(\);\s*if\(authSession && !authSession\.isCurrent\(\)\) return 'AUTH_FAILURE';/);
+  const resolver = html.slice(html.indexOf('async function resolveAccountModeCompat('), html.indexOf('function clearRealStateInMemory('));
+  assert.doesNotMatch(resolver, /authorizedUsers/);
+});
+
+test('owner-only authorization checks UID and verified email before any private read', () => {
+  assert.ok(/const OWNER_FIREBASE_UID = '[^']+';/.test(html), 'owner UID constant is configured');
+  assert.ok(/const OWNER_FIREBASE_EMAIL = '[^']+';/.test(html), 'authorized owner email is configured');
+  assert.ok(/function isAccessAdmin\(user\)\{\s*return !!user && user\.uid === OWNER_FIREBASE_UID && normalizeEmail\(user\.email\) === OWNER_FIREBASE_EMAIL && user\.emailVerified === true/.test(html), 'admin identity requires exact UID, authorized email, and verification');
+  const gate = html.slice(html.indexOf('async function loadAccessControl('), html.indexOf('async function recordAccessAttempt('));
+  const identityCheck = gate.indexOf('if(!isAccessAdmin(user))');
+  assert.ok(identityCheck >= 0, 'owner identity must be checked');
+  assert.ok(identityCheck < gate.indexOf('if(!FB.db)'), 'identity check must precede database access');
+  assert.ok(!/collection\(|normalizeAccessList|allowedEmails|allowedDomains/.test(gate), 'access lists and database reads cannot grant access');
+  const resolver = html.slice(html.indexOf('async function resolveAccountModeCompat('), html.indexOf('function clearRealStateInMemory('));
+  assert.ok(/if\(!isAccessAdmin\(user\) \|\| !accessOk\) return 'BLOCKED';/.test(resolver), 'resolver rejects non-owner before REAL');
+  assert.ok(!/authorizedUsers|else if\(accessOk\)/.test(resolver), 'no alternate authorization registry or access-list grant exists');
+  const accessLog = html.slice(html.indexOf('async function recordAccessAttempt('), html.indexOf('function portfolioRef('));
+  assert.match(accessLog, /if\(!allowed \|\| !isAccessAdmin\(user\)\) return;/, 'denied identities must not trigger access-log writes');
+});
+
+test('exclusive owner policy does not expose an inert email or domain allowlist editor', () => {
+  assert.match(html, /Acesso exclusivo do proprietário/);
+  assert.doesNotMatch(html, /saveAccessSettings|accessSettingsModal|acc-emails|acc-domains|allowedEmails|allowedDomains/);
+  assert.doesNotMatch(html, /collection\(['"]meta['"]\)\.doc\(['"]access['"]\)\.set/);
+});
+
+test('production Firestore rules scope all data paths to verified owner identity', () => {
+  const ownerUid = html.match(/const OWNER_FIREBASE_UID = '([^']+)';/)?.[1];
+  const ownerEmail = html.match(/const OWNER_FIREBASE_EMAIL = '([^']+)';/)?.[1];
+  assert.ok(ownerUid, 'owner UID constant is configured');
+  assert.ok(ownerEmail, 'authorized owner email is configured');
+  assert.ok(/function isOwnerAccount\(\)[\s\S]*?request\.auth != null[\s\S]*?request\.auth\.uid == "[^"]+"[\s\S]*?request\.auth\.token\.email_verified == true[\s\S]*?request\.auth\.token\.email == "[^"]+"/.test(rules), 'rules require authenticated exact owner, authorized email, and verified email');
+  assert.ok(rules.includes(`request.auth.uid == "${ownerUid}"`), 'rules UID matches the client owner identity');
+  assert.ok(rules.includes(`request.auth.token.email == "${ownerEmail}"`), 'rules email matches the client owner identity');
+  assert.ok(/function isOwner\(userId\)[\s\S]*?isOwnerAccount\(\)[\s\S]*?userId == request\.auth\.uid/.test(rules), 'owner paths cannot be selected by another UID');
+  assert.ok(/match \/portfolios\/\{userId\}[\s\S]*?allow read, write: if isOwner\(userId\);/.test(rules), 'portfolio path is owner-only');
+  assert.ok(/match \/users\/\{userId\}[\s\S]*?allow read, write: if isOwner\(userId\);/.test(rules), 'user path is owner-only');
+  assert.ok(/match \/meta\/access[\s\S]*?allow read, write: if isOwnerAccount\(\);/.test(rules), 'admin metadata is owner-only');
+  assert.ok(!/allow read, write: if isSignedIn\(\)/.test(rules), 'no broad signed-in rule exists');
 });
 
 test('authorization failures are distinct and never fall back to a local fixture', () => {

@@ -154,3 +154,6 @@ jobs:
 
       - name: Run isolated Auth and Firestore emulator tests
         run: npm run test:auth-emulator
+
+      - name: Run fixed owner Firestore policy matrix
+        run: firebase emulators:exec --config firebase.m592-owner-only-emulator.json --only auth,firestore --project demo-owner-only-rules "node --test tests/m592-owner-only-rules-emulator.test.js"

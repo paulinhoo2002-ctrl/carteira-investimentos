@@ -52,7 +52,7 @@ async function setAccessState(state) {
     FB.accountMode = stateName;
     if (stateName !== 'REAL') FB.user = stateName === 'LOGIN_REQUIRED' ? null : { uid: 'synthetic-unauthorized', email: 'synthetic@example.invalid' };
     if (stateName === 'REAL') {
-      FB.user = { uid: 'synthetic-owner', email: 'owner@example.invalid', emailVerified: true, displayName: 'Conta sintética' };
+      FB.user = { uid: OWNER_FIREBASE_UID, email: OWNER_FIREBASE_EMAIL, emailVerified: true, displayName: 'Conta sintética' };
       FB.cloudLoaded = true;
       FB.cloudStateModel = CloudSyncState.resolve(CloudSyncState.begin(CloudSyncState.initial()), { exists: true, hasData: true });
       S.assets = [{ id: 'qa-synthetic-1', ticker: 'QAONLY3', type: 'Ação', qty: 1, avg_price: 10, current_price: 10 }];
@@ -116,37 +116,26 @@ test('unauthorized and auth-failure states stay blocked across direct routes', a
 test('late authorization reads from an old account cannot authorize or overwrite the new session', async () => {
   await freshPage();
   const result = await page.evaluate(async () => {
-    const userA = { uid: 'synthetic-account-a', email: 'a@example.invalid', emailVerified: true };
+    const userA = { uid: OWNER_FIREBASE_UID, email: OWNER_FIREBASE_EMAIL, emailVerified: true };
     const userB = { uid: 'synthetic-account-b', email: 'b@example.invalid', emailVerified: true };
-    let resolveAccess;
-    let resolveRegistry;
-    const accessRead = new Promise(resolve => { resolveAccess = resolve; });
-    const registryRead = new Promise(resolve => { resolveRegistry = resolve; });
     const originalDb = FB.db;
-    FB.db = { collection: name => ({ doc: id => ({ get: () => name === 'meta' && id === 'access' ? accessRead : registryRead }) }) };
+    let privateReads = 0;
+    FB.db = { collection: () => { privateReads++; throw new Error('unexpected private read'); } };
 
     const sessionA = authSessionGuard.begin(userA);
     FB.user = userA;
     FB.access = { loaded: true, loading: false, allowed: false, reason: 'synthetic B state' };
-    const pendingAccess = loadAccessControl(userA, sessionA);
     authSessionGuard.begin(userB);
     FB.user = userB;
     const stateForB = FB.access;
-    resolveAccess({ exists: true, data: () => ({ allowedEmails: ['a@example.invalid'] }) });
-    const accessA = await pendingAccess;
-
+    const accessA = await loadAccessControl(userA, sessionA);
     const staleMode = await resolveAccountModeCompat(userA, true, sessionA);
-    const modeSession = authSessionGuard.begin(userA);
-    const pendingMode = resolveAccountModeCompat(userA, true, modeSession);
-    authSessionGuard.begin(userB);
-    resolveRegistry({ exists: true, data: () => ({ enabled: true, role: 'owner', blocked: false }) });
-    const registryMode = await pendingMode;
     FB.db = originalDb;
     return {
       accessA,
       accessStatePreserved: FB.access === stateForB,
       staleMode,
-      registryMode,
+      privateReads,
       currentUid: FB.user?.uid,
     };
   });
@@ -155,10 +144,41 @@ test('late authorization reads from an old account cannot authorize or overwrite
     accessA: false,
     accessStatePreserved: true,
     staleMode: 'AUTH_FAILURE',
-    registryMode: 'AUTH_FAILURE',
+    privateReads: 0,
     currentUid: 'synthetic-account-b',
   });
   assert.equal(portfolioRequests, 0, 'an obsolete authorization result must not start a private portfolio read');
+});
+
+test('only verified owner reaches REAL and authorization checks perform no private reads', async () => {
+  await freshPage();
+  const result = await page.evaluate(async () => {
+    let privateReads = 0;
+    FB.db = { collection: () => { privateReads++; throw new Error('unexpected private read'); } };
+    const other = { uid: 'synthetic-other', emailVerified: true };
+    const unverifiedOwner = { uid: OWNER_FIREBASE_UID, email: OWNER_FIREBASE_EMAIL, emailVerified: false };
+    const wrongEmailOwner = { uid: OWNER_FIREBASE_UID, email: 'not-owner@example.invalid', emailVerified: true };
+    const owner = { uid: OWNER_FIREBASE_UID, email: OWNER_FIREBASE_EMAIL, emailVerified: true };
+    const anonymousAccess = await loadAccessControl(null);
+    const otherAccess = await loadAccessControl(other);
+    const unverifiedAccess = await loadAccessControl(unverifiedOwner);
+    const wrongEmailAccess = await loadAccessControl(wrongEmailOwner);
+    const ownerAccess = await loadAccessControl(owner);
+    const ownerMode = await resolveAccountModeCompat(owner, ownerAccess);
+    const otherMode = await resolveAccountModeCompat(other, true);
+    return { anonymousAccess, otherAccess, unverifiedAccess, wrongEmailAccess, ownerAccess, ownerMode, otherMode, privateReads };
+  });
+  assert.deepEqual(result, {
+    anonymousAccess: false,
+    otherAccess: false,
+    unverifiedAccess: false,
+    wrongEmailAccess: false,
+    ownerAccess: true,
+    ownerMode: 'REAL',
+    otherMode: 'BLOCKED',
+    privateReads: 0,
+  });
+  assert.equal(portfolioRequests, 0);
 });
 
 test('authorized synthetic owner reaches REAL shell and logout clears portfolio state', async () => {
