@@ -52,7 +52,8 @@ async function signInSynthetic(uid, email, emailVerified) {
   });
   assert.equal(response.ok, true, `Auth Emulator custom-token sign-in failed: HTTP ${response.status}`);
   const session = await response.json();
-  assert.ok(session.localId && session.idToken, 'Auth Emulator must issue an ephemeral test identity');
+  const authErrorCode = String(session.error?.message || session.error?.status || '').match(/[A-Z0-9_]+/)?.[0] || 'none';
+  assert.ok(session.localId && session.idToken, `Auth Emulator response lacks identity fields (fields=${Object.keys(session).sort().join(',')}; error=${authErrorCode})`);
   return session;
 }
 
