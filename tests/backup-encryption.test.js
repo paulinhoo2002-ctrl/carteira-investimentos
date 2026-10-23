@@ -56,6 +56,33 @@ test('encrypted backup rejects weak passwords and unsupported envelopes', async 
     /UNSUPPORTED_ENCRYPTED_BACKUP/,
   );
 });
+test('encrypted backup accepts six characters and keeps older twelve-character envelopes readable', async () => {
+  for (const password of ['123456', '123456789012', 'x'.repeat(128)]) {
+    const envelope = await Backup.encryptBackup(payload, password, { cryptoProvider: webcrypto });
+    assert.equal(envelope.kdf.iterations, 310000);
+    assert.equal(envelope.cipher.name, 'AES-GCM');
+    assert.deepEqual(await Backup.decryptBackup(envelope, password, { cryptoProvider: webcrypto }), payload);
+  }
+  const envelope = await Backup.encryptBackup(payload, '123456', { cryptoProvider: webcrypto });
+  await assert.rejects(Backup.decryptBackup(envelope, '654321', { cryptoProvider: webcrypto }), /DECRYPTION_FAILED/);
+  const previousEnvelope = {
+    format: 'carteira-investimentos-backup-encrypted', version: 1,
+    kdf: { name: 'PBKDF2', hash: 'SHA-256', iterations: 310000, salt: '0ET4US6CTotT6i1pT5vfKg==' },
+    cipher: { name: 'AES-GCM', iv: 'ihLHHEsF13+ruZbK' },
+    ciphertext: 'PAuu/rRav8c2Rq5cy3rTfgH2Kl7fLGFP+F2/EHnPU3e8dXkmlA8/SJn9kY5B3VQk',
+  };
+  assert.deepEqual(await Backup.decryptBackup(previousEnvelope, '123456789012', { cryptoProvider: webcrypto }), { marker: 'LEGACY_SYNTHETIC_V1' });
+});
+test('backup form keeps confirmation and warns about short passwords', () => {
+  const fs = require('node:fs');
+  const html = fs.readFileSync(require('node:path').join(__dirname, '..', 'index.html'), 'utf8');
+  assert.match(html, /id="backup-encryption-passphrase"[^>]*minlength="6"/);
+  assert.match(html, /id="backup-encryption-confirm"[^>]*minlength="6"/);
+  assert.match(html, /if\(passphrase\.length<6\)/);
+  assert.match(html, /if\(passphrase!==confirmation\)/);
+  assert.match(html, /12 caracteres ou mais/);
+  assert.match(html, /senhas curtas oferecem menor proteção/i);
+});
 test('backup UI encrypts downloads and decrypts before existing validation', () => {
   const fs = require('node:fs');
   const html = fs.readFileSync(require('node:path').join(__dirname, '..', 'index.html'), 'utf8');

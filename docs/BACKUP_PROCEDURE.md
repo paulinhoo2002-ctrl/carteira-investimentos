@@ -11,7 +11,7 @@ Os dois podem usar o diretório aprovado `C:\Projetos\_backups\carteira-investim
 
 1. Abra o app em produção e entre com a conta proprietária.
 2. Acesse **Configurações → Backup e restauração**.
-3. Use **Exportar protegido**. Defina e confirme uma senha forte de pelo menos 12 caracteres; o app não pode recuperá-la.
+3. Use **Exportar protegido**. Defina e confirme uma senha com pelo menos 6 caracteres. Senhas curtas oferecem menor proteção; recomendamos 12 caracteres ou mais. O app não pode recuperá-la.
 4. O navegador baixa `carteira-investimentos-backup-protegido-AAAA-MM-DD-HH-mm.json`.
 5. Guarde o arquivo e a senha em locais seguros e independentes. Não envie o arquivo nem a senha pelo chat.
 6. Copie o arquivo, no seu computador, para `C:\Projetos\_backups\carteira-investimentos\`.

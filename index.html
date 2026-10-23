@@ -12170,10 +12170,10 @@ function backupManagerModal(){
               <button class="btn bexp" onclick="exportBackup()">Exportar protegido</button>
             </div>
             <div class="backup-encryption-fields">
-              <label class="fg"><span class="fl">Senha do arquivo (mínimo 12 caracteres)</span><input id="backup-encryption-passphrase" class="inp" type="password" autocomplete="new-password" minlength="12" aria-label="Senha para criptografar o arquivo de backup"></label>
-              <label class="fg"><span class="fl">Confirme a senha</span><input id="backup-encryption-confirm" class="inp" type="password" autocomplete="new-password" minlength="12" aria-label="Confirme a senha do arquivo de backup"></label>
+              <label class="fg"><span class="fl">Senha do arquivo (mínimo 6 caracteres)</span><input id="backup-encryption-passphrase" class="inp" type="password" autocomplete="new-password" minlength="6" aria-label="Senha para criptografar o arquivo de backup"></label>
+              <label class="fg"><span class="fl">Confirme a senha</span><input id="backup-encryption-confirm" class="inp" type="password" autocomplete="new-password" minlength="6" aria-label="Confirme a senha do arquivo de backup"></label>
             </div>
-            <div class="backup-note">Inclui os domínios obrigatórios. Arquivo baixado é criptografado; senha perdida não pode ser recuperada. Histórico local neste navegador não recebe esta criptografia.</div>
+            <div class="backup-note">Inclui os domínios obrigatórios. Senhas curtas oferecem menor proteção; recomendamos 12 caracteres ou mais. Arquivo baixado é criptografado; senha perdida não pode ser recuperada. Histórico local neste navegador não recebe esta criptografia.</div>
           </div>
           <div class="cc" style="padding:12px 12px 11px">
             <div class="sh" style="margin-bottom:8px;gap:10px">
@@ -12774,12 +12774,12 @@ async function exportBackup(){
   }
   if(!S.backupOpen){
     openBackupCenter();
-    toast('No centro de backup, defina uma senha de pelo menos 12 caracteres para exportar o arquivo protegido.');
+    toast('No centro de backup, defina uma senha de pelo menos 6 caracteres para exportar o arquivo protegido. Recomendamos 12 ou mais.');
     return;
   }
   const passphrase=document.getElementById('backup-encryption-passphrase')?.value||'';
   const confirmation=document.getElementById('backup-encryption-confirm')?.value||'';
-  if(passphrase.length<12){toast('Use uma senha com pelo menos 12 caracteres.','#fbbf24');document.getElementById('backup-encryption-passphrase')?.focus();return;}
+  if(passphrase.length<6){toast('Use uma senha com pelo menos 6 caracteres; recomendamos 12 ou mais.','#fbbf24');document.getElementById('backup-encryption-passphrase')?.focus();return;}
   if(passphrase!==confirmation){toast('As senhas não conferem. Nenhum arquivo foi exportado.','#f87171');document.getElementById('backup-encryption-confirm')?.focus();return;}
   let payload;
   let encrypted;
