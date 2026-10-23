@@ -32,7 +32,7 @@ function b64url(value) {
 
 function syntheticCustomToken(uid, email, emailVerified) {
   const now = Math.floor(Date.now() / 1000);
-  const serviceAccount = `firebase-adminsdk@${PROJECT}.iam.gserviceaccount.com`;
+  const serviceAccount = 'firebase-auth-emulator@example.com';
   return `${b64url({ alg: 'none', typ: 'JWT' })}.${b64url({
     iss: serviceAccount,
     sub: serviceAccount,
