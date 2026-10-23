@@ -54,15 +54,25 @@ async function signInSynthetic(uid, email, emailVerified) {
   const session = await response.json();
   const authErrorCode = String(session.error?.message || session.error?.status || '').match(/[A-Z0-9_]+/)?.[0] || 'none';
   assert.ok(session.idToken, `Auth Emulator response lacks an ID token (fields=${Object.keys(session).sort().join(',')}; error=${authErrorCode})`);
+  const updateResponse = await request(`${AUTH}/identitytoolkit.googleapis.com/v1/accounts:update?key=demo-api-key`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ idToken: session.idToken, email, emailVerified, returnSecureToken: true }),
+  });
+  assert.equal(updateResponse.ok, true, 'Auth Emulator must apply synthetic email verification state');
+  const updatedSession = await updateResponse.json();
+  assert.ok(updatedSession.idToken, 'Auth Emulator account update must return a refreshed ID token');
   const lookupResponse = await request(`${AUTH}/identitytoolkit.googleapis.com/v1/accounts:lookup?key=demo-api-key`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ idToken: session.idToken }),
+    body: JSON.stringify({ idToken: updatedSession.idToken }),
   });
   assert.equal(lookupResponse.ok, true, 'Auth Emulator must resolve the synthetic ID token');
   const lookup = await lookupResponse.json();
   assert.ok(lookup.users?.[0]?.localId, 'Auth Emulator lookup must return the synthetic user identity');
-  return { ...session, localId: lookup.users[0].localId };
+  assert.equal(lookup.users[0].email, email, 'Auth Emulator must retain the synthetic email');
+  assert.equal(lookup.users[0].emailVerified, emailVerified, 'Auth Emulator must retain synthetic email verification');
+  return { ...updatedSession, localId: lookup.users[0].localId };
 }
 
 async function documentRequest(method, document, idToken) {
@@ -81,6 +91,12 @@ async function expectAccess(identity, method, document, allowed, label) {
 before(async () => {
   assert.equal(emulatorConfig.firestore.rules, 'firestore.rules', 'the emulator must load the exact production rules file');
   assert.ok(ownerUid && ownerEmail, 'the test reads the fixed owner identity from production rules without logging it');
+  const configResponse = await request(`${AUTH}/emulator/v1/projects/${PROJECT}/config`, {
+    method: 'PATCH',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ signIn: { allowDuplicateEmails: true } }),
+  });
+  assert.equal(configResponse.ok, true, 'Auth Emulator must allow the duplicate-email negative identity fixture');
   otherUid = `synthetic-${randomUUID()}`;
   owner = await signInSynthetic(ownerUid, ownerEmail, true);
   assert.ok(owner.localId === ownerUid, 'the Auth Emulator fixture must match the configured owner identity');
