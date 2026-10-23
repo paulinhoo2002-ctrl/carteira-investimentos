@@ -53,8 +53,16 @@ async function signInSynthetic(uid, email, emailVerified) {
   assert.equal(response.ok, true, `Auth Emulator custom-token sign-in failed: HTTP ${response.status}`);
   const session = await response.json();
   const authErrorCode = String(session.error?.message || session.error?.status || '').match(/[A-Z0-9_]+/)?.[0] || 'none';
-  assert.ok(session.localId && session.idToken, `Auth Emulator response lacks identity fields (fields=${Object.keys(session).sort().join(',')}; error=${authErrorCode})`);
-  return session;
+  assert.ok(session.idToken, `Auth Emulator response lacks an ID token (fields=${Object.keys(session).sort().join(',')}; error=${authErrorCode})`);
+  const lookupResponse = await request(`${AUTH}/identitytoolkit.googleapis.com/v1/accounts:lookup?key=demo-api-key`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ idToken: session.idToken }),
+  });
+  assert.equal(lookupResponse.ok, true, 'Auth Emulator must resolve the synthetic ID token');
+  const lookup = await lookupResponse.json();
+  assert.ok(lookup.users?.[0]?.localId, 'Auth Emulator lookup must return the synthetic user identity');
+  return { ...session, localId: lookup.users[0].localId };
 }
 
 async function documentRequest(method, document, idToken) {
