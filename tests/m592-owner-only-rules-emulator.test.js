@@ -56,7 +56,19 @@ async function exchangeCustomToken(uid) {
   return session;
 }
 
-async function signInSynthetic(uid, email, emailVerified) {
+async function lookupSyntheticUser(session) {
+  const lookupResponse = await request(`${AUTH}/identitytoolkit.googleapis.com/v1/accounts:lookup?key=demo-api-key`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ idToken: session.idToken }),
+  });
+  assert.equal(lookupResponse.ok, true, 'Auth Emulator must resolve the synthetic ID token');
+  const lookup = await lookupResponse.json();
+  assert.ok(lookup.users?.[0]?.localId, 'Auth Emulator lookup must return the synthetic user identity');
+  return lookup.users[0];
+}
+
+async function setSyntheticEmail(uid, email) {
   const session = await exchangeCustomToken(uid);
   const updateResponse = await request(`${AUTH}/identitytoolkit.googleapis.com/v1/accounts:update?key=demo-api-key`, {
     method: 'POST',
@@ -64,39 +76,50 @@ async function signInSynthetic(uid, email, emailVerified) {
     body: JSON.stringify({ idToken: session.idToken, email, returnSecureToken: true }),
   });
   assert.equal(updateResponse.ok, true, 'Auth Emulator must set the synthetic email');
-  const updatedSession = await updateResponse.json();
-  assert.ok(updatedSession.idToken, 'Auth Emulator account update must return a refreshed ID token');
-  if (emailVerified) {
-    const sendCodeResponse = await request(`${AUTH}/identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=demo-api-key`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ requestType: 'VERIFY_EMAIL', idToken: updatedSession.idToken }),
-    });
-    assert.equal(sendCodeResponse.ok, true, 'Auth Emulator must issue a synthetic email verification code');
-    const codesResponse = await request(`${AUTH}/emulator/v1/projects/${PROJECT}/oobCodes`);
-    assert.equal(codesResponse.ok, true, 'Auth Emulator must expose its synthetic verification code');
-    const { oobCodes = [] } = await codesResponse.json();
-    const verificationCode = oobCodes.find(code => code.email === email && code.requestType === 'VERIFY_EMAIL')?.oobCode;
-    assert.ok(verificationCode, 'Auth Emulator must retain the synthetic email verification code');
-    const verifyResponse = await request(`${AUTH}/identitytoolkit.googleapis.com/v1/accounts:update?key=demo-api-key`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ oobCode: verificationCode, returnSecureToken: true }),
-    });
-    assert.equal(verifyResponse.ok, true, 'Auth Emulator must verify the synthetic email');
-  }
-  const authenticated = await exchangeCustomToken(uid);
-  const lookupResponse = await request(`${AUTH}/identitytoolkit.googleapis.com/v1/accounts:lookup?key=demo-api-key`, {
+  return exchangeCustomToken(uid);
+}
+
+async function verifySyntheticEmail(session, email) {
+  const sendCodeResponse = await request(`${AUTH}/identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=demo-api-key`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ idToken: authenticated.idToken }),
+    body: JSON.stringify({ requestType: 'VERIFY_EMAIL', idToken: session.idToken }),
   });
-  assert.equal(lookupResponse.ok, true, 'Auth Emulator must resolve the synthetic ID token');
-  const lookup = await lookupResponse.json();
-  assert.ok(lookup.users?.[0]?.localId, 'Auth Emulator lookup must return the synthetic user identity');
-  assert.equal(lookup.users[0].email, email, 'Auth Emulator must retain the synthetic email');
-  assert.equal(lookup.users[0].emailVerified, emailVerified, 'Auth Emulator must retain synthetic email verification');
-  return { ...authenticated, localId: lookup.users[0].localId };
+  assert.equal(sendCodeResponse.ok, true, 'Auth Emulator must issue a synthetic email verification code');
+  const codesResponse = await request(`${AUTH}/emulator/v1/projects/${PROJECT}/oobCodes`);
+  assert.equal(codesResponse.ok, true, 'Auth Emulator must expose its synthetic verification code');
+  const { oobCodes = [] } = await codesResponse.json();
+  const verificationCode = oobCodes.filter(code => code.email === email && code.requestType === 'VERIFY_EMAIL').at(-1)?.oobCode;
+  assert.ok(verificationCode, 'Auth Emulator must retain the synthetic email verification code');
+  const verifyResponse = await request(`${AUTH}/identitytoolkit.googleapis.com/v1/accounts:update?key=demo-api-key`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ oobCode: verificationCode, returnSecureToken: true }),
+  });
+  assert.equal(verifyResponse.ok, true, 'Auth Emulator must verify the synthetic email');
+  return exchangeCustomToken((await lookupSyntheticUser(session)).localId);
+}
+
+async function signInSynthetic(uid, email, emailVerified) {
+  let session = await exchangeCustomToken(uid);
+  let user = await lookupSyntheticUser(session);
+  if (user.email && user.email !== email) {
+    session = await setSyntheticEmail(uid, `synthetic-${randomUUID()}@example.invalid`);
+    user = await lookupSyntheticUser(session);
+  }
+  if (user.email === email && user.emailVerified && !emailVerified) {
+    session = await setSyntheticEmail(uid, `synthetic-${randomUUID()}@example.invalid`);
+    user = await lookupSyntheticUser(session);
+  }
+  if (user.email !== email) {
+    session = await setSyntheticEmail(uid, email);
+    user = await lookupSyntheticUser(session);
+  }
+  if (emailVerified && !user.emailVerified) session = await verifySyntheticEmail(session, email);
+  user = await lookupSyntheticUser(session);
+  assert.equal(user.email, email, 'Auth Emulator must retain the synthetic email');
+  assert.equal(user.emailVerified, emailVerified, 'Auth Emulator must retain synthetic email verification');
+  return { ...session, localId: user.localId };
 }
 
 async function documentRequest(method, document, idToken) {
