@@ -19,7 +19,9 @@ test('V249 UI exposes integrity and preview states without a real restore action
 });
 
 test('V249 export excludes the old token presentation from the new flow', () => {
-  const exportStart = html.indexOf('async function exportBackup()');
+  // M761: assinatura evoluiu para exportBackup({encrypted=true}={}) — localizar pelo
+  // prefixo estável; a intenção do contrato (payload portability, zero brapiToken) permanece.
+  const exportStart = html.indexOf('async function exportBackup(');
   const exportEnd = html.indexOf('function importBackup()', exportStart);
   assert.ok(exportStart >= 0 && exportEnd > exportStart);
   const exportCode = html.slice(exportStart, exportEnd);
