@@ -18609,22 +18609,18 @@ function refreshQuickMovementPreview(){
 }
 function quickMovementEscape(e){
   if(e.key!=='Escape' || !S.quickMovementOpen) return;
-  const overlay=document.querySelector('.note-overlay');
-  if(overlay){
-    const fields=Array.from(overlay.querySelectorAll('input, select, textarea'));
-    const base=window.__qmBaseline||[];
-    const dirty=fields.some((el,i)=>{
-      const cur=el.type==='checkbox'||el.type==='radio' ? el.checked : String(el.value||'');
-      return base[i]!==undefined ? cur!==base[i] : String(cur).trim()!=='';
-    });
-    if(dirty) return; // proteção de dados não salvos: use Cancelar explicitamente
-  }
+  // M878/M903: baseline = snapshot DO DRAFT (modelo), capturado diferido (~350ms) para
+  // incluir prefills que chegam após o render (ticker/nome da linha). Flag __qmUserEdited
+  // (listener input no overlay) impede re-captura tardia de wipe de digitação do usuário.
+  const baseline=(typeof window!=='undefined')?window.__qmBaselineDraft:null;
+  const userEdited=(typeof window!=='undefined')&&window.__qmUserEdited===true;
+  if(userEdited) return; // dados não salvos: use Cancelar explicitamente
+  if(baseline && S.quickMovementDraft && JSON.stringify(S.quickMovementDraft)!==baseline) return;
   closeQuickMovement();
 }
 function openQuickMovement(kind='compra'){
   const next=normalizeQuickMovementKind(kind);
   if(typeof document!=='undefined') document.addEventListener('keydown', quickMovementEscape);
-  if(typeof document!=='undefined' && typeof requestAnimationFrame!=='undefined') requestAnimationFrame(()=>{ window.__qmBaseline=Array.from(document.querySelectorAll('.note-overlay input, .note-overlay select, .note-overlay textarea')).map(el=>el.type==='checkbox'||el.type==='radio' ? el.checked : String(el.value||'')); });
   const current=S.quickMovementDraft && typeof S.quickMovementDraft==='object' ? S.quickMovementDraft : {};
   S.showA=false;
   S.showP=false;
@@ -18657,9 +18653,19 @@ function openQuickMovement(kind='compra'){
   }
   S.quickMovementOpen=true;
   render();
+  // M878/M903: snapshot diferido do draft (350ms) — cobre prefills pós-render; listener
+  // de input marca edição do usuário e bloqueia tanto o ESC quanto a re-captura tardia.
+  if(typeof window!=='undefined' && typeof document!=='undefined'){
+    window.__qmBaselineDraft=null;
+    window.__qmUserEdited=false;
+    const overlay=document.querySelector('.note-overlay');
+    if(overlay && !overlay.dataset.qmEscBind){ overlay.dataset.qmEscBind='1'; overlay.addEventListener('input', ()=>{ window.__qmUserEdited=true; }, { capture:true, passive:true }); }
+    if(typeof setTimeout==='function') setTimeout(()=>{ if(!window.__qmUserEdited && S.quickMovementOpen && S.quickMovementDraft) window.__qmBaselineDraft=JSON.stringify(S.quickMovementDraft); }, 350);
+  }
 }
 function closeQuickMovement(){
   if(typeof document!=='undefined') document.removeEventListener('keydown', quickMovementEscape);
+  if(typeof window!=='undefined'){ window.__qmBaselineDraft=null; window.__qmUserEdited=false; }
   withScrollPreserved(()=>{
     S.quickMovementOpen=false;
     S.quickMovementDraft=null;
