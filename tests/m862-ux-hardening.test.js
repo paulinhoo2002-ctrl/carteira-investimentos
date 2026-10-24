@@ -24,11 +24,18 @@ test('M878 modal de movimentação fecha por ESC apenas sem dados não salvos', 
   const openBody = html.slice(opened, opened + 400);
   const closeBody = html.slice(closed, closed + 400);
   assert.match(openBody, /document\.addEventListener\('keydown', quickMovementEscape\)/);
-  assert.match(openBody, /window\.__qmBaseline=/, 'baseline capturado fora do estado persistido');
+  // M903 final: baseline = snapshot DIFERIDO do draft (350ms pós-render, cobre prefills);
+  // flag __qmUserEdited via listener de input bloqueia ESC e a re-captura tardia; guards
+  // de VM (window/document/setTimeout) — os testes V320 executam open/close sem DOM.
+  assert.match(html, /window\.__qmBaselineDraft=null;\s*\r?\n\s*window\.__qmUserEdited=false;/);
+  assert.match(html, /overlay\.addEventListener\('input', \(\)=>\{ window\.__qmUserEdited=true; \}/);
+  assert.match(html, /setTimeout\(\(\)=>\{ if\(!window\.__qmUserEdited && S\.quickMovementOpen && S\.quickMovementDraft\) window\.__qmBaselineDraft=JSON\.stringify\(S\.quickMovementDraft\); \}, 350\)/);
+  assert.match(html, /if\(userEdited\) return;/);
+  assert.match(html, /JSON\.stringify\(S\.quickMovementDraft\)!==baseline\) return;/);
   assert.match(closeBody, /document\.removeEventListener\('keydown', quickMovementEscape\)/);
-  // proteção de dados sujos contra baseline
-  assert.match(html, /const dirty=fields\.some\(\(el,i\)=>\{/);
-  assert.match(html, /if\(dirty\) return; \/\/ proteção de dados não salvos/);
+  assert.match(html, /window\.__qmBaselineDraft=null; window\.__qmUserEdited=false; \}/);
+  assert.doesNotMatch(html, /__qmBaseline=/, 'baseline DOM antigo removido');
+  assert.doesNotMatch(html, /requestAnimationFrame\(\(\)=>\{ window\.__qmBaseline/);
   // baseline NUNCA em S (não persistir)
   assert.doesNotMatch(html, /S\.__quickMovementBaseline/);
 });
