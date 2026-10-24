@@ -36555,6 +36555,7 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
 function dividendsLegacyTab(showGoal=false,pageTitle='Dividendos e Proventos'){
   const { mD, aD, avgDY, tC } = cx();
   const passiveGoal = passiveIncomeGoalStats();
+  const projCurrent=S.assets.reduce((s,a)=>s+(((Number(a.qty)||0)*(Number(a.current_price)||0)*(Number(a.dy)||0)/100)/12),0);
   const resumo = proventoResumo();
   const resumoTipos = proventoResumoTipos();
   const resumoMensalTipos = proventoResumoMensalTipos();
