@@ -66,7 +66,7 @@ async function main() {
   if (fs.existsSync(sidecar)) {
     const expected = (fs.readFileSync(sidecar, 'utf8').match(/[a-f0-9]{64}/) || [])[0];
     const actual = crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
-    if (expected !== expected) fail('impossível');
+    if (!expected) fail('Sidecar presente mas sem hash SHA-256 válido.');
     if (actual !== expected) fail('Sidecar SHA-256 NÃO confere — arquivo alterado ou corrompido. ABORTADO antes de qualquer leitura.');
     console.log('🔒 Integridade SHA-256: OK (sidecar confere)');
   } else {
