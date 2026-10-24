@@ -18623,8 +18623,8 @@ function quickMovementEscape(e){
 }
 function openQuickMovement(kind='compra'){
   const next=normalizeQuickMovementKind(kind);
-  document.addEventListener('keydown', quickMovementEscape);
-  requestAnimationFrame(()=>{ window.__qmBaseline=Array.from(document.querySelectorAll('.note-overlay input, .note-overlay select, .note-overlay textarea')).map(el=>el.type==='checkbox'||el.type==='radio' ? el.checked : String(el.value||'')); });
+  if(typeof document!=='undefined') document.addEventListener('keydown', quickMovementEscape);
+  if(typeof document!=='undefined' && typeof requestAnimationFrame!=='undefined') requestAnimationFrame(()=>{ window.__qmBaseline=Array.from(document.querySelectorAll('.note-overlay input, .note-overlay select, .note-overlay textarea')).map(el=>el.type==='checkbox'||el.type==='radio' ? el.checked : String(el.value||'')); });
   const current=S.quickMovementDraft && typeof S.quickMovementDraft==='object' ? S.quickMovementDraft : {};
   S.showA=false;
   S.showP=false;
@@ -18659,7 +18659,7 @@ function openQuickMovement(kind='compra'){
   render();
 }
 function closeQuickMovement(){
-  document.removeEventListener('keydown', quickMovementEscape);
+  if(typeof document!=='undefined') document.removeEventListener('keydown', quickMovementEscape);
   withScrollPreserved(()=>{
     S.quickMovementOpen=false;
     S.quickMovementDraft=null;
