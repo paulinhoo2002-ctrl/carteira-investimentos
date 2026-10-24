@@ -18607,8 +18607,24 @@ function refreshQuickMovementPreview(){
   const summary=document.getElementById('quick-movement-asset-summary');
   if(summary && typeof quickMovementAssetSummaryHtml==='function') summary.innerHTML=quickMovementAssetSummaryHtml();
 }
+function quickMovementEscape(e){
+  if(e.key!=='Escape' || !S.quickMovementOpen) return;
+  const overlay=document.querySelector('.note-overlay');
+  if(overlay){
+    const fields=Array.from(overlay.querySelectorAll('input, select, textarea'));
+    const base=window.__qmBaseline||[];
+    const dirty=fields.some((el,i)=>{
+      const cur=el.type==='checkbox'||el.type==='radio' ? el.checked : String(el.value||'');
+      return base[i]!==undefined ? cur!==base[i] : String(cur).trim()!=='';
+    });
+    if(dirty) return; // proteção de dados não salvos: use Cancelar explicitamente
+  }
+  closeQuickMovement();
+}
 function openQuickMovement(kind='compra'){
   const next=normalizeQuickMovementKind(kind);
+  document.addEventListener('keydown', quickMovementEscape);
+  requestAnimationFrame(()=>{ window.__qmBaseline=Array.from(document.querySelectorAll('.note-overlay input, .note-overlay select, .note-overlay textarea')).map(el=>el.type==='checkbox'||el.type==='radio' ? el.checked : String(el.value||'')); });
   const current=S.quickMovementDraft && typeof S.quickMovementDraft==='object' ? S.quickMovementDraft : {};
   S.showA=false;
   S.showP=false;
@@ -18643,6 +18659,7 @@ function openQuickMovement(kind='compra'){
   render();
 }
 function closeQuickMovement(){
+  document.removeEventListener('keydown', quickMovementEscape);
   withScrollPreserved(()=>{
     S.quickMovementOpen=false;
     S.quickMovementDraft=null;
@@ -31806,7 +31823,14 @@ function dash(){
         </div>
       </div>
       ${executiveKPIs(data)}
-      ${package2ExecutivePanel(!dashboardHasEconomicCertification(data?.portfolioEconomicResult))}
+            ${package2ExecutivePanel(!dashboardHasEconomicCertification(data?.portfolioEconomicResult))}
+${!S.assets.length ? `<div class="dashboard-empty-cta" role="region" aria-label="Primeiros passos">
+        <p class="mu" style="margin:0">Sua carteira está vazia. Cadastre um ativo ou importe um arquivo da sua corretora para começar.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+          <button type="button" class="btn bp" onclick="go('ativos')">➕ Cadastrar primeiro ativo</button>
+          <button type="button" class="btn bgh" onclick="go('importacao')">⬆ Importar dados</button>
+        </div>
+      </div>` : ''}
       <div class="dashboard-analytical-primary canon-dash-row-b">
         ${dashboardEvolutionPanel(data)}
         ${dashboardV3AllocationPanel()}
@@ -37652,6 +37676,8 @@ function goInternal(t,persistNavigation){
   if(t==='dividendos' && !S.activeDividendSection) S.activeDividendSection='';
   if(t==='irpf'){ S.irpfStep=1; S.irpfFinalOpen=false; }
   if(persistRoute && t!=='importacao') save();
+  const routeTitleMap={dashboard:'Resumo',ativos:'Ativos',patrimonio:'Patrimônio',dividendos:'Dividendos','renda-fixa':'Renda Fixa',aportes:'Aportes',rentabilidade:'Rentabilidade',analise:'Análise',metas:'Metas',relatorios:'Relatórios',irpf:'IRPF',importacao:'Importar dados',auditoria:'Auditoria',confiabilidade:'Confiabilidade',settings:'Configurações',ajudar:'Ajuda',ia:'IA'};
+  if(typeof document!=='undefined') document.title=((routeTitleMap[S.tab]||'Carteira')+' · Carteira de Investimentos');
   render();
   if(persistRoute && t==='dividendos') runAutoProventosGratis('tab');
 }  // ← FIX: salva tab ao navegar
