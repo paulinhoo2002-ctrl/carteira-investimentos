@@ -241,9 +241,9 @@ html[data-theme="light"]{
   --fw-bold:700;
 }
 .ds-kpi{display:flex;min-width:0;flex-direction:column;justify-content:space-between;gap:var(--ds-space-2);padding:10px 12px;border:1px solid var(--ds-border);border-radius:var(--ds-radius-card);background:var(--ds-surface)}
-.ds-kpi__label{display:flex;min-width:0;align-items:center;gap:var(--ds-space-2);color:var(--ds-text-secondary);font-size:9px;font-weight:700;line-height:1.2;letter-spacing:.04em;text-transform:uppercase}
+.ds-kpi__label{display:flex;min-width:0;align-items:center;gap:var(--ds-space-2);color:var(--ds-text-secondary);font-size:var(--fs-label);font-weight:700;line-height:1.2;letter-spacing:.04em;text-transform:uppercase}
 .ds-kpi__value{color:var(--ds-text-primary);font-size:18px;font-weight:900;line-height:1.1;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
-.ds-kpi__context{color:var(--ds-text-secondary);font-size:9px;line-height:1.2}
+.ds-kpi__context{color:var(--ds-text-secondary);font-size:var(--fs-caption);line-height:1.2}
 .ds-kpi--positive .ds-kpi__value{color:var(--ds-positive)}
 .ds-kpi--negative .ds-kpi__value{color:var(--ds-negative)}
 .ds-kpi--warning .ds-kpi__value{color:var(--ds-warning)}
@@ -5689,7 +5689,7 @@ html[data-theme="dark"] .quick-movement-error{
 .asset-premium-sub,
 .patrimony-panel-sub,
 .div-overview-panel-sub {
-  font-size: 10px !important;
+  font-size: var(--fs-caption) !important;
   color: var(--muted) !important;
   line-height: 1.35 !important;
   margin-top: 2px !important;
@@ -5709,7 +5709,7 @@ html[data-theme="dark"] .quick-movement-error{
 .patrimony-insight-label,
 .ap-summary .cl,
 .backup-card .cl {
-  font-size: 10px !important;
+  font-size: var(--fs-label) !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
   letter-spacing: .06em !important;
@@ -5744,7 +5744,7 @@ html[data-theme="dark"] .quick-movement-error{
 .patrimony-insight-note,
 .analysis-summary-sub,
 .rf-summary-sub {
-  font-size: 10px !important;
+  font-size: var(--fs-caption) !important;
   color: var(--muted) !important;
   line-height: 1.2 !important;
   margin-top: 4px !important;
@@ -6498,7 +6498,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
 /* PREMIUM FIXED INCOME 4 */
       .premium-rf-page{display:flex;flex-direction:column;gap:14px}
       .premium-rf-header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:2px 2px 0}
-      .premium-rf-kicker{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800}
+      .premium-rf-kicker{font-size:var(--fs-caption);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800}
       .premium-rf-title{margin:3px 0 0;font-size:22px;line-height:1.1;color:var(--text);font-weight:900;letter-spacing:-.025em}
       .premium-rf-subtitle{margin-top:5px;color:var(--muted);font-size:12px;line-height:1.45}
       .premium-rf-header .btn{min-height:44px}
@@ -6506,15 +6506,15 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       .premium-rf-header .btn.bs:hover{background:var(--panel)}
       .premium-rf-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
       .premium-rf-kpi{min-width:0;padding:12px 13px;border:1px solid var(--border);border-radius:14px;background:linear-gradient(145deg,var(--panel),var(--surface));box-shadow:0 10px 24px rgba(0,0,0,.08)}
-      .premium-rf-kpi-label{font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+      .premium-rf-kpi-label{font-size:var(--fs-label);color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.04em}
       .premium-rf-kpi-value{margin-top:7px;color:var(--text);font-size:17px;font-weight:900;line-height:1.1;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
-      .premium-rf-kpi-note{margin-top:5px;color:var(--muted);font-size:10px;line-height:1.3}
+      .premium-rf-kpi-note{margin-top:5px;color:var(--muted);font-size:var(--fs-caption);line-height:1.3}
       .premium-rf-grid{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(260px,1fr);gap:12px;align-items:start}
       .premium-rf-panel{min-width:0;border:1px solid var(--border);border-radius:16px;background:var(--panel);overflow:hidden}
       .premium-rf-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:14px 15px 11px;border-bottom:1px solid var(--border)}
       .premium-rf-panel-title{color:var(--text);font-size:13px;font-weight:900}
-      .premium-rf-panel-sub{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.35}
-      .premium-rf-panel-badge{flex:none;padding:5px 8px;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:10px;font-weight:800}
+      .premium-rf-panel-sub{margin-top:3px;color:var(--muted);font-size:var(--fs-caption);line-height:1.35}
+      .premium-rf-panel-badge{flex:none;padding:5px 8px;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:var(--fs-caption);font-weight:800}
       .premium-rf-position-list,.premium-rf-maturity-list{display:flex;flex-direction:column}
       .premium-rf-position-row,.premium-rf-maturity-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 15px;border-bottom:1px solid var(--border)}
       .premium-rf-position-row:last-child,.premium-rf-maturity-row:last-child{border-bottom:0}
@@ -6524,30 +6524,30 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       .premium-rf-primary-kpi .premium-rf-kpi-note{min-height:2.5em}
       .premium-rf-row-main{min-width:0;flex:1}
       .premium-rf-row-title{color:var(--text);font-size:12px;font-weight:850;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
-      .premium-rf-row-meta{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.35;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
-      .premium-rf-provenance{display:inline-flex;align-items:center;margin-right:4px;padding:2px 5px;border:1px solid currentColor;border-radius:999px;font-size:9px;font-weight:800;line-height:1.1;white-space:nowrap}
+      .premium-rf-row-meta{margin-top:3px;color:var(--muted);font-size:var(--fs-caption);line-height:1.35;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
+      .premium-rf-provenance{display:inline-flex;align-items:center;margin-right:4px;padding:2px 5px;border:1px solid currentColor;border-radius:999px;font-size:var(--fs-caption);font-weight:800;line-height:1.1;white-space:nowrap}
       .premium-rf-provenance.ok{color:#86efac}.premium-rf-provenance.info{color:#7dd3fc}.premium-rf-provenance.warn{color:#fcd34d}.premium-rf-provenance.muted{color:var(--muted)}
       .premium-rf-trust-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:11px 13px;border:1px solid rgba(96,165,250,.22);border-radius:14px;background:rgba(96,165,250,.06)}
-      .premium-rf-trust-copy{display:flex;flex-direction:column;gap:3px;min-width:220px;color:var(--muted);font-size:10px;line-height:1.35}.premium-rf-trust-copy strong{color:var(--text);font-size:12px}
-      .premium-rf-trust-counts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.premium-rf-trust-count{padding:4px 7px;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:10px;white-space:nowrap}.premium-rf-trust-count b{color:var(--text);margin-left:3px}.premium-rf-trust-count.warn{color:#fcd34d}
+      .premium-rf-trust-copy{display:flex;flex-direction:column;gap:3px;min-width:220px;color:var(--muted);font-size:var(--fs-caption);line-height:1.35}.premium-rf-trust-copy strong{color:var(--text);font-size:12px}
+      .premium-rf-trust-counts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.premium-rf-trust-count{padding:4px 7px;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:var(--fs-caption);white-space:nowrap}.premium-rf-trust-count b{color:var(--text);margin-left:3px}.premium-rf-trust-count.warn{color:#fcd34d}
       .premium-rf-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:10px 15px;border-bottom:1px solid var(--border);background:var(--surface)}
       .premium-rf-controls .premium-rf-search-control{grid-column:span 2}
       .premium-rf-filter-details{grid-column:1/-1;min-width:0}
       .premium-rf-filter-details>summary{display:none;align-items:center;justify-content:space-between;gap:8px;min-height:44px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:var(--panel);color:var(--text);font-size:12px;font-weight:800;cursor:pointer;list-style:none}
       .premium-rf-filter-details>summary::-webkit-details-marker{display:none}
-      .premium-rf-active-filter-count{color:var(--muted);font-size:10px;font-weight:750}
+      .premium-rf-active-filter-count{color:var(--muted);font-size:var(--fs-caption);font-weight:750}
       .premium-rf-filter-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-      .premium-rf-controls label{display:grid;gap:4px;color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}.premium-rf-controls input,.premium-rf-controls select{width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:var(--panel);color:var(--text);font:inherit;font-size:11px;text-transform:none;letter-spacing:normal}.premium-rf-controls input:focus-visible,.premium-rf-controls select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+      .premium-rf-controls label{display:grid;gap:4px;color:var(--muted);font-size:var(--fs-label);font-weight:800;text-transform:uppercase;letter-spacing:.04em}.premium-rf-controls input,.premium-rf-controls select{width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:var(--panel);color:var(--text);font:inherit;font-size:var(--fs-body);text-transform:none;letter-spacing:normal}.premium-rf-controls input:focus-visible,.premium-rf-controls select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       .premium-rf-row-meta.pos{color:var(--success)}
             .premium-rf-row-meta.neg{color:#f87171}
             .premium-rf-row-meta.neutral{color:var(--muted)}
       .premium-rf-row-value{min-width:174px;text-align:right;flex:none;color:var(--text);font-size:12px;font-weight:850;font-variant-numeric:tabular-nums}
       .premium-rf-row-financial{display:flex;align-items:baseline;justify-content:flex-end;gap:6px}
-      .premium-rf-row-financial-label{color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+      .premium-rf-row-financial-label{color:var(--muted);font-size:var(--fs-caption);font-weight:800;text-transform:uppercase;letter-spacing:.04em}
       .premium-rf-row-results{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
       .premium-rf-row-actions{flex:none;display:flex;align-items:center}
       .premium-rf-row-actions .asset-action-menu-panel{right:0;left:auto}
-      .premium-rf-maturity-badge{display:inline-flex;align-items:center;min-height:24px;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:800;white-space:nowrap}
+      .premium-rf-maturity-badge{display:inline-flex;align-items:center;min-height:24px;padding:3px 8px;border-radius:999px;font-size:var(--fs-caption);font-weight:800;white-space:nowrap}
       .premium-rf-maturity-badge.danger{color:#fecaca;background:#3f1d24;border:1px solid rgba(248,113,113,.24)}
       .premium-rf-maturity-badge.warn{color:#fde68a;background:#3d2f12;border:1px solid rgba(251,191,36,.24)}
       .premium-rf-maturity-badge.info{color:#bfdbfe;background:#1e3a5f;border:1px solid rgba(96,165,250,.24)}
@@ -6567,21 +6567,21 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
       .premium-rf-review-group+.premium-rf-review-group{border-left:1px solid var(--border)}
       .premium-rf-review-group-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
       .premium-rf-review-group-title{color:var(--text);font-size:11px;font-weight:900}
-      .premium-rf-review-group-count{min-width:22px;padding:3px 6px;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:10px;font-weight:900;text-align:center}
-      .premium-rf-review-group-sub{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.3}
+      .premium-rf-review-group-count{min-width:22px;padding:3px 6px;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:var(--fs-caption);font-weight:900;text-align:center}
+      .premium-rf-review-group-sub{margin-top:3px;color:var(--muted);font-size:var(--fs-caption);line-height:1.3}
       .premium-rf-review-list{display:flex;flex-direction:column;margin-top:8px}
       .premium-rf-review-item{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--border)}
       .premium-rf-review-item-main{min-width:0}
       .premium-rf-review-item-title{color:var(--text);font-size:11px;font-weight:850;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
-      .premium-rf-review-item-meta{margin-top:2px;color:var(--muted);font-size:10px;line-height:1.3;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
-      .premium-rf-review-item-value{margin-top:2px;color:var(--text);font-size:10px;font-weight:800;font-variant-numeric:tabular-nums}
-      .premium-rf-review-action{min-height:34px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text);font-size:10px;font-weight:800;cursor:pointer}
+      .premium-rf-review-item-meta{margin-top:2px;color:var(--muted);font-size:var(--fs-caption);line-height:1.3;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
+      .premium-rf-review-item-value{margin-top:2px;color:var(--text);font-size:var(--fs-label);font-weight:800;font-variant-numeric:tabular-nums}
+      .premium-rf-review-action{min-height:44px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text);font-size:var(--fs-label);font-weight:800;cursor:pointer}
       .premium-rf-review-action:hover{background:var(--surface);border-color:var(--accent)}
       .premium-rf-review-action:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-      .premium-rf-review-empty{padding:8px 0 2px;color:var(--muted);font-size:10px;line-height:1.35}
+      .premium-rf-review-empty{padding:8px 0 2px;color:var(--muted);font-size:var(--fs-caption);line-height:1.35}
       .premium-rf-ipca-diagnostics .premium-income-row{grid-template-columns:minmax(0,1fr) minmax(0,auto)}
       .premium-rf-ipca-diagnostics .premium-row-value{min-width:0;text-align:right;white-space:normal}
-      @media(max-width:1499px){.premium-rf-position-row,.premium-rf-maturity-row{flex-wrap:wrap}.premium-rf-row-main{flex:1 1 220px}.premium-rf-row-value{flex:1 1 220px}.premium-rf-row-actions{flex:1 1 100%;justify-content:flex-end;flex-wrap:wrap;gap:6px}}
+      @media(max-width:1599px){.premium-rf-position-row,.premium-rf-maturity-row{flex-wrap:wrap}.premium-rf-row-main{flex:1 1 220px}.premium-rf-row-value{flex:1 1 220px}.premium-rf-row-actions{flex:1 1 100%;justify-content:flex-end;flex-wrap:wrap;gap:6px}}
       @media(min-width:768px){.premium-rf-filter-details:not([open])>.premium-rf-filter-options{display:grid}.premium-rf-secondary-overview .premium-rf-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
       @media(max-width:1199px){.premium-rf-grid{grid-template-columns:1fr}.premium-rf-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.premium-rf-review-groups{grid-template-columns:repeat(2,minmax(0,1fr))}.premium-rf-review-group:nth-child(3){border-left:0;border-top:1px solid var(--border)}.premium-rf-review-group:nth-child(4){border-top:1px solid var(--border)}}
       @media(max-width:767px){
@@ -6597,7 +6597,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
         .premium-rf-primary-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
         .premium-rf-primary-kpi{padding:9px}
         .premium-rf-primary-kpi .premium-rf-kpi-value{font-size:13px}
-        .premium-rf-primary-kpi .premium-rf-kpi-note{min-height:0;font-size:9px;line-height:1.3}
+        .premium-rf-primary-kpi .premium-rf-kpi-note{min-height:0;font-size:var(--fs-caption);line-height:1.3}
         .premium-rf-controls{grid-template-columns:1fr;padding:10px 12px}
         .premium-rf-controls .premium-rf-search-control{grid-column:auto}
         .premium-rf-filter-details{grid-column:auto}
@@ -7021,9 +7021,10 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     .asset-premium-card-summary { padding: 12px; display: grid; grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr); align-items:start; gap:9px; cursor: pointer; }
     .asset-premium-card-summary .asset-info { gap: 10px; }
     .asset-premium-card-summary .asset-logo { width: 32px; height: 32px; font-size: 12px; }
+    .asset-premium-card-summary .asset-ticker { font-size: 12px; }
     .asset-premium-card-meta { min-width:0; display:grid; gap:5px; text-align:right; }
     .asset-premium-card-meta>div{display:flex;flex-direction:column;gap:1px;min-width:0}
-    .asset-premium-card-meta span{font-size:9px;line-height:1.2}
+    .asset-premium-card-meta span{font-size:12px;line-height:1.2}
     .asset-premium-card-meta span:not(.asset-type){color:var(--muted)}
     .asset-premium-card-meta strong{font-size:12px;line-height:1.25;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
     .asset-premium-card-details { padding: 12px; border-top: 1px solid var(--border); background: var(--bg); }
@@ -8866,7 +8867,8 @@ const STOR         = 'civ5';
 const APP_NAME     = 'Carteira de Investimentos';
 const BACKUP_VER   = 1;
 const DEFAULT_BRAPI = ''; // brapi fica opcional; cotações usam Yahoo Finance via /api/yahoo-quote sem token
-const ACCESS_ADMIN_EMAILS = ['paulinhoo2002@gmail.com'];
+const OWNER_FIREBASE_UID = 'yaypxiiv7Ye7pwpDZ0nqhG3Yj7E3';
+const OWNER_FIREBASE_EMAIL = 'paulinhoo2002@gmail.com';
 const THEME_STOR   = 'carteira_theme';
 const HIDE_VALUES_STOR = 'carteira_hide_values';
 const THEME_COLOR  = { dark:'#07090f', light:'#e8eff6' };
@@ -9004,7 +9006,7 @@ const firebaseConfig = {
 let FB = {
   ready:false, app:null, auth:null, db:null, user:null,
   unsub:null, cloudLoaded:false, localPortfolioLoaded:false, cloudStateModel:null, cloudSyncTimeoutTimer:null, applying:false, saveTimer:null, cloudRetryTimer:null, pendingCloudSave:false, lastCloudUpdate:null, lastCloudError:null,
-  lastCloudSignature:'', authResolved:false, syncInFlight:false, securitySaving:false,
+  lastCloudSignature:'', authResolved:false, syncInFlight:false,
   readOnlyOfflineSnapshotReady:false, readOnlyOfflineSnapshotScope:'', readOnlyOfflineSnapshotSignature:'',
   access:{loaded:false,loading:true,allowed:false,reason:'',cfg:null,lastDeniedAt:null}
 };
@@ -9190,7 +9192,6 @@ let S = {
   portfolioSearchQuery:'',
   portfolioSearchIndex:0,
   portfolioSearchTrigger:null,
-  accessSettingsOpen:false,
   backupOpen:false,
   backupImportDraft:null,
   backupImportValidating:false,
@@ -9409,7 +9410,6 @@ function resetTransientRuntimeState(){
   S.qInFlight=false;
   S.qLoad=false;
   S.backupOpen=false;
-  S.accessSettingsOpen=false;
   S.mobileMenuOpen=false;
   S.mobileTopMenuOpen=false;
   S.quickMovementOpen=false;
@@ -9557,7 +9557,6 @@ const LOCAL_TEST_FIXTURE_RUNTIME=(()=>{
   S.irpfStep=1;
   S.mobileMenuOpen=false;
   S.mobileTopMenuOpen=false;
-  S.accessSettingsOpen=false;
   S.backupOpen=false;
   S.pdfReportOpen=false;
   S.quickMovementOpen=false;
@@ -9591,17 +9590,13 @@ function restoreLocalTestData(){
   toast('🧪 Dados de teste restaurados.', '#60a5fa');
 }
 function normalizeEmail(v){ return String(v||'').toLowerCase().trim(); }
-function normalizeAccessList(v){
-  return Array.isArray(v)
-    ? v.map(x=>normalizeEmail(x)).filter(Boolean)
-    : [];
-}
-function isAccessAdmin(email){
-  return ACCESS_ADMIN_EMAILS.includes(normalizeEmail(email));
+function isAccessAdmin(user){
+  return !!user && user.uid === OWNER_FIREBASE_UID && normalizeEmail(user.email) === OWNER_FIREBASE_EMAIL && user.emailVerified === true;
 }
 function canManageSecurity(){
-  return !!FB.user && isAccessAdmin(FB.user.email);
+  return isAccessAdmin(FB.user);
 }
+
 function makeWalletId(){ return `w_${Date.now()}_${Math.random().toString(16).slice(2,8)}`; }
 function emptyWallet(name='Carteira principal'){
   return {
@@ -11448,53 +11443,20 @@ async function loadAccessControl(user,authSession=null){
   const setAccess = value => {
     if(!authSession || authSession.isCurrent()) FB.access=value;
   };
-  const email = normalizeEmail(user?.email);
-  if(!FB.db || !email){
-    setAccess({loaded:true,loading:false,allowed:false,reason:'Conecte sua conta Google autorizada para acessar o sistema.',cfg:null,lastDeniedAt:new Date().toISOString()});
+  if(!isAccessAdmin(user)){
+    setAccess({loaded:true,loading:false,allowed:false,reason:'Acesso restrito à conta autorizada do proprietário.',cfg:null,lastDeniedAt:new Date().toISOString()});
     return false;
   }
-  try{
-    const snap = await FB.db.collection('meta').doc('access').get();
-    if(authSession && !authSession.isCurrent()) return false;
-    if(!snap.exists){
-      const isAdmin = isAccessAdmin(email);
-      setAccess({
-        loaded:true,
-        loading:false,
-        allowed:isAdmin,
-        reason:isAdmin ? '' : 'O controle de acesso ainda não foi configurado neste ambiente.',
-        cfg:null,
-        lastDeniedAt:isAdmin ? null : new Date().toISOString()
-      });
-      return isAdmin;
-    }
-    const cfg = snap.exists ? (snap.data() || {}) : {};
-    const enabled = cfg.enabled !== false;
-    const allowedEmails = normalizeAccessList(cfg.allowedEmails);
-    const blockedEmails = normalizeAccessList(cfg.blockedEmails);
-    const allowedDomains = normalizeAccessList(cfg.allowedDomains);
-    const domain = email.includes('@') ? email.split('@').pop() : '';
-    const isBlocked = blockedEmails.includes(email);
-    const isAllowed = enabled && !isBlocked && (
-      allowedEmails.includes(email) ||
-      (domain && allowedDomains.includes(domain))
-    );
-    setAccess({
-      loaded:true,
-      loading:false,
-      allowed:isAllowed,
-      reason:isAllowed ? '' : String(cfg.message || 'Acesso restrito a usuários aprovados.'),
-      cfg,
-      lastDeniedAt:isAllowed ? null : new Date().toISOString()
-    });
-    return isAllowed;
-  }catch(e){
-    debugWarn('Acesso:', e);
+  if(!FB.db){
     setAccess({loaded:true,loading:false,allowed:false,authFailure:true,reason:'Não foi possível validar o acesso agora.',cfg:null,lastDeniedAt:new Date().toISOString()});
     return false;
   }
+  if(authSession && !authSession.isCurrent()) return false;
+  setAccess({loaded:true,loading:false,allowed:true,reason:'',cfg:null,lastDeniedAt:null});
+  return true;
 }
 async function recordAccessAttempt(user, allowed, reason=''){
+  if(!allowed || !isAccessAdmin(user)) return;
   if(isProtectedReadOnlyQaBoot()) return {ok:false,reason:'PROTECTED_READ_ONLY_QA_BOOT'};
   try{
     if(!FB.db || !user?.uid) return;
@@ -11518,33 +11480,16 @@ function portfolioRef(){
   if(!FB.db || !FB.user) return null;
   return FB.db.collection('portfolios').doc(FB.user.uid);
 }
-// ===== Account-mode compatibility adapter =====
-// Registry (authorizedUsers/{uid}, future rules) is authoritative; in
-// production (registry rules not deployed) the legacy access control
-// (meta/access + admin allowlist) feeds the resolver so the current owner
-// keeps loading normally. No portfolio source is created for unauthorized users.
 async function resolveAccountModeCompat(user, accessOk, authSession=null){
   if(!user) return 'LOGIN_REQUIRED';
   if(authSession && !authSession.isCurrent()) return 'AUTH_FAILURE';
   if(!window.AccountMode || !FB.db || FB.access?.authFailure) return 'AUTH_FAILURE';
-  let authorization = null;
-  try{
-    const snap = await FB.db.collection('authorizedUsers').doc(user.uid).get();
-    if(authSession && !authSession.isCurrent()) return 'AUTH_FAILURE';
-    if(snap.exists){
-      const d = snap.data() || {};
-      authorization = { enabled: d.enabled !== false, blocked: d.blocked === true, role: String(d.role || 'user') };
-    }
-  }catch(e){
-    // permission-denied in production (registry rules not deployed) → legacy path
-    if(authSession && !authSession.isCurrent()) return 'AUTH_FAILURE';
-  }
-  if(!authorization){
-    const email = normalizeEmail(user && user.email);
-    if(isAccessAdmin(email)) authorization = { enabled: true, blocked: false, role: 'owner' };
-    else if(accessOk) authorization = { enabled: true, blocked: false, role: 'user' };
-  }
-  return AccountMode.resolveAccountMode({ authUser: user, emailVerified: !!(user && user.emailVerified), authorization });
+  if(!isAccessAdmin(user) || !accessOk) return 'BLOCKED';
+  return AccountMode.resolveAccountMode({
+    authUser:user,
+    emailVerified:user.emailVerified === true,
+    authorization:{enabled:true,blocked:false,role:'owner'}
+  });
 }
 function clearRealStateInMemory(){
   const hideValues=!!S.hideValues;
@@ -12181,155 +12126,6 @@ function shouldShowAccessGate(){
   if(isLocalTestMode()) return false;
   return !FB.authResolved || FB.access.loading || !FB.access.loaded || !FB.access.allowed;
 }
-function normalizeListFromText(text){
-  return Array.from(new Set(String(text||'')
-    .split(/[\n,;]+/g)
-    .map(s=>normalizeEmail(s))
-    .filter(Boolean)));
-}
-function listToText(arr){
-  return Array.isArray(arr) ? arr.join('\n') : '';
-}
-function openAccessSettings(){
-  if(!canManageSecurity()){
-    toast('🔒 Acesso restrito ao administrador.','#fbbf24');
-    return;
-  }
-  S.accessSettingsOpen=true;
-  render();
-}
-function closeAccessSettings(){
-  withScrollPreserved(()=>{
-    S.accessSettingsOpen=false;
-    render();
-  });
-}
-async function saveAccessSettings(event){
-  if(!canEditFromThisTab('salvar segurança')) return;
-  if(!FB.db || !FB.user){
-    toast('Entre com Google para salvar a segurança.','#fbbf24');
-    return;
-  }
-  if(!canManageSecurity()){
-    toast('🔒 Somente o administrador pode alterar a segurança.','#f87171');
-    return;
-  }
-  const enabled = !!document.getElementById('acc-enabled')?.checked;
-  const message = String(document.getElementById('acc-message')?.value || '').trim();
-  const allowedEmails = normalizeListFromText(document.getElementById('acc-emails')?.value);
-  const blockedEmails = normalizeListFromText(document.getElementById('acc-blocked')?.value);
-  const allowedDomains = normalizeListFromText(document.getElementById('acc-domains')?.value);
-  const me = normalizeEmail(FB.user.email);
-  if(me && !allowedEmails.includes(me)) allowedEmails.unshift(me);
-  const cfg = {
-    enabled,
-    allowedEmails,
-    blockedEmails: blockedEmails.filter(v=>v!==me),
-    allowedDomains,
-    message,
-    updatedAtLocal:new Date().toISOString(),
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
-  if(FB.securitySaving) return;
-  FB.securitySaving=true;
-  const button=event?.currentTarget || document.querySelector('[data-security-save]');
-  if(button){
-    button.disabled=true;
-    button.setAttribute('aria-busy','true');
-    button.textContent='Salvando segurança...';
-  }
-  try{
-    await FB.db.collection('meta').doc('access').set(cfg,{merge:true});
-    FB.access.cfg = cfg;
-    FB.access.allowed = true;
-    FB.access.loaded = true;
-    FB.access.reason = '';
-    toast('🔐 Segurança salva com sucesso.');
-    closeAccessSettings();
-  }catch(e){
-    debugWarn(e);
-    toast('❌ Não foi possível salvar a segurança.','#f87171');
-  }finally{
-    FB.securitySaving=false;
-    if(button && button.isConnected){
-      button.disabled=false;
-      button.setAttribute('aria-busy','false');
-      button.textContent='Salvar segurança';
-    }
-  }
-}
-function accessSettingsModal(){
-  if(!canManageSecurity()) return '';
-  const cfg = FB.access.cfg || {};
-  const enabled = cfg.enabled !== false;
-  const allowedEmails = listToText(cfg.allowedEmails || []);
-    const blockedEmails = listToText(cfg.blockedEmails || []);
-    const allowedDomains = listToText(cfg.allowedDomains || []);
-    const message = esc(cfg.message || 'Acesso restrito a usuários aprovados.');
-    return `<div class="note-overlay" onclick="if(event.target===this) closeAccessSettings()" role="dialog" aria-modal="true" aria-label="Configurações de acesso">
-    <div class="note-modal" style="max-width:740px;max-height:84vh;display:flex;flex-direction:column" aria-busy="${FB.securitySaving?'true':'false'}">
-      <div class="note-head" style="padding:13px 16px 11px">
-        <div class="note-title">
-          <div>
-            <h3 style="font-size:17px">Segurança de acesso</h3>
-            <p style="font-size:11px">Defina quem entra e quem mantém a carteira sincronizada.</p>
-          </div>
-          <div class="note-pill">${FB.access.allowed ? 'Ativo' : 'Bloqueado'}</div>
-        </div>
-      </div>
-      <div class="sec-body" style="display:grid;grid-template-columns:1fr;gap:8px;overflow:auto;min-height:0;padding:11px 16px 12px">
-        <label class="card" style="padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px">
-          <div>
-            <div class="sec-title" style="font-size:13px">Ativar trava de acesso</div>
-            <div class="sec-meta" style="font-size:11px">Quando ligado, só os e-mails listados entram.</div>
-          </div>
-          <input id="acc-enabled" type="checkbox" ${enabled?'checked':''} style="width:auto;transform:scale(1.1)">
-        </label>
-        <div class="fg" style="grid-template-columns:1fr 1fr;gap:8px">
-          <div>
-            <div class="fl" style="margin-bottom:3px">E-mails aprovados</div>
-            <textarea id="acc-emails" rows="3" style="min-height:88px;resize:vertical;width:100%;padding:9px 10px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${esc(allowedEmails)}</textarea>
-            <div class="mu" style="font-size:9px;margin-top:3px;line-height:1.25">Um por linha. O seu e-mail atual é mantido automaticamente.</div>
-          </div>
-          <div>
-            <div class="fl" style="margin-bottom:3px">Domínios aprovados</div>
-            <textarea id="acc-domains" rows="3" style="min-height:88px;resize:vertical;width:100%;padding:9px 10px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${esc(allowedDomains)}</textarea>
-            <div class="mu" style="font-size:9px;margin-top:3px;line-height:1.25">Ex.: empresa.com.br. Se preferir, deixe vazio.</div>
-          </div>
-        </div>
-        <div>
-          <div class="fl" style="margin-bottom:3px">E-mails bloqueados</div>
-          <textarea id="acc-blocked" rows="2" style="min-height:66px;resize:vertical;width:100%;padding:9px 10px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${esc(blockedEmails)}</textarea>
-          <div class="mu" style="font-size:9px;margin-top:3px;line-height:1.25">Mesmo com domínio liberado, estes e-mails continuam negados.</div>
-        </div>
-        <div>
-          <div class="fl" style="margin-bottom:3px">Mensagem de bloqueio</div>
-          <textarea id="acc-message" rows="2" style="min-height:58px;resize:vertical;width:100%;padding:9px 10px;background:#111828;border:1px solid #27344b;border-radius:10px;color:#edf3ff">${message}</textarea>
-        </div>
-        <details class="sec" style="margin:0">
-          <summary style="padding:10px 12px;min-height:42px">
-            <div>
-              <div class="sec-title" style="font-size:13px">Como funciona</div>
-              <div class="sec-meta" style="font-size:11px">ver passos rápidos de validação</div>
-            </div>
-            <div class="sec-meta">abrir</div>
-          </summary>
-          <div class="sec-body" style="padding:10px 12px 12px">
-            <div class="sec-meta" style="line-height:1.45;margin-top:0">
-            1. A pessoa faz login com Google.<br>
-            2. O sistema confere e-mail e domínio na lista.<br>
-            3. Se não estiver aprovado, a carteira não aparece.
-          </div>
-          </div>
-        </details>
-      </div>
-      <div style="display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px">
-        <button class="btn bgh" onclick="closeAccessSettings()">Cancelar</button>
-        <button class="btn bp" data-security-save onclick="saveAccessSettings(event)" ${FB.securitySaving?'disabled':''}>${FB.securitySaving?'Salvando segurança...':'Salvar segurança'}</button>
-      </div>
-    </div>
-  </div>`;
-}
 function backupManagerModal(){
   if(!S.backupOpen) return '';
   const current=backupPayload();
@@ -12369,15 +12165,18 @@ function backupManagerModal(){
             <div class="sh" style="margin-bottom:8px;gap:10px">
               <div>
                 <div class="st">Exportação</div>
-                <div class="mu" style="font-size:11px;margin-top:2px">Gera arquivo AES-GCM; senha nunca é armazenada.</div>
+                <div class="mu" style="font-size:11px;margin-top:2px">Exportar protegido é recomendado; senha nunca é armazenada.</div>
               </div>
-              <button class="btn bexp" onclick="exportBackup()">Exportar protegido</button>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn bexp" onclick="exportBackup()">Exportar protegido</button>
+                <button class="btn bgh" onclick="exportBackup({encrypted:false})">Exportar sem senha</button>
+              </div>
             </div>
             <div class="backup-encryption-fields">
-              <label class="fg"><span class="fl">Senha do arquivo (mínimo 12 caracteres)</span><input id="backup-encryption-passphrase" class="inp" type="password" autocomplete="new-password" minlength="12" aria-label="Senha para criptografar o arquivo de backup"></label>
-              <label class="fg"><span class="fl">Confirme a senha</span><input id="backup-encryption-confirm" class="inp" type="password" autocomplete="new-password" minlength="12" aria-label="Confirme a senha do arquivo de backup"></label>
+              <label class="fg"><span class="fl">Senha do arquivo (mínimo 6 caracteres)</span><input id="backup-encryption-passphrase" class="inp" type="password" autocomplete="new-password" minlength="6" aria-label="Senha para criptografar o arquivo de backup"></label>
+              <label class="fg"><span class="fl">Confirme a senha</span><input id="backup-encryption-confirm" class="inp" type="password" autocomplete="new-password" minlength="6" aria-label="Confirme a senha do arquivo de backup"></label>
             </div>
-            <div class="backup-note">Inclui os domínios obrigatórios. Arquivo baixado é criptografado; senha perdida não pode ser recuperada. Histórico local neste navegador não recebe esta criptografia.</div>
+            <div class="backup-note">Inclui os domínios obrigatórios. Senhas curtas oferecem menor proteção; recomendamos 12 caracteres ou mais. A opção protegida usa AES-GCM; senha perdida não pode ser recuperada. Exportar sem senha gera arquivo sem criptografia: guarde-o somente em local privado. Histórico local neste navegador não recebe esta criptografia.</div>
           </div>
           <div class="cc" style="padding:12px 12px 11px">
             <div class="sh" style="margin-bottom:8px;gap:10px">
@@ -12396,7 +12195,7 @@ function backupManagerModal(){
                 <div class="card backup-card"><div class="cl">Renda Fixa</div><div class="cv">${draftStats.fixed}</div><div class="cs">Posições de renda fixa</div></div>
                 <div class="card backup-card"><div class="cl">Carteiras</div><div class="cv">${draftStats.wallets}</div><div class="cs">Estrutura de carteiras</div></div>
               </div>
-            <div class="backup-note">Metas configuradas: ${draftStats.goals} · ${draft?.v249?'Material de autenticação: não exportado':`Token Brapi: ${draftStats.hasToken ? 'presente' : 'ausente'}`}</div>
+            <div class="backup-note">Proteção do arquivo: <strong>${esc(draft?.protection||'Legado')}</strong> · Metas configuradas: ${draftStats.goals} · ${draft?.v249?'Material de autenticação: não exportado':`Token Brapi: ${draftStats.hasToken ? 'presente' : 'ausente'}`}</div>
               ${draft?.v249?`<div class="backup-warning" role="status">Formato V249 · Integridade: <strong>${esc(v249Status||'UNKNOWN')}</strong> · Prévia sem escrita: ${v249Diff.filter(x=>x.kind==='ADD').length} adicionar, ${v249Diff.filter(x=>x.kind==='UPDATE').length} atualizar, ${v249Diff.filter(x=>x.kind==='CONFLICT').length} conflito, ${v249Diff.filter(x=>x.kind==='UNCHANGED').length} inalterado. Restauração real não é executada nesta fase.</div>`:''}
               <div class="backup-note" style="margin-top:2px">A prévia preserva IDs, datas, valores desconhecidos e autoridade manual. Nenhum dado é aplicado antes de uma confirmação futura.</div>
             `:`
@@ -12567,8 +12366,7 @@ function settingsTab(){
             <div><h2 class="premium-settings-section-title">Segurança</h2><div class="premium-settings-section-sub">Controle de acesso ao aplicativo</div></div>
           </div>
           <div class="premium-settings-row">
-            <div class="premium-settings-row-info"><div class="premium-settings-row-label">Controle de acesso</div><div class="premium-settings-row-desc">Defina quem entra e quem mantém a carteira sincronizada.</div></div>
-            <button class="btn bgh" onclick="openAccessSettings()" style="font-size:11px;min-height:34px;padding:0 10px">Configurar</button>
+            <div class="premium-settings-row-info"><div class="premium-settings-row-label">Acesso exclusivo do proprietário</div><div class="premium-settings-row-desc">Acesso exige a identidade do proprietário e e-mail verificado; listas de e-mails e domínios não concedem acesso.</div></div>
           </div>
         </div>` : ''}
 
@@ -12631,9 +12429,7 @@ function mobileTopActionButton(){
   return `<button class="btn bgh hdr-top-fab" onclick="toggleMobileTopMenu()" aria-label="Abrir menu rápido" aria-controls="investTopDrawer" aria-expanded="${S.mobileTopMenuOpen?'true':'false'}"><span class="hdr-mobile-icon">⋯</span><span class="hdr-mobile-label">Menu</span></button>`;
 }
 function configMenu(){
-  const securityBtn = canManageSecurity()
-    ? `<button class="btn bgh" onclick="openAccessSettings();closeConfigMenus()">🔐 Segurança</button>`
-    : '';
+
   // Recurso B3 experimental preservado no código, mas oculto da produção até nova validação.
   return `<details class="cfg-menu" style="position:relative">
     <summary class="btn bimp hdr-mobile-btn" style="list-style:none;cursor:pointer;font-size:12px;padding:7px 12px"><span class="hdr-mobile-icon">⚙️</span><span class="hdr-mobile-label">Configurações</span></summary>
@@ -12642,7 +12438,6 @@ function configMenu(){
         <div class="cfg-menu-group-title">Ações comuns</div>
         <button class="btn bgh" onclick="toggleThemeFromMenu()">${themeActionLabel()}</button>
         <button class="btn bgh" style="min-height:44px;line-height:1.15" onclick="checkForAppUpdate({manual:true});closeConfigMenus()">Verificar atualizações<span class="mu" style="display:block;margin-top:3px;text-align:left">Procura uma versão mais recente do aplicativo.</span></button>
-        ${securityBtn}
         <button class="btn bgh" onclick="openBackupCenter();closeConfigMenus()">💾 Backup e restauração</button>
       </div>
       <div class="cfg-menu-divider"></div>
@@ -12912,7 +12707,7 @@ function restoreScroll(){
   requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({left:x, top:y, behavior:'auto'})));
 }
 function bodyModalLockActive(){
-  return !!(S.accessSettingsOpen || S.backupOpen || S.externalFlowOpen || S.pdfReportOpen || S.reportCardPdfType || S.brokerNoteImport || S.brokerNoteImportSuccess || S.noteReview || S.b3Review || S.rfPositionReview || S.b3ProventosReview || S.b3MovementReview || S.allocGoalOpen || S.quickMovementOpen || S.showA || S.mobileMenuOpen || S.mobileTopMenuOpen);
+  return !!(S.backupOpen || S.externalFlowOpen || S.pdfReportOpen || S.reportCardPdfType || S.brokerNoteImport || S.brokerNoteImportSuccess || S.noteReview || S.b3Review || S.rfPositionReview || S.b3ProventosReview || S.b3MovementReview || S.allocGoalOpen || S.quickMovementOpen || S.showA || S.mobileMenuOpen || S.mobileTopMenuOpen);
 }
 function scrollPreserveActive(){
   return !!(bodyModalLockActive() || S.showA || S.showP || S.showD);
@@ -12975,36 +12770,37 @@ function closeBackupCenter(){
     render();
   });
 }
-async function exportBackup(){
+async function exportBackup({encrypted=true}={}){
   if(isLocalTestMode()){
     toast('🧪 Modo de teste local: exportação desativada.');
     return;
   }
   if(!S.backupOpen){
     openBackupCenter();
-    toast('No centro de backup, defina uma senha de pelo menos 12 caracteres para exportar o arquivo protegido.');
+    toast(encrypted?'No centro de backup, defina uma senha para exportar o arquivo protegido. Recomendamos 12 caracteres ou mais.':'No centro de backup, escolha Exportar sem senha para baixar um arquivo sem criptografia.');
     return;
   }
-  const passphrase=document.getElementById('backup-encryption-passphrase')?.value||'';
-  const confirmation=document.getElementById('backup-encryption-confirm')?.value||'';
-  if(passphrase.length<12){toast('Use uma senha com pelo menos 12 caracteres.','#fbbf24');document.getElementById('backup-encryption-passphrase')?.focus();return;}
-  if(passphrase!==confirmation){toast('As senhas não conferem. Nenhum arquivo foi exportado.','#f87171');document.getElementById('backup-encryption-confirm')?.focus();return;}
+  const passphrase=encrypted?(document.getElementById('backup-encryption-passphrase')?.value||''):'';
+  const confirmation=encrypted?(document.getElementById('backup-encryption-confirm')?.value||''):'';
+  if(encrypted&&passphrase.length<6){toast('Use uma senha com pelo menos 6 caracteres; recomendamos 12 ou mais.','#fbbf24');document.getElementById('backup-encryption-passphrase')?.focus();return;}
+  if(encrypted&&passphrase!==confirmation){toast('As senhas não conferem. Nenhum arquivo foi exportado.','#f87171');document.getElementById('backup-encryption-confirm')?.focus();return;}
   let payload;
-  let encrypted;
+  let fileContent;
   const ownerId=FB?.user?.uid;
   try{
     payload=await backupPortabilityPayload();
     const integrity=await BackupPortability.verifyBackup(payload,{supportedAssetTypes:TYPE_CHOICES,ownerId});
     if(integrity.status!=='SUPPORTED') throw new Error(`BACKUP_${integrity.status}`);
     if(FB?.user?.uid!==ownerId||FB?.access?.allowed!==true) throw new Error('BACKUP_OWNER_CHANGED');
-    encrypted=await BackupPortability.encryptBackup(payload,passphrase);
+    fileContent=encrypted?await BackupPortability.encryptBackup(payload,passphrase):payload;
   }catch(error){
     debugError('backup V249 export error:',error?.message||'UNKNOWN');
-    toast('Não foi possível preparar o backup criptografado. Nenhum dado foi alterado.','#f87171');
+    toast('Não foi possível validar o backup. Nenhum dado foi alterado.','#f87171');
     return;
   }
-  const data=JSON.stringify(encrypted, null, 2);
-  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([data],{type:'application/json'})),download:`carteira-investimentos-backup-protegido-${backupStamp()}.json`});
+  const data=JSON.stringify(fileContent, null, 2);
+  const protection=encrypted?'protegido':'sem-senha';
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([data],{type:'application/json'})),download:`carteira-investimentos-backup-${protection}-${backupStamp()}.json`});
   a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),1000);
   document.getElementById('backup-encryption-passphrase').value='';
@@ -13013,7 +12809,7 @@ async function exportBackup(){
     const archived=await BackupPortability.saveLocalBackup(payload,{cadence:'manual',supportedAssetTypes:TYPE_CHOICES,ownerId});
     if(!archived.ok) debugWarn('backup local archive skipped:',archived.status);
   }catch(error){debugWarn('backup local archive unavailable:',error?.name||'UNKNOWN');}
-  toast('💾 Arquivo exportado com AES-GCM e integridade SHA-256. Guarde a senha: ela não pode ser recuperada.');
+  toast(encrypted?'💾 Arquivo protegido exportado com AES-GCM e integridade SHA-256. Guarde a senha: ela não pode ser recuperada.':'⚠️ Arquivo sem senha exportado sem criptografia. Guarde-o somente em local privado.');
 }
 function v324PeriodicBackupEligible(){
   return typeof BackupPortability!=='undefined'&&typeof FB!=='undefined'&&!!FB.user&&FB.access?.allowed===true&&FB.cloudLoaded===true&&!FB.pendingCloudSave&&!FB.syncInFlight&&!FB.applying&&!FB.lastCloudError&&!isLocalTestMode()&&!isActiveWalletHostMode()&&!isAuthoritativeLocalRecoveryBoot()&&!isProtectedReadOnlyQaBoot();
@@ -13144,10 +12940,16 @@ document.getElementById('imp-file').addEventListener('change',e=>{
   r.onload=async ev=>{
     try{
       let d=JSON.parse(ev.target.result);
+      let encryptedSource=false;
       if(d?.format==='carteira-investimentos-backup-encrypted'){
+        encryptedSource=true;
         const passphrase=window.prompt('Digite a senha usada ao exportar este backup. Senha perdida não pode ser recuperada.');
         if(passphrase===null) return;
         d=await BackupPortability.decryptBackup(d,passphrase);
+      }
+      if(d?.manifest&&d.manifest.backupFormat!==BackupPortability.FORMAT){
+        toast('Formato de backup desconhecido ou não compatível. Nenhum dado foi aplicado.','#f87171');
+        return;
       }
       if(typeof BackupPortability!=='undefined' && d?.manifest?.backupFormat===BackupPortability.FORMAT){
               const ownerId=FB?.user?.uid;
@@ -13158,7 +12960,7 @@ document.getElementById('imp-file').addEventListener('change',e=>{
               }
               const preview=await BackupPortability.previewRestore(d,backupCurrentState(),{supportedAssetTypes:TYPE_CHOICES,ownerId});
               const parsedState=d.payload?.state||{};
-              S.backupImportDraft={fileName:f.name,parsed:d,summary:backupStats(parsedState),importedAt:backupImportedAt({meta:{exportedAt:d.manifest?.createdAt}}),v249:true,v249Preview:preview};
+              S.backupImportDraft={fileName:f.name,parsed:d,summary:backupStats(parsedState),importedAt:backupImportedAt({meta:{exportedAt:d.manifest?.createdAt}}),protection:encryptedSource?'Criptografado':'Sem criptografia',v249:true,v249Preview:preview};
               S.backupOpen=true;
               render();
               return;
@@ -13194,7 +12996,7 @@ document.getElementById('imp-file').addEventListener('change',e=>{
             }
             const legacyPreview=await BackupPortability.previewRestore(legacyBackup,backupCurrentState(),{supportedAssetTypes:TYPE_CHOICES});
             const legacySummary=backupStats(legacyParsed.data);
-            S.backupImportDraft={fileName:f.name, parsed:legacyBackup, summary:legacySummary, importedAt:backupImportedAt(legacyParsed), v249:false, v249Preview:legacyPreview};
+            S.backupImportDraft={fileName:f.name, parsed:legacyBackup, summary:legacySummary, importedAt:backupImportedAt(legacyParsed), protection:encryptedSource?'Criptografado':'Legado sem criptografia', v249:false, v249Preview:legacyPreview};
             S.backupOpen=true;
             render();
     }catch(err){
@@ -29439,7 +29241,6 @@ function app(){
   ${mobileTopDrawer()}
   ${mobileBottomNav()}
   ${mobileMenuDrawer()}
-  ${S.accessSettingsOpen?accessSettingsModal():''}
   ${S.backupOpen?backupManagerModal():''}
   ${S.externalFlowOpen?externalFlowModal():''}
   ${S.pdfReportOpen?reportPdfPreview():''}
@@ -31341,7 +31142,7 @@ function rendaFixaTab(){
   const knownCurrentTotal=data.assets.filter(row=>row.explicit && Number.isFinite(row.current)).reduce((sum,row)=>sum+row.current,0);
   const kpiHtml=(items,extraClass='')=>items.map(([label,value,note,tone])=>`<div class="premium-rf-kpi ds-kpi ${extraClass}" style="--rf-kpi-tone:${tone}"><div class="premium-rf-kpi-label ds-kpi__label">${esc(label)}</div><div class="premium-rf-kpi-value ds-kpi__value" style="color:${tone}">${esc(value)}</div><div class="premium-rf-kpi-note ds-kpi__context">${esc(note)}</div></div>`).join('');
   const primaryKpis=[
-    ['Valor atual informado',data.explicitCount?fmt(knownCurrentTotal):'—',count?`${data.explicitCount}/${count} posições com valor explícito`:'Sem posições','#34d399'],
+    ['Valor atual informado',data.explicitCount?fmt(knownCurrentTotal):'—',count?`${data.explicitCount}/${count} posições com valor explícito`:'Sem posições','var(--text)'],
     ['Capital aplicado',count&&appliedCount===count?fmt(data.totalApplied):'—',count?`${appliedCount}/${count} bases informadas`:'Sem posições','#a78bfa'],
     ['Resultado da posição',count&&data.missingCurrent===0&&appliedCount===count&&Number.isFinite(data.totalProfit)?assetSignedMoneyText(data.totalProfit):'—',count?(data.missingCurrent===0&&appliedCount===count&&Number.isFinite(data.totalPct)?'Valor atual menos capital aplicado informado; não representa retorno total.':'Indisponível enquanto houver valores atuais ou bases ausentes'):'Sem posições',resultTone],
     ['Próximo vencimento',nextMaturity?(nextMaturity.days===0?'Hoje':nextMaturity.days===1?'Amanhã':`${nextMaturity.days} dias`):'—',nextMaturity?(nextMaturity.ticker||'Título RF'):'Nenhum vencimento futuro','#fbbf24']
@@ -31370,7 +31171,7 @@ function rendaFixaTab(){
       <div class="premium-rf-row-main">
         <div class="premium-rf-row-title">${esc(row.ticker)}${row.name&&row.name!==row.ticker?` · ${esc(row.name)}`:''}</div>
         <div class="premium-rf-row-meta">${esc(row.category)} · ${esc(row.indexer)} · ${S.hideValues&&valueVisibilityDepth===0?'••••':esc(row.rate||'taxa não informada')}</div>
-        <div class="premium-rf-row-meta premium-rf-row-issuer">Instituição: ${esc(row.issuer||'não informada')}</div>
+        <div class="premium-rf-row-meta premium-rf-row-issuer">Emissor: ${esc(row.issuer||'não informado')}</div>
       </div>
       <div class="premium-rf-row-value">
         <div class="premium-rf-row-financial"><span class="premium-rf-row-financial-label">Atual</span>${display.currentText}</div>
@@ -31560,7 +31361,7 @@ function rendaFixaTab(){
         <div class="premium-rf-controls" aria-label="Controles de leitura de renda fixa">
           <label class="premium-rf-search-control"><span>Buscar</span><input type="search" aria-label="Buscar título de renda fixa" placeholder="Nome, emissor ou indexador" value="${esc(S.rfSearch||'')}" oninput="setRfTrustSearch(this.value)"></label>
           <details class="premium-rf-filter-details" ${typeof window==='undefined'||window.innerWidth>=768||S.rfFilterPanelOpen?'open':''} ontoggle="setRfFilterPanelOpen(this.open)">
-            <summary aria-label="Filtros de posições de renda fixa"><span>Filtros <span class="premium-rf-active-filter-count">${activeRfFilters?`${activeRfFilters} ativo${activeRfFilters===1?'':'s'}`:'Nenhum ativo'}</span></span><span aria-hidden="true">⌄</span></summary>
+            <summary aria-label="Filtros de posições de renda fixa"><span>Filtros <span class="premium-rf-active-filter-count">${activeRfFilters?`${activeRfFilters} filtro${activeRfFilters===1?'':'s'}`:'Nenhum filtro'}</span></span><span aria-hidden="true">⌄</span></summary>
             <div class="premium-rf-filter-options">
           <label><span>Status do valuation</span><select aria-label="Filtrar status do valuation" onchange="setRfTrustFilter(this.value,this.closest('details').open)">
             <option value="all" ${S.rfTrustFilter==='all'?'selected':''}>Todos</option>
@@ -31570,8 +31371,8 @@ function rendaFixaTab(){
             <option value="UNAVAILABLE" ${S.rfTrustFilter==='UNAVAILABLE'?'selected':''}>Indisponível</option>
             <option value="STALE" ${S.rfTrustFilter==='STALE'?'selected':''}>Desatualizada</option>
           </select></label>
-          <label><span>Instituição</span><select aria-label="Filtrar por instituição" onchange="setRfIssuerFilter(this.value,this.closest('details').open)">
-            <option value="" ${!S.rfIssuerFilter?'selected':''}>Todas as instituições</option>
+          <label><span>Emissor</span><select aria-label="Filtrar por emissor" onchange="setRfIssuerFilter(this.value,this.closest('details').open)">
+            <option value="" ${!S.rfIssuerFilter?'selected':''}>Todos os emissores</option>
             ${issuerOptions.map(issuer=>`<option value="${esc(issuer)}" ${S.rfIssuerFilter===issuer?'selected':''}>${esc(issuer)}</option>`).join('')}
           </select></label>
           <label><span>Produto</span><select aria-label="Filtrar por produto de renda fixa" onchange="setRfCategoryFilter(this.value,this.closest('details').open)">
@@ -31583,7 +31384,7 @@ function rendaFixaTab(){
             <option value="value-desc" ${S.rfSort==='value-desc'?'selected':''}>Maior valor</option>
             <option value="value-asc" ${S.rfSort==='value-asc'?'selected':''}>Menor valor</option>
             <option value="maturity-asc" ${S.rfSort==='maturity-asc'?'selected':''}>Vencimento próximo</option>
-            <option value="issuer-asc" ${S.rfSort==='issuer-asc'?'selected':''}>Instituição A–Z</option>
+            <option value="issuer-asc" ${S.rfSort==='issuer-asc'?'selected':''}>Emissor A–Z</option>
             <option value="type-asc" ${S.rfSort==='type-asc'?'selected':''}>Tipo do produto A–Z</option>
           </select></label>
             </div>
@@ -32299,10 +32100,11 @@ function dashboardEvolutionPanel(data){
       ?`${monthsWithData} de ${totalMonths} meses com movimento registrado (${movementPct}%). Meses sem registro não são preenchidos; a cobertura do histórico permanece desconhecida.`
       :'Histórico patrimonial ainda não disponível; a cobertura do histórico é desconhecida.';
   if(hasHistory){
+    const singleMonth=validPoints===1?observedMonths[0]:null;
     return `
-      <div class="dashboard-evolution-card${isCompact?' dashboard-evolution-compact':''}${sparse?' dashboard-evolution-sparse':''}">
+      <div class="dashboard-evolution-card${isCompact?' dashboard-evolution-compact':''}${sparse?' dashboard-evolution-sparse':''}${singleMonth?' dashboard-evolution-single':''}">
         <div class="dashboard-evolution-header"><div><div class="premium-panel-title">Aportes líquidos registrados</div><details class="dashboard-history-disclosure"><summary>Movimento registrado</summary><div class="dashboard-history-disclosure-body">${coverageNote}</div></details></div></div>
-        ${lineChart([{name:'Aportes líquidos registrados',tooltipLabel:'Aportes registrados',values:chartMonths.map(row=>row.cumulative),color:'#34d399',fill:'rgba(52,211,153,.16)',width:2.4,points:!(isCompact&&!sparse)}],chartMonths.map(row=>row.label),'dashboard-patrimony-chart',fmt)}
+        ${singleMonth?`<div class="dashboard-single-observation"><div><span>Acumulado até ${singleMonth.label}</span><strong>${S.hideValues?'••••':fmt(singleMonth.cumulative)}</strong></div><p>Sem série temporal suficiente para mostrar evolução. Apenas o mês com movimento registrado é exibido; a cobertura do histórico permanece desconhecida.</p></div>`:lineChart([{name:'Aportes líquidos registrados',tooltipLabel:'Aportes registrados',values:chartMonths.map(row=>row.cumulative),color:'#34d399',fill:'rgba(52,211,153,.16)',width:2.4,points:!(isCompact&&!sparse)}],chartMonths.map(row=>row.label),'dashboard-patrimony-chart',fmt)}
       </div>
     `;
   }
@@ -35907,6 +35709,10 @@ function canonDividendYearSummary(rows){
   const ordered=[...groups.values()].sort((a,b)=>b.year-a.year);
   if(!ordered.length) return `<div class="premium-empty">Sem histórico anual ainda.</div>`;
   const total=ordered.reduce((s,g)=>s+g.total,0);
+  if(ordered.length===1){
+    const year=ordered[0];
+    return `<div class="canon-year-summary-single"><strong>${year.year}</strong><span>Total conhecido</span><b>${fmt(year.total)}</b><small>${year.count} lançamento(s) pago(s) registrado(s)</small></div>`;
+  }
   const donut=canonDonutInteractive(ordered.map(g=>({name:String(g.year),value:g.total})),{fmt,id:'yearsum',centerText:fmt(total),centerSub:'Total conhecido'});
   return `<div class="canon-year-summary-body">
     <div class="canon-year-summary-donut">${donut}</div>
@@ -38444,7 +38250,7 @@ function showPwaUpdateNotice(registration){
   document.body.appendChild(notice);
 }
 function pwaHasActiveEdit(){
-  return !!(S.quickMovementOpen || S.showA || S.showP || S.showD || S.editId || S.editPId || S.editDId || S.rfMovementEditor || S.backupOpen || S.backupImportDraft || S.accessSettingsOpen || S.allocGoalOpen || S.pdfReportOpen || S.proventoReviewOpen || S.irpfFinalOpen);
+  return !!(S.quickMovementOpen || S.showA || S.showP || S.showD || S.editId || S.editPId || S.editDId || S.rfMovementEditor || S.backupOpen || S.backupImportDraft || S.allocGoalOpen || S.pdfReportOpen || S.proventoReviewOpen || S.irpfFinalOpen);
 }
 function requestPwaUpdate(registration, button){
   if(!registration?.waiting) return;
@@ -39436,17 +39242,23 @@ document.addEventListener('focusin',event=>{const nav=event.target?.closest?.('.
 <style id="m562-dividends-premium-slim">
 .premium-dividends-3 .canon-dividends{width:100%;max-width:1480px;margin-inline:auto;gap:10px}
 .premium-dividends-3 .dividend-kpis-canon-grid{gap:9px}
+.premium-dividends-3 .div-premium-kpi-bar>.dividend-executive-kpis{flex:1;min-width:0}
 .premium-dividends-3 .canon-kpi-card{min-height:0;padding:11px 12px}
 .premium-dividends-3 .canon-div-panel{min-height:0}
 .premium-dividends-3 .canon-div-lower{gap:10px}
 .premium-dividends-3 .dividend-evolution-chart{max-height:210px}
 .premium-dividends-3 .div-premium-canon-actions{gap:7px}
 .premium-dividends-3 .dividend-history-block .div-monthly-summaryline{gap:8px}
+.premium-dividends-3 .canon-year-summary-single{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:4px 12px;padding:10px 12px;border:1px solid var(--canon-border);border-radius:10px;background:var(--canon-panel)}
+.premium-dividends-3 .canon-year-summary-single>strong{grid-row:span 2;color:var(--canon-text);font-size:18px}
+.premium-dividends-3 .canon-year-summary-single>span,.premium-dividends-3 .canon-year-summary-single>small{color:var(--canon-muted);font-size:12px}
+.premium-dividends-3 .canon-year-summary-single>b{grid-column:3;grid-row:1/3;color:var(--canon-text);font-size:16px;font-variant-numeric:tabular-nums}
 html[data-theme="light"] .premium-dividends-3 .div-monthly-summaryline{background:var(--canon-panel-2);border-color:var(--canon-border)}
 html[data-theme="light"] .premium-dividends-3 .div-year-card{background:var(--canon-panel);color:var(--canon-text);border-color:var(--canon-border)}
 html[data-theme="light"] .premium-dividends-3 .div-premium-head .btn.bp:not(:disabled):not([aria-disabled="true"]){background:#2f6fd1!important;background-image:none!important;border-color:#2f6fd1!important;color:#fff!important;box-shadow:none}
 html[data-theme="light"] .premium-dividends-3 .div-premium-head .btn.bp:hover:not(:disabled):not([aria-disabled="true"]){background:#275fae;border-color:#275fae}
 @media(max-width:1180px){.premium-dividends-3 .canon-div-lower{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:768px) and (max-width:1439px){.premium-dividends-3 .dividend-kpis-canon-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:767px){
   .premium-dividends-3 .canon-dividends{gap:8px}
   .premium-dividends-3 .div-premium-head{display:grid;grid-template-columns:minmax(0,1fr);gap:7px;align-items:start}
@@ -39471,6 +39283,28 @@ html[data-theme="light"] .premium-dividends-3 .div-premium-head .btn.bp:hover:no
   .premium-dividends-3 .canon-div-lower{grid-template-columns:minmax(0,1fr);gap:8px}
   .premium-dividends-3 .canon-div-panel{padding:10px}
   .premium-dividends-3 .dividend-evolution-chart{max-height:none}
+}
+/* M586: compact a single observed month without implying a trend. */
+.canon-dashboard .dashboard-evolution-card.dashboard-evolution-single{height:auto;min-height:0}
+.dashboard-single-observation{display:flex;align-items:center;gap:16px;padding:12px 2px 3px;color:var(--dash-ink)}
+.dashboard-single-observation>div{display:grid;gap:3px;min-width:120px}
+.dashboard-single-observation span,.dashboard-single-observation p{color:var(--dash-muted);font-size:12px;line-height:1.4}
+.dashboard-single-observation strong{font-size:21px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.dashboard-single-observation p{margin:0;max-width:38ch}
+@media(max-width:767px){.dashboard-single-observation{align-items:flex-start;flex-direction:column;gap:7px;padding-top:9px}}
+@media(min-width:1181px){
+  .premium-dividends-3 .canon-dividends{max-width:1600px}
+  .premium-dividends-3 .canon-kpi-card{min-height:0;padding:12px 14px}
+  .premium-dividends-3 .dividend-executive-kpi-label,.premium-dividends-3 .dividend-executive-kpi-sub,
+  .premium-dividends-3 .dividend-history-heading span,.premium-dividends-3 .canon-div-panel .premium-panel-sub,
+  .premium-dividends-3 .div-timeline-summary-sub,.premium-dividends-3 .div-timeline-summary-meta{font-size:12px;line-height:1.4}
+  .premium-dividends-3 .canon-div-panel{min-height:0}
+}
+@media(min-width:1280px){.premium-dividends-3 .dividend-kpis-canon-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media(max-width:767px){
+  .premium-rf-page .premium-rf-controls{gap:6px;padding:8px 10px}
+  .premium-rf-page .premium-rf-filter-details>summary{min-height:44px;padding:7px 10px}
+  .premium-rf-page .premium-rf-active-filter-count{color:var(--text);font-size:12px;font-weight:600}
 }
 </style>
 </body>

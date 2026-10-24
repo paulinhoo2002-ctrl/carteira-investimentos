@@ -20,26 +20,6 @@ const VIEWPORTS = [{ width: 390, height: 844 }, { width: 1366, height: 768 }];
 let harness;
 let browser;
 
-async function firestoreRequest(pathname, body) {
-  const response = await fetch(`http://127.0.0.1:8080/v1/projects/${PROJECT}/databases/(default)/documents/${pathname}`, {
-    method: 'PATCH',
-    headers: { authorization: 'Bearer owner', 'content-type': 'application/json' },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(5000),
-  });
-  assert.equal(response.ok, true, `Firestore emulator seed failed with HTTP ${response.status}`);
-  return response.json();
-}
-
-async function seedAccessDocument() {
-  await firestoreRequest('meta/access', { fields: {
-    enabled: { booleanValue: true },
-    allowedEmails: { arrayValue: { values: [{ stringValue: EMAIL }] } },
-    blockedEmails: { arrayValue: { values: [] } },
-    allowedDomains: { arrayValue: { values: [] } },
-  } });
-}
-
 // Emulator-documented email verification flow (same as the auth-demo
 // security suite): accounts:update with a bare {emailVerified:true} is a
 // silent NO-OP on the Auth emulator — the working path is
@@ -120,8 +100,11 @@ async function waitForFirebase(app) {
   }
 }
 
-async function waitForAccess(page) {
-  await page.waitForFunction(email => FB?.user?.email === email && FB?.access?.loaded === true && FB?.access?.allowed === true, EMAIL, { timeout: 20000 });
+async function waitForOwnerOnlyBlock(page) {
+  await page.waitForFunction(email => FB?.user?.email === email && FB?.authResolved === true && FB?.access?.loaded === true && FB?.access?.allowed === false && FB?.accountMode === 'BLOCKED', EMAIL, { timeout: 20000 });
+}
+function firestoreEmulatorRequests(app) {
+  return app.requests.filter(({ url }) => url.startsWith('http://127.0.0.1:8080/'));
 }
 
 function firebaseDataRequests(app) {
@@ -131,7 +114,6 @@ function firebaseDataRequests(app) {
 before(async () => {
   harness = await startLocalHttpServer(path.join(__dirname, '..'));
   browser = await chromium.launch({ executablePath: CHROME, headless: true, args: ['--host-resolver-rules=MAP qa-non-loopback.invalid 127.0.0.1'] });
-  await seedAccessDocument();
 });
 
 after(async () => {
@@ -142,95 +124,58 @@ after(async () => {
   }
 });
 
-test('V311: real Firebase Auth + Firestore emulator session renders protected routes read-only', async () => {
+test('V311: verified non-owner Firebase emulator session remains blocked without private reads', async () => {
   const app = await newPage();
   try {
     await waitForFirebase(app);
     assert.equal(await app.page.evaluate(() => FB.app.options.projectId), PROJECT);
+    assert.equal(await app.page.locator('body').innerText().then(text => text.includes('Entre com Google para continuar')), true);
+    assert.deepEqual(firestoreEmulatorRequests(app), [], 'anonymous session must not read Firestore');
 
     const passphrase = `qa-${randomUUID()}-ephemeral`;
     const idToken = await app.page.evaluate(async ({ email, passphrase }) => {
       const credential = await FB.auth.createUserWithEmailAndPassword(email, passphrase);
       return credential.user.getIdToken();
     }, { email: EMAIL, passphrase });
-    // Phase 2 security contract: REAL access requires a verified email
-    // (unauthenticated/unverified => fail-closed, never REAL). Verify the
-    // synthetic account through the documented emulator flow, then sign in
-    // again so the fresh token claims email_verified=true.
     await markEmailVerified(EMAIL, idToken);
     await app.page.evaluate(async ({ email, passphrase }) => {
       await FB.auth.signOut();
       await FB.auth.signInWithEmailAndPassword(email, passphrase);
     }, { email: EMAIL, passphrase });
-    await waitForAccess(app.page);
+    await waitForOwnerOnlyBlock(app.page);
 
-    const identity = await app.page.evaluate(() => ({ authenticated: !!FB.user, email: FB.user?.email || '', allowed: FB.access.allowed }));
-    assert.deepEqual(identity, { authenticated: true, email: EMAIL, allowed: true });
-    assert.ok(app.requests.some(({ url }) => url.startsWith('http://127.0.0.1:9099/')));
-    assert.ok(app.requests.some(({ url }) => url.startsWith('http://127.0.0.1:8080/')));
-    const emulatorNotice = app.page.locator('.firebase-emulator-warning');
-    assert.match(await emulatorNotice.innerText(), /Running in emulator mode/i);
-    await emulatorNotice.evaluate(element => element.remove());
+    const identity = await app.page.evaluate(expectedEmail => ({
+      authenticated: !!FB.user,
+      emailMatches: FB.user?.email === expectedEmail,
+      emailVerified: FB.user?.emailVerified === true,
+      accountMode: FB.accountMode,
+      allowed: FB.access.allowed,
+      privateStateCleared: !FB.cloudLoaded && !FB.localPortfolioLoaded && S.assets.length === 0 && S.aportes.length === 0 && S.proventos.length === 0,
+    }), EMAIL);
+    assert.deepEqual(identity, { authenticated: true, emailMatches: true, emailVerified: true, accountMode: 'BLOCKED', allowed: false, privateStateCleared: true });
+    assert.ok(app.requests.some(({ url }) => url.startsWith('http://127.0.0.1:9099/')), 'synthetic login must use the Auth emulator');
+    assert.deepEqual(firestoreEmulatorRequests(app), [], 'owner-only denial must happen before any Firestore read');
 
-    for (const viewport of VIEWPORTS) {
-      await app.page.setViewportSize(viewport);
-      for (const route of ROUTES) {
-        if (viewport.width === 390 && route === 'ativos') await app.page.locator('#investBottomNav > button').nth(1).click();
-        else if (viewport.width === 390 && route === 'dividendos') await app.page.locator('#investBottomNav > button').nth(2).click();
-        else if (viewport.width === 390 && route === 'renda-fixa') await app.page.locator('#investBottomNav > button').nth(3).click();
-        else if (viewport.width === 390 && route === 'confiabilidade') {
-          await app.page.locator('#investBottomNav > button').nth(4).click();
-          await app.page.locator('#investMenuDrawer button').filter({ hasText: 'Confiabilidade' }).click();
-        } else await app.page.evaluate(route => go(route), route);
-        await app.page.waitForFunction(route => S.tab === route, route);
-        const state = await app.page.evaluate(() => ({
-          authenticated: !!FB.user && FB.access.allowed,
-          gateVisible: document.body.innerText.includes('Entre com Google para continuar'),
-          documentWidth: document.documentElement.scrollWidth,
-          bodyWidth: document.body.scrollWidth,
-          viewportWidth: innerWidth,
-          financialStorageWrites: window.__V311_FINANCIAL_STORAGE_WRITES__,
-          clippedInteractiveControls: (() => {
-            const clipped = [];
-            const controls = [...document.querySelectorAll('button, a[href], input, select, textarea, [role="button"], [role="tab"]')];
-            for (const element of controls) {
-              const style = getComputedStyle(element);
-              const rect = element.getBoundingClientRect();
-              if (element.closest('details:not([open])')) continue;
-              if (style.display === 'none' || style.visibility === 'hidden' || rect.width === 0 || rect.height === 0) continue;
-              if (rect.right <= 0 || rect.left >= innerWidth || rect.bottom <= 0 || rect.top >= innerHeight) continue;
-              if (rect.left < -1 || rect.right > innerWidth + 1) clipped.push({ control: element.outerHTML.slice(0, 160), rect: { left: rect.left, right: rect.right }, clipper: 'viewport-horizontal' });
-              let ancestor = element.parentElement;
-              while (ancestor) {
-                const ancestorStyle = getComputedStyle(ancestor);
-                const bounds = ancestor.getBoundingClientRect();
-                const clipLeft = bounds.left + ancestor.clientLeft;
-                const clipTop = bounds.top + ancestor.clientTop;
-                const clipRight = clipLeft + ancestor.clientWidth;
-                const clipBottom = clipTop + ancestor.clientHeight;
-                const clipsX = ['hidden', 'clip'].includes(ancestorStyle.overflowX);
-                const clipsY = ['hidden', 'clip'].includes(ancestorStyle.overflowY);
-                const isViewportRoot = ancestor === document.documentElement || ancestor === document.body || ancestor.id === 'root';
-                if (!isViewportRoot && ((clipsX && (rect.left < clipLeft - 1 || rect.right > clipRight + 1)) || (clipsY && (rect.top < clipTop - 1 || rect.bottom > clipBottom + 1)))) {
-                  clipped.push({ control: element.outerHTML.slice(0, 160), rect: { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom }, clipper: ancestor.tagName.toLowerCase() + (ancestor.id ? '#' + ancestor.id : '') + (ancestor.className ? '.' + String(ancestor.className).trim().replace(/\\s+/g, '.') : ''), clipAxes: { x: ancestorStyle.overflowX, y: ancestorStyle.overflowY }, clipRect: { left: clipLeft, right: clipRight, top: clipTop, bottom: clipBottom } });
-                  break;
-                }
-                ancestor = ancestor.parentElement;
-              }
-            }
-            return [...new Set(clipped)];
-          })(),
-        }));
-        assert.equal(state.authenticated, true, `${route} at ${viewport.width}: auth lost`);
-        assert.equal(state.gateVisible, false, `${route} at ${viewport.width}: login gate returned`);
-        assert.ok(state.documentWidth <= state.viewportWidth, `${route} at ${viewport.width}: document overflow`);
-        assert.ok(state.bodyWidth <= state.viewportWidth, `${route} at ${viewport.width}: body overflow`);
-        assert.equal(state.financialStorageWrites, 0);
-        assert.deepEqual(state.clippedInteractiveControls, [], `${route} at ${viewport.width}: clipped interactive controls`);
-      }
+    for (const route of ROUTES) {
+      await app.page.evaluate(route => go(route), route);
+      await app.page.waitForFunction(route => S.tab === route, route);
+      const state = await app.page.evaluate(() => ({ allowed: FB.access.allowed, accountMode: FB.accountMode, cloudLoaded: FB.cloudLoaded, localPortfolioLoaded: FB.localPortfolioLoaded }));
+      assert.deepEqual(state, { allowed: false, accountMode: 'BLOCKED', cloudLoaded: false, localPortfolioLoaded: false }, `${route}: direct navigation must remain blocked`);
+      assert.deepEqual(firestoreEmulatorRequests(app), [], `${route}: blocked identity must not read Firestore`);
     }
 
-    assert.deepEqual(firebaseDataRequests(app), []);
+    await app.page.evaluate(() => FB.auth.signOut());
+    await app.page.waitForFunction(() => FB.authResolved === true && FB.user === null && FB.access.allowed === false && FB.access.loaded === false && FB.accountMode === 'LOGIN_REQUIRED');
+    const logout = await app.page.evaluate(() => ({
+      authenticated: !!FB.user,
+      allowed: FB.access.allowed,
+      accountMode: FB.accountMode,
+      loginGateVisible: document.body.innerText.includes('Entre com Google para continuar'),
+      privateStateCleared: !FB.cloudLoaded && !FB.localPortfolioLoaded && S.assets.length === 0 && S.aportes.length === 0 && S.proventos.length === 0,
+      financialStorageWrites: window.__V311_FINANCIAL_STORAGE_WRITES__,
+    }));
+    assert.deepEqual(logout, { authenticated: false, allowed: false, accountMode: 'LOGIN_REQUIRED', loginGateVisible: true, privateStateCleared: true, financialStorageWrites: 0 });
+    assert.deepEqual(firestoreEmulatorRequests(app), [], 'logout must not trigger Firestore reads');
     assert.deepEqual(app.blockedProductionRequests, []);
     assert.equal(app.financialWrites, 0);
     assert.equal(app.taxWrites, 0);
@@ -242,7 +187,6 @@ test('V311: real Firebase Auth + Firestore emulator session renders protected ro
     await app.context.close();
   }
 });
-
 test('V311: partial emulator flags fail closed without initializing Firebase', async () => {
   for (const query of ['?qaAuthEmulator=1&protectedReadOnlyQa=1', '?qaFirestoreEmulator=1&protectedReadOnlyQa=1']) {
     const app = await newPage({ query });

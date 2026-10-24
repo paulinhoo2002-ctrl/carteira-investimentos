@@ -121,3 +121,17 @@ Metodologia: probe `tests/qa-probes/m567-route-audit.js` (render, overflow, page
 
 **Commits M567.2:** `ac874ee` (fix disclosures + tipografia + contratos + probes) + commit de documentação.
 
+
+## 11. M568 — Revisão adversarial noturna da PR #533 (2026-10-22, PR head d018a6f)
+
+**Causa-raiz crítica corrigida (CI):** o job "Build and test" roda `npm test`, que passou a incluir `test:functional-e2e` (primeiros suites de browser da chain). No CI, `CHROME_PATH` é resolvido DEPOIS do npm test → path Windows fixo → `chromium.launch` falhava antes de `openApp` retornar → finally em `app` indefinido → cada teste vazava um servidor HTTP → node --test travava até o timeout de 60min (CI da main histórica: 2-3min). Fix: resolução multi-plataforma de browser (env → Windows → Linux), skip graceful sem browser, e `openApp` leak-proof (fecha o harness se o launch falhar). Prova: CHROME_PATH inválido falha em segundos (antes: hang); CI real: run travado cancelado pelo push, novo run **SUCCESS** nos 3 checks.
+
+**Achados corrigidos:** 3 summaries sem floor 44px (rentabilidade ×2 @19px, auditoria "Mais filtros" @38px) — inline `min-height:44px;display:flex;align-items:center`. Verificado: todos os alvos de produção ≥44px em 320-430px (resta apenas o botão do banner TESTE LOCAL, inexistente em produção).
+
+**Cobertura fechada:** `tests/m568-provento-edit.e2e.test.js` (2 testes) — editar provento (svD 1 persistência; clD preserva original). Lacuna FASE 8 eliminada.
+
+**Auditoria global:** 20 rotas × 10 viewports (320-1920) × 2 temas = 400 checks: render 0 falhas, overflow 0, pageerrors 0, console 0, fontes <9px 0; disclosures default-open apenas os BY_DESIGN (metas/analise/renda-fixa@≥768). Filtro de períodos: 6/6 chips focáveis com outline visível, rótulo completo após scroll-into-view, touch OK.
+
+**Bateria final (árvore = d018a6f):** verify:release **2064/2064** (inclui 2 novos testes), auth-browser 0 fail, ir2026 197/197, diff-check limpo. CI remoto: 3/3 checks SUCCESS (Build and test + V289 + Auth/Firestore emulator).
+
+**AUTHENTICATED_QA=BLOCKED** (sem sessão legítima em contexto sintético autônomo; recomenda-se QA autenticado somente leitura pré-merge como passo humano).

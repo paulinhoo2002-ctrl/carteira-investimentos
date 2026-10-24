@@ -56,10 +56,40 @@ test('encrypted backup rejects weak passwords and unsupported envelopes', async 
     /UNSUPPORTED_ENCRYPTED_BACKUP/,
   );
 });
+test('encrypted backup accepts six characters and keeps older twelve-character envelopes readable', async () => {
+  for (const password of ['123456', '123456789012', 'x'.repeat(128)]) {
+    const envelope = await Backup.encryptBackup(payload, password, { cryptoProvider: webcrypto });
+    assert.equal(envelope.kdf.iterations, 310000);
+    assert.equal(envelope.cipher.name, 'AES-GCM');
+    assert.deepEqual(await Backup.decryptBackup(envelope, password, { cryptoProvider: webcrypto }), payload);
+  }
+  const envelope = await Backup.encryptBackup(payload, '123456', { cryptoProvider: webcrypto });
+  await assert.rejects(Backup.decryptBackup(envelope, '654321', { cryptoProvider: webcrypto }), /DECRYPTION_FAILED/);
+  const previousEnvelope = {
+    format: 'carteira-investimentos-backup-encrypted', version: 1,
+    kdf: { name: 'PBKDF2', hash: 'SHA-256', iterations: 310000, salt: '0ET4US6CTotT6i1pT5vfKg==' },
+    cipher: { name: 'AES-GCM', iv: 'ihLHHEsF13+ruZbK' },
+    ciphertext: 'PAuu/rRav8c2Rq5cy3rTfgH2Kl7fLGFP+F2/EHnPU3e8dXkmlA8/SJn9kY5B3VQk',
+  };
+  assert.deepEqual(await Backup.decryptBackup(previousEnvelope, '123456789012', { cryptoProvider: webcrypto }), { marker: 'LEGACY_SYNTHETIC_V1' });
+});
+test('backup form keeps confirmation and warns about short passwords', () => {
+  const fs = require('node:fs');
+  const html = fs.readFileSync(require('node:path').join(__dirname, '..', 'index.html'), 'utf8');
+  const start = html.indexOf('async function exportBackup(');
+  const end = html.indexOf('function v324PeriodicBackupEligible(){', start);
+  const exportSource = html.slice(start, end);
+  assert.match(html, /id="backup-encryption-passphrase"[^>]*minlength="6"/);
+  assert.match(html, /id="backup-encryption-confirm"[^>]*minlength="6"/);
+  assert.match(exportSource, /if\(encrypted&&passphrase\.length<6\)/);
+  assert.match(exportSource, /if\(encrypted&&passphrase!==confirmation\)/);
+  assert.match(html, /12 caracteres ou mais/);
+  assert.match(html, /senhas curtas oferecem menor proteção/i);
+});
 test('backup UI encrypts downloads and decrypts before existing validation', () => {
   const fs = require('node:fs');
   const html = fs.readFileSync(require('node:path').join(__dirname, '..', 'index.html'), 'utf8');
-  const exportStart = html.indexOf('async function exportBackup(){');
+  const exportStart = html.indexOf('async function exportBackup(');
   const exportEnd = html.indexOf('function v324PeriodicBackupEligible(){', exportStart);
   const exportSource = html.slice(exportStart, exportEnd);
   const importStart = html.indexOf("document.getElementById('imp-file').addEventListener('change'");
@@ -71,6 +101,127 @@ test('backup UI encrypts downloads and decrypts before existing validation', () 
   assert.match(exportSource, /backup-encryption-confirm/);
   assert.match(importSource, /await BackupPortability\.decryptBackup\(d,passphrase\)/);
   assert.ok(importSource.indexOf('decryptBackup') < importSource.indexOf('verifyBackup'));
+  assert.match(importSource, /BackupPortability\.previewRestore\(d,backupCurrentState\(\)/);
+  assert.match(importSource, /Formato de backup desconhecido ou não compatível/);
   assert.match(html, /\.backup-encryption-fields\{grid-template-columns:1fr!important\}/);
   assert.match(html, /Histórico local neste navegador não recebe esta criptografia/);
+});
+
+test('backup UI exposes an explicit no-password export while keeping protected export recommended', () => {
+  const fs = require('node:fs');
+  const html = fs.readFileSync(require('node:path').join(__dirname, '..', 'index.html'), 'utf8');
+  assert.match(html, /Exportar protegido/);
+  assert.match(html, /Exportar sem senha/);
+  assert.match(html, /sem senha.*sem criptografia|sem criptografia.*sem senha/i);
+  assert.match(html, /local privado|pasta privada/i);
+  assert.match(html, /window\.prompt\(/);
+  assert.match(html, /await BackupPortability\.verifyBackup\(payload/);
+  assert.match(html, /await BackupPortability\.encryptBackup\(payload,passphrase\)/);
+  const exportStart = html.indexOf('async function exportBackup(');
+  const exportEnd = html.indexOf('function v324PeriodicBackupEligible(){', exportStart);
+  assert.doesNotMatch(html.slice(exportStart, exportEnd), /\b(?:fetch|XMLHttpRequest|sendBeacon)\b/);
+  assert.match(html, /Proteção do arquivo:/);
+});
+
+test('plain versioned backup verifies checksum, rejects tampering and preserves preview validation', async () => {
+  const plain = await Backup.createBackup({
+    state: {
+      wallets: [], assets: [], aportes: [], proventos: [], rfEvents: [], goals: {},
+      performance: { schemaVersion: 1, valuationSnapshots: { snapshots: [] }, externalCashFlows: { flows: [] } },
+    },
+    config: {},
+    ownerId: 'synthetic-owner',
+    supportedAssetTypes: ['Ação'],
+    operationId: 'synthetic-plain-backup',
+  });
+  const options = { ownerId: 'synthetic-owner', supportedAssetTypes: ['Ação'] };
+  const valid = await Backup.verifyBackup(plain, options);
+  assert.equal(valid.status, 'SUPPORTED');
+  assert.equal(plain.manifest.backupVersion, '1.2');
+  assert.equal(plain.manifest.checksums.algorithm, 'SHA-256');
+  assert.equal((await Backup.previewRestore(plain, {}, options)).integrity.status, 'SUPPORTED');
+
+  const tampered = structuredClone(plain);
+  tampered.payload.state.metadata = { altered: true };
+  assert.equal((await Backup.verifyBackup(tampered, options)).status, 'CORRUPTED');
+  const unknown = structuredClone(plain);
+  unknown.manifest.backupFormat = 'unknown-backup-format';
+  assert.equal((await Backup.verifyBackup(unknown, options)).status, 'UNSUPPORTED');
+  const future = structuredClone(plain);
+  future.manifest.backupVersion = '9.0';
+  assert.equal((await Backup.verifyBackup(future, options)).status, 'TOO_NEW');
+});
+
+test('no-password export downloads verified versioned JSON without asking for or using a password', async () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const vm = require('node:vm');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const start = html.indexOf('async function exportBackup(');
+  const end = html.indexOf('function v324PeriodicBackupEligible(){', start);
+  assert.notEqual(start, -1);
+  assert.notEqual(end, -1);
+  const source = html.slice(start, end).replace(/\n\s*function exportBackupWithoutPassword\(\)\{[\s\S]*?\n\s*\}/, '');
+  const synthetic = await Backup.createBackup({
+    state: {
+      wallets: [], assets: [], aportes: [], proventos: [], rfEvents: [], goals: {},
+      performance: { schemaVersion: 1, valuationSnapshots: { snapshots: [] }, externalCashFlows: { flows: [] } },
+    },
+    config: {},
+    ownerId: 'synthetic-owner',
+    supportedAssetTypes: ['Ação'],
+    operationId: 'synthetic-no-password-export',
+  });
+  const passphrase = { value: '' };
+  const confirmation = { value: '' };
+  let downloadedBlob;
+  let downloadedName = '';
+  let passwordPrompted = false;
+  let encryptionUsed = false;
+  const context = {
+    S: { backupOpen: true },
+    FB: { user: { uid: 'synthetic-owner' }, access: { allowed: true } },
+    TYPE_CHOICES: ['Ação'],
+    BackupPortability: {
+      ...Backup,
+      async encryptBackup() { encryptionUsed = true; throw new Error('encrypted path should not run'); },
+    },
+    isLocalTestMode: () => false,
+    backupPortabilityPayload: async () => synthetic,
+    backupStamp: () => 'synthetic-date',
+    saveLocalBackup: async () => ({ ok: true }),
+    debugError() { throw new Error('unexpected export error'); },
+    debugWarn() {},
+    toast() {},
+    window: { prompt() { passwordPrompted = true; return null; } },
+    document: {
+      getElementById(id) {
+        if (id === 'backup-encryption-passphrase') return passphrase;
+        if (id === 'backup-encryption-confirm') return confirmation;
+        return null;
+      },
+      createElement() {
+        return { click() { downloadedName = this.download; } };
+      },
+    },
+    URL: {
+      createObjectURL(blob) { downloadedBlob = blob; return 'blob:synthetic'; },
+      revokeObjectURL() {},
+    },
+    Blob,
+    setTimeout() {},
+  };
+  const exportBackup = vm.runInNewContext(`${source}\nexportBackup;`, context);
+  await exportBackup({ encrypted: false });
+
+  const json = JSON.parse(await downloadedBlob.text());
+  const verified = await Backup.verifyBackup(json, { ownerId: 'synthetic-owner', supportedAssetTypes: ['Ação'] });
+  assert.equal(passwordPrompted, false);
+  assert.equal(encryptionUsed, false);
+  assert.match(downloadedName, /backup-sem-senha-synthetic-date\.json$/);
+  assert.equal(json.manifest.backupFormat, Backup.FORMAT);
+  assert.equal(json.manifest.checksums.algorithm, 'SHA-256');
+  assert.equal(verified.status, 'SUPPORTED');
+  assert.equal(passphrase.value, '');
+  assert.equal(confirmation.value, '');
 });

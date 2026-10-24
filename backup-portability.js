@@ -81,7 +81,7 @@
     if (!cryptoProvider?.subtle || typeof cryptoProvider.getRandomValues !== 'function') throw new Error('WEBCRYPTO_UNAVAILABLE');
   }
   function assertPassphrase(passphrase) {
-    if (typeof passphrase !== 'string' || passphrase.length < 12) throw new Error('PASSPHRASE_TOO_SHORT');
+    if (typeof passphrase !== 'string' || passphrase.length < 6) throw new Error('PASSPHRASE_TOO_SHORT');
   }
   async function deriveBackupKey(passphrase, salt, cryptoProvider, usages) {
     const material = await cryptoProvider.subtle.importKey('raw', new TextEncoder().encode(passphrase), 'PBKDF2', false, ['deriveKey']);

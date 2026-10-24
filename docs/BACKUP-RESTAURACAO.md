@@ -23,7 +23,7 @@ O backup não deve conter senha da conta Google.
 2. Acesse **Configurações**.
 3. Abra **Backup e restauração**.
 4. Revise o resumo da carteira atual.
-5. Defina e confirme uma senha forte de pelo menos 12 caracteres.
+5. Defina e confirme uma senha com pelo menos 6 caracteres. Senhas curtas oferecem menor proteção; recomendamos 12 caracteres ou mais.
 6. Clique em **Exportar protegido**.
 7. Guarde o JSON criptografado e a senha em locais seguros e independentes.
 

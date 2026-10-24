@@ -952,6 +952,9 @@ test('Ativos cards respondem ao toque sem disparar acoes financeiras', async () 
     assert.equal(await summary.evaluate(element => element.parentElement?.open), true);
     const mobile = await runtime.page.evaluate(() => ({ pageWidth: document.documentElement.scrollWidth, viewportWidth: innerWidth }));
     assert.ok(mobile.pageWidth <= mobile.viewportWidth, 'touch interaction must not create page overflow');
+    const labelSizes = await runtime.page.evaluate(() => [...document.querySelectorAll('.asset-mobile-cards .asset-premium-card-meta > div > span, .asset-mobile-cards .asset-ticker')]
+      .map(element => ({ label: element.textContent.trim(), size: Number.parseFloat(getComputedStyle(element).fontSize) })));
+    assert.ok(labelSizes.length > 0 && labelSizes.every(item => item.size >= 12), `mobile asset labels must be readable: ${JSON.stringify(labelSizes)}`);
     await assertSyntheticReadOnlyRuntime(runtime);
     assert.deepEqual(runtime.pageErrors, []);
     assert.deepEqual(runtime.firebaseRequests, []);
