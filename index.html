@@ -8790,6 +8790,8 @@ window.ensureXLSX=()=>{ if(window.__XLSX_PROMISE__) return window.__XLSX_PROMISE
 <script src="backup-portability.js"></script>
 <script src="protected-local-cloud-authority.js?v=phase4i-authority-2"></script>
 <script src="analytics-passive-income-projection.js"></script>
+<script src="analytics-dividend-evolution.js"></script>
+<script src="analytics-asset-class-comparison.js"></script>
 <script src="rf-reconstruction.js"></script>
 <script src="income-linkage-reconciliation.js"></script>
 <script src="corporate-events-core.js"></script>
@@ -26597,8 +26599,135 @@ function assetPerformanceOverviewPanel(){
       <div class="perf-list">${listBody}</div>
     </div>
   </div>`;
-}
-function setAssetsAnalysisRankingMode(mode){
+  }
+  function assetClassComparisonPanel(){
+    if (typeof AssetClassComparison === 'undefined') {
+      return '<div class="mu" style="font-size:11px;color:var(--muted);padding:20px">Motor de comparação não disponível</div>';
+    }
+    try {
+      const report = AssetClassComparison.generateComparisonReport(S.assets, S.goals);
+      const actions = AssetClassComparison.getRebalanceActions(report);
+      const total = report.totalPortfolio;
+
+      const formatMoney = (v) => {
+        if (v === undefined || v === null) return '—';
+        if (v >= 1e9) return (v / 1e9).toFixed(2) + ' B';
+        if (v >= 1e6) return (v / 1e6).toFixed(2) + ' M';
+        if (v >= 1e3) return (v / 1e3).toFixed(1) + ' K';
+        return v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      };
+
+      return `
+      <div class="alloc-shell">
+        <div class="alloc-header">
+          <div class="alloc-title-row">
+            <h2 class="st">Comparativo por Classe de Ativos (M1421)</h2>
+            <div class="alloc-meta">Carteira total: ${formatMoney(total)} · Risco: ${report.riskScore}/10 · ${report.summary.concentrationRisk}</div>
+          </div>
+          <div class="alloc-disclaimer mu">${esc(report.disclaimer)}</div>
+        </div>
+
+        <div class="alloc-grid-main" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin:16px 0">
+          ${report.classes.map(c => `
+            <div class="alloc-card" style="border-left:4px solid ${c.color};background:var(--surface);border-radius:12px;padding:16px">
+              <div class="alloc-card-head" style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                <span style="font-size:20px">${c.icon}</span>
+                <div class="alloc-card-name" style="font-weight:700;color:${c.color}">${c.name}</div>
+                <div class="alloc-card-alloc" style="margin-left:auto;font-weight:700;color:var(--text)">${c.allocation.toFixed(1)}%</div>
+              </div>
+              <div class="alloc-card-metrics" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
+                <div><div class="mu">Valor</div><div class="st">${formatMoney(c.totalValue)}</div></div>
+                <div><div class="mu">Investido</div><div class="st">${formatMoney(c.totalInvested)}</div></div>
+                <div><div class="mu">Resultado</div><div class="st ${c.gainLoss>=0?'gn':'rd'}">${c.gainLoss>=0?'+':''}${formatMoney(c.gainLoss)} (${c.gainLossPct.toFixed(2)}%)</div></div>
+                <div><div class="mu">Dividendos/ano</div><div class="st">${formatMoney(c.totalDividends)}</div></div>
+                <div><div class="mu">DY médio</div><div class="st">${c.avgDY.toFixed(2)}%</div></div>
+                <div><div class="mu">Yield on Cost</div><div class="st">${c.yieldOnCost.toFixed(2)}%</div></div>
+                <div><div class="mu">Rent. média</div><div class="st ${c.avgPL>=0?'gn':'rd'}">${c.avgPL>=0?'+':''}${c.avgPL.toFixed(2)}%</div></div>
+                <div><div class="mu">Ativos</div><div class="st">${c.count}</div></div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <details class="sec alloc-details" style="margin-top:16px" open>
+          <summary>
+            <div class="sec-title">Detalhamento por Ativo</div>
+            <div class="sec-meta">Clique para expandir cada classe</div>
+          </summary>
+          <div class="sec-body">
+            ${report.classes.filter(c => c.count > 0).map(c => `
+              <details class="sec alloc-class-detail" style="margin:8px 0;border:1px solid var(--border);border-radius:10px;overflow:hidden">
+                <summary style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);cursor:pointer">
+                  <span style="font-size:20px">${c.icon}</span>
+                  <div class="st" style="color:${c.color}">${c.name}</div>
+                  <div class="mu" style="margin-left:auto">${c.allocation.toFixed(1)}% · ${formatMoney(c.totalValue)}</div>
+                </summary>
+                <div class="sec-body">
+                  <div class="ts" tabindex="0" style="overflow-x:auto">
+                    <table class="tw" style="min-width:700px">
+                      <thead>
+                        <tr><th>Ticker</th><th class="num">Qtd</th><th class="num">Preço</th><th class="num">Preço médio</th><th class="num">DY</th><th class="num">Valor</th><th class="num">Investido</th><th class="num">Resultado</th><th class="num">Rent.</th><th class="num">Div/ano</th></tr>
+                      </thead>
+                      <tbody>
+                        ${c.assets.sort((a,b)=>b.value-a.value).map(a => `
+                          <tr>
+                            <td style="font-weight:600">${a.ticker}</td>
+                            <td class="num">${a.qty.toLocaleString('pt-BR')}</td>
+                            <td class="num">${formatMoney(a.price)}</td>
+                            <td class="num">${formatMoney(a.avgPrice)}</td>
+                            <td class="num">${a.dy.toFixed(2)}%</td>
+                            <td class="num">${formatMoney(a.value)}</td>
+                            <td class="num">${formatMoney(a.invested)}</td>
+                            <td class="num ${a.pl>=0?'gn':'rd'}">${a.pl>=0?'+':''}${formatMoney(a.value - a.invested)}</td>
+                            <td class="num ${a.pl>=0?'gn':'rd'}">${a.pl>=0?'+':''}${a.pl.toFixed(2)}%</td>
+                            <td class="num">${formatMoney(a.annualDiv)}</td>
+                          </tr>
+                        `).join('')}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </details>
+            `).join('')}
+          </div>
+        </details>
+
+        ${actions.length > 0 ? `
+        <details class="sec alloc-rebalance" style="margin-top:16px">
+          <summary>
+            <div class="sec-title">Ações de Rebalanceamento Sugeridas</div>
+            <div class="sec-meta">Baseado nas metas de alocação definidas nas Metas</div>
+          </summary>
+          <div class="sec-body">
+            <div class="ts" tabindex="0" style="overflow-x:auto">
+              <table class="tw" style="min-width:500px">
+                <thead><tr><th>Classe</th><th>Ação</th><th class="num">Valor</th><th>Prioridade</th></tr></thead>
+                <tbody>
+                  ${actions.map(a => `
+                    <tr>
+                      <td style="font-weight:600">${a.class}</td>
+                      <td><span class="analysis-pill ${a.action==='COMPRAR'?'ok':'danger'}">${a.action}</span></td>
+                      <td class="num">${formatMoney(a.amount)}</td>
+                      <td><span class="analysis-pill ${a.priority==='ALTA'?'danger':a.priority==='MÉDIA'?'warn':'muted'}">${a.priority}</span></td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+            <div class="mu" style="margin-top:8px;font-size:11px">Valores aproximados. Considere custos de corretagem e impostos antes de executar.</div>
+          </div>
+        </details>` : ''}
+
+        <div class="alloc-actions" style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+          <button type="button" class="btn bgh" onclick="exportAssetClassComparison()">Exportar JSON</button>
+          <button type="button" class="btn bgh" onclick="go('metas')">Configurar Metas de Alocação</button>
+        </div>
+      </div>`;
+    } catch (e) {
+      return '<div class="mu" style="font-size:11px;color:var(--danger);padding:20px">Erro na comparação: ' + esc(e.message) + '</div>';
+    }
+  }
+  function setAssetsAnalysisRankingMode(mode){
   S.assetsAnalysisRankingMode = ['positions','concentration','best','worst','opportunity'].includes(mode) ? mode : 'positions';
   render();
 }
@@ -32705,7 +32834,7 @@ function rfMovementFromAssetsModal(){
   </div>`;
 }
 function ativos(){
-  const innerTab = ['analise','desempenho','renda-fixa'].includes(String(S.assetsInnerTab||'patrimonio')) ? String(S.assetsInnerTab) : 'patrimonio';
+  const innerTab = ['analise','desempenho','renda-fixa','alocacao'].includes(String(S.assetsInnerTab||'patrimonio')) ? String(S.assetsInnerTab) : 'patrimonio';
   const ativosCategoryIcon = type => ({
     'Ação': '📈',
     'FII': '🏢',
@@ -33123,13 +33252,14 @@ function ativos(){
   const coverageNote = unavailableAssetCount ? `<p class="assets-coverage-note" role="status">Leitura parcial: ${unavailableAssetCount} ativo${unavailableAssetCount !== 1 ? 's' : ''} sem valor atual disponível; totais e pesos podem estar incompletos.</p>` : '';
 
   const innerTabsHtml = `
-    <div class="asset-inner-tabs" role="tablist" aria-label="Sub-abas de Ativos">
-      <button type="button" class="asset-inner-tab ${innerTab === 'analise' ? 'on' : ''}" onclick="setAssetsInnerTab('analise')" role="tab" aria-selected="${innerTab === 'analise' ? 'true' : 'false'}">Análise</button>
-      <button type="button" class="asset-inner-tab ${innerTab === 'desempenho' ? 'on' : ''}" onclick="setAssetsInnerTab('desempenho')" role="tab" aria-selected="${innerTab === 'desempenho' ? 'true' : 'false'}">Desempenho</button>
-      <button type="button" class="asset-inner-tab ${innerTab === 'renda-fixa' ? 'on' : ''}" onclick="setAssetsInnerTab('renda-fixa')" role="tab" aria-selected="${innerTab === 'renda-fixa' ? 'true' : 'false'}">Renda Fixa</button>
-    </div>`;
+      <div class="asset-inner-tabs" role="tablist" aria-label="Sub-abas de Ativos">
+        <button type="button" class="asset-inner-tab ${innerTab === 'analise' ? 'on' : ''}" onclick="setAssetsInnerTab('analise')" role="tab" aria-selected="${innerTab === 'analise' ? 'true' : 'false'}">Análise</button>
+        <button type="button" class="asset-inner-tab ${innerTab === 'desempenho' ? 'on' : ''}" onclick="setAssetsInnerTab('desempenho')" role="tab" aria-selected="${innerTab === 'desempenho' ? 'true' : 'false'}">Desempenho</button>
+        <button type="button" class="asset-inner-tab ${innerTab === 'renda-fixa' ? 'on' : ''}" onclick="setAssetsInnerTab('renda-fixa')" role="tab" aria-selected="${innerTab === 'renda-fixa' ? 'true' : 'false'}">Renda Fixa</button>
+        <button type="button" class="asset-inner-tab ${innerTab === 'alocacao' ? 'on' : ''}" onclick="setAssetsInnerTab('alocacao')" role="tab" aria-selected="${innerTab === 'alocacao' ? 'true' : 'false'}">Alocação</button>
+      </div>`;
 
-  const panelHtml = innerTab === 'analise' ? analysis : innerTab === 'desempenho' ? assetPerformanceOverviewPanel() : innerTab === 'renda-fixa' ? `<div class="asset-inner-panel">${rendaFixaTab()}</div>` : '';
+  const panelHtml = innerTab === 'analise' ? analysis : innerTab === 'desempenho' ? assetPerformanceOverviewPanel() : innerTab === 'renda-fixa' ? `<div class="asset-inner-panel">${rendaFixaTab()}</div>` : innerTab === 'alocacao' ? `<div class="asset-inner-panel">${assetClassComparisonPanel()}</div>` : '';
   const modals = innerTab === 'patrimonio' ? rfMovementFromAssetsModal() : innerTab === 'renda-fixa' ? rfContextualHistoryModal() : '';
 
   return `<section class="assets-premium-shell" aria-labelledby="ativos-page-title">
@@ -33828,6 +33958,22 @@ function passiveIncomeDownloadProjection(b64){
     URL.revokeObjectURL(url);
   } catch(e) {
     console.error('Download failed:', e);
+  }
+}
+function exportAssetClassComparison(){
+  if (typeof AssetClassComparison === 'undefined') return;
+  try {
+    const report = AssetClassComparison.generateComparisonReport(S.assets, S.goals);
+    const json = JSON.stringify(report, null, 2);
+    const blob = new Blob([json], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'comparativo-classe-ativos-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch(e) {
+    console.error('Export failed:', e);
   }
 }
 function estimateGoalMonths(startValue,targetValue,monthlyAporte,annualVar){
