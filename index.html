@@ -8793,6 +8793,7 @@ window.ensureXLSX=()=>{ if(window.__XLSX_PROMISE__) return window.__XLSX_PROMISE
 <script src="analytics-dividend-evolution.js"></script>
 <script src="analytics-asset-class-comparison.js"></script>
 <script src="analytics-wealth-goals.js"></script>
+<script src="analytics-financial-insights.js"></script>
 <script src="rf-reconstruction.js"></script>
 <script src="income-linkage-reconciliation.js"></script>
 <script src="corporate-events-core.js"></script>
@@ -21543,7 +21544,137 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
                     return '<div class="mu" style="font-size:11px;color:var(--danger)">Erro nas metas de patrimônio: ' + esc(e.message) + '</div>';
                   }
                 }
-                function proventoAuditMonthKey(dateLike){
+                                function financialInsightsPanel(assets, proventos, goals, movements){
+                                  if (typeof FinancialInsights === 'undefined') {
+                                    return '<div class="mu" style="font-size:11px;color:var(--muted);padding:20px">Motor de insights não disponível</div>';
+                                  }
+                                  try {
+                                    const report = FinancialInsights.generateInsightsReport(assets, proventos, goals, movements);
+                                    const health = report.health;
+                                    const anomalies = report.anomalies;
+                                    const summary = report.summary;
+
+                                    const formatMoney = (v) => {
+                                      if (v === undefined || v === null) return '—';
+                                      if (v >= 1e9) return (v / 1e9).toFixed(2) + ' B';
+                                      if (v >= 1e6) return (v / 1e6).toFixed(2) + ' M';
+                                      if (v >= 1e3) return (v / 1e3).toFixed(1) + ' K';
+                                      return v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                                    };
+
+                                    const healthColors = {
+                                      EXCELENTE: '#34d399',
+                                      BOM: '#60a5fa',
+                                      ATENÇÃO: '#fbbf24',
+                                      CRÍTICO: '#f87171'
+                                    };
+
+                                    return `
+                                    <details class="sec metas-goal-section" style="margin-top:8px;margin-bottom:0">
+                                      <summary>
+                                        <div>
+                                          <div class="sec-title">Insights Financeiros & Saúde da Carteira (M1441)</div>
+                                          <div class="sec-meta">Score de saúde, alertas, anomalias, oportunidades</div>
+                                        </div>
+                                        <div class="sec-meta">Abrir</div>
+                                      </summary>
+                                      <div class="sec-body">
+                                        <div class="mu" style="font-size:11px;line-height:1.45;margin-bottom:8px">
+                                          <strong>Disclaimer:</strong> ${esc(report.disclaimer)}
+                                        </div>
+
+                                        <div class="passive-goal-grid main" style="margin-bottom:12px">
+                                          <div class="passive-goal-card" style="border-left-color:${healthColors[health.healthLabel]}">
+                                            <div class="passive-goal-kicker">Score de Saúde</div>
+                                            <div class="passive-goal-value" style="color:${healthColors[health.healthLabel]}">${health.score}/100</div>
+                                            <div class="passive-goal-sub">${health.healthLabel} · Patrimônio: ${formatMoney(health.totalValue)}</div>
+                                          </div>
+                                          <div class="passive-goal-card ${health.alerts.filter(a=>a.severity==='HIGH').length > 0 ? 'danger' : health.alerts.length > 0 ? 'warn' : 'ok'}">
+                                            <div class="passive-goal-kicker">Alertas Ativos</div>
+                                            <div class="passive-goal-value">${health.alerts.length}</div>
+                                            <div class="passive-goal-sub">Críticos: ${summary.highAlerts} · Total: ${summary.totalAlerts}</div>
+                                          </div>
+                                          <div class="passive-goal-card ${anomalies.filter(a=>a.severity==='HIGH').length > 0 ? 'danger' : anomalies.length > 0 ? 'warn' : 'ok'}">
+                                            <div class="passive-goal-kicker">Anomalias Detectadas</div>
+                                            <div class="passive-goal-value">${anomalies.length}</div>
+                                            <div class="passive-goal-sub">Críticas: ${summary.highAnomalies} · Oportunidades: ${summary.opportunities}</div>
+                                          </div>
+                                        </div>
+
+                                        ${health.alerts.length > 0 ? `
+                                        <details class="sec" style="margin-top:8px" open>
+                                          <summary>
+                                            <div class="sec-title">Alertas (${health.alerts.length})</div>
+                                            <div class="sec-meta">Ordenados por severidade</div>
+                                          </summary>
+                                          <div class="sec-body">
+                                            ${health.alerts.map(a => `
+                                              <div class="analysis-pill ${a.severity}" style="margin:4px 0;padding:8px 12px;display:flex;align-items:center;gap:8px">
+                                                <span style="font-weight:700">${a.severity}</span>
+                                                <span>${esc(a.message)}</span>
+                                              </div>
+                                            `).join('')}
+                                          </div>
+                                        </details>` : ''}
+
+                                        ${anomalies.length > 0 ? `
+                                        <details class="sec" style="margin-top:8px" open>
+                                          <summary>
+                                            <div class="sec-title">Anomalias (${anomalies.length})</div>
+                                            <div class="sec-meta">Dados inconsistentes ou duplicados</div>
+                                          </summary>
+                                          <div class="sec-body">
+                                            ${anomalies.map(a => `
+                                              <div class="analysis-pill ${a.severity}" style="margin:4px 0;padding:8px 12px;display:flex;align-items:center;gap:8px">
+                                                <span style="font-weight:700">${a.severity}</span>
+                                                <span>${esc(a.type)}: ${esc(a.message)}</span>
+                                              </div>
+                                            `).join('')}
+                                          </div>
+                                        </details>` : ''}
+
+                                        ${health.opportunities.length > 0 ? `
+                                        <details class="sec" style="margin-top:8px" open>
+                                          <summary>
+                                            <div class="sec-title">Oportunidades (${health.opportunities.length})</div>
+                                            <div class="sec-meta">Melhorias sugeridas para sua carteira</div>
+                                          </summary>
+                                          <div class="sec-body">
+                                            ${health.opportunities.map(o => `
+                                              <div class="analysis-pill info" style="margin:4px 0;padding:8px 12px;display:flex;align-items:center;gap:8px">
+                                                <span style="font-weight:700">${o.type}</span>
+                                                <span>${esc(o.message)}</span>
+                                              </div>
+                                            `).join('')}
+                                          </div>
+                                        </details>` : ''}
+
+                                        <details class="sec" style="margin-top:8px">
+                                          <summary>
+                                            <div class="sec-title">Métricas de Saúde</div>
+                                            <div class="sec-meta">Detalhes técnicos do diagnóstico</div>
+                                          </summary>
+                                          <div class="sec-body">
+                                            <div class="passive-goal-grid main">
+                                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Concentração Máx.</div><div class="passive-goal-value">${health.metrics.concentration.toFixed(2)}%</div></div>
+                                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Classes de Ativos</div><div class="passive-goal-value">${health.metrics.diversificationClasses}</div></div>
+                                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Ativos sem Cotação</div><div class="passive-goal-value">${health.metrics.staleAssets}</div></div>
+                                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Proventos Recentes</div><div class="passive-goal-value">${health.metrics.recentProventos}</div></div>
+                                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Desvio Alocação</div><div class="passive-goal-value">${health.metrics.allocationDeviation ? health.metrics.allocationDeviation.toFixed(1) + '%' : '—'}</div></div>
+                                            </div>
+                                          </div>
+                                        </details>
+
+                                        <div class="goal-context-action-row" style="margin-top:8px">
+                                          <button type="button" class="btn bgh" onclick="exportFinancialInsights()">Exportar JSON</button>
+                                        </div>
+                                      </div>
+                                    </details>`;
+                                  } catch (e) {
+                                    return '<div class="mu" style="font-size:11px;color:var(--danger)">Erro nos insights: ' + esc(e.message) + '</div>';
+                                  }
+                                }
+                                function proventoAuditMonthKey(dateLike){
   const dt=parseAnyDate(dateLike);
   if(!dt) return '';
   return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
@@ -34140,6 +34271,22 @@ function exportWealthGoals(){
     console.error('Export failed:', e);
   }
 }
+function exportFinancialInsights(){
+  if (typeof FinancialInsights === 'undefined') return;
+  try {
+    const report = FinancialInsights.generateInsightsReport(S.assets, S.proventos, S.goals, S.movements);
+    const json = JSON.stringify(report, null, 2);
+    const blob = new Blob([json], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'insights-financeiros-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch(e) {
+    console.error('Export failed:', e);
+  }
+}
 function estimateGoalMonths(startValue,targetValue,monthlyAporte,annualVar){
   const target=Math.max(0,Number(targetValue)||0);
   let value=Math.max(0,Number(startValue)||0);
@@ -37043,7 +37190,9 @@ function metasTab(){
 
       ${wealthGoalsPanel(S.assets, S.goals)}
 
-      <details class="sec metas-goal-section" open style="margin-bottom:12px">
+        ${financialInsightsPanel(S.assets, S.proventos, S.goals, S.movements)}
+
+        <details class="sec metas-goal-section" open style="margin-bottom:12px">
     <summary>
       <div>
         <h2 class="sec-title wave-b-heading">${waveBIcon('allocation')}<span>Distribuição da carteira</span></h2>
