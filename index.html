@@ -8792,6 +8792,7 @@ window.ensureXLSX=()=>{ if(window.__XLSX_PROMISE__) return window.__XLSX_PROMISE
 <script src="analytics-passive-income-projection.js"></script>
 <script src="analytics-dividend-evolution.js"></script>
 <script src="analytics-asset-class-comparison.js"></script>
+<script src="analytics-wealth-goals.js"></script>
 <script src="rf-reconstruction.js"></script>
 <script src="income-linkage-reconciliation.js"></script>
 <script src="corporate-events-core.js"></script>
@@ -21402,7 +21403,147 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
             return '<div class="mu" style="font-size:11px;color:var(--danger)">Erro na projeção avançada: ' + esc(e.message) + '</div>';
           }
         }
-        function proventoAuditMonthKey(dateLike){
+                function wealthGoalsPanel(assets, goals){
+                  if (typeof WealthGoalsTracking === 'undefined') {
+                    return '<div class="mu" style="font-size:11px;color:var(--muted);padding:20px">Motor de metas não disponível</div>';
+                  }
+                  try {
+                    const report = WealthGoalsTracking.generateWealthGoalReport({
+                      assets: assets,
+                      goals: goals,
+                      monthlyContribution: Number(goals?.patrimonio?.aporte) || 0,
+                      expectedReturn: 0.10,
+                      volatility: 0.15,
+                      projectionYears: 10
+                    });
+                    const progress = report.progress;
+                    const timeEst = report.timeEstimate;
+                    const mc = report.monteCarlo;
+
+                    const formatMoney = (v) => {
+                      if (v === undefined || v === null) return '—';
+                      if (v >= 1e9) return (v / 1e9).toFixed(2) + ' B';
+                      if (v >= 1e6) return (v / 1e6).toFixed(2) + ' M';
+                      if (v >= 1e3) return (v / 1e3).toFixed(1) + ' K';
+                      return v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    };
+
+                    const statusColors = {
+                      ACHIEVED: '#34d399',
+                      ON_TRACK: '#60a5fa',
+                      PROGRESSING: '#fbbf24',
+                      BEHIND: '#f87171'
+                    };
+                    const statusLabels = {
+                      ACHIEVED: 'Atingida',
+                      ON_TRACK: 'No caminho',
+                      PROGRESSING: 'Em progresso',
+                      BEHIND: 'Atrasada'
+                    };
+
+                    return `
+                    <details class="sec metas-goal-section" style="margin-top:8px;margin-bottom:0">
+                      <summary>
+                        <div>
+                          <div class="sec-title">Metas de Patrimônio - Projeção Monte Carlo (M1431)</div>
+                          <div class="sec-meta">Progresso, marcos, probabilidade de sucesso · 10 anos</div>
+                        </div>
+                        <div class="sec-meta">Abrir</div>
+                      </summary>
+                      <div class="sec-body">
+                        <div class="mu" style="font-size:11px;line-height:1.45;margin-bottom:8px">
+                          <strong>Disclaimer:</strong> ${esc(report.disclaimer)}
+                        </div>
+
+                        <div class="passive-goal-grid main" style="margin-bottom:12px">
+                          <div class="passive-goal-card ${progress ? progress.status : 'muted'}" style="border-left-color:${progress ? statusColors[progress.status] : 'var(--muted)'}">
+                            <div class="passive-goal-kicker">Patrimônio Atual</div>
+                            <div class="passive-goal-value">${formatMoney(report.currentValue)}</div>
+                            <div class="passive-goal-sub">Meta: ${formatMoney(report.targetValue)}</div>
+                          </div>
+                          <div class="passive-goal-card ${progress ? progress.status : 'muted'}" style="border-left-color:${progress ? statusColors[progress.status] : 'var(--muted)'}">
+                            <div class="passive-goal-kicker">Progresso</div>
+                            <div class="passive-goal-value">${progress ? progress.progressPercent.toFixed(1) + '%' : '—'}</div>
+                            <div class="passive-goal-sub">${progress ? statusLabels[progress.status] : 'Sem meta'} · Falta: ${progress ? formatMoney(progress.remaining) : '—'}</div>
+                          </div>
+                          <div class="passive-goal-card info">
+                            <div class="passive-goal-kicker">Tempo Estimado</div>
+                            <div class="passive-goal-value">${timeEst ? timeEst.years + 'a ' + timeEst.remainingMonths + 'm' : '—'}</div>
+                            <div class="passive-goal-sub">${timeEst ? 'Chegada estimada: ' + timeEst.estimatedDate : 'Sem aporte ou meta'}</div>
+                          </div>
+                        </div>
+
+                        <div class="passive-goal-grid main" style="margin-bottom:12px">
+                          <div class="passive-goal-card ok">
+                            <div class="passive-goal-kicker">Prob. Sucesso (MC)</div>
+                            <div class="passive-goal-value">${mc.probability.toFixed(1)}%</div>
+                            <div class="passive-goal-sub">Mediana: ${formatMoney(mc.percentiles.p50)} · P90: ${formatMoney(mc.percentiles.p90)}</div>
+                          </div>
+                          <div class="passive-goal-card warn">
+                            <div class="passive-goal-kicker">Pessimista (P10)</div>
+                            <div class="passive-goal-value">${formatMoney(mc.percentiles.p10)}</div>
+                            <div class="passive-goal-sub">Cenário adverso em ${report.assumptions.projectionYears} anos</div>
+                          </div>
+                          <div class="passive-goal-card info">
+                            <div class="passive-goal-kicker">Otimista (P90)</div>
+                            <div class="passive-goal-value">${formatMoney(mc.percentiles.p90)}</div>
+                            <div class="passive-goal-sub">Cenário favorável em ${report.assumptions.projectionYears} anos</div>
+                          </div>
+                        </div>
+
+                        <details class="sec" style="margin-top:8px">
+                          <summary>
+                            <div class="sec-title">Marcos Intermediários</div>
+                            <div class="sec-meta">Pontos de verificação no caminho até a meta</div>
+                          </summary>
+                          <div class="sec-body">
+                            <div class="ts" tabindex="0" role="region" aria-label="Tabela de marcos" style="overflow-x:auto">
+                              <table class="tw" style="min-width:500px">
+                                <thead>
+                                  <tr><th>Marco</th><th>Valor</th><th>%</th><th>Status</th><th>Progresso</th></tr>
+                                </thead>
+                                <tbody>
+                                  ${report.milestones.map(m => `
+                                    <tr>
+                                      <td style="font-weight:600">${m.label}</td>
+                                      <td>${formatMoney(m.value)}</td>
+                                      <td>${m.percent}%</td>
+                                      <td><span class="analysis-pill ${m.achieved ? 'ok' : 'muted'}">${m.achieved ? 'Atingido' : 'Pendente'}</span></td>
+                                      <td>${m.progress}%</td>
+                                    </tr>
+                                  `).join('')}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </details>
+
+                        <details class="sec" style="margin-top:8px">
+                          <summary>
+                            <div class="sec-title">Premissas da Simulação</div>
+                            <div class="sec-meta">Parâmetros utilizados no Monte Carlo</div>
+                          </summary>
+                          <div class="sec-body">
+                            <div class="passive-goal-grid main">
+                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Retorno Esperado</div><div class="passive-goal-value">${(report.assumptions.expectedReturn * 100).toFixed(1)}% a.a.</div></div>
+                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Volatilidade</div><div class="passive-goal-value">${(report.assumptions.volatility * 100).toFixed(1)}% a.a.</div></div>
+                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Aporte Mensal</div><div class="passive-goal-value">${formatMoney(report.assumptions.monthlyContribution)}</div></div>
+                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Horizonte</div><div class="passive-goal-value">${report.assumptions.projectionYears} anos</div></div>
+                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Simulações</div><div class="passive-goal-value">${report.monteCarlo.simulations}</div></div>
+                            </div>
+                          </div>
+                        </details>
+
+                        <div class="goal-context-action-row" style="margin-top:8px">
+                          <button type="button" class="btn bgh" onclick="exportWealthGoals()">Exportar JSON</button>
+                        </div>
+                      </div>
+                    </details>`;
+                  } catch (e) {
+                    return '<div class="mu" style="font-size:11px;color:var(--danger)">Erro nas metas de patrimônio: ' + esc(e.message) + '</div>';
+                  }
+                }
+                function proventoAuditMonthKey(dateLike){
   const dt=parseAnyDate(dateLike);
   if(!dt) return '';
   return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
@@ -33976,6 +34117,29 @@ function exportAssetClassComparison(){
     console.error('Export failed:', e);
   }
 }
+function exportWealthGoals(){
+  if (typeof WealthGoalsTracking === 'undefined') return;
+  try {
+    const report = WealthGoalsTracking.generateWealthGoalReport({
+      assets: S.assets,
+      goals: S.goals,
+      monthlyContribution: Number(S.goals?.patrimonio?.aporte) || 0,
+      expectedReturn: 0.10,
+      volatility: 0.15,
+      projectionYears: 10
+    });
+    const json = JSON.stringify(report, null, 2);
+    const blob = new Blob([json], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'metas-patrimonio-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch(e) {
+    console.error('Export failed:', e);
+  }
+}
 function estimateGoalMonths(startValue,targetValue,monthlyAporte,annualVar){
   const target=Math.max(0,Number(targetValue)||0);
   let value=Math.max(0,Number(startValue)||0);
@@ -36877,7 +37041,9 @@ function metasTab(){
 
     ${passiveIncomeProjectionEnhanced(passiveGoal, projCurrent, S.assets, S.proventos, S.goals)}
 
-    <details class="sec metas-goal-section" open style="margin-bottom:12px">
+      ${wealthGoalsPanel(S.assets, S.goals)}
+
+      <details class="sec metas-goal-section" open style="margin-bottom:12px">
     <summary>
       <div>
         <h2 class="sec-title wave-b-heading">${waveBIcon('allocation')}<span>Distribuição da carteira</span></h2>
