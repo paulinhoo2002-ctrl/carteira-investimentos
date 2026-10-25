@@ -7,26 +7,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Carteira">
-<!-- CSP_FIX_MARKER_2024 -->
-<!-- CSP_FIX_VERIFIED_2024 -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://api.brapi.com.br https://fonts.googleapis.com https://fonts.gstatic.com; base-uri 'self'; form-action 'self'">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="preconnect" href="https://apis.google.com" crossorigin>
-<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=arrow_back,arrow_forward,home,settings,person,attach_money,trending_up,trending_down,account_balance,analytics,receipt,credit_card,savings,pie_chart,bar_chart,show_chart,assessment,flag,warning,error,check_circle,cancel,help,info,menu,close,search,filter_list,sort,download,upload,cloud,cloud_off,sync,refresh,autorenew,lock,lock_open,visibility,visibility_off,edit,delete,add,remove,create,star,star_border,favorite,favorite_border,thumb_up,thumb_down,share,link,copy,print,mail,chat,phone,call,video_call,videocam,photo_camera,image,music_note,video_library,movie,live_tv,ondemand_video,playlist_play,queue_music,radio,mic,mic_off,volume_up,volume_down,volume_off,volume_mute,playlist_add,queue,skip_next,skip_previous,repeat,shuffle,loop,fast_forward,fast_rewind,play_circle,pause_circle,stop,replay,replay_10,replay_30,forward_10,forward_30&display=swap">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
-<script>
-window._pendingGo = null;
-window.go = function(t) {
-  console.log('Early go called:', t);
-  window._pendingGo = t;
-  if (window.goInternal) return window.goInternal(t, true);
-  return Promise.resolve();
-};
-</script>
 <script src="readonly-report-page-contract.js"></script>
 <script src="portfolio-movement-contract.js"></script>
 <script src="portfolio-movement-preview.js"></script>
@@ -6497,79 +6481,8 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     .assets-premium-filter-panel select{min-height:36px;width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--text);font-size:12px}
     .assets-premium-filter-panel .assets-performance-filter{display:flex;flex-direction:column;align-items:stretch;gap:5px;cursor:default}
     .assets-premium-filter-panel .assets-clear-filter{width:100%;min-height:40px}
-
-    /* New filter bar layout - always visible */
-    .assets-premium-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 8px;min-width:0}
-    .assets-premium-search{flex:1 1 280px;min-width:0}
-    .assets-premium-filters-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-    .assets-filter-group{display:flex;align-items:center;gap:6px}
-    .assets-filter-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
-    .assets-filter-chips{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-    .assets-filter-chip{display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:var(--surface);font-size:11px;color:var(--text);cursor:pointer;transition:all .15s;min-height:34px}
-    .assets-filter-chip:hover{background:var(--panel);border-color:color-mix(in srgb, var(--border) 60%, var(--primary))}
-    .assets-filter-chip.active{background:var(--primary);border-color:var(--primary);color:#fff}
-    .assets-filter-chip input[type="checkbox"]{width:14px;height:14px;accent-color:var(--primary);margin-right:2px}
-    .assets-filter-chip.active input[type="checkbox"]{accent-color:#fff}
-    .assets-filter-select{min-height:34px;padding:6px 28px 6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--text);font-size:12px;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ab4d6' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;min-width:140px}
-    .assets-filter-select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,70,229,.15)}
-    .assets-clear-filter{min-height:34px;padding:6px 12px;font-size:11px}
-    .assets-filter-summary{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:8px;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px}
-        .assets-filter-summary-dot{color:var(--success)}
-        .assets-page-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin:-4px 0 10px}
-        .assets-page-actions .btn{min-height:40px}
-
-        /* KPI Grid */
-        .assets-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 12px}
-        .assets-kpi-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px}
-        .assets-kpi-label{display:block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px}
-        .assets-kpi-value{display:block;font-size:20px;font-weight:900;line-height:1.2;color:var(--text);font-variant-numeric:tabular-nums}
-        .assets-kpi-value.positive-text{color:var(--success)}
-        .assets-kpi-value.negative-text{color:var(--danger)}
-        .assets-kpi-sub{display:block;font-size:10px;color:var(--muted);margin-top:4px;line-height:1.3}
-
-        /* Asset Table Enhancements */
-        .assets-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-        .assets-table{width:100%;border-collapse:collapse;min-width:1400px}
-        .assets-table th{position:sticky;top:0;background:var(--panel);border-bottom:2px solid var(--border);padding:10px 12px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;white-space:nowrap;z-index:10}
-        .assets-table th.num{text-align:right}
-        .assets-table td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text);vertical-align:middle;white-space:nowrap}
-        .assets-table td.num{text-align:right;font-variant-numeric:tabular-nums}
-        .assets-table tr:hover td{background:rgba(255,255,255,.02)}
-        .asset-info{display:flex;align-items:center;gap:10px}
-        .asset-logo{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
-        .asset-name{font-weight:800;font-size:13px;color:var(--text);line-height:1.2}
-        .asset-ticker{font-size:11px;color:var(--muted);line-height:1.2}
-        .asset-type{display:inline-block;padding:2px 8px;border-radius:999px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
-        .asset-type.type-acao{background:rgba(59,130,246,.15);color:var(--info)}
-        .asset-type.type-fii{background:rgba(139,92,246,.15);color:var(--ds-info)}
-        .asset-type.type-etf{background:rgba(245,197,66,.15);color:var(--warning)}
-        .asset-type.type-renda-fixa{background:rgba(16,185,129,.15);color:var(--success)}
-        .asset-type.type-bdr{background:rgba(245,158,11,.15);color:var(--warning)}
-        .asset-type.type-crypto{background:rgba(168,85,247,.15);color:var(--accent)}
-        .yahoo-tag{display:inline-block;font-size:8px;color:var(--cyan);margin-left:4px;font-weight:700;background:rgba(6,182,212,.1);padding:1px 5px;border-radius:4px}
-        .yahoo-time{font-size:9px;color:var(--muted);display:block;margin-top:1px}
-        .asset-actions-cell{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-        .asset-action-btn{min-height:32px;padding:6px 10px;font-size:11px;font-weight:700;border-radius:8px;white-space:nowrap}
-        .asset-action-btn.bp{background:var(--primary);color:#fff;border:none}
-        .asset-action-btn.bp:hover{filter:brightness(1.1)}
-        .asset-action-btn.bgh{background:var(--surface);color:var(--text);border:1px solid var(--border)}
-        .asset-action-btn.bgh:hover{background:var(--panel);border-color:var(--primary)}
-        .ticker-variation{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700}
-        .ticker-variation.positive-text{color:var(--success)}
-        .ticker-variation.negative-text{color:var(--danger)}
-
-        /* Renda Fixa Category */
-        .rf-category-summary{display:flex;flex-direction:column;gap:12px}
-        .rf-category-row{display:grid;grid-template-columns:minmax(0,2fr) repeat(5,minmax(0,1fr)) auto;gap:12px;align-items:center;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
-        .rf-category-identity{display:flex;flex-direction:column;gap:2px;min-width:0}
-        .rf-category-identity strong{font-size:12px;color:var(--text);white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
-        .rf-category-identity span{font-size:10px;color:var(--muted)}
-        .rf-category-metric{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
-        .rf-category-metric small{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-        .rf-category-metric b{font-size:12px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums}
-        .rf-category-metric.pos b{color:var(--success)}
-        .rf-category-metric.neg b{color:var(--danger)}
-        .rf-category-metric.neutral b{color:var(--muted)}
+    .assets-page-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin:-4px 0 10px}
+    .assets-page-actions .btn{min-height:40px}
 
       /* Responsive: Desktop >= 1000px shows table, Mobile < 1000px shows cards */
       @media(min-width:1000px){
@@ -7823,24 +7736,6 @@ html[data-theme="light"] .assets-premium-shell .assets-portfolio-summary .positi
   .assets-premium-shell details.ag>summary.accordion-header .acc-metric-label{font-size:11px;line-height:1.2;letter-spacing:normal;text-transform:none}
   .assets-premium-shell details.ag>summary.accordion-header .acc-metric-value{font-size:13px;line-height:1.25;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
   .assets-premium-shell .ag-body{padding:0 10px 10px}
-  /* New filter bar responsive */
-  .assets-premium-filters-bar{gap:8px}
-  .assets-filter-group{flex:1 1 calc(50% - 4px);min-width:0}
-  .assets-filter-group:first-child{flex:1 1 100%}
-  .assets-filter-chips{gap:4px}
-  .assets-filter-chip{padding:5px 8px;font-size:10px;min-height:30px}
-  .assets-filter-label{font-size:10px}
-  .assets-filter-select{min-height:32px;padding:5px 24px 5px 8px;font-size:11px;min-width:0}
-  .assets-clear-filter{min-height:32px;padding:5px 10px;font-size:10px}
-  .assets-filter-summary{font-size:11px;padding:6px 8px}
-  /* KPI Grid responsive */
-  .assets-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-  .assets-kpi-card{padding:12px}
-  .assets-kpi-value{font-size:17px}
-  /* Table responsive - horizontal scroll */
-  .assets-table-wrap{margin:0 -12px;padding:0 12px}
-  .assets-table{min-width:1200px}
-  .asset-action-btn{padding:5px 8px;font-size:10px;min-height:28px}
 }
 @media(max-width:1180px){
   .premium-dividends-3 .dividend-executive-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -8873,22 +8768,11 @@ summary:focus-visible,
 <script>
 (()=>{if(window.__LOCAL_TEST_MODE__) return;
 document.write([
+  '<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" integrity="sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw" crossorigin="anonymous"><\/script>',
   '<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"><\/script>',
   '<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"><\/script>',
   '<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"><\/script>'
 ].join(''));})();
-</script>
-<script>
-// M941-M943: xlsx (269KB na rede, 26% da carga fria) carregado SOB DEMANDA — usado
-// apenas nos imports de B3/nota. Eager ficou somente o trio do Firebase.
-window.ensureXLSX=()=>{ if(window.__XLSX_PROMISE__) return window.__XLSX_PROMISE__;
-  window.__XLSX_PROMISE__=new Promise((resolve,reject)=>{ if(typeof XLSX!=='undefined') return resolve(XLSX);
-    const s=document.createElement('script');
-    s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
-    s.integrity='sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw'; s.crossOrigin='anonymous';
-    s.onload=()=>resolve(XLSX); s.onerror=()=>{ window.__XLSX_PROMISE__=null; reject(new Error('XLSX_LOAD_FAILED')); };
-    document.head.appendChild(s); });
-  return window.__XLSX_PROMISE__; };
 </script>
 <script src="finance-core.js"></script>
 <script src="persistence-core.js"></script>
@@ -8899,6 +8783,9 @@ window.ensureXLSX=()=>{ if(window.__XLSX_PROMISE__) return window.__XLSX_PROMISE
 <script src="analytics-asset-class-comparison.js"></script>
 <script src="analytics-wealth-goals.js"></script>
 <script src="analytics-financial-insights.js"></script>
+<script src="analytics-code-splitter.js"></script>
+<script src="analytics-memory-profiler.js"></script>
+<script src="analytics-bundle-analyzer.js"></script>
 <script src="rf-reconstruction.js"></script>
 <script src="income-linkage-reconciliation.js"></script>
 <script src="corporate-events-core.js"></script>
@@ -9118,7 +9005,7 @@ function clearV250OfflineEligibility(){
 
 // Firebase — login Google + Firestore
 const firebaseConfig = {
-  apiKey: "«reda...»",
+  apiKey: "AIzaSyAUAGr6VfVoq4BdYAKSNENLv5dCaisHIho",
   authDomain: "carteira-de-investimento-16725.firebaseapp.com",
   projectId: "carteira-de-investimento-16725",
   storageBucket: "carteira-de-investimento-16725.firebasestorage.app",
@@ -12188,13 +12075,7 @@ function cloudStatus(){
   if(!FB.user) return '<span style="font-size:11px;color:var(--muted)">Local</span>';
   const state=cloudSyncState().status;
   const tone=state===CloudSyncState.STATES.CONNECTED||state===CloudSyncState.STATES.EMPTY_CONFIRMED?'var(--success)':state===CloudSyncState.STATES.SYNCING||state===CloudSyncState.STATES.INITIALIZING||state===CloudSyncState.STATES.AUTHENTICATING?'var(--warning)':'var(--negative)';
-  var html = '<span style="font-size:11px;color:'+tone+'">'+esc(cloudStatusText())+'</span>';
-  
-  // Show pending sync count if any
-  if (window.__pendingSyncCount && window.__pendingSyncCount > 0) {
-    html += '<span style="font-size:10px;margin-left:6px;background:#1e3a5f;color:#60a5fa;border-radius:4px;padding:1px 6px">↑ '+window.__pendingSyncCount+' pendente'+(window.__pendingSyncCount>1?'s':'')+'</span>';
-  }
-  return html;
+  return `<span style="font-size:11px;color:${tone}">${esc(cloudStatusText())}</span>`;
 }
 function authBox(){
   if(isLocalTestMode()) return `<span class="note-pill" style="background:rgba(251,191,36,.08);color:#fde68a;border-color:rgba(251,191,36,.22)">Teste local</span>`;
@@ -18079,7 +17960,6 @@ function b3MovementReviewModal(){
 }
 document.getElementById('b3-file').addEventListener('change',async e=>{
   const file=e.target.files[0]; if(!file) return;
-  if(typeof XLSX==='undefined'){ try{ await ensureXLSX(); }catch(err){ debugError(err); alert('Não foi possível carregar o leitor de planilhas. Verifique sua conexão e tente novamente.'); e.target.value=''; return; } }
   try{
     const importMode=String(S.b3ImportMode||'');
     S.b3ImportMode=null;
@@ -18163,7 +18043,6 @@ document.getElementById('b3-file').addEventListener('change',async e=>{
 });
 document.getElementById('nota-file').addEventListener('change',async e=>{
   const file=e.target.files[0]; if(!file) return;
-  if(typeof XLSX==='undefined'){ try{ await ensureXLSX(); }catch(err){ debugError(err); alert('Não foi possível carregar o leitor de planilhas. Verifique sua conexão e tente novamente.'); e.target.value=''; return; } }
   try{
     if(typeof XLSX==='undefined'){ alert('Biblioteca de Excel não carregou. Verifique sua internet e tente novamente.'); return; }
     const isCsv=/\.csv$/i.test(file.name) || String(file.type||'').includes('csv');
@@ -26116,40 +25995,30 @@ function setRentBench(bench){
   }
 
   function applyAssetsFilter(){
-      const checkboxes = document.querySelectorAll('.assets-filter-chips input[type="checkbox"]');
-      const selected = [];
-      let allChecked = true;
-      checkboxes.forEach(cb => {
-        if(cb.value && cb.checked) selected.push(cb.value);
-        if(cb.value && !cb.checked) allChecked = false;
-      });
-      if(allChecked && selected.length > 0){
-        S.assetsFilterClasses = [];
-      }else{
-        S.assetsFilterClasses = selected;
-      }
-      // Update filter count badge (if exists)
-      const countEl = document.getElementById('assets-filter-count');
-      if(countEl){
-        countEl.textContent = S.assetsFilterClasses.length || '0';
-      }
-      // Update chip active states
-      checkboxes.forEach(cb => {
-        const label = cb.closest('.assets-filter-chip');
-        if(label){
-          label.classList.toggle('active', cb.checked);
-        }
-      });
-      // "Todas" logic - if "Todos" is checked, uncheck others
-      const todosCb = document.querySelector('.assets-filter-chips input[type="checkbox"]:not([value])');
-      if(todosCb && todosCb.checked){
-        checkboxes.forEach(cb => {
-          if(cb.value) { cb.checked = false; }
-        });
-        S.assetsFilterClasses = [];
-      }
-      render();
+    const checkboxes = document.querySelectorAll('#assets-filter-panel input[type="checkbox"]');
+    const selected = [];
+    let allChecked = true;
+    checkboxes.forEach(cb => {
+      if(cb.value && cb.checked) selected.push(cb.value);
+      if(cb.value && !cb.checked) allChecked = false;
+    });
+    // "Todas as classes" checkbox has no value, it's just a master toggle
+    if(allChecked && selected.length > 0){
+      S.assetsFilterClasses = [];
+    }else{
+      S.assetsFilterClasses = selected;
     }
+    // Update filter count badge
+    const countEl = document.getElementById('assets-filter-count');
+    if(countEl){
+      countEl.textContent = S.assetsFilterClasses.length || '0';
+    }
+    // Close panel after selection on mobile
+    if(window.innerWidth < 768){
+      S.assetsFilterPanelOpen = false;
+    }
+    render();
+  }
 
   function setAssetsPerformanceFilter(value){
     const allowed=['all','positive','negative','neutral'];
@@ -33226,15 +33095,13 @@ function rfMovementFromAssetsModal(){
     </div>
   </div>`;
 }
-function ativos() {
+function ativos(){
   const innerTab = ['analise','desempenho','renda-fixa','alocacao'].includes(String(S.assetsInnerTab||'patrimonio')) ? String(S.assetsInnerTab) : 'patrimonio';
   const ativosCategoryIcon = type => ({
     'Ação': '📈',
     'FII': '🏢',
     'ETF': '📊',
-    'Renda Fixa': '💰',
-    'BDR': '📋',
-    'Crypto': '⚡'
+    'Renda Fixa': '💰'
   }[String(type)] || '💼');
 
   if (assetReviewFilterIsActive()) {
@@ -33255,6 +33122,8 @@ function ativos() {
     const currentKeys = isRF
       ? ['rf_liquid_value', 'fixed_current_value', 'rf_gross_value', 'current_value', 'current_price']
       : ['current_price', 'current_value'];
+    // RF: só há valor atual conhecido com campo explícito; o fallback do valor
+    // aplicado permanece desconhecido ('—') e nunca vira resultado zero certificado.
     const displayCurrentValue = isRF
       ? (rfValues(a).hasExplicitCurrent === true ? currentValue : null)
       : (hasOwnFiniteNumber(a, currentKeys) ? currentValue : null);
@@ -33290,6 +33159,7 @@ function ativos() {
   const assetKpiReturn = consolidated.returnPct;
   const unavailableAssetCount = S.assets.filter(a => getAssetMetrics(a).displayCurrentValue == null).length;
 
+  // Filter assets for display (search + class + performance filters)
   const displayAssets = filterAssetsForDisplay(S.assets);
   const canonicalAnalysisByTicker = new Map(assetAnalysisRows().map(row => [row.ticker, row]));
   const assetFiltersActive = !!S.assetsSearch || !!S.assetsFilterClasses?.length
@@ -33301,8 +33171,28 @@ function ativos() {
   const classFilterSet = new Set(S.assetsFilterClasses || []);
   const sectorOptions = [...new Set(S.assets.map(a => String(a?.sector || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
   const assetClassOptions = [...new Set(S.assets.map(a => String(a?.assetClass || a?.class || a?.category || a?.type || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  const assetControls = `<div class="assets-premium-controls">
+    <div class="assets-premium-search"><input type="search" class="assets-premium-search-input" placeholder="Buscar ativo..." aria-label="Buscar ativo por ticker ou nome" id="assets-premium-search" autocomplete="off" value="${esc(S.assetsSearch || '')}" oninput="onAssetsSearchInput(this.value)"></div>
+    <div class="assets-premium-filters"><button type="button" class="assets-premium-filter-btn" onclick="toggleAssetsFilterPanel()" aria-controls="assets-filter-panel" aria-expanded="${S.assetsFilterPanelOpen ? 'true' : 'false'}">Filtros <span class="filter-count" id="assets-filter-count">${activeAssetFilterCount}</span></button></div>
+    <div class="assets-premium-filter-panel" id="assets-filter-panel" style="display:${S.assetsFilterPanelOpen ? 'block' : 'none'}">
+      <div class="assets-filter-heading">Tipo de ativo</div>
+      <label><input type="checkbox" ${classFilterSet.size === 0 ? 'checked' : ''} onchange="applyAssetsFilter()"> Todos os tipos</label>
+      <label><input type="checkbox" value="Ação" ${classFilterSet.has('Ação') ? 'checked' : ''} onchange="applyAssetsFilter()"> Ações</label>
+      <label><input type="checkbox" value="FII" ${classFilterSet.has('FII') ? 'checked' : ''} onchange="applyAssetsFilter()"> FIIs</label>
+      <label><input type="checkbox" value="ETF" ${classFilterSet.has('ETF') ? 'checked' : ''} onchange="applyAssetsFilter()"> ETFs</label>
+      <label><input type="checkbox" value="Renda Fixa" ${classFilterSet.has('Renda Fixa') ? 'checked' : ''} onchange="applyAssetsFilter()"> Renda Fixa</label>
+      <label><input type="checkbox" value="BDR" ${classFilterSet.has('BDR') ? 'checked' : ''} onchange="applyAssetsFilter()"> BDRs</label>
+      <label><input type="checkbox" value="Crypto" ${classFilterSet.has('Crypto') ? 'checked' : ''} onchange="applyAssetsFilter()"> Crypto</label>
+      <label class="assets-performance-filter"><span>Setor</span><select aria-label="Filtrar por setor" onchange="setAssetsSectorFilter(this.value)"><option value="all" ${S.assetsSectorFilter === 'all' ? 'selected' : ''}>Todos</option>${sectorOptions.map(sector => `<option value="${esc(sector)}" ${S.assetsSectorFilter === sector ? 'selected' : ''}>${esc(sector)}</option>`).join('')}</select></label>
+      <label class="assets-performance-filter"><span>Classe</span><select aria-label="Filtrar por classe" onchange="setAssetsClassFilter(this.value)"><option value="all" ${S.assetsClassFilter === 'all' ? 'selected' : ''}>Todas</option>${assetClassOptions.map(value => `<option value="${esc(value)}" ${S.assetsClassFilter === value ? 'selected' : ''}>${esc(value)}</option>`).join('')}</select></label>
+      <label class="assets-performance-filter"><span>Performance</span><select aria-label="Filtrar por performance" onchange="setAssetsPerformanceFilter(this.value)"><option value="all" ${S.assetsPerformanceFilter === 'all' ? 'selected' : ''}>Todos</option><option value="positive" ${S.assetsPerformanceFilter === 'positive' ? 'selected' : ''}>Positivos</option><option value="negative" ${S.assetsPerformanceFilter === 'negative' ? 'selected' : ''}>Negativos</option><option value="neutral" ${S.assetsPerformanceFilter === 'neutral' ? 'selected' : ''}>Neutros</option></select></label>
+      ${activeAssetFilterCount ? '<button type="button" class="btn bgh assets-clear-filter" onclick="clearAssetsFilters()">Limpar filtros</button>' : ''}
+    </div>
+    <div class="assets-filter-summary" role="status" aria-live="polite"><strong>${displayAssets.length}</strong><span>${assetFiltersActive ? `ativos exibidos de ${S.assets.length}` : 'ativos na carteira'}</span>${assetFiltersActive ? '<span class="assets-filter-summary-dot" aria-hidden="true">·</span><span>filtros em uso</span>' : ''}</div>
+  </div>`;
+  const assetsFilterEmpty = assetFiltersActive && displayAssets.length === 0;
+  const assetsFilterEmptyMessage = '<div class="assets-premium-empty" role="status">Nenhum ativo corresponde aos filtros.</div>';
 
-  // KPI Cards data
   const portfolioHasCompleteCurrentValues = S.assets.every(a => getAssetMetrics(a).displayCurrentValue != null);
   const portfolioTotal = portfolioHasCompleteCurrentValues ? (reviewFilterActive ? total : assetKpiCurrent) : null;
   const assetPortfolioSummaryComplete = S.assets.length > 0 && consolidated.assets.length === S.assets.length
@@ -33314,79 +33204,14 @@ function ativos() {
   const portfolioReturn = portfolioResult != null && Number.isFinite(assetKpiReturn) ? assetKpiReturn : null;
   const portfolioResultTone = portfolioResult == null || portfolioResult === 0 ? '' : portfolioResult > 0 ? 'positive-text' : 'negative-text';
   const portfolioReturnTone = portfolioReturn == null || portfolioReturn === 0 ? '' : portfolioReturn > 0 ? 'positive-text' : 'negative-text';
+  const assetPortfolioSummaryHtml = `<section class="assets-portfolio-summary" aria-label="Resumo da carteira">
+    <div><span>Investido</span><strong>${assetSummaryInvested == null ? '—' : fmt(assetSummaryInvested)}</strong></div>
+    <div><span>Valor atual</span><strong>${assetSummaryCurrent == null ? '—' : fmt(assetSummaryCurrent)}</strong></div>
+    <div><span>Resultado</span><strong class="${portfolioResultTone}">${portfolioResult == null ? '—' : `${portfolioResult > 0 ? '+' : ''}${fmt(portfolioResult)}`}</strong></div>
+    <div><span>Rentabilidade</span><strong class="${portfolioReturnTone}">${portfolioReturn == null ? '—' : fmtP(portfolioReturn)}</strong></div>
+  </section>`;
 
-  // Asset Controls - Search + Filter Chips
-  const assetControls = `<div class="assets-premium-controls">
-      <div class="assets-premium-search"><input type="search" class="assets-premium-search-input" placeholder="Buscar ativo..." aria-label="Buscar ativo por ticker ou nome" id="assets-premium-search" autocomplete="off" value="${esc(S.assetsSearch || '')}" oninput="onAssetsSearchInput(this.value)"></div>
-      <div class="assets-premium-filters-bar">
-        <div class="assets-filter-group">
-          <span class="assets-filter-label">Tipo</span>
-          <div class="assets-filter-chips">
-            <label class="assets-filter-chip${classFilterSet.size === 0 ? ' active' : ''}"><input type="checkbox" ${classFilterSet.size === 0 ? 'checked' : ''} onchange="applyAssetsFilter()"> Todos</label>
-            <label class="assets-filter-chip${classFilterSet.has('Ação') ? ' active' : ''}"><input type="checkbox" value="Ação" ${classFilterSet.has('Ação') ? 'checked' : ''} onchange="applyAssetsFilter()"> Ações</label>
-            <label class="assets-filter-chip${classFilterSet.has('FII') ? ' active' : ''}"><input type="checkbox" value="FII" ${classFilterSet.has('FII') ? 'checked' : ''} onchange="applyAssetsFilter()"> FIIs</label>
-            <label class="assets-filter-chip${classFilterSet.has('ETF') ? ' active' : ''}"><input type="checkbox" value="ETF" ${classFilterSet.has('ETF') ? 'checked' : ''} onchange="applyAssetsFilter()"> ETFs</label>
-            <label class="assets-filter-chip${classFilterSet.has('Renda Fixa') ? ' active' : ''}"><input type="checkbox" value="Renda Fixa" ${classFilterSet.has('Renda Fixa') ? 'checked' : ''} onchange="applyAssetsFilter()"> RF</label>
-            <label class="assets-filter-chip${classFilterSet.has('BDR') ? ' active' : ''}"><input type="checkbox" value="BDR" ${classFilterSet.has('BDR') ? 'checked' : ''} onchange="applyAssetsFilter()"> BDRs</label>
-            <label class="assets-filter-chip${classFilterSet.has('Crypto') ? ' active' : ''}"><input type="checkbox" value="Crypto" ${classFilterSet.has('Crypto') ? 'checked' : ''} onchange="applyAssetsFilter()"> Crypto</label>
-          </div>
-        </div>
-        <div class="assets-filter-group">
-          <span class="assets-filter-label">Setor</span>
-          <select aria-label="Filtrar por setor" onchange="setAssetsSectorFilter(this.value)" class="assets-filter-select">
-            <option value="all" ${S.assetsSectorFilter === 'all' ? 'selected' : ''}>Todos</option>
-            ${sectorOptions.map(sector => `<option value="${esc(sector)}" ${S.assetsSectorFilter === sector ? 'selected' : ''}>${esc(sector)}</option>`).join('')}
-          </select>
-        </div>
-        <div class="assets-filter-group">
-          <span class="assets-filter-label">Classe</span>
-          <select aria-label="Filtrar por classe" onchange="setAssetsClassFilter(this.value)" class="assets-filter-select">
-            <option value="all" ${S.assetsClassFilter === 'all' ? 'selected' : ''}>Todas</option>
-            ${assetClassOptions.map(value => `<option value="${esc(value)}" ${S.assetsClassFilter === value ? 'selected' : ''}>${esc(value)}</option>`).join('')}
-          </select>
-        </div>
-        <div class="assets-filter-group">
-          <span class="assets-filter-label">Performance</span>
-          <select aria-label="Filtrar por performance" onchange="setAssetsPerformanceFilter(this.value)" class="assets-filter-select">
-            <option value="all" ${S.assetsPerformanceFilter === 'all' ? 'selected' : ''}>Todos</option>
-            <option value="positive" ${S.assetsPerformanceFilter === 'positive' ? 'selected' : ''}>Positivos</option>
-            <option value="negative" ${S.assetsPerformanceFilter === 'negative' ? 'selected' : ''}>Negativos</option>
-            <option value="neutral" ${S.assetsPerformanceFilter === 'neutral' ? 'selected' : ''}>Neutros</option>
-          </select>
-        </div>
-        ${activeAssetFilterCount ? '<button type="button" class="btn bgh assets-clear-filter" onclick="clearAssetsFilters()">Limpar filtros</button>' : ''}
-      </div>
-    </div>
-    <div class="assets-filter-summary" role="status" aria-live="polite"><strong>${displayAssets.length}</strong><span>${assetFiltersActive ? `ativos exibidos de ${S.assets.length}` : 'ativos na carteira'}</span>${assetFiltersActive ? '<span class="assets-filter-summary-dot" aria-hidden="true">·</span><span>filtros em uso</span>' : ''}</div>`;
-
-  const assetsFilterEmpty = assetFiltersActive && displayAssets.length === 0;
-  const assetsFilterEmptyMessage = '<div class="assets-premium-empty" role="status">Nenhum ativo corresponde aos filtros.</div>';
-
-  // KPI Cards HTML
-  const kpiCardsHtml = `<div class="assets-kpi-grid">
-    <div class="assets-kpi-card">
-      <span class="assets-kpi-label">TOTAL INVESTIDO</span>
-      <span class="assets-kpi-value">${assetSummaryInvested == null ? '—' : fmt(assetSummaryInvested)}</span>
-      <span class="assets-kpi-sub">Capital aplicado na carteira</span>
-    </div>
-    <div class="assets-kpi-card">
-      <span class="assets-kpi-label">VALOR ATUAL</span>
-      <span class="assets-kpi-value">${assetSummaryCurrent == null ? '—' : fmt(assetSummaryCurrent)}</span>
-      <span class="assets-kpi-sub">Valor estimado das posições</span>
-    </div>
-    <div class="assets-kpi-card">
-      <span class="assets-kpi-label">LUCRO/PREJUÍZO</span>
-      <span class="assets-kpi-value ${portfolioResultTone}">${portfolioResult == null ? '—' : `${portfolioResult > 0 ? '+' : ''}${fmt(portfolioResult)}`}</span>
-      <span class="assets-kpi-sub">Diferença entre atual e investido</span>
-    </div>
-    <div class="assets-kpi-card">
-      <span class="assets-kpi-label">RENTABILIDADE</span>
-      <span class="assets-kpi-value ${portfolioReturnTone}">${portfolioReturn == null ? '—' : fmtP(portfolioReturn)}</span>
-      <span class="assets-kpi-sub">Resultado sobre o valor investido</span>
-    </div>
-  </div>`;
-
-  // Build accordion categories with table
+  // Build accordion categories using details/summary for test compatibility
   const accordionHtml = groupNames.map(type => {
     const assets = grouped.get(type) || [];
     const filteredAssets = assets.filter(a => displayAssets.includes(a));
@@ -33404,14 +33229,13 @@ function ativos() {
     const typeReturn = typeResult != null && typeInvested > 0 ? (typeResult / typeInvested) * 100 : null;
     const typeWeight = typeResult != null && portfolioTotal > 0 ? (typeTotalValue / portfolioTotal) * 100 : null;
     const typeCount = typeDisplayAssets.length;
-        const categoryOpen = assetFiltersActive && typeDisplayAssets.length > 0
-          || (S.tab === 'renda-fixa' && type === 'Renda Fixa');
+    const categoryOpen = assetFiltersActive && typeDisplayAssets.length > 0;
 
     const resultTone = typeResult == null || typeResult === 0 ? '' : typeResult > 0 ? 'positive-text' : 'negative-text';
     const returnTone = typeReturn == null || typeReturn === 0 ? '' : typeReturn > 0 ? 'positive-text' : 'negative-text';
     const resultPrefix = typeResult != null && typeResult > 0 ? '+' : '';
 
-    // Build table rows with 15 columns
+    // Build table rows
     const rowsHtml = typeDisplayAssets.map(a => {
       const m = getAssetMetrics(a);
       const currentValue = m.currentValue;
@@ -33431,13 +33255,14 @@ function ativos() {
       const resultClass = result == null || result === 0 ? '' : result > 0 ? 'positive-text' : 'negative-text';
       const resultPrefix2 = result != null && result > 0 ? '+' : '';
       const returnPct = Number.isFinite(financial?.returnPct) ? financial.returnPct : null;
-
+      // Get analysis row for this ticker
       const analysisRow = canonicalAnalysisByTicker.get(a.ticker);
       const yahooBadge = analysisRow?.yahoo ? '<span class="yahoo-tag">YAHOO</span>' : '';
       const yahooTime = analysisRow?.lastUpdate ? `<span class="yahoo-time">${esc(analysisRow.lastUpdate)}</span>` : '';
 
       const qty = Number(a.qty) || 0;
       const qtyDisplay = isRF ? fmt(qty) : (qty % 1 === 0 ? String(qty) : qty.toFixed(4));
+
       const averagePriceDisplay = avgPrice > 0 ? fmt(avgPrice) : '—';
       const currentPriceDisplay = isRF
         ? (displayCurrentValue == null ? '—' : fmt(displayCurrentValue))
@@ -33455,22 +33280,15 @@ function ativos() {
         .map(value => String(value).trim()).join(' · ') || 'Não informada';
       const hasDy = hasOwnFiniteNumber(a, ['dy']);
       const dyDisplay = hasDy ? fmtP(Number(a.dy)) : '—';
-      const hasTarget = hasOwnFiniteNumber(a, ['target_price', 'alvo']);
-      const targetDisplay = hasTarget ? fmt(Number(a.target_price || a.alvo)) : '—';
-      const idealPct = hasOwnFiniteNumber(a, ['ideal_pct', 'idealPct']) ? `${Number(a.ideal_pct || a.idealPct).toFixed(1)}%` : '—';
-      const divMonth = hasOwnFiniteNumber(a, ['div_month', 'divMonth']) ? fmt(Number(a.div_month || a.divMonth)) : '—';
-
-      // Ticker variation
-      const tickerVar = analysisRow?.variation ? `${analysisRow.variation > 0 ? '+' : ''}${analysisRow.variation.toFixed(2)}%` : '—';
-      const tickerVarClass = analysisRow?.variation > 0 ? 'positive-text' : analysisRow?.variation < 0 ? 'negative-text' : '';
 
       return `<tr data-id="${esc(a.id)}" class="asset-premium-card">
         <td>
           <div class="asset-info">
-            <div class="asset-logo" style="background:${esc(a.color || (type === 'Ação' ? '#3b82f6' : type === 'FII' ? '#8b5cf6' : type === 'ETF' ? '#f5c542' : type === 'Renda Fixa' ? '#10b981' : type === 'BDR' ? '#f59e0b' : '#a855f7'))}">${esc(a.ticker?.charAt(0) || '?')}</div>
+            <div class="asset-logo" style="background:${esc(a.color || (type === 'Ação' ? '#3b82f6' : type === 'FII' ? '#8b5cf6' : type === 'ETF' ? '#f5c542' : type === 'Renda Fixa' ? '#10b981' : '#f59e0b'))}">${esc(a.ticker?.charAt(0) || '?')}</div>
             <div>
-              <div class="asset-name">${esc(a.ticker)} <span class="${tickerVarClass}">${tickerVar}</span> ${yahooBadge}</div>
-              <div class="asset-ticker">${esc(a.name)} ${yahooTime}</div>
+              <div class="asset-name">${esc(a.ticker)}</div>
+              <div class="asset-ticker">${esc(a.name)} ${yahooBadge}</div>
+              ${yahooTime}
             </div>
           </div>
         </td>
@@ -33482,19 +33300,18 @@ function ativos() {
         <td class="num">${investedDisplay}</td>
         <td class="num ${resultClass}">${resultMoneyDisplay}</td>
         <td class="num ${returnPct == null ? '' : returnPct > 0 ? 'positive-text' : returnPct < 0 ? 'negative-text' : ''}">${returnDisplay}</td>
-        <td class="num">${targetDisplay}</td>
         <td class="num">${positionValueDisplay}</td>
         <td class="num">${shareDisplay}</td>
-        <td class="num">${idealPct}</td>
-        <td class="num">${divMonth}</td>
+        <td>${esc(sourceInfo)}</td>
         <td class="num">${dyDisplay}</td>
         <td class="num" title="Sem estimativa mensal validada">—</td>
-        <td class="num">${sourceInfo?.join ? sourceInfo.join(' / ') : (sourceInfo || '—')}</td>
-        <td>${assetActionMenuHtml(a, isRF, 'desktop')}</td>
+        <td>
+          ${assetActionMenuHtml(a, isRF, 'desktop')}
+        </td>
       </tr>`;
     }).join('');
 
-    // Mobile cards
+    // Build mobile cards for test compatibility (V84)
     const mobileCardsHtml = typeDisplayAssets.map(a => {
       const m = getAssetMetrics(a);
       const currentValue = m.currentValue;
@@ -33522,6 +33339,7 @@ function ativos() {
 
       const qty = Number(a.qty) || 0;
       const qtyDisplay = isRF ? fmt(qty) : (qty % 1 === 0 ? String(qty) : qty.toFixed(4));
+
       const averagePriceDisplay = avgPrice > 0 ? fmt(avgPrice) : '—';
       const currentPriceDisplay = isRF
         ? (displayCurrentValue == null ? '—' : fmt(displayCurrentValue))
@@ -33566,9 +33384,8 @@ function ativos() {
           <div class="asset-premium-card-row"><span>Valor total</span><strong>${positionValueDisplay}</strong></div>
           <div class="asset-premium-card-row"><span>% Carteira</span><strong>${shareDisplay}</strong></div>
           <div class="asset-premium-card-row"><span>DY</span><strong>${dyDisplay}</strong></div>
-          <div class="asset-premium-card-row"><span>Investido</span><strong>${investedDisplay}</strong></div>
           <div class="asset-premium-card-row"><span>Estimativa mensal</span><strong title="Sem estimativa mensal validada">—</strong></div>
-          <div class="asset-premium-card-row"><span>Fonte / atualização</span><strong>${sourceInfo?.join ? sourceInfo.join(' / ') : (sourceInfo || '—')}</strong></div>
+          <div class="asset-premium-card-row"><span>Fonte / atualização</span><strong>${esc(sourceInfo)}</strong></div>
           <div class="asset-premium-card-actions">${assetActionMenuHtml(a, isRF, 'mobile')}</div>
         </div>
       </details>`;
@@ -33576,7 +33393,7 @@ function ativos() {
 
     const headerHtml = `
       <div class="acc-info">
-        <div class="acc-icon" style="background: ${type === 'Ação' ? 'rgba(59, 130, 246, 0.15)' : type === 'FII' ? 'rgba(139, 92, 246, 0.15)' : type === 'ETF' ? 'rgba(245, 197, 66, 0.15)' : type === 'Renda Fixa' ? 'rgba(16, 185, 129, 0.15)' : type === 'BDR' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(168, 85, 247, 0.15)'}; color: ${type === 'Ação' ? 'var(--info)' : type === 'FII' ? 'var(--ds-info)' : type === 'ETF' ? 'var(--warning)' : type === 'Renda Fixa' ? 'var(--success)' : type === 'BDR' ? 'var(--warning)' : 'var(--accent)'}">${icon}</div>
+        <div class="acc-icon" style="background: ${type === 'Ação' ? 'rgba(59, 130, 246, 0.15)' : type === 'FII' ? 'rgba(139, 92, 246, 0.15)' : type === 'ETF' ? 'rgba(245, 197, 66, 0.15)' : type === 'Renda Fixa' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)'}; color: ${type === 'Ação' ? 'var(--info)' : type === 'FII' ? 'var(--ds-info)' : type === 'ETF' ? 'var(--warning)' : type === 'Renda Fixa' ? 'var(--success)' : 'var(--warning)'}">${icon}</div>
         <div>
           <div class="acc-name">${esc(type)}</div>
           <div class="acc-sub">${type === 'Renda Fixa' ? `${typeCount} título${typeCount !== 1 ? 's' : ''}` : `${typeCount} ativo${typeCount !== 1 ? 's' : ''}`} ${reviewFilterActive ? ' · filtrados' : ''}</div>
@@ -33605,39 +33422,14 @@ function ativos() {
       <span class="acc-toggle" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
     `;
 
-    const tableHtml = `
-      <div class="assets-table-wrap" tabindex="0" role="region" aria-label="Tabela de ativos · ${esc(type)} · use as setas para rolar" onkeydown="if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();this.scrollBy({left:(event.key==='ArrowRight'?1:-1)*80})}" onwheel="if(event.deltaX||event.shiftKey){event.preventDefault();this.scrollBy({left:event.deltaX||event.deltaY})}">
-        <div class="mu" style="padding:8px 12px">Role para os lados para ver todos os campos e ações.</div>
-        <table class="assets-table ag-table">
-          <thead>
-            <tr>
-              <th>Ativo</th>
-              <th>Setor</th>
-              <th>Tipo</th>
-              <th class="num">Quantidade</th>
-              <th class="num">Preço médio</th>
-              <th class="num">Preço atual / posição</th>
-              <th>Investido</th>
-              <th class="num">Resultado R$</th>
-              <th class="num">Rentabilidade</th>
-              <th class="num">Alvo</th>
-              <th class="num">Valor total</th>
-              <th class="num">% carteira</th>
-              <th class="num">% Ideal</th>
-              <th class="num">Div/mês</th>
-              <th class="num">DY</th>
-              <th class="num">Estimativa mensal</th>
-              <th class="num">Fonte / atualização</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>${rowsHtml}</tbody>
-        </table>
-      </div>`;
-
     if (type === 'Renda Fixa') {
+      // Renda Fixa permanece classe resumida em Ativos: métricas por título com
+      // desconhecido separado de zero, detalhes somente quando disponíveis e
+      // gestão completa preservada na rota dedicada.
       const rfSummaryCards = typeDisplayAssets.map(a => {
         const applied = assetAppliedValue(a);
+        // Atual/Resultado/Rentab. somente com valor atual explícito: fallback do
+        // aplicado permanece desconhecido ('—'), separado de zero certificado.
         const currentKnown = rfValues(a).hasExplicitCurrent === true;
         const current = currentKnown ? assetCurrentValue(a) : null;
         const profit = currentKnown ? assetJurosValue(a) : null;
@@ -33656,7 +33448,7 @@ function ativos() {
           coverageLabel = provenance && provenance.label ? String(provenance.label) : '';
         } catch (error) { coverageLabel = ''; }
         const identityDetails = [indexer !== '—' ? indexer : '', institution, dueText ? `Vencimento ${dueText}` : ''].filter(Boolean).join(' · ');
-        return `<div class="rf-category-row premium-rf-position-row" data-id="${esc(a.id)}">
+        return `<div class="rf-category-row" data-id="${esc(a.id)}">
           <div class="rf-category-identity"><strong title="${esc(assetRfName(a) || a.ticker || 'Renda Fixa')}">${esc(assetRfName(a) || a.ticker || 'Renda Fixa')}</strong><span>${esc(assetRfSubtype(a))}${identityDetails ? ` · ${esc(identityDetails)}` : ''}</span>${coverageLabel ? `<span title="${esc(coverageLabel)}">Cobertura: ${esc(coverageLabel)}</span>` : ''}${unavailable ? `<span>Indisponível: ${esc(fmt(unavailable))}</span>` : ''}</div>
           <div class="rf-category-metric"><small>Aplicado</small><b>${fmt(applied)}</b></div>
           <div class="rf-category-metric"><small>Atual</small><b>${Number.isFinite(current)?fmt(current):'—'}</b></div>
@@ -33680,8 +33472,37 @@ function ativos() {
       </details>`;
     }
 
+    const tableHtml = `
+      <div class="assets-table-wrap" tabindex="0" role="region" aria-label="Tabela de ativos · ${esc(type)} · use as setas para rolar" onkeydown="if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();this.scrollBy({left:(event.key==='ArrowRight'?1:-1)*80})}" onwheel="if(event.deltaX||event.shiftKey){event.preventDefault();this.scrollBy({left:event.deltaX||event.deltaY})}">
+        <div class="mu" style="padding:8px 12px">Role para os lados para ver todos os campos e ações.</div>
+        <table class="assets-table ag-table">
+          <thead>
+            <tr>
+              <th>Ativo</th>
+              <th>Setor</th>
+              <th>Tipo</th>
+              <th class="num">Quantidade</th>
+              <th class="num">Preço médio</th>
+              <th class="num">Preço atual / posição</th>
+              <th>Investido</th>
+              <th class="num">Resultado R$</th>
+              <th class="num">Rentabilidade</th>
+              <th class="num">Valor total</th>
+              <th class="num">% carteira</th>
+              <th>Fonte / atualização</th>
+              <th class="num">DY</th>
+              <th class="num">Estimativa mensal</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>`;
+
+    // Use details/summary for test compatibility (V84 expects .ag with summary)
+    // Also include mobile cards for the V84 mobile test
     return `<details class="accordion-category ag" data-asset-group="${esc(type)}"${categoryOpen ? ' open' : ''}>
-      <summary class="accordion-header">${headerHtml}</summary>
+      <summary class="accordion-header" >${headerHtml}</summary>
       <div class="accordion-body ag-body open">
         ${tableHtml}
         <div class="asset-mobile-cards">${mobileCardsHtml}</div>
@@ -33708,12 +33529,13 @@ function ativos() {
       <div>
         <h1 id="ativos-page-title" class="st">Ativos</h1>
       </div>
-      <div style="display:flex; gap:8px; margin-left:auto;">
+      <div style="display:flex; gap:8px;">
         <button class="btn bgh" onclick="exportData()"> Exportar</button>
         <button class="btn bp" onclick="openQuickMovement('compra')">+ Novo Ativo</button>
       </div>
     </div>
-    ${kpiCardsHtml}
+    ${assetPortfolioSummaryHtml}
+    ${innerTabsHtml}
     ${assetControls}
     ${reviewBanner}
     ${coverageNote}
@@ -33723,6 +33545,8 @@ function ativos() {
     ${modals}
   </section>`;
 }
+// APORTES
+// ══════════════════════════════════════
 function frmP(){
   if(!S.showP) return'';
   const f=S._fp||{},op=(f.operation||f.op||'compra').toLowerCase();
@@ -39183,22 +39007,6 @@ function watchPwaUpdate(registration){
   });
 }
 
-function startPendingCountPolling(){
-  if (window.__pendingCountInterval) return;
-  window.__pendingCountInterval = setInterval(function(){
-    if (window.__pwaRegistration && window.__pwaRegistration.active) {
-      var channel = new MessageChannel();
-      channel.port1.onmessage = function(event) {
-        if (event.data && typeof event.data.count === 'number' && event.data.count > 0) {
-          window.__pendingSyncCount = event.data.count;
-          if (typeof render === 'function') render();
-        }
-      };
-      window.__pwaRegistration.active.postMessage({ type: 'GET_PENDING_COUNT' }, [channel.port2]);
-    }
-  }, 30000);
-}
-
 function startPublicEventsSync(){
   if(window.__PUBLIC_EVENTS_SYNC_STARTED__||!window.PublicEventsRuntime||!window.PublicEventsStore||!window.CorporateEventsSync||!window.MarketDataProviders||!window.CorporateEventsProviders)return;
   if(isLocalTestMode()||isProtectedShadowBoot()||isProtectedReadOnlyQaBoot())return;
@@ -39242,11 +39050,6 @@ if(isActiveWalletHostMode()){
     load();
   }
   initEditProtection();
-  // Process pending navigation from early go()
-  if(window._pendingGo && window.goInternal){
-    window.goInternal(window._pendingGo, true);
-    window._pendingGo = null;
-  }
   render();
   bootstrapExperimentalActiveWalletHost().catch(error=>{
     console.error('falha ao montar a previa experimental da carteira ativa:',error);
@@ -39255,11 +39058,6 @@ if(isActiveWalletHostMode()){
 }else if(isLocalTestMode()){
   initializeLocalTestFixture();
   initEditProtection();
-  // Process pending navigation from early go()
-  if(window._pendingGo && window.goInternal){
-    window.goInternal(window._pendingGo, true);
-    window._pendingGo = null;
-  }
   render();
 }else{
   initEditProtection();
@@ -39299,24 +39097,13 @@ if(!isLocalTestMode() && !isActiveWalletHostMode() && !isProtectedShadowBoot() &
     }
   });
   window.addEventListener('load',()=>{
-      navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{
-        window.__pwaRegistration=reg;
-        watchPwaUpdate(reg);
-        window.V250Runtime?.checkVersionCoherence?.().catch(()=>{});
-        if(reg && reg.update) reg.update().catch(()=>{});
-
-        // Register periodic sync for background data refresh
-        if ('periodicSync' in reg) {
-                  reg.periodicSync.register('data-refresh', { minInterval: 24 * 60 * 60 * 1000 })
-                    .catch(() => {});
-                  reg.periodicSync.register('analytics-flush', { minInterval: 60 * 60 * 1000 })
-                    .catch(() => {});
-                  reg.periodicSync.register('cache-cleanup', { minInterval: 7 * 24 * 60 * 60 * 1000 })
-                    .catch(() => {});
-                }
-                startPendingCountPolling();
-      }).catch(()=>{});
-    });
+    navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{
+      window.__pwaRegistration=reg;
+      watchPwaUpdate(reg);
+      window.V250Runtime?.checkVersionCoherence?.().catch(()=>{});
+      if(reg && reg.update) reg.update().catch(()=>{});
+    }).catch(()=>{});
+  });
   const checkOnReturn=()=>checkForAppUpdate();
   window.addEventListener('focus',checkOnReturn);
   document.addEventListener('visibilitychange',()=>{ if(!document.hidden) checkOnReturn(); });
