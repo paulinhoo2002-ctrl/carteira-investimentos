@@ -399,6 +399,55 @@ html[data-theme="light"] .dashboard-history-disclosure-body{background:var(--sur
 @media (max-width: 430px) {
   .dashboard-evolution-header{flex-direction:column;align-items:flex-start;gap:8px}
   .dashboard-history-disclosure summary{min-width:0}
+  /* M1251-M1265: Dashboard mobile optimizations */
+  .dashboard-hero{gap:6px}
+  .dash-card{padding:8px 10px}
+  .dash-head{gap:6px}
+  .dash-ico{width:22px;height:22px;font-size:11px}
+  .dash-kicker{font-size:8px;line-height:1.0}
+  .dash-value{margin-top:4px}
+  .dash-card .cv{font-size:16px;line-height:1.0}
+  .dash-foot{font-size:9px;line-height:1.1;-webkit-line-clamp:2}
+  .perf-grid{gap:8px}
+  .perf-card{padding:10px 10px 8px}
+  .perf-title{margin-bottom:6px}
+  .perf-comp-pie{width:80px;height:80px}
+  .dash-filters{padding:8px 0}
+  .dash-filters > *{gap:8px}
+  .perf-comp-side{font-size:10px}
+  .dash-filters{width:100%}
+  .dash-filters > *{gap:8px}
+  .perf-comp-pie{width:80px;height:80px}
+  .dash-filters{padding:8px 0}
+  .dash-filters > *{gap:8px}
+  .perf-comp-side{font-size:10px}
+  .wrap{padding:8px}
+  .cards{gap:6px}
+  .dashboard-hero{gap:6px}
+  .dash-card{padding:8px 10px}
+  .dash-head{gap:6px}
+  .dash-ico{width:22px;height:22px;font-size:11px}
+  .dash-kicker{font-size:8px;line-height:1.0}
+  .dash-value{margin-top:4px}
+  .dash-card .cv{font-size:16px;line-height:1.0}
+  .dash-foot{font-size:9px;line-height:1.1;-webkit-line-clamp:2}
+  .perf-grid{gap:8px}
+  .perf-card{padding:10px 10px 8px}
+  .perf-title{margin-bottom:6px}
+  .perf-comp-pie{width:80px;height:80px}
+  .dash-filters{padding:8px 0}
+  .dash-filters > *{gap:8px}
+  .perf-comp-side{font-size:10px}
+  /* Prioritize Patrimonio and Resultado cards */
+  .dash-card:first-child{order:0}
+  .dash-card:nth-child(2){order:1}
+  .dash-card:nth-child(3){order:2}
+  .dash-card:nth-child(4){order:3}
+  /* Improve chart visibility */
+  .dashboard-evolution-card svg{height:160px}
+  .dashboard-evolution-card{min-height:180px}
+  /* Bottom nav spacing */
+  .wrap{padding-bottom:max(90px, env(safe-area-inset-bottom))}
 }
 
 .dashboard-master-primary .premium-panel{padding:12px}
