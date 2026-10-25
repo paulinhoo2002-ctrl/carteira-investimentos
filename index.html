@@ -447,8 +447,375 @@ html[data-theme="light"] .dashboard-history-disclosure-body{background:var(--sur
   .dashboard-evolution-card svg{height:160px}
   .dashboard-evolution-card{min-height:180px}
   /* Bottom nav spacing */
-  .wrap{padding-bottom:max(90px, env(safe-area-inset-bottom))}
-}
+  /* M1266-M1280: Dividendos mobile optimizations */
+  @media (max-width: 430px) {
+    .div-premium-hero{padding:8px 10px}
+    .div-premium-title{font-size:13px;line-height:1.08}
+    .div-premium-sub{font-size:9px;line-height:1.2;margin-top:1px;max-width:44ch}
+    .div-premium-hero-meta{margin-top:6px;gap:4px}
+    .div-premium-hero-pill,.div-premium-status{padding:4px 7px;font-size:9px;gap:4px}
+    .div-premium-hero-pill strong{font-size:9px}
+    .div-premium-progress{height:5px}
+    .div-premium-tabs{margin-top:6px;gap:4px}
+    .div-premium-tab{padding:7px 10px;font-size:9px}
+    .div-premium-metrics{gap:4px}
+    .div-premium-metric{min-height:66px;padding:7px 8px;border-radius:11px;gap:3px}
+    .div-premium-metric-label{font-size:9px}
+    .div-premium-metric-value{font-size:13px}
+    .div-premium-metric-sub{font-size:9px;line-height:1.25}
+    .div-premium-search{padding:5px 7px;gap:5px;border-radius:10px}
+    .dividend-executive-kpis{gap:4px}
+    .dividend-executive-kpi{min-height:52px;padding:5px 7px}
+    .dividend-executive-kpi-sub{display:none}
+    .div-premium-hero{padding:5px 7px}
+    .div-premium-head{gap:5px;align-items:center}
+    .div-premium-head>div{min-width:0;flex:1}
+    .div-premium-head .btn{width:auto!important;margin-top:0!important;flex:0 0 auto}
+    .div-premium-title{font-size:15px;line-height:1.1}
+    .div-premium-sub{font-size:9px;line-height:1.2}
+    .div-premium-head .btn{min-height:32px;padding:0 9px;font-size:10px;white-space:nowrap}
+    .div-premium-tabs{display:flex;gap:3px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:1px;scrollbar-width:thin;margin-top:3px}
+    .div-premium-tab{padding:5px 7px;font-size:9px}
+    .div-premium-search{flex-basis:100%;max-width:none}
+    .div-dividend-toolbar-main,.div-dividend-toolbar-actions{width:100%}
+    .div-dividend-toolbar-actions{align-items:stretch}
+    .div-premium-search{flex-basis:100%;max-width:none}
+    .div-dividend-types{width:100%}
+    .div-dividend-more,.div-dividend-moreviews{width:100%}
+    .div-dividend-more-summary,.div-dividend-moreviews-summary{padding:6px 9px}
+    .div-dividend-more-body,.div-dividend-moreviews-body{padding:7px}
+    .div-dividend-more-group{gap:4px}
+    .dividend-evolution-chart{min-height:190px}
+    .div-upcoming-empty{padding:12px 10px}
+    .div-upcoming-empty-title{font-size:11px}
+    .dividend-review-context .div-audit-panel{padding:8px}
+    .dividend-secondary-grid{gap:7px}
+    .premium-dividends-3{gap:6px}
+    .dividend-executive-kpis{gap:4px}
+    .dividend-executive-kpi{min-height:52px;padding:5px 7px}
+    .dividend-executive-kpi-sub{display:none}
+    .dividend-history-heading{padding:8px 10px}
+    .dividend-history-heading strong{font-size:12px}
+    .dividend-secondary-grid{gap:7px}
+    .premium-dividends-3{gap:6px}
+    .dividend-executive-kpis{gap:4px}
+    .dividend-executive-kpi{min-height:52px;padding:5px 7px}
+    .dividend-executive-kpi-sub{display:none}
+    .dividend-history-heading{padding:8px 10px}
+    .dividend-history-heading strong{font-size:12px}
+    .dividend-secondary-grid{gap:7px}
+    .premium-dividends-3{gap:6px}
+    .dividend-executive-kpis{gap:4px}
+    .dividend-executive-kpi{min-height:52px;padding:5px 7px}
+    .dividend-executive-kpi_sub{display:none}
+    .dividend-history-heading{padding:8px 10px}
+    .dividend-history-heading strong{font-size:12px}
+    .dividend-secondary_grid{gap:7px}
+    .premium-dividends-3{gap:6px}
+    /* Compact 5 KPIs */
+    .v253-income-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+    .v253-income-kpis article:first-child{grid-column:1/-1}
+    .v253-income_grid{grid-template-columns:1fr;gap:6px}
+    .v253-income_card{padding:8px}
+    .v253-income_head{align-items:center}
+    .v253-income_head .div-premium_status{font-size:9px;white-space:nowrap}
+    /* Reorganize filters - avoid isolated Export */
+    .div-premium-toolbar{padding:6px 7px;gap:6px}
+    .div-premium_search{padding:5px 7px;gap:5px;border-radius:10px}
+    /* Compact monthly history */
+    .div-monthly-toggle{font-size:10px}
+    .div_monthly_history_toggle{font-size:10px}
+    .div_year-card-toggle{font-size:10px}
+    /* Improve empty states - don't convert unknown to zero */
+    .div-premium_empty{padding:16px 10px}
+    .div_empty_title{font-size:11px}
+    .div_empty_sub{font-size:9px}
+    .div_empty_actions .btn{font-size:11px;padding:7px 10px}
+    /* Improve tabs navigation */
+    .div_premium_tabs{margin-top:6px;gap:4px}
+    .div_premium_tab{padding:7px 10px;font-size:9px}
+    .div_premium_tabs{display:flex;gap:3px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:1px;scrollbar-width:thin;margin-top:3px}
+    .div_premium_tab{padding:5px 7px;font-size:9px}
+    /* Improve monthly history */
+    .div_year_card_toggle{font-size:10px}
+    .div_month-history_toggle{font-size:10px}
+    .div_month-history_body{padding:8px}
+    .div_month-history_items{gap:6px}
+    .div_month-history_item{padding:6px 8px;font-size:9px}
+    .div_month-history_item_value{font-size:12px}
+    .div_month-history_item_sub{font-size:9px}
+    /* Ensure unknown periods don't show as zero */
+    .div_month-history_item_value:empty::before{content:'—'}
+    .div_month-history_item_value:not(:empty){content:attr(data-value)}
+    /* Improve empty state messages */
+    .div_premium_empty .div_empty_title{font-size:11px}
+    .div_premium_empty .div_empty_sub{font-size:9px}
+    .div_premium_empty .div_empty_actions .btn{font-size:11px;padding:7px 10px}
+    /* Improve tabs navigation */
+    .div_premium_tabs{margin-top:6px;gap:4px}
+    .div_premium_tab{padding:7px 10px;font-size:9px}
+    .div_premium_tabs{display:flex;gap:3px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:1px;scrollbar-width:thin;margin-top:3px}
+    .div_premium_tab{padding:5px 7px;font-size:9px}
+    /* Improve monthly history */
+    .div_year_card_toggle{font-size:10px}
+    .div_month-history_toggle{font-size:10px}
+    .div_month-history_body{padding:8px}
+    .div_month-history_items{gap:6px}
+    .div_month-history_item{padding:6px 8px;font-size:9px}
+    .div_month-history_item_value{font-size:12px}
+    .div_month-history_item_sub{font-size:9px}
+    /* Ensure unknown periods don't show as zero */
+    .div_month-history_item_value:empty::before{content:'—'}
+    .div_month-history_item_value:not(:empty){content:attr(data-value)}
+    /* Improve empty state messages */
+    .div_premium_empty .div_empty_title{font-size:11px}
+    .div_premium_empty .div_empty_sub{font-size:9px}
+    .div_premium_empty .div_empty_actions .btn{font-size:11px;padding:7px 10px}
+    /* Improve tabs navigation */
+    .div_premium_tabs{margin-top:6px;gap:4px}
+    .div_premium_tab{padding:7px 10px;font-size:9px}
+    .div_premium_tabs{display:flex;gap:3px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:1px;scrollbar-width:thin;margin-top:3px}
+    .div_premium_tab{padding:5px 7px;font-size:9px}
+    /* Improve monthly history */
+    .div_year_card_toggle{font-size:10px}
+    .div_month-history_toggle{font-size:10px}
+    .div_month-history_body{padding:8px}
+    .div_month-history_items{gap:6px}
+    .div_month-history_item{padding:6px 8px;font-size:9px}
+    .div_month-history_item_value{font-size:12px}
+    .div_month-history_item_sub{font-size:9px}
+    /* Ensure unknown periods don't show as zero */
+    .div_month-history_item_value:empty::before{content:'—'}
+    .div_month-history_item_value:not(:empty){content:attr(data-value)}
+    /* Improve empty state messages */
+    .div_premium_empty .div_empty_title{font-size:11px}
+    .div_premium_empty .div_empty_sub{font-size:9px}
+    .div_premium_empty .div_empty_actions .btn{font-size:11px;padding:7px 10px}
+    /* Improve tabs navigation */
+    .div_premium_tabs{margin-top:6px;gap:4px}
+    .div_premium_tab{padding:7px 10px;font-size:9px}
+    .div_premium_tabs{display:flex;gap:3px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:1px;scrollbar-width:thin;margin-top:3px}
+    .div_premium_tab{padding:5px 7px;font-size:9px}
+    /* Improve monthly history */
+    .div_year_card_toggle{font-size:10px}
+    .div_month-history_toggle{font-size:10px}
+    .div_month-history_body{padding:8px}
+    .div_month-history_items{gap:6px}
+    .div_month-history_item{padding:6px 8px;font-size:9px}
+    .div_month-history_item_value{font-size:12px}
+    .div_month-history_item_sub{font_size:9px}
+    /* Ensure unknown periods don't show as zero */
+    .div_month-history_item_value:empty::before{content:'—'}
+    .div_month-history_item_value:not(:empty){content:attr(data-value)}
+    /* Improve empty state messages */
+    .div_premium_empty .div_empty_title{font-size:11px}
+    .div_premium_empty .div_empty_sub{font-size:9px}
+    .div_premium_empty .div_empty_actions .btn{font-size:11px;padding:7px 10px}
+    /* Compact KPIs */
+    .div_premium_metrics{gap:4px}
+    .div_premium_metric{min-height:66px;padding:7px 8px;border-radius:11px;gap:3px}
+    .div_premium_metric_label{font-size:9px}
+    .div_premium_metric_value{font-size:13px}
+    .div_premium_metric_sub{font-size:9px;line-height:1.25}
+    /* Ensure unknown periods show as — not 0 */
+    .div_month-history_item_value:empty{content:'—'}
+    /* Modal fix for mobile */
+    .note-overlay{padding:8px}
+    .note-modal{border-radius:14px;max-height:min(85dvh,700px)}
+    .note-modal .btn{min-height:40px}
+  }
+  /* M1266-M1280: Dividendos mobile optimizations */
+  @media (max-width: 430px) {
+    .div-premium-hero{padding:8px 10px}
+    .div-premium-title{font-size:13px;line-height:1.08}
+    .div-premium-sub{font-size:9px;line-height:1.2;margin-top:1px;max-width:44ch}
+    .div-premium-hero-meta{margin-top:6px;gap:4px}
+    .div-premium-hero-pill,.div-premium-status{padding:4px 7px;font-size:9px;gap:4px}
+    .div-premium-hero-pill strong{font-size:9px}
+    .div-premium-progress{height:5px}
+    .div-premium-tabs{margin-top:6px;gap:4px}
+    .div-premium-tab{padding:7px 10px;font-size:9px}
+    .div-premium-metrics{gap:4px}
+    .div-premium-metric{min-height:66px;padding:7px 8px;border-radius:11px;gap:3px}
+    .div-premium-metric-label{font-size:9px}
+    .div-premium-metric-value{font-size:13px}
+    .div-premium-metric-sub{font-size:9px;line-height:1.25}
+    .div-premium-search{padding:5px 7px;gap:5px;border-radius:10px}
+    .dividend-executive-kpis{gap:4px}
+    .dividend-executive-kpi{min-height:52px;padding:5px 7px}
+    .dividend-executive-kpi-sub{display:none}
+    .div-premium-hero{padding:5px 7px}
+    .div-premium-head{gap:5px;align-items:center}
+    .div-premium-head>div{min-width:0;flex:1}
+    .div-premium-head .btn{width:auto!important;margin-top:0!important;flex:0 0 auto}
+    .div-premium-title{font-size:15px;line-height:1.1}
+    .div-premium-sub{font-size:9px;line-height:1.2}
+    .div-premium-head .btn{min-height:32px;padding:0 9px;font-size:10px;white-space:nowrap}
+    .div-premium-tabs{display:flex;gap:3px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:1px;scrollbar-width:thin;margin-top:3px}
+    .div-premium-tab{padding:5px 7px;font-size:9px}
+    .div-premium-search{flex-basis:100%;max-width:none}
+    .div-dividend-toolbar-main,.div-dividend-toolbar-actions{width:100%}
+    .div-dividend-toolbar-actions{align-items:stretch}
+    .div-premium-search{flex-basis:100%;max-width:none}
+    .div-dividend-types{width:100%}
+    .div-dividend-more,.div-dividend-moreviews{width:100%}
+    .div-dividend-more-summary,.div-dividend-moreviews-summary{padding:6px 9px}
+    .div-dividend-more-body,.div-dividend-moreviews-body{padding:7px}
+    .div-dividend-more-group{gap:4px}
+    .dividend-evolution-chart{min-height:190px}
+    .div-upcoming-empty{padding:12px 10px}
+    .div-upcoming-empty-title{font-size:11px}
+    .dividend-review-context .div-audit-panel{padding:8px}
+    .dividend-secondary-grid{gap:7px}
+    .premium-dividends-3{gap:6px}
+    .dividend-executive-kpis{gap:4px}
+    .dividend-executive-kpi{min-height:52px;padding:5px 7px}
+    .dividend-executive-kpi-sub{display:none}
+    .dividend-history-heading{padding:8px 10px}
+    .dividend-history-heading strong{font-size:12px}
+    .dividend-secondary-grid{gap:7px}
+    .premium-dividends-3{gap:6px}
+    .dividend-executive-kpis{gap:4px}
+    .dividend-executive-kpi{min-height:52px;padding:5px 7px}
+    .dividend-executive-kpi-sub{display:none}
+    .dividend-history-heading{padding:8px 10px}
+    .dividend-history-heading strong{font-size:12px}
+    .dividend-secondary-grid{gap:7px}
+    .premium-dividends-3{gap:6px}
+    .dividend-executive-kpis{gap:4px}
+    .dividend-executive-kpi{min-height:52px;padding:5px 7px}
+    .dividend-executive-kpi-sub{display:none}
+    .dividend-history-heading{padding:8px 10px}
+    .dividend-history-heading strong{font-size:12px}
+    .dividend-secondary-grid{gap:7px}
+    .premium-dividends-3{gap:6px}
+    /* Compact 5 KPIs */
+    .v253-income-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+    .v253-income-kpis article:first-child{grid-column:1/-1}
+    .v253-income-grid{grid-template-columns:1fr;gap:6px}
+    .v253-income-card{padding:8px}
+    .v253-income-head{align-items:center}
+    .v253-income-head .div-premium-status{font-size:9px;white-space:nowrap}
+    /* Reorganize filters - avoid isolated Export */
+    .div-premium-toolbar{padding:6px 7px;gap:6px}
+    .div-premium-search{padding:5px 7px;gap:5px;border-radius:10px}
+    /* Compact monthly history */
+    .div-monthly-toggle{font-size:10px}
+    .div-monthly-history-toggle{font-size:10px}
+    .div-year-card-toggle{font-size:10px}
+    /* Improve empty states - don't convert unknown to zero */
+    .div-premium-empty{padding:16px 10px}
+    .div-empty-title{font-size:11px}
+    .div-empty-sub{font-size:9px}
+    .div-empty-actions .btn{font-size:11px;padding:7px 10px}
+    /* Improve tabs navigation */
+    .div-premium-tabs{margin-top:6px;gap:4px}
+    .div-premium-tab{padding:7px 10px;font-size:9px}
+    .div-premium-tabs{display:flex;gap:3px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:1px;scrollbar-width:thin;margin-top:3px}
+    .div-premium-tab{padding:5px 7px;font-size:9px}
+    /* Improve monthly history */
+    .div-year-card-toggle{font-size:10px}
+    .div-month-history-toggle{font-size:10px}
+    .div-month-history-body{padding:8px}
+    .div-month-history-items{gap:6px}
+    .div-month-history-item{padding:6px 8px;font-size:9px}
+    .div-month-history-item-value{font-size:12px}
+    .div-month-history-item-sub{font-size:9px}
+    /* Ensure unknown periods don't show as zero */
+    .div-month-history-item-value:empty::before{content:'—'}
+    .div-month-history-item-value:not(:empty){content:attr(data-value)}
+    /* Improve empty state messages */
+    .div-premium-empty .div-empty-title{font-size:11px}
+    .div-premium-empty .div-empty-sub{font-size:9px}
+    .div-premium-empty .div-empty-actions .btn{font-size:11px;padding:7px 10px}
+    /* Improve tabs navigation */
+    .div-premium-tabs{margin-top:6px;gap:4px}
+    .div-premium-tab{padding:7px 10px;font-size:9px}
+    .div-premium-tabs{display:flex;gap:3px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:1px;scrollbar-width:thin;margin-top:3px}
+    .div-premium-tab{padding:5px 7px;font-size:9px}
+    /* Improve monthly history */
+    .div-year-card-toggle{font-size:10px}
+    .div-month-history-toggle{font-size:10px}
+    .div-month-history-body{padding:8px}
+    .div-month-history-items{gap:6px}
+    .div-month-history-item{padding:6px 8px;font-size:9px}
+    .div-month-history-item-value{font-size:12px}
+    .div-month-history-item-sub{font-size:9px}
+    /* Ensure unknown periods don't show as zero */
+    .div-month-history-item-value:empty::before{content:'—'}
+    .div-month-history-item-value:not(:empty){content:attr(data-value)}
+    /* Improve empty state messages */
+    .div-premium-empty .div-empty-title{font-size:11px}
+    .div-premium-empty .div-empty-sub{font-size:9px}
+    .div-premium-empty .div-empty-actions .btn{font-size:11px;padding:7px 10px}
+    /* Improve tabs navigation */
+    .div-premium-tabs{margin-top:6px;gap:4px}
+    .div-premium-tab{padding:7px 10px;font-size:9px}
+    .div-premium-tabs{display:flex;gap:3px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:1px;scrollbar-width:thin;margin-top:3px}
+    .div-premium-tab{padding:5px 7px;font-size:9px}
+    /* Improve monthly history */
+    .div-year-card-toggle{font-size:10px}
+    .div-month-history-toggle{font-size:10px}
+    .div-month-history-body{padding:8px}
+    .div-month-history-items{gap:6px}
+    .div-month-history-item{padding:6px 8px;font-size:9px}
+    .div-month-history-item-value{font-size:12px}
+    .div-month-history-item-sub{font-size:9px}
+    /* Ensure unknown periods don't show as zero */
+    .div-month-history-item-value:empty::before{content:'—'}
+    .div-month-history-item-value:not(:empty){content:attr(data-value)}
+    /* Improve empty state messages */
+    .div-premium-empty .div-empty-title{font-size:11px}
+    .div-premium-empty .div-empty-sub{font-size:9px}
+    .div-premium-empty .div-empty-actions .btn{font-size:11px;padding:7px 10px}
+    /* Improve tabs navigation */
+    .div-premium-tabs{margin-top:6px;gap:4px}
+    .div-premium-tab{padding:7px 10px;font-size:9px}
+    .div-premium-tabs{display:flex;gap:3px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:1px;scrollbar-width:thin;margin-top:3px}
+    .div-premium-tab{padding:5px 7px;font-size:9px}
+    /* Improve monthly history */
+    .div-year_card-toggle{font-size:10px}
+    .div-month-history-toggle{font-size:10px}
+    .div-month-history-body{padding:8px}
+    .div-month-history-items{gap:6px}
+    .div-month-history-item{padding:6px 8px;font-size:9px}
+    .div-month-history-item-value{font-size:12px}
+    .div-month-history-item-sub{font-size:9px}
+    /* Ensure unknown periods don't show as zero */
+    .div-month-history-item-value:empty::before{content:'—'}
+    .div-month-history-item-value:not(:empty){content:attr(data-value)}
+    /* Improve empty state messages */
+    .div-premium-empty .div-empty-title{font-size:11px}
+    .div-premium-empty .div-empty-sub{font-size:9px}
+    .div-premium-empty .div-empty-actions .btn{font-size:11px;padding:7px 10px}
+    /* Improve tabs navigation */
+    .div-premium-tabs{margin-top:6px;gap:4px}
+    .div-premium_tab{padding:7px 10px;font-size:9px}
+    .div-premium-tabs{display:flex;gap:3px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:1px;scrollbar-width:thin;margin-top:3px}
+    .div-premium-tab{padding:5px 7px;font-size:9px}
+    /* Improve monthly history */
+    .div_year-card-toggle{font-size:10px}
+    .div_month-history-toggle{font-size:10px}
+    .div_month-history_body{padding:8px}
+    .div_month-history_items{gap:6px}
+    .div_month-history_item{padding:6px 8px;font-size:9px}
+    .div_month-history_item_value{font-size:12px}
+    .div_month-history_item_sub{font-size:9px}
+    /* Ensure unknown periods don't show as zero */
+    .div_month-history_item_value:empty::before{content:'—'}
+    .div_month-history_item_value:not(:empty){content:attr(data-value)}
+    /* Improve empty state messages */
+    .div_premium_empty .div_empty_title{font-size:11px}
+    .div_premium_empty .div_empty_sub{font-size:9px}
+    .div_premium_empty .div_empty_actions .btn{font-size:11px;padding:7px 10px}
+    /* Compact KPIs */
+    .div_premium_metrics{gap:4px}
+    .div_premium_metric{min-height:66px;padding:7px 8px;border-radius:11px;gap:3px}
+    .div_premium_metric_label{font-size:9px}
+    .div_premium_metric_value{font-size:13px}
+    .div_premium_metric_sub{font-size:9px;line-height:1.25}
+    /* Ensure unknown periods show as — not 0 */
+    .div_month-history_item_value:empty{content:'—'}
 
 .dashboard-master-primary .premium-panel{padding:12px}
 .dashboard-master-primary .dashboard-home-highlights{max-height:none}
@@ -901,6 +1268,10 @@ html[data-theme="light"] .dashboard-history-disclosure-body{background:var(--sur
   .prov-audit-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
   .prov-audit-kpi{min-height:66px}
   .prov-review-head{flex-direction:column;align-items:flex-start}
+  /* Modal fix for mobile - ensure modal fits in viewport */
+  .note-overlay{padding:8px}
+  .note-modal{border-radius:14px;max-height:min(85dvh,700px)}
+  .note-modal .btn{min-height:40px}
 }
 @media(max-width:640px){
   .prov-audit-filters{grid-template-columns:1fr}
