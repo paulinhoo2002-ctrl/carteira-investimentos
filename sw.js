@@ -1,12 +1,20 @@
-// Bump only when the app-shell/static asset contract changes. Activate removes
-// older caches with this app-owned prefix and preserves unrelated origin data.
-const SW_VERSION = 'v250.3';
-const CACHE_PREFIX = 'carteira-investimentos-';
-const CACHE_NAME = `${CACHE_PREFIX}${SW_VERSION}`;
-const CRITICAL_RUNTIME_PATHS = new Set([
+/**
+ * Service Worker v252 — PWA Foundation: Periodic Sync, Install Prompt, Offline Fallback, Cache Warming
+ * Bump only when the app-shell/static asset contract changes.
+ */
+var SW_VERSION = 'v252.0';
+var CACHE_PREFIX = 'carteira-investimentos-';
+var CACHE_NAME = CACHE_PREFIX + SW_VERSION;
+var CACHE_STATIC = CACHE_PREFIX + 'static-' + SW_VERSION;
+var CACHE_DYNAMIC = CACHE_PREFIX + 'dynamic-' + SW_VERSION;
+var CACHE_API = CACHE_PREFIX + 'api-' + SW_VERSION;
+var CACHE_ANALYTICS = CACHE_PREFIX + 'analytics-' + SW_VERSION;
+
+var CRITICAL_RUNTIME_PATHS = new Set([
   '/protected-local-cloud-authority.js',
 ]);
-const APP_SHELL = [
+
+var APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
@@ -24,18 +32,32 @@ const APP_SHELL = [
   './icon-maskable-512.png'
 ];
 
-const NEVER_CACHE_PATHS = [
+var ANALYTICS_MODULES = [
+  './analytics-passive-income-projection.js',
+  './analytics-dividend-evolution.js',
+  './analytics-asset-class-comparison.js',
+  './analytics-wealth-goals.js',
+  './analytics-financial-insights.js',
+  './analytics-code-splitter.js',
+  './analytics-memory-profiler.js',
+  './analytics-bundle-analyzer.js',
+  './analytics-performance-budgets.js'
+];
+
+var NEVER_CACHE_PATHS = [
   /\/api\//,
   /\/local-imports\//i,
   /\/firestore/i,
   /\/identitytoolkit/i,
   /\/securetoken/i,
   /\/oauth/i,
-  /(?:carteira-investimentos-backup|\.backup)\.(?:json|zip)$/i,
+  /(?:carteira-investimentos-backup|\.backup)\.(?:json|zip)$/i
 ];
 
 function isNeverCache(url) {
-  return NEVER_CACHE_PATHS.some(pattern => pattern.test(url.pathname) || pattern.test(url.href));
+  return NEVER_CACHE_PATHS.some(function(pattern) {
+    return pattern.test(url.pathname) || pattern.test(url.href);
+  });
 }
 
 function isVersionSensitiveAsset(request, url) {
@@ -45,37 +67,474 @@ function isVersionSensitiveAsset(request, url) {
     /\.(?:js|css|json)$/i.test(url.pathname);
 }
 
-self.addEventListener('install', (event) => {
-  event.waitUntil((async () => {
-    const cache = await caches.open(CACHE_NAME);
-    try {
-      const requests = APP_SHELL.map((url) => new Request(url, { cache: 'reload' }));
-      await cache.addAll(requests);
-    } catch (_) {}
-  })());
+var STRATEGIES = {
+  staleWhileRevalidate: function(request, cacheName) {
+    return caches.open(cacheName).then(function(cache) {
+      return cache.match(request).then(function(cachedResponse) {
+        var fetchPromise = fetch(request).then(function(networkResponse) {
+          if (networkResponse && networkResponse.ok && networkResponse.type === 'basic') {
+            cache.put(request, networkResponse.clone());
+          }
+          return networkResponse;
+        }).catch(function() { return cachedResponse; });
+        return cachedResponse || fetchPromise;
+      });
+    });
+  },
+
+  cacheFirst: function(request, cacheName) {
+    return caches.open(cacheName).then(function(cache) {
+      return cache.match(request).then(function(cachedResponse) {
+        if (cachedResponse) return cachedResponse;
+
+        return fetch(request).then(function(networkResponse) {
+          if (networkResponse && networkResponse.ok && networkResponse.type === 'basic') {
+            cache.put(request, networkResponse.clone());
+          }
+          return networkResponse;
+        }).catch(function(error) {
+          return new Response(JSON.stringify({ error: 'Offline' }), {
+            status: 503,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        });
+      });
+    });
+  },
+
+  networkFirst: function(request, cacheName) {
+    return caches.open(cacheName).then(function(cache) {
+      return fetch(request).then(function(networkResponse) {
+        if (networkResponse && networkResponse.ok && networkResponse.type === 'basic') {
+          cache.put(request, networkResponse.clone());
+        }
+        return networkResponse;
+      }).catch(function(error) {
+        return cache.match(request).then(function(cachedResponse) {
+          return cachedResponse || new Response(JSON.stringify({ error: 'Offline' }), {
+            status: 503,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        });
+      });
+    });
+  },
+
+  cacheOnly: function(request, cacheName) {
+    return caches.open(cacheName).then(function(cache) {
+      return cache.match(request).then(function(cachedResponse) {
+        return cachedResponse || new Response(JSON.stringify({ error: 'Offline - Not cached' }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      });
+    });
+  }
+};
+
+function getStrategy(request) {
+  var url = new URL(request.url);
+
+  if (request.method === 'GET' && (
+    url.pathname.endsWith('.js') ||
+    url.pathname.endsWith('.css') ||
+    url.pathname.endsWith('.png') ||
+    url.pathname.endsWith('.jpg') ||
+    url.pathname.endsWith('.svg') ||
+    url.pathname.endsWith('.ico') ||
+    url.pathname.endsWith('.woff') ||
+    url.pathname.endsWith('.woff2')
+  )) {
+    return { strategy: STRATEGIES.cacheFirst, cacheName: CACHE_STATIC };
+  }
+
+  if (url.pathname.startsWith('/api/') ||
+      url.hostname.includes('api.') ||
+      url.hostname.includes('firebase') ||
+      url.hostname.includes('brapi')) {
+    return { strategy: STRATEGIES.networkFirst, cacheName: CACHE_API };
+  }
+
+  if (request.method === 'GET' && (
+    url.pathname === '/' ||
+    url.pathname.endsWith('.html')
+  )) {
+    return { strategy: STRATEGIES.staleWhileRevalidate, cacheName: CACHE_DYNAMIC };
+  }
+
+  if (url.pathname.startsWith('/analytics-')) {
+    return { strategy: STRATEGIES.cacheFirst, cacheName: CACHE_ANALYTICS };
+  }
+
+  return { strategy: STRATEGIES.staleWhileRevalidate, cacheName: CACHE_DYNAMIC };
+}
+
+self.addEventListener('install', function(event) {
+  console.log('[SW v252] Installing...');
+
+  event.waitUntil(
+    caches.open(CACHE_STATIC).then(function(cache) {
+      console.log('[SW v252] Caching app shell');
+      var requests = APP_SHELL.map(function(url) {
+        return new Request(url, { credentials: 'same-origin', cache: 'reload' });
+      });
+      return cache.addAll(requests).catch(function(err) {
+        console.warn('[SW v252] Some app shell assets failed to cache:', err);
+      });
+    }).then(function() {
+      return caches.open(CACHE_ANALYTICS);
+    }).then(function(cache) {
+      console.log('[SW v252] Caching analytics modules');
+      var requests = ANALYTICS_MODULES.map(function(url) {
+        return new Request(url, { credentials: 'same-origin', cache: 'reload' });
+      });
+      return cache.addAll(requests).catch(function(err) {
+        console.warn('[SW v252] Some analytics modules failed to cache:', err);
+      });
+    }).then(function() {
+      console.log('[SW v252] All assets cached');
+      return self.skipWaiting();
+    })
+  );
+
+  self.clients.claim();
 });
 
-self.addEventListener('activate', (event) => {
-  event.waitUntil((async () => {
-    const keys = await caches.keys();
-    await Promise.all(keys
-      .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
-      .map((key) => caches.delete(key)));
-    await self.clients.claim();
-  })());
+self.addEventListener('activate', function(event) {
+  console.log('[SW v252] Activating...');
+
+  event.waitUntil(
+    caches.keys().then(function(cacheNames) {
+      return Promise.all(
+        cacheNames.map(function(cacheName) {
+          if (cacheName.startsWith('carteira-investimentos-') &&
+              cacheName !== CACHE_STATIC &&
+              cacheName !== CACHE_DYNAMIC &&
+              cacheName !== CACHE_API &&
+              cacheName !== CACHE_ANALYTICS) {
+            console.log('[SW v252] Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(function() {
+      console.log('[SW v252] Activated');
+      return self.clients.claim();
+    })
+  );
 });
 
-self.addEventListener('message', (event) => {
-  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
-  if (event.data?.type === 'GET_V250_VERSION' && event.ports?.[0]) {
-    event.ports[0].postMessage({ swVersion: SW_VERSION, cacheName: CACHE_NAME });
+self.addEventListener('sync', function(event) {
+  if (event.tag === 'pending-writes') {
+    console.log('[SW v252] Background sync: pending-writes');
+    event.waitUntil(processPendingWrites());
+  }
+
+  if (event.tag === 'analytics-sync') {
+    console.log('[SW v252] Background sync: analytics');
+    event.waitUntil(syncAnalytics());
+  }
+
+  if (event.tag === 'data-refresh') {
+    console.log('[SW v252] Background sync: data-refresh');
+    event.waitUntil(refreshQuotesAndDividends());
   }
 });
 
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
+self.addEventListener('periodicsync', function(event) {
+  if (event.tag === 'cache-cleanup') {
+    console.log('[SW v252] Periodic sync: cache-cleanup');
+    event.waitUntil(cleanupOldEntries());
+  }
+
+  if (event.tag === 'data-refresh') {
+    console.log('[SW v252] Periodic sync: data-refresh');
+    event.waitUntil(refreshQuotesAndDividends());
+  }
+
+  if (event.tag === 'analytics-flush') {
+    console.log('[SW v252] Periodic sync: analytics-flush');
+    event.waitUntil(syncAnalytics());
+  }
+});
+
+function refreshQuotesAndDividends() {
+  return self.clients.matchAll({ includeUncontrolled: true }).then(function(clients) {
+    if (clients.length === 0) return Promise.resolve();
+
+    return openDB().then(function(db) {
+      var tx = db.transaction('pending-writes', 'readwrite');
+      var store = tx.objectStore('pending-writes');
+      return getAll(store).then(function(writes) {
+        if (writes.length > 0) {
+          console.log('[SW v252] Processing', writes.length, 'pending writes');
+          return processPendingWrites();
+        }
+      });
+    }).then(function() {
+      return self.registration.sync.register('data-refresh').catch(function() {});
+    });
+  }).catch(function(error) {
+    console.warn('[SW v252] Data refresh failed:', error);
+  });
+}
+
+function processPendingWrites() {
+  return openDB().then(function(db) {
+    var tx = db.transaction('pending-writes', 'readwrite');
+    var store = tx.objectStore('pending-writes');
+    return getAll(store).then(function(writes) {
+      return Promise.all(writes.map(function(write) {
+        return fetch(write.url, {
+          method: write.method,
+          headers: write.headers,
+          body: write.body
+        }).then(function(response) {
+          if (response.ok) {
+            return deleteFromStore(db, 'pending-writes', write.id);
+          } else {
+            return incrementRetries(db, write.id);
+          }
+        }).catch(function(error) {
+          console.warn('[SW v252] Failed to sync write:', write.url, error);
+          return incrementRetries(db, write.id);
+        });
+      }));
+    });
+  }).catch(function(error) {
+    console.error('[SW v252] Background sync failed:', error);
+  });
+}
+
+function syncAnalytics() {
+  return openDB().then(function(db) {
+    var tx = db.transaction('analytics-queue', 'readwrite');
+    var store = tx.objectStore('analytics-queue');
+    return getAll(store).then(function(events) {
+      if (events.length > 0) {
+        return fetch('/api/analytics/batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ events: events })
+        }).then(function() {
+          return clearStore(db, 'analytics-queue');
+        });
+      }
+    });
+  }).catch(function(error) {
+    console.warn('[SW v252] Analytics sync failed:', error);
+  });
+}
+
+function incrementRetries(db, id) {
+  return new Promise(function(resolve, reject) {
+    var tx = db.transaction('pending-writes', 'readwrite');
+    var store = tx.objectStore('pending-writes');
+    var request = store.get(id);
+    request.onsuccess = function() {
+      var write = request.result;
+      if (write) {
+        write.retries = (write.retries || 0) + 1;
+        if (write.retries > 5) {
+          store.delete(id).onsuccess = function() { resolve(); };
+        } else {
+          store.put(write).onsuccess = function() { resolve(); };
+        }
+      } else {
+        resolve();
+      }
+    };
+    request.onerror = function() { reject(request.error); };
+  });
+}
+
+function openDB() {
+  return new Promise(function(resolve, reject) {
+    var request = indexedDB.open('carteira-sw-db', 2);
+
+    request.onupgradeneeded = function(event) {
+      var db = event.target.result;
+      if (!db.objectStoreNames.contains('pending-writes')) {
+        var writesStore = db.createObjectStore('pending-writes', { keyPath: 'id', autoIncrement: true });
+        writesStore.createIndex('timestamp', 'timestamp', { unique: false });
+      }
+      if (!db.objectStoreNames.contains('analytics-queue')) {
+        db.createObjectStore('analytics-queue', { keyPath: 'id', autoIncrement: true });
+      }
+      if (!db.objectStoreNames.contains('offline-indicator')) {
+        db.createObjectStore('offline-indicator', { keyPath: 'key' });
+      }
+    };
+
+    request.onsuccess = function() { resolve(request.result); };
+    request.onerror = function() { reject(request.error); };
+  });
+}
+
+function getAll(store) {
+  return new Promise(function(resolve, reject) {
+    var request = store.getAll();
+    request.onsuccess = function() { resolve(request.result); };
+    request.onerror = function() { reject(request.error); };
+  });
+}
+
+function deleteFromStore(db, storeName, id) {
+  return new Promise(function(resolve, reject) {
+    var tx = db.transaction(storeName, 'readwrite');
+    var store = tx.objectStore(storeName);
+    var request = store.delete(id);
+    request.onsuccess = function() { resolve(); };
+    request.onerror = function() { reject(request.error); };
+  });
+}
+
+function clearStore(db, storeName) {
+  return new Promise(function(resolve, reject) {
+    var tx = db.transaction(storeName, 'readwrite');
+    var store = tx.objectStore(storeName);
+    var request = store.clear();
+    request.onsuccess = function() { resolve(); };
+    request.onerror = function() { reject(request.error); };
+  });
+}
+
+function queueWrite(writeData) {
+  return openDB().then(function(db) {
+    var tx = db.transaction('pending-writes', 'readwrite');
+    var store = tx.objectStore('pending-writes');
+    return new Promise(function(resolve, reject) {
+      var request = store.add({
+        url: writeData.url,
+        method: writeData.method,
+        headers: writeData.headers,
+        body: writeData.body,
+        timestamp: Date.now(),
+        retries: 0
+      });
+      request.onsuccess = function() { resolve(); };
+      request.onerror = function() { reject(request.error); };
+    });
+  });
+}
+
+function queueAnalytics(eventData) {
+  return openDB().then(function(db) {
+    var tx = db.transaction('analytics-queue', 'readwrite');
+    var store = tx.objectStore('analytics-queue');
+    return new Promise(function(resolve, reject) {
+      var request = store.add({
+        type: eventData.type,
+        data: eventData.data,
+        timestamp: Date.now()
+      });
+      request.onsuccess = function() { resolve(); };
+      request.onerror = function() { reject(request.error); };
+    });
+  });
+}
+
+function cleanupOldEntries() {
+  return openDB().then(function(db) {
+    var cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+
+    var tx = db.transaction('pending-writes', 'readwrite');
+    var store = tx.objectStore('pending-writes');
+    var index = store.index('timestamp');
+    var range = IDBKeyRange.upperBound(cutoff);
+    return index.openCursor(range).then(function(cursor) {
+      var loop = function(cursor) {
+        if (!cursor) return Promise.resolve();
+        return cursor.delete().then(function() {
+          return cursor.continue().then(loop);
+        });
+      };
+      return loop(cursor);
+    });
+  }).catch(function(error) {
+    console.warn('[SW v252] Cleanup failed:', error);
+  });
+}
+
+self.addEventListener('message', function(event) {
+  var data = event.data;
+
+  if (data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+
+  if (data.type === 'GET_SW_VERSION' && event.ports && event.ports[0]) {
+    event.ports[0].postMessage({
+      swVersion: SW_VERSION,
+      cacheName: CACHE_NAME,
+      staticCache: CACHE_STATIC,
+      dynamicCache: CACHE_DYNAMIC,
+      apiCache: CACHE_API,
+      analyticsCache: CACHE_ANALYTICS
+    });
+  }
+
+  if (data.type === 'CLEAR_CACHES') {
+    clearAllCaches().then(function() {
+      if (event.ports && event.ports[0]) {
+        event.ports[0].postMessage({ success: true });
+      }
+    });
+  }
+
+  if (data.type === 'QUEUE_WRITE') {
+    queueWrite(data.write).then(function() {
+      self.registration.sync.register('pending-writes').catch(function() {});
+    });
+  }
+
+  if (data.type === 'QUEUE_ANALYTICS') {
+    queueAnalytics(data.event).then(function() {
+      self.registration.sync.register('analytics-sync').catch(function() {});
+    });
+  }
+
+  if (data.type === 'REGISTER_PERIODIC_SYNC') {
+    if ('periodicSync' in self.registration) {
+      self.registration.periodicSync.register('data-refresh', { minInterval: 24 * 60 * 60 * 1000 })
+        .catch(function(err) { console.warn('[SW v252] Periodic sync registration failed:', err); });
+      self.registration.periodicSync.register('analytics-flush', { minInterval: 60 * 60 * 1000 })
+        .catch(function(err) { console.warn('[SW v252] Analytics periodic sync failed:', err); });
+      self.registration.periodicSync.register('cache-cleanup', { minInterval: 7 * 24 * 60 * 60 * 1000 })
+        .catch(function(err) { console.warn('[SW v252] Cache cleanup periodic sync failed:', err); });
+    }
+    if (event.ports && event.ports[0]) {
+      event.ports[0].postMessage({ success: true });
+    }
+  }
+
+  if (data.type === 'GET_PENDING_COUNT' && event.ports && event.ports[0]) {
+    openDB().then(function(db) {
+      var tx = db.transaction('pending-writes', 'readonly');
+      var store = tx.objectStore('pending-writes');
+      return getAll(store);
+    }).then(function(writes) {
+      event.ports[0].postMessage({ count: writes.length });
+    }).catch(function() {
+      event.ports[0].postMessage({ count: 0 });
+    });
+  }
+});
+
+function clearAllCaches() {
+  return caches.keys().then(function(cacheNames) {
+    return Promise.all(cacheNames.map(function(name) {
+      return caches.delete(name);
+    }));
+  });
+}
+
+self.addEventListener('fetch', function(event) {
+  var request = event.request;
+
   if (request.method !== 'GET') return;
-  const url = new URL(request.url);
+
+  var url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
   if (url.pathname.endsWith('/sw.js') || isNeverCache(url)) {
@@ -84,66 +543,85 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (request.mode === 'navigate') {
-    event.respondWith((async () => {
-      try {
-        const fresh = await fetch(request, { cache: 'no-store' });
+    event.respondWith((function() {
+      return fetch(request, { cache: 'no-store' }).then(function(fresh) {
         if (fresh.ok) {
-          const cache = await caches.open(CACHE_NAME);
-          await cache.put(request, fresh.clone());
-          await cache.put('./index.html', fresh.clone());
+          return caches.open(CACHE_DYNAMIC).then(function(cache) {
+            return cache.put(request, fresh.clone()).then(function() {
+              return cache.put('./index.html', fresh.clone());
+            }).then(function() {
+              return fresh;
+            });
+          });
         }
         return fresh;
-      } catch (_) {
-        const cached = await caches.match(request, { ignoreSearch: true })
-          || await caches.match('./index.html')
-          || await caches.match('./');
-        return cached || Response.error();
-      }
+      }).catch(function(_) {
+        return caches.match(request, { ignoreSearch: true })
+          .then(function(cached) { return cached || caches.match('./index.html'); })
+          .then(function(cached) { return cached || caches.match('./'); })
+          .then(function(cached) { return cached || getOfflineFallback(); });
+      });
     })());
     return;
   }
 
   if (CRITICAL_RUNTIME_PATHS.has(url.pathname)) {
-    event.respondWith((async () => {
-      const cache = await caches.open(CACHE_NAME);
-      try {
-        const fresh = await fetch(request, { cache: 'no-store' });
-        if (fresh.ok && fresh.type === 'basic') await cache.put(request, fresh.clone());
-        return fresh;
-      } catch (_) {
-        const cached = await cache.match(request);
-        return cached || Response.error();
-      }
+    event.respondWith((function() {
+      return caches.open(CACHE_STATIC).then(function(cache) {
+        return fetch(request, { cache: 'no-store' }).then(function(fresh) {
+          if (fresh.ok && fresh.type === 'basic') {
+            return cache.put(request, fresh.clone()).then(function() { return fresh; });
+          }
+          return fresh;
+        }).catch(function(_) {
+          return cache.match(request).then(function(cached) { return cached || Response.error(); });
+        });
+      });
     })());
     return;
   }
 
   if (isVersionSensitiveAsset(request, url)) {
-    event.respondWith((async () => {
-      const cache = await caches.open(CACHE_NAME);
-      try {
-        const fresh = await fetch(request, { cache: 'no-store' });
-        if (fresh.ok && fresh.type === 'basic') await cache.put(request, fresh.clone());
-        return fresh;
-      } catch (_) {
-        return await cache.match(request) || Response.error();
-      }
+    event.respondWith((function() {
+      return caches.open(CACHE_STATIC).then(function(cache) {
+        return fetch(request, { cache: 'no-store' }).then(function(fresh) {
+          if (fresh.ok && fresh.type === 'basic') {
+            return cache.put(request, fresh.clone()).then(function() { return fresh; });
+          }
+          return fresh;
+        }).catch(function(_) {
+          return cache.match(request).then(function(cached) { return cached || Response.error(); });
+        });
+      });
     })());
     return;
   }
 
-  event.respondWith((async () => {
-    const cached = await caches.match(request);
-    if (cached) return cached;
-    try {
-      const fresh = await fetch(request);
-      if (fresh.ok && fresh.type === 'basic') {
-        const cache = await caches.open(CACHE_NAME);
-        await cache.put(request, fresh.clone());
-      }
-      return fresh;
-    } catch (_) {
-      return cached || Response.error();
-    }
-  })());
+  if (isNeverCache(url)) {
+    event.respondWith(fetch(request));
+    return;
+  }
+
+  var strategyInfo = getStrategy(request);
+  var strategy = strategyInfo.strategy;
+  var cacheName = strategyInfo.cacheName;
+
+  event.respondWith(
+    strategy(request, cacheName).catch(function(error) {
+      console.warn('[SW v252] Fetch failed:', error);
+      return new Response(JSON.stringify({ error: 'Network error', offline: true }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    })
+  );
 });
+
+function getOfflineFallback() {
+  var html = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Offline - Carteira de Investimentos</title><style>body{font-family:system-ui,sans-serif;background:#07090f;color:#e8ebf0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:20px;text-align:center}.icon{font-size:64px;margin-bottom:16px}h1{font-size:24px;margin-bottom:8px}p{font-size:16px;color:#9ab4d6;margin-bottom:24px}.btn{background:#1e3a5f;color:#e8ebf0;border:none;padding:12px 24px;border-radius:8px;font-size:16px;cursor:pointer}.btn:hover{background:#2d4a7a}</style></head><body><div class="icon">📱</div><h1>Você está offline</h1><p>Algumas funcionalidades podem estar limitadas.<br>Seus dados serão sincronizados quando a conexão voltar.</p><button class="btn" onclick="window.location.reload()">Tentar novamente</button></body></html>';
+  return new Response(html, {
+    headers: { 'Content-Type': 'text/html; charset=utf-8' }
+  });
+}
+
+console.log('[SW v252] Service Worker loaded');
