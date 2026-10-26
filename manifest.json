@@ -2,14 +2,17 @@
   "name": "Carteira de Investimentos",
   "short_name": "Carteira",
   "id": ".",
-  "start_url": "./",
+  "start_url": "./?source=pwa",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": ["standalone", "minimal-ui", "window-controls-overlay"],
   "background_color": "#07090f",
   "theme_color": "#07090f",
   "orientation": "any",
-  "description": "Controle pessoal da carteira com cotações, dividendos e aportes.",
+  "description": "Controle pessoal da carteira com cotações, dividendos, aportes, metas e projeções. Funciona offline.",
+  "categories": ["finance", "productivity"],
+  "lang": "pt-BR",
+  "dir": "ltr",
   "icons": [
     {
       "src": "icon-192.png",
@@ -41,5 +44,72 @@
       "type": "image/svg+xml",
       "purpose": "any"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Novo Aporte",
+      "short_name": "Aporte",
+      "description": "Registrar novo aporte rapidamente",
+      "url": "./?source=pwa-shortcut&tab=aportes&action=novo",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ver Dividendos",
+      "short_name": "Dividendos",
+      "description": "Ver proventos e renda passiva",
+      "url": "./?source=pwa-shortcut&tab=dividendos",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ver Metas",
+      "short_name": "Metas",
+      "description": "Acompanhar metas de patrimônio e renda",
+      "url": "./?source=pwa-shortcut&tab=metas",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/dashboard_desktop_1366.png",
+      "sizes": "1366x768",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Dashboard desktop - Visão geral da carteira"
+    },
+    {
+      "src": "screenshots/dashboard_mobile_390.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Dashboard mobile - Visão compacta"
+    },
+    {
+      "src": "screenshots/dividendos_mobile_390.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Dividendos mobile - Proventos e renda passiva"
+    },
+    {
+      "src": "screenshots/metas_mobile_390.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Metas mobile - Projeções e marcos"
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "protocol_handlers": [
+    {
+      "protocol": "web+carteira",
+      "url": "./?action=%s"
+    }
+  ],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  }
 }
