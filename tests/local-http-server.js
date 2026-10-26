@@ -55,9 +55,11 @@ async function startLocalHttpServer(root, port = 0, { syntheticQa = true } = {})
         if (!head.test(html)) throw new Error('Synthetic QA runtime marker could not be injected.');
         content = Buffer.from(html.replace(head, match => `${match}\n<script>Object.defineProperty(window,'__LOCAL_QA_RUNTIME__',{value:'local-synthetic-v1',writable:false,configurable:false});</script>`), 'utf8');
       }
+      const CSP_HEADER = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://api.brapi.com.br https://fonts.googleapis.com https://fonts.gstatic.com; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
+
       res.writeHead(200, {
         'Content-Type': path.extname(filePath) === '.html' ? 'text/html; charset=utf-8' : 'text/javascript; charset=utf-8',
-        ...(syntheticQa && path.extname(filePath) === '.html' ? { 'Cache-Control': 'no-store' } : {}),
+        ...(syntheticQa && path.extname(filePath) === '.html' ? { 'Cache-Control': 'no-store', 'Content-Security-Policy': CSP_HEADER } : {}),
       });
       res.end(content);
     } catch {
