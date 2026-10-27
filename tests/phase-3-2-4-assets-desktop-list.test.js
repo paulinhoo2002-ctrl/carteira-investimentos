@@ -15,15 +15,19 @@ test('Phase 3.2.4: tabela expandida permanece contida e com colunas financeiras 
   assert.match(source, /\.assets-premium-shell \.ag-table \.ts\{overflow-x:auto\}/);
   assert.match(source, /\.assets-premium-shell \.ag-mobile-list\{display:flex;flex-direction:column;gap:8px\}/);
   assert.match(source, /\.assets-premium-shell \.ag-table\{display:none!important\}/);
-  assert.match(source, /<th>Ativo<\/th>/);
-  assert.match(source, /<th class="num">Preço médio<\/th>\s*<th class="num">Preço atual \/ posição<\/th>/);
-  assert.match(source, /<th>Investido<\/th>\s*<th class="num">Resultado R\$<\/th>\s*<th class="num">Rentabilidade<\/th>/);
-  assert.match(source, /<th class="num">Valor total<\/th>\s*<th class="num">% carteira<\/th>/);
-  assert.match(source, /<th class="num">DY<\/th>/);
-  assert.match(source, /<th>Ações<\/th>/);
+  assert.match(source, /<th class="col-ticker">Ativo<\/th>/);
+  assert.match(source, /<th class="num col-pm">Preço médio<\/th>\s*<th class="num col-atual">Preço atual \/ posição<\/th>/);
+  assert.match(source, /<th class="col-invested">Investido<\/th>\s*<th class="num col-result">Resultado R\$<\/th>\s*<th class="num col-rentab">Rentabilidade<\/th>/);
+  assert.match(source, /<th class="num col-total">Valor total<\/th>\s*<th class="num col-share">% carteira<\/th>/);
+  assert.match(source, /<th class="num col-dy">DY<\/th>/);
+  assert.match(source, /<th class="col-actions">Ações<\/th>/);
   assert.match(source, /data-asset-group="\$\{esc\(type\)\}"/);
 });
 
+test('Ativos Premium usa texto semântico nas colunas de identidade e valor total', () => {
+  assert.match(source, /\.assets-premium-table \.col-ticker\{[^}]*color:var\(--text\)/);
+  assert.match(source, /\.assets-premium-table \.col-total\{[^}]*color:var\(--text\)/);
+});
 test('Phase 3.2.4: Renda Fixa continua resumida em Ativos e dedicada à rota própria', () => {
   assert.match(source, /Gestão detalhada em Renda Fixa/);
   assert.match(source, /onclick="go\('renda-fixa'\)"/);
