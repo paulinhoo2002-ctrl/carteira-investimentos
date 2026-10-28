@@ -37173,6 +37173,8 @@ const topAssetsSection=dividendCompactSectionHeader('asset','Top ativos',dividen
     :mode==='received'?recentSection
     :mode==='review'?reviewSection
     :overviewBody;
+  const overviewHeaderActions=`<div class="div-premium-canon-actions">${mode==='overview'?canonDividendYearChips(rows):''}<button type="button" class="btn bp" onclick="tgD()">+ Registrar provento</button><button type="button" class="btn bgh" onclick="exportBackup()">Exportar</button></div>`;
+  const kpisHtml=dividendExecutiveKpis();
   const modeNavigation=`<nav class="div-premium-tabs" aria-label="Modos de Dividendos">${tabs.map(([id,label])=>`<button type="button" class="div-premium-tab ${mode===id?'on':''}" aria-current="${mode===id?'page':'false'}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}<details class="div-dividend-moreviews"${extraViewsOpen ? ' open' : ''}><summary class="div-dividend-moreviews-summary"><span>Mais</span><span class="div-dividend-moreviews-meta">${extraViewsOpen ? 'aberto' : 'modos'}</span></summary><div class="div-dividend-moreviews-body">${extraViews.map(([id,label])=>`<button type="button" class="div-premium-tab ${mode===id?'on':''}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}</div></details></nav>`;
     const mobileHeaderActions=`<div class="div-premium-canon-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="btn bp" onclick="tgD()">+ Provento</button><button type="button" class="btn bgh" onclick="exportBackup()">Exportar</button></div>`;
     return `<main class="div-premium premium-dividends-3 div-exec-overview" aria-labelledby="dividends-page-title">
