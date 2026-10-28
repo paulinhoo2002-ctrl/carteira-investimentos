@@ -666,3 +666,296 @@ html[data-theme="dark"] .news-tag.macro {
   .hero-metrics { grid-template-columns: 1fr; }
   .patrimonio-grid { grid-template-columns: 1fr; }
 }
+
+/* ==========================================================================
+   MOBILE REFINEMENTS - M2191
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  /* Dividendos page mobile optimizations */
+  .div-premium-hero {
+    padding: 12px 0;
+  }
+  .div-premium-title {
+    font-size: 20px;
+  }
+  .div-premium-sub {
+    font-size: 12px;
+  }
+  .div-premium-kpi-bar {
+    gap: 8px;
+  }
+  .div-premium-tabs {
+    gap: 4px;
+    padding: 4px;
+  }
+  .div-premium-tab {
+    padding: 8px 12px;
+    font-size: 12px;
+    min-height: 40px;
+  }
+  .div-dividend-toolbar {
+    padding: 8px;
+  }
+  .div-premium-search input {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+  .div-premium-chip {
+    padding: 6px 10px;
+    font-size: 11px;
+    min-height: 36px;
+  }
+  .div-dividend-toolbar-main {
+    gap: 8px;
+  }
+  .div-dividend-toolbar-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .btn.bgh {
+    padding: 8px 12px;
+    font-size: 12px;
+    min-height: 40px;
+  }
+  
+  /* Ativos mobile cards improvements */
+  .asset-premium-card-summary {
+    padding: 12px;
+    gap: 8px;
+  }
+  .asset-premium-card-summary .asset-logo {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+  .asset-premium-card-summary .asset-name {
+    font-size: 13px;
+  }
+  .asset-premium-card-summary .asset-ticker {
+    font-size: 10px;
+    max-width: 180px;
+  }
+  .asset-premium-card-meta {
+    gap: 6px 12px;
+    font-size: 10px;
+    min-width: 160px;
+  }
+  .asset-premium-card-meta > div {
+    gap: 4px;
+  }
+  .asset-premium-card-meta span {
+    font-size: 12px;
+  }
+  .asset-premium-card-meta strong {
+    font-size: 14px;
+  }
+  .asset-premium-card-summary .asset-name {
+    font-size: 14px;
+  }
+  .asset-premium-card-summary .asset-ticker {
+    font-size: 12px;
+  }
+  .asset-premium-card-details {
+    padding: 8px 10px;
+    gap: 4px 8px;
+  }
+  .asset-premium-card-row {
+    gap: 2px;
+  }
+  .asset-premium-card-label {
+    font-size: 9px;
+  }
+  .asset-premium-card-value {
+    font-size: 12px;
+  }
+  .asset-premium-card-actions {
+    padding: 8px 10px;
+    gap: 4px;
+  }
+  .asset-premium-card-action {
+    padding: 8px 6px;
+    font-size: 11px;
+    min-height: 40px;
+  }
+  
+  /* Dashboard mobile spacing */
+  .dashboard-premium {
+    padding: 12px;
+  }
+  .hero-metrics {
+    gap: 6px;
+  }
+  .hero-metric {
+    padding: 8px;
+    border-radius: 8px;
+  }
+  .hero-metric-label {
+    font-size: 9px;
+  }
+  .hero-metric-value {
+    font-size: 20px;
+  }
+  .hero-metric-sub {
+    font-size: 10px;
+  }
+  .section-header {
+    margin-bottom: 6px;
+    gap: 4px;
+  }
+  .section-title {
+    font-size: 14px;
+  }
+  .section-subtitle {
+    font-size: 10px;
+  }
+  .charts-grid {
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .chart-card {
+    padding: 10px;
+    border-radius: 8px;
+  }
+  .chart-header {
+    margin-bottom: 6px;
+    gap: 6px;
+  }
+  .chart-title {
+    font-size: 13px;
+  }
+  .chart-subtitle {
+    font-size: 10px;
+  }
+  .chart-tabs {
+    gap: 2px;
+    padding: 2px;
+  }
+  .chart-tab {
+    padding: 4px 8px;
+    font-size: 10px;
+    border-radius: 4px;
+  }
+  .chart-container {
+    height: 160px;
+  }
+  
+  /* Dividendos mobile */
+  .div-premium-hero {
+    padding: 10px 0;
+  }
+  .div-premium-kpi-bar {
+    gap: 6px;
+  }
+  .div-premium-tabs {
+    padding: 3px;
+  }
+  .div-premium-tab {
+    padding: 6px 10px;
+    font-size: 11px;
+    min-height: 36px;
+  }
+  .div-dividend-toolbar {
+    padding: 6px;
+  }
+  .div-premium-search input {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  .div-premium-chip {
+    padding: 5px 8px;
+    font-size: 10px;
+    min-height: 32px;
+  }
+  .div-dividend-toolbar-main {
+    gap: 6px;
+  }
+  .div-dividend-toolbar-actions {
+    gap: 6px;
+  }
+  
+  /* Metas, Patrimônio, Rentabilidade mobile spacing */
+  .patrimonio-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .patrimonio-card {
+    padding: 14px;
+  }
+  .patrimonio-card-title {
+    font-size: 13px;
+  }
+  .patrimonio-card-title-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+  }
+  
+  /* Accordion mobile */
+  .accordion-category {
+    border-radius: 8px;
+    margin-bottom: 6px;
+  }
+  .accordion-header {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+  .acc-name {
+    font-size: 14px;
+  }
+  .acc-sub {
+    font-size: 10px;
+  }
+  .acc-metric-label {
+    font-size: 9px;
+    margin-bottom: 2px;
+  }
+  .acc-metric-value {
+    font-size: 14px;
+  }
+  .acc-toggle {
+    width: 28px;
+    height: 28px;
+  }
+  
+  /* Asset mobile cards in accordion */
+  .asset-mobile-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 0;
+  }
+}
+
+/* Chart empty states */
+.chart-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 160px;
+  text-align: center;
+  padding: 20px;
+}
+
+/* Asset mobile cards container */
+.asset-mobile-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+/* Dividendos page mobile actions */
+.div-premium-canon-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.div-premium-canon-actions .btn {
+  flex: 1;
+  min-width: 120px;
+  justify-content: center;
+}

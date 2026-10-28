@@ -32865,35 +32865,45 @@ function dash(){
         
                 <!-- CHARTS GRID (moved up for first-fold) -->
                                 <div class="charts-grid" style="margin-top:4px;">
-                  <div class="chart-card dashboard-evolution-card">
-                    <div class="chart-header">
-                      <div>
-                        <div class="chart-title">Evolução Patrimonial</div>
-                        <div class="chart-subtitle">Acompanhe o crescimento da sua carteira</div>
-                      </div>
-                      <div class="chart-tabs">
-                        <div class="chart-tab">7D</div>
-                        <div class="chart-tab">1M</div>
-                        <div class="chart-tab active">1A</div>
-                        <div class="chart-tab">5A</div>
-                      </div>
-                    </div>
-                    <div class="chart-container">
-                      <canvas id="evolutionChart"></canvas>
-                    </div>
-                  </div>
-                  <div class="chart-card">
-                    <div class="chart-header">
-                      <div>
-                        <div class="chart-title">Alocação</div>
-                        <div class="chart-subtitle">Distribuição dos ativos</div>
-                      </div>
-                    </div>
-                    <div class="chart-container">
-                      <canvas id="allocationChart"></canvas>
-                    </div>
-                  </div>
-                </div>
+                                  <div class="chart-card dashboard-evolution-card">
+                                    <div class="chart-header">
+                                      <div>
+                                        <div class="chart-title">Evolução Patrimonial</div>
+                                        <div class="chart-subtitle">Acompanhe o crescimento da sua carteira</div>
+                                      </div>
+                                      <div class="chart-tabs">
+                                        <div class="chart-tab">7D</div>
+                                        <div class="chart-tab">1M</div>
+                                        <div class="chart-tab active">1A</div>
+                                        <div class="chart-tab">5A</div>
+                                      </div>
+                                    </div>
+                                    <div class="chart-container">
+                                      <canvas id="evolutionChart"></canvas>
+                                      <div class="chart-empty-state" id="evolutionEmptyState" style="display:none;text-align:center;padding:40px 20px;color:var(--text-muted);font-size:13px;">
+                                        <div style="font-size:32px;margin-bottom:8px">📈</div>
+                                        <div style="font-weight:600;margin-bottom:4px">Sem dados para exibir</div>
+                                        <div style="font-size:12px;color:var(--muted);max-width:240px;margin:0 auto">Registre compras na aba <strong>Aportes</strong> para iniciar a série histórica.</div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="chart-card">
+                                    <div class="chart-header">
+                                      <div>
+                                        <div class="chart-title">Alocação</div>
+                                        <div class="chart-subtitle">Distribuição dos ativos</div>
+                                      </div>
+                                    </div>
+                                    <div class="chart-container">
+                                      <canvas id="allocationChart"></canvas>
+                                      <div class="chart-empty-state" id="allocationEmptyState" style="display:none;text-align:center;padding:40px 20px;color:var(--text-muted);font-size:13px;">
+                                        <div style="font-size:32px;margin-bottom:8px">📊</div>
+                                        <div style="font-weight:600;margin-bottom:4px">Sem ativos para distribuir</div>
+                                        <div style="font-size:12px;color:var(--muted);max-width:240px;margin:0 auto">Cadastre ativos na aba <strong>Ativos</strong> para ver a alocação.</div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
         
                 <!-- V329 ALLOCATION PANEL -->
                 ${dashboardV3AllocationPanel()}
@@ -33206,8 +33216,6 @@ function executiveKPIs(data){
   const currentMonthKey=passiveIncomeMonthKey(new Date());
   const recent=data?.recent?.month===currentMonthKey?data.recent:passiveIncomeMonthSummary(currentMonthKey);
   const monthReceived=recent.total;
-  // cx() supplies both values from the same applied-capital base. Validate the
-  // relationship before pairing; this does not calculate a replacement return.
   const sameBasis=amountValid && percentValid && Math.abs((p.tG/totalApplied)*100-p.tGP)<0.02;
   const resultAvailable=!['UNKNOWN','PARTIAL','NO_DATA'].includes(availability.state)&&p.appliedComplete!==false;
   const amount=resultAvailable&&amountValid?assetSignedMoneyText(p.tG):'';
@@ -33234,13 +33242,13 @@ function executiveKPIs(data){
     :dashboardEconomicResultStatus(data?.portfolioEconomicResult);
 
   return `
-    ${totalResultStatus}
-    <div class="dashboard-executive-kpis">
-      ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',patrimonyValue,patrimonyContext,'var(--semantic-official)','var(--semantic-official-bg)',`${patrimonyContext} · Data-base financeira não informada`)}
-      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado da posição',resultValue,resultAvailable?'Sobre capital cadastrado':resultNote,resultTone,resultGlow,resultNote)}
-      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Cobertura parcial':'Cobertura desconhecida','var(--success)','rgba(16,185,129,.14)',recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida')}
-    </div>
-  `;
+      ${totalResultStatus}
+      <div class="dashboard-executive-kpis">
+        ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',patrimonyValue,patrimonyContext,'var(--semantic-official)','var(--semantic-official-bg)',`${patrimonyContext} · Data-base financeira não informada`)}
+        ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Cobertura parcial':'Cobertura desconhecida','var(--success)','rgba(16,185,129,.14)',recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida')}
+        ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado da posição',resultValue,resultAvailable?'Sobre capital cadastrado':resultNote,resultTone,resultGlow,resultNote)}
+      </div>
+    `;
 }
 function package2ExecutivePanel(showTotalStatus=true){
   const p2=(typeof FB!=='undefined'&&FB)||{};
@@ -33993,40 +34001,41 @@ function ativos() {
       const dyDisplay = hasOwnFiniteNumber(a, ['dy']) ? fmtP(Number(a.dy)) : '—';
 
       return `<details class="asset-premium-card" data-id="${esc(a.id)}">
-              <summary class="asset-premium-card-summary">
-                <div class="asset-info">
-                  <div class="asset-logo" style="background:${esc(a.color || (type === 'Ação' ? '#3b82f6' : type === 'FII' ? '#8b5cf6' : type === 'ETF' ? '#f5c542' : type === 'Renda Fixa' ? '#10b981' : '#f59e0b'))}">${esc(a.ticker?.charAt(0) || '?')}</div>
-                  <div>
-                    <div class="asset-name">${esc(a.ticker)} ${yahooBadge}</div>
-                    <div class="asset-ticker">${esc(a.name)}</div>
-                  </div>
-                </div>
-                <div class="asset-premium-card-meta">
-                  <div><span>Tipo</span><strong>${typeBadge}</strong></div>
-                  <div><span>Setor</span><strong>${esc(sector)}</strong></div>
-                  <div><span>Valor da posição</span><strong>${positionValueDisplay}</strong></div>
-                  <div><span>${resultLabel} R$</span><strong class="${resultClass}">${resultMoneyDisplay}</strong></div>
-                  <div><span>${returnLabel} · % Carteira</span><strong>${returnDisplay} · ${shareDisplay}</strong></div>
-                </div>
-              </summary>
-              <div class="asset-premium-card-details">
-                <div class="asset-premium-card-row"><span>Quantidade</span><strong>${qtyDisplay}</strong></div>
-                <div class="asset-premium-card-row"><span>Preço médio</span><strong>${averagePriceDisplay}</strong></div>
-                <div class="asset-premium-card-row"><span>Preço atual / posição</span><strong>${currentPriceDisplay}</strong></div>
-                <div class="asset-premium-card-row"><span>Investido</span><strong>${investedDisplay}</strong></div>
-                <div class="asset-premium-card-row"><span>${resultLabel} R$</span><strong class="${resultClass}">${resultMoneyDisplay}</strong></div>
-                <div class="asset-premium-card-row"><span>${returnLabel}</span><strong>${returnDisplay}</strong></div>
-                <div class="asset-premium-card-row"><span>Valor total</span><strong>${positionValueDisplay}</strong></div>
-                <div class="asset-premium-card-row"><span>% Carteira</span><strong>${shareDisplay}</strong></div>
-                <div class="asset-premium-card-row"><span>Alvo</span><strong>${hasOwnFiniteNumber(a, ['target_price', 'alvo']) ? fmt(Number(a.target_price || a.alvo)) : '—'}</strong></div>
-                <div class="asset-premium-card-row"><span>% Ideal</span><strong>${hasOwnFiniteNumber(a, ['ideal_pct', 'idealPct']) ? `${Number(a.ideal_pct || a.idealPct).toFixed(1)}%` : '—'}</strong></div>
-                <div class="asset-premium-card-row"><span>Div/mês</span><strong>${hasOwnFiniteNumber(a, ['div_month', 'divMonth']) ? fmt(Number(a.div_month || a.divMonth)) : '—'}</strong></div>
-                <div class="asset-premium-card-row"><span>DY</span><strong>${dyDisplay}</strong></div>
-                <div class="asset-premium-card-row"><span>Estimativa mensal</span><strong title="Sem estimativa mensal validada">—</strong></div>
-                <div class="asset-premium-card-row"><span>Fonte / atualização</span><strong>${sourceInfo?.join ? sourceInfo.join(' / ') : (sourceInfo || '—')}</strong></div>
-                <div class="asset-premium-card-actions">${assetActionMenuHtml(a, isRF, 'mobile')}</div>
-              </div>
-            </details>`;
+                    <summary class="asset-premium-card-summary">
+                      <div class="asset-info">
+                        <div class="asset-logo" style="background:${esc(a.color || (type === 'Ação' ? '#3b82f6' : type === 'FII' ? '#8b5cf6' : type === 'ETF' ? '#f5c542' : type === 'Renda Fixa' ? '#10b981' : '#f59e0b'))}">${esc(a.ticker?.charAt(0) || '?')}</div>
+                        <div>
+                          <div class="asset-name">${esc(a.ticker)} ${yahooBadge}</div>
+                          <div class="asset-ticker">${esc(a.name)}</div>
+                        </div>
+                      </div>
+                      <div class="asset-premium-card-meta">
+                                        <div><span>Tipo</span><strong>${typeBadge}</strong></div>
+                                        <div><span>Valor da posição</span><strong>${positionValueDisplay}</strong></div>
+                                        <div><span>${resultLabel} R$</span><strong class="${resultClass}">${resultMoneyDisplay}</strong></div>
+                                        <div><span>${returnLabel}</span><strong>${returnDisplay}</strong></div>
+                                        <div><span>% Carteira</span><strong>${shareDisplay}</strong></div>
+                                      </div>
+                    </summary>
+                    <div class="asset-premium-card-details">
+                                    <div class="asset-premium-card-row"><span>Quantidade</span><strong>${qtyDisplay}</strong></div>
+                                    <div class="asset-premium-card-row"><span>Preço médio</span><strong>${averagePriceDisplay}</strong></div>
+                                    <div class="asset-premium-card-row"><span>Preço atual / posição</span><strong>${currentPriceDisplay}</strong></div>
+                                    <div class="asset-premium-card-row"><span>Setor</span><strong>${esc(sector)}</strong></div>
+                                    <div class="asset-premium-card-row"><span>Investido</span><strong>${investedDisplay}</strong></div>
+                                    <div class="asset-premium-card-row"><span>${resultLabel} R$</span><strong class="${resultClass}">${resultMoneyDisplay}</strong></div>
+                                    <div class="asset-premium-card-row"><span>${returnLabel}</span><strong>${returnDisplay}</strong></div>
+                                    <div class="asset-premium-card-row"><span>Valor total</span><strong>${positionValueDisplay}</strong></div>
+                                    <div class="asset-premium-card-row"><span>% Carteira</span><strong>${shareDisplay}</strong></div>
+                                    <div class="asset-premium-card-row"><span>Alvo</span><strong>${hasOwnFiniteNumber(a, ['target_price', 'alvo']) ? fmt(Number(a.target_price || a.alvo)) : '—'}</strong></div>
+                                    <div class="asset-premium-card-row"><span>% Ideal</span><strong>${hasOwnFiniteNumber(a, ['ideal_pct', 'idealPct']) ? `${Number(a.ideal_pct || a.idealPct).toFixed(1)}%` : '—'}</strong></div>
+                                    <div class="asset-premium-card-row"><span>Div/mês</span><strong>${hasOwnFiniteNumber(a, ['div_month', 'divMonth']) ? fmt(Number(a.div_month || a.divMonth)) : '—'}</strong></div>
+                                    <div class="asset-premium-card-row"><span>DY</span><strong>${dyDisplay}</strong></div>
+                                    <div class="asset-premium-card-row"><span>Estimativa mensal</span><strong title="Sem estimativa mensal validada">—</strong></div>
+                                    <div class="asset-premium-card-row"><span>Fonte / atualização</span><strong>${sourceInfo?.join ? sourceInfo.join(' / ') : (sourceInfo || '—')}</strong></div>
+                                    <div class="asset-premium-card-actions">${assetActionMenuHtml(a, isRF, 'mobile')}</div>
+                                  </div>
+                  </details>`;
     }).join('');
 
     const headerHtml = `
@@ -37164,15 +37173,15 @@ const topAssetsSection=dividendCompactSectionHeader('asset','Top ativos',dividen
     :mode==='received'?recentSection
     :mode==='review'?reviewSection
     :overviewBody;
-  const overviewHeaderActions=`<div class="div-premium-canon-actions">${mode==='overview'?canonDividendYearChips(rows):''}<button type="button" class="btn bp" onclick="tgD()">+ Registrar provento</button><button type="button" class="btn bgh" onclick="exportBackup()">Exportar</button></div>`;
-  const kpisHtml=dividendExecutiveKpis();
   const modeNavigation=`<nav class="div-premium-tabs" aria-label="Modos de Dividendos">${tabs.map(([id,label])=>`<button type="button" class="div-premium-tab ${mode===id?'on':''}" aria-current="${mode===id?'page':'false'}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}<details class="div-dividend-moreviews"${extraViewsOpen ? ' open' : ''}><summary class="div-dividend-moreviews-summary"><span>Mais</span><span class="div-dividend-moreviews-meta">${extraViewsOpen ? 'aberto' : 'modos'}</span></summary><div class="div-dividend-moreviews-body">${extraViews.map(([id,label])=>`<button type="button" class="div-premium-tab ${mode===id?'on':''}" onclick="setDividendViewMode('${id}')">${label}</button>`).join('')}</div></details></nav>`;
-  return `<main class="div-premium premium-dividends-3 div-exec-overview" aria-labelledby="dividends-page-title">
-    <div class="div-premium-hero">
-      <div class="div-premium-head"><div><h1 id="dividends-page-title" class="div-premium-title">Dividendos</h1><div class="div-premium-sub">Acompanhe sua renda passiva mês a mês.</div></div>${overviewHeaderActions}</div>
-      <div class="div-premium-kpi-bar">${kpisHtml}</div>
-      ${modeNavigation}
-    </div>
+    const mobileHeaderActions=`<div class="div-premium-canon-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="btn bp" onclick="tgD()">+ Provento</button><button type="button" class="btn bgh" onclick="exportBackup()">Exportar</button></div>`;
+    return `<main class="div-premium premium-dividends-3 div-exec-overview" aria-labelledby="dividends-page-title">
+      <div class="div-premium-hero">
+        <div class="div-premium-head"><div><h1 id="dividends-page-title" class="div-premium-title">Dividendos</h1><div class="div-premium-sub">Acompanhe sua renda passiva mês a mês.</div></div>${overviewHeaderActions}</div>
+        <div class="div-premium-kpi-bar">${kpisHtml}</div>
+        ${modeNavigation}
+        ${mobileHeaderActions}
+      </div>
     ${frmD()}
     ${body}
     ${mode==='overview'?'':dividendFilterTabs()}
