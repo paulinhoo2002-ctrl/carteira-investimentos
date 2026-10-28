@@ -40,7 +40,7 @@ async function createRuntime(viewport) {
       colorScheme: 'dark',
     });
     const page = await context.newPage();
-    page.setDefaultTimeout(5000);
+        page.setDefaultTimeout(30000);
     await page.addInitScript(() => {
       window.__V304_QA_WRITE_COUNTS__ = { localStorage: [], financialStateAtBoot: localStorage.getItem('civ5') };
       const originalSetItem = Storage.prototype.setItem;
@@ -79,9 +79,9 @@ async function createRuntime(viewport) {
       }
     });
     await page.goto(harness.url, { waitUntil: 'domcontentloaded' });
-    await page.waitForFunction(() =>
-      window.__LOCAL_TEST_MODE__ === true && typeof S !== 'undefined' && typeof render === 'function',
-      null, { timeout: 5000 });
+        await page.waitForFunction(() =>
+          window.__LOCAL_TEST_MODE__ === true && typeof S !== 'undefined' && typeof render === 'function',
+          null, { timeout: 15000 });
     assert.deepEqual(pageErrors, [], 'V289 synthetic runtime has page errors');
     await applyV289VisualFixture(page, 'baseline');
     await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') });

@@ -11443,10 +11443,10 @@ function initFirebase(){
       return;
     }
     const emulatorMode=isLocalAuthEmulatorMode();
-    if(window.__LOCAL_AUTH_EMULATOR_MODE__===true && !emulatorMode) throw new Error('Auth emulator mode is loopback-only.');
-    const appConfig=emulatorMode
-      ? {apiKey:'demo-api-key',authDomain:'localhost',projectId:'demo-carteira-qa-emulator'}
-      : firebaseConfig;
+        if(window.__LOCAL_AUTH_EMULATOR_MODE__===true && !emulatorMode) throw new Error('Auth emulator mode is loopback-only.');
+        const appConfig = (emulatorMode || testMode)
+          ? {apiKey: 'demo-api-key', authDomain: 'localhost', projectId: 'demo-carteira-qa-emulator'}
+          : firebaseConfig;
     FB.app=firebase.initializeApp(appConfig);
     FB.auth=firebase.auth();
     FB.db=firebase.firestore();
