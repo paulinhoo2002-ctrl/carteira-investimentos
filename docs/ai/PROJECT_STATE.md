@@ -2,15 +2,15 @@
 
 > Nesta branch de governança, o roteador canônico de Skills está em `.agents/SKILL_ROUTER.md`; o seletor usa o inventário local versionado e não depende de chat ou modelo. Esta proposta ainda não está integrada em `main`.
 
-DATE=2026-10-19
+DATE=2026-10-27
 MAIN_HEAD=10083077d2471063807da6097a3872be7ad5c67d
-VISUAL_PHASE=ACTIVE_FOR_M523
+VISUAL_PHASE=M1959_COMPLETE
 VISUAL_CONTRACT=docs/ai/VISUAL_UX_RESPONSIVE_CONTRACT.md
 PRODUCTION=READY
 SITE_TECHNICALLY_COMPLETE=YES
 PRODUCTION_HEALTHY=YES
 FEATURE_FREEZE=YES
-OPERATING_MODE=MAINTENANCE_AND_DATA_CERTIFICATION_MODE
+OPERATING_MODE=DR_CERTIFICATION_PENDING
 
 ## Identidade e release
 
@@ -40,10 +40,13 @@ OPERATING_MODE=MAINTENANCE_AND_DATA_CERTIFICATION_MODE
 | QA | PASS NO SHA DA RELEASE | CI, testes de release e smoke autenticado passaram; Axe autenticado direto não foi verificado | Rodar Axe autenticado quando houver janela de QA segura |
 | Privacidade | DIFF SANITIZADO | Nenhum dado privado novo entrou no diferencial da release; dívida histórica preexistente continua aberta | Acompanhar `LEGACY_BACKLOG.md` |
 | Recuperação administrativa | ABERTA | Não houve mudança de Auth ou de autoridade | Confirmar MFA e recuperação diretamente nos provedores |
+| **M1959 Visual/Ativos/Dividendos** | **CONCLUÍDO** | **Tabela premium, cards mobile, KPIs canônicos, semântica ±, filtros UX — `verify:release` PASS** | **DR certification + merge `feat/financial-evolution-premium` → `main`** |
+| **Disaster Recovery Plan** | **DOCUMENTADO** | **`docs/DISASTER_RECOVERY_PLAN.md` criado; gaps: backup real, sidecars, drills** | **Proprietário: exportar backup → sidecars → verify-integrity → verify-recovery** |
+| **M1960 Acesso/QA local** | **CORRIGIDO — revalidação pendente** | **Bug raiz MIME no QA server corrigido (`dashboard-premium.css` não aplicava); `signInGoogle()` com diagnóstico exato; launchers `ABRIR-*.bat`** | **Matar server antigo (porta 8795, PID 26724) → `auth-access-browser.test.js` → `npm test` → limpar probes** |
 
 ## Governança atual
 
-- Feature freeze permanece ativo; M523 é a exceção visual limitada aprovada pelo proprietário para modernizar navegação, cores, tipografia e hierarquia do Dashboard. Não amplia escopo para fórmulas, persistência, Auth, Firebase ou a PR #520. A branch visual usa a base main identificada no início desta missão; confirme os fatos remotos antes da revisão.
+- Feature freeze permanece ativo; M1959 concluída com melhorias visuais M1955/M1958 preservadas. DR Plan documentado. Próximo gate: certificação DR (backup real exportado + `REAL_RECOVERY_CERTIFIED=YES`) → merge autorizado.
 - O contrato permanente de UX visual e responsividade está em [`VISUAL_UX_RESPONSIVE_CONTRACT.md`](VISUAL_UX_RESPONSIVE_CONTRACT.md), complementado pelo [`VISUAL_CANON_V2.md`](VISUAL_CANON_V2.md).
 - Invariantes permanentes: `UNKNOWN != ZERO`, `MISSING != ZERO`, `PARTIAL != COMPLETE`, `EXPECTED != RECEIVED`.
 - Sem escrita financeira real, importação, restore, promoção Package2, alteração de Auth/Rules ou deploy manual nesta release.

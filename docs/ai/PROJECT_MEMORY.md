@@ -57,6 +57,38 @@ abaixo preservam histórico e não definem a seleção vigente.
 Veja [`LEGACY_BACKLOG.md`](LEGACY_BACKLOG.md), [`LEGACY_DATA_READINESS.md`](LEGACY_DATA_READINESS.md) e [`ADMIN_RECOVERY_RISK.md`](ADMIN_RECOVERY_RISK.md). Estado corrente e limitações estão em [`PROJECT_STATE.md`](PROJECT_STATE.md).
 
 ---
+
+## M1959 — Reconciliação HEAD + Retomada Visual + DR Plan (2026-10-27)
+
+- **Worktree**: `C:\Projetos\carteira-investimentos.worktrees\m862-hardening` (branch `feat/financial-evolution-premium` @ `cf8fa49`)
+- **Previous HEAD**: `fb110151b21855edd1ef2ee6db823792dd56842f` → **Current HEAD**: `cf8fa490a1c4383d5779df32ee8d77a5fc9cc6fb`
+- **ANCESTRY_VERIFIED=YES** (`git merge-base --is-ancestor` exit 0)
+- **Commits between**: 1 (`cf8fa49 feat(ui): refine legacy portfolio visual experience`)
+- **M1955/M1958 preservadas**: ✅ Confirmado via diff — tabela premium responsiva, cards mobile, KPIs canônicos, semântica verde/vermelho, filtros UX, readonly actions
+- **`index.m1959-before.html` preservado**: ✅ (2.5MB, untracked, intacto)
+- **Testes**: `npm test` 991/991 PASS, `npm run test:modern` 786/786 PASS, `verify:release` PASS (273+ testes, 39 visual regression, 0 erros)
+- **QA Smoke**: 7 viewports (390→1920) — 0 overflow/console/page/request errors
+- **Preview sintético read-only**: `http://127.0.0.1:8080/index.html?testMode=1&testReadOnly=1` (PID 60796)
+- **Galeria visual (8 capturas)**: `.qa-state/visual-gallery.html` + screenshots em `.qa-state/v330-daily-use/`
+- **DR Plan criado**: `docs/DISASTER_RECOVERY_PLAN.md` — targets RTO/RPO, procedimentos, gaps, checklist certificação
+- **Gaps DR**: backup real não exportado, diretório aprovado inexistente, sidecars ausentes, drills não executados
+- **Status**: M1959 COMPLETA — PRONTA PARA CERTIFICAÇÃO DR + MERGE (aguarda backup real do proprietário)
+
+---
+
+## M1960 — Acesso facilitado + bug raiz MIME no QA local (2026-10-27)
+
+- **Worktree**: `C:\Projetos\carteira-investimentos.worktrees\m862-hardening` (branch `feat/financial-evolution-premium` @ `cf8fa49`, mudanças não commitadas).
+- **Bug raiz crítico**: `tests/local-http-server.js` servia todo arquivo não-HTML como `text/javascript`. O Chromium aplica strict MIME checking em stylesheets e descartava `dashboard-premium.css` INTEIRO silenciosamente — o layer premium nunca aplicou em QA local (a Vercel serve `text/css` correto, por isso produção não era afetada).
+- **Sintomas**: falha axe `serious:color-contrast` no estado REAL (`.chart-tab.active` com bg `var(--warning)` `#8a5b12` + texto `#0a0e1a` = 3.28:1 < 4.5:1, tema claro) e dashboards locais sem o styling premium. Provas: probe axe (elemento exato), probe computed style (`--gold` VAZIO no root apesar do CSS carregado), `curl -I` (MIME errado). Isolamento por git stash + reversão temporal da própria mudança confirmou falha pre-existente.
+- **Fix**: mapa `MIME_BY_EXT` no server (`.css`→`text/css`, `.json`, `.svg`, fonts, imagens, `.webmanifest`, `.csv`, `.txt`; fallback `application/octet-stream`). Um guard na função compartilhada cobre a classe inteira.
+- **signInGoogle() endurecido** (`index.html` ~12164): reporta `auth/unauthorized-domain` (com hostname + passo-a-passo do Console), `auth/popup-blocked`, `auth/network-request-failed`; `auth/popup-closed-by-user` fica silencioso. Alert genérico substituído.
+- **Acesso facilitado** (novos na raiz do worktree): `ABRIR-TESTE.bat` (sintético, um clique), `ABRIR-REAL.bat` (real via `http://localhost:8080`), `COMO-ACESSAR.md` (3 formas de acesso + correção Firebase authorized domains + estratégia vitalícia PWA offline + backup mensal).
+- **Fato Firebase**: login Google local requer `localhost`, NUNCA `127.0.0.1` (domínios autorizados padrão). Se ainda falhar: Console Firebase → Authentication → Settings → Authorized domains → adicionar o hostname exibido no erro.
+- **Validação parcial**: build PASS, auth/synthetic 39/39 PASS. **REVALIDAÇÃO PENDENTE**: matar server antigo (porta 8795, PID 26724) → `node --test tests/auth-access-browser.test.js` (esperado 6/6 com CSS aplicando) → `npm test` completo → remover probes `tests/_probe-axe-detail.js` e `tests/_probe-style.js`.
+- **Lições duráveis**: (1) servidor de estáticos para QA deve servir MIME por extensão — MIME errado em CSS não gera erro no console, o arquivo simplesmente não aplica; (2) ao diagnosticar "CSS não aplica", checar `Content-Type` com `curl -I` ANTES de vasculhar cascata/especificidade; (3) axe falhando em elemento único após mudança: isolar por reversão antes de assumir culpa da mudança.
+
+---
 ## MEGA 08 — integração pós-#496 (2026-10-12)
 
 - #496 foi verificada no GitHub como MERGED; merge_commit_sha=a6b1d349170b973528b2bf64f1eddcbfe9bc1e5b e origin/main foi atualizado por fetch normal para esse SHA.

@@ -205,3 +205,20 @@ Este documento registra decisões arquiteturais que foram validadas pelo projeto
 - Correções devem preservar identidade, validação e confirmação dos fluxos existentes.
 
 **Status**: Ativo e vinculante
+
+---
+
+## M1959 — Reconciliação HEAD + Retomada Visual + DR Plan (2026-10-27)
+
+**Decisão**: Adotar `cf8fa490a1c4383d5779df32ee8d77a5fc9cc6fb` (feat/financial-evolution-premium) como baseline para revisão M1959, após verificação de ancestralidade (`ANCESTRY_VERIFIED=YES`) e preservação das melhorias M1955/M1958. Não fazer reset, cherry-pick, rebase ou merge — continuar no HEAD atual.
+
+**Motivo**: HEAD atual contém todas as melhorias visuais de Ativos (tabela premium responsiva, cards mobile expandíveis) e Dividendos (KPIs canônicos, disclosure projeção, histórico recolhido) com semântica verde/vermelho validada, filtros UX com foco preservado, e ações readonly em preview sintético. `verify:release` PASS completo.
+
+**Consequências**:
+- `index.m1959-before.html` preservado como baseline ANTES (untracked, 2.5MB)
+- Galeria visual em `.qa-state/visual-gallery.html` (8 capturas)
+- Preview sintético read-only em `http://127.0.0.1:8080/index.html?testMode=1&testReadOnly=1`
+- DR Plan criado em `docs/DISASTER_RECOVERY_PLAN.md`
+- Merge para `main` só após certificação DR completa (backup real + `REAL_RECOVERY_CERTIFIED=YES`)
+
+**Status**: Ativo — aguarda certificação DR do proprietário
