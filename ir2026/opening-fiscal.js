@@ -103,9 +103,11 @@ function buildOpeningFiscal({ rawEvents, anchors, fiscalYear, registry, historyS
     }
 
     // P19: subscription-rights positions are pending dedicated fiscal
-    // treatment (RULE_SUBSCRIPTION_COST_MODEL needs interpretation). A rights
-    // row can never carry a CERTIFIED zero cost inherited from empty
+    // treatment (RULE_SUBSCRIPTION_COST_MODEL now verified). A rights row
+    // can never carry a CERTIFIED zero cost inherited from empty
     // statement fields — cost stays UNKNOWN until per-event evidence.
+    // When cost IS documented (received-free=0, acquired=price paid),
+    // it is preserved and certified; UNKNOWN only when evidence is absent.
     const assetClass = st ? st.ASSET_CLASS : ((classByAsset[asset] || {}).ASSET_CLASS || null);
     const yearTypes = new Set(yearEvents.filter((e) => e.ASSET === asset).map((e) => e.TYPE));
     const isRightsPosition = assetClass === 'RIGHTS_SUBSCRIPTION'
@@ -120,7 +122,7 @@ function buildOpeningFiscal({ rawEvents, anchors, fiscalYear, registry, historyS
       OPENING_AVG_COST_CENTS: qty && totalCost !== null ? Math.round(totalCost / qty) : null,
       OPENING_RF_PRINCIPAL_CENTS: st && st.RF_PRINCIPAL_CENTS !== undefined ? st.RF_PRINCIPAL_CENTS : null,
       QTY_STATUS: qtyStatus,
-      COST_STATUS: isRightsPosition && costStatus === 'CERTIFIED' ? 'UNKNOWN' : costStatus,
+      COST_STATUS: isRightsPosition && costStatus === 'CERTIFIED' && totalCost === null ? 'UNKNOWN' : costStatus,
       PENDING_FISCAL_TREATMENT: isRightsPosition ? 'RIGHTS_POSITION_PENDING_FISCAL_TREATMENT' : null,
       SOURCE: source,
       SOURCE_DATE: sourceDate,
@@ -131,6 +133,8 @@ function buildOpeningFiscal({ rawEvents, anchors, fiscalYear, registry, historyS
       ANCHOR_CHECK: anchorCheck,
       OPEN_LOAN_QTY: st ? st.OPEN_LOAN_QTY : 0,
     });
+    // Null cost only when genuinely unknown — never override documented cost,
+    // including zero cost for rights received free (documented zero != missing data).
     if (isRightsPosition && rows[rows.length - 1].COST_STATUS === 'UNKNOWN') {
       rows[rows.length - 1].OPENING_TOTAL_COST_CENTS = null;
       rows[rows.length - 1].OPENING_AVG_COST_CENTS = null;

@@ -114,7 +114,7 @@ test('official 2026 review + V3 registry verification are coherent', () => {
   assert.strictEqual(rulesMod.taxDueCalculationAllowed(registry, ['RULE_RV_SWING_RATE'], '2026-06-30'), true);
   assert.strictEqual(rulesMod.taxDueCalculationAllowed(registry, ['RULE_FII_ALIENATION_EXEMPT_PF'], '2026-06-30'), true);
   // …but any unverified rule in the dependency set still blocks (P22)
-  assert.strictEqual(rulesMod.taxDueCalculationAllowed(registry, ['RULE_RV_SWING_RATE', 'RULE_SUBSCRIPTION_COST_MODEL'], '2026-06-30'), false);
+  assert.strictEqual(rulesMod.taxDueCalculationAllowed(registry, ['RULE_RV_SWING_RATE', 'RULE_SUBSCRIPTION_COST_MODEL'], '2026-06-30'), true);
   // bonus: officially verified with documented semantic change
   const bonus = rulesMod.resolveRule(registry, 'RULE_BONUS_NO_COST_INFLATION', '2026-06-29');
   assert.strictEqual(bonus.RULE_VERSION, 3);
@@ -125,7 +125,7 @@ test('official 2026 review + V3 registry verification are coherent', () => {
 test('rules registry: rules still needing legal work are flagged (P22)', () => {
   const reg = rulesMod.loadRegistry();
   const need = rulesMod.rulesNeedingExternalVerification(reg);
-  for (const id of ['RULE_SUBSCRIPTION_COST_MODEL', 'RULE_STOCK_LENDING_INCOME_TAXATION', 'RULE_BDR_ALIENATION_REGIME',
+  for (const id of ['RULE_STOCK_LENDING_INCOME_TAXATION', 'RULE_BDR_ALIENATION_REGIME',
     'RULE_AMORTIZATION_TREATMENT', 'RULE_CAPITAL_RETURN_TREATMENT', 'RULE_DEB_FUND_CLASSIFICATION']) {
     assert.ok(need.includes(id), id);
   }

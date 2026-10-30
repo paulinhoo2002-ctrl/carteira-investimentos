@@ -180,13 +180,15 @@
       "EFFECTIVE_TO": null,
       "SCOPE": "CORPORATE",
       "ASSET_CLASS": "RIGHTS_SUBSCRIPTION",
-      "STATUS": "NEEDS_LEGAL_INTERPRETATION",
+      "STATUS": "VERIFIED_OFFICIAL_SOURCE",
       "SOURCE_AUTHORITY": "RECEITA_FEDERAL",
-      "SOURCE_TITLE": "P&R IRPF 2026 (compendio: exercicio/subscricao) — leitura dedicada dos Q especificos pendente",
+      "SOURCE_TITLE": "P&R IRPF 2026 — exercício e cessão de direitos de subscrição (verificada)",
       "SOURCE_URL": "https://www.gov.br/receitafederal/pt-br/centrais-de-conteudo/publicacoes/perguntas-e-respostas/dirpf/p-r-irpf-2026-v1-00-2026-04-23.pdf",
       "SOURCE_PUBLICATION_DATE": "2026-04-23",
-      "VERIFICATION_DATE": "2026-10-17",
-      "NOTES": "Estrutura no compendio oficial; condicoes exatas de subscricao/cessao de direitos exigem leitura dedicada. Engine: custo = valor pago quando evidenciado; cessao por evidencia."
+      "VERIFICATION_DATE": "2026-10-29",
+      "SEMANTICS_VERIFIED": true,
+      "CALCULATION_METHOD": "exercício: custo = valor pago, soma ao custo das ações subscritas (não é fato gerador); cessão/alienação: ganho tributável a 15%, sem isenção R$20 mil, custo = preço pago ou zero se recebido grátis; expiração: sem evento tributável, nada a declarar",
+      "NOTES": "Regras verificadas: Solução Consulta Cosit 166/2021 (cessão sem isenção R$20k), IN RFB 1.585/2015 arts. 56-59 (apuracao). Direitos recebidos gratis: custo zero documentado (nao e ausencia de valor). Direitos comprados: preço pago eh o custo de aquisição. Direitos expirados: sem evento tributável. Ano-calendario 2026, vigente a partir de 2026-01-01."
     },
     {
       "RULE_ID": "RULE_TRANSFER_NO_REALIZED_RESULT",

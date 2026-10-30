@@ -153,8 +153,8 @@ test('P19: rights position carries RIGHTS_POSITION_PENDING_FISCAL_TREATMENT and 
   assert.ok(row, 'rights asset in scope via anchor');
   assert.equal(row.ASSET_CLASS, 'RIGHTS_SUBSCRIPTION');
   assert.equal(row.PENDING_FISCAL_TREATMENT, 'RIGHTS_POSITION_PENDING_FISCAL_TREATMENT');
-  assert.equal(row.COST_STATUS, 'UNKNOWN'); // demoted from CERTIFIED — pending rule interpretation
-  assert.equal(row.OPENING_TOTAL_COST_CENTS, null); // never zero-by-statement
+  assert.equal(row.COST_STATUS, 'CERTIFIED'); // documented cost is certified, never coerced to UNKNOWN
+  assert.equal(row.OPENING_TOTAL_COST_CENTS, 2500); // 25 * 100 cents
   assert.ok(row.BLOCKERS.includes('RIGHTS_FISCAL_TREATMENT_PENDING'));
   assert.ok(isBlockerCode('RIGHTS_FISCAL_TREATMENT_PENDING'));
 
@@ -204,6 +204,95 @@ test('P6: TEST12 rights row via SUBSCRIPTION year event keeps pending treatment 
   assert.equal(row.ASSET_CLASS, 'RIGHTS_SUBSCRIPTION');
   assert.equal(row.PENDING_FISCAL_TREATMENT, 'RIGHTS_POSITION_PENDING_FISCAL_TREATMENT');
   assert.notEqual(row.COST_STATUS, 'CERTIFIED'); // zero statement fields never certify fiscal cost
+  assert.ok(row.BLOCKERS.includes('RIGHTS_FISCAL_TREATMENT_PENDING'));
+});
+
+// ---------------------------------------------------------------------------
+// Phase 3 — fixtures sintéticas para cenários de direitos de subscrição.
+// ---------------------------------------------------------------------------
+
+test('Fase3: direitos recebidos gratis — custo zero documentado, certificado', () => {
+  // Direitos atribuídos gratuitamente pela posição em ações: custo zero é dado documentado,
+  // não ausência de valor. Venda posterior com custo zero = lucro integral tributável.
+  const raw = [
+    { CANONICAL_ID: 'F1', DATE: '2025-11-01', TICKER: 'XYZ1', PRODUCT: 'DIREITOS XYZ11', TYPE: 'BUY',
+      DIRECTION: 'Credito', QUANTITY: 100, UNIT_PRICE: 0, AMOUNT: 0, STATUS: 'CERTIFIED', PROVENANCE: 'synthetic' },
+  ];
+  const anchors = { XYZ1: { QTY: 100, AS_OF: '2026-01-01' } };
+  const opening = buildOpeningFiscal({ rawEvents: raw, anchors, fiscalYear: 2026, registry });
+  const row = opening.ROWS.find((x) => x.ASSET === 'XYZ1');
+  assert.ok(row, 'XYZ1 in scope via anchor');
+  assert.equal(row.COST_STATUS, 'CERTIFIED');
+  assert.equal(row.OPENING_TOTAL_COST_CENTS, 0); // custo zero documentado, nao UNKNOWN
+  assert.equal(row.OPENING_AVG_COST_CENTS, 0);
+  assert.ok(row.BLOCKERS.includes('RIGHTS_FISCAL_TREATMENT_PENDING'));
+});
+
+test('Fase3: direito adquirido com custo conhecido — certificado com valor pago', () => {
+  // Direito comprado na bolsa de terceiro: preço pago eh o custo de aquisição.
+  const raw = [
+    { CANONICAL_ID: 'F2', DATE: '2025-11-15', TICKER: 'ABC1', PRODUCT: 'DIREITOS ABC11', TYPE: 'BUY',
+      DIRECTION: 'Credito', QUANTITY: 50, UNIT_PRICE: 2.0, AMOUNT: 100, STATUS: 'CERTIFIED', PROVENANCE: 'synthetic' },
+  ];
+  const anchors = { ABC1: { QTY: 50, AS_OF: '2026-01-01' } };
+  const opening = buildOpeningFiscal({ rawEvents: raw, anchors, fiscalYear: 2026, registry });
+  const row = opening.ROWS.find((x) => x.ASSET === 'ABC1');
+  assert.ok(row, 'ABC1 in scope via anchor');
+  assert.equal(row.COST_STATUS, 'CERTIFIED');
+  assert.equal(row.OPENING_TOTAL_COST_CENTS, 10000); // 100 * 100
+  assert.equal(row.OPENING_AVG_COST_CENTS, 200); // 10000 / 50
+  assert.ok(row.BLOCKERS.includes('RIGHTS_FISCAL_TREATMENT_PENDING'));
+});
+
+test('Fase3: exercício de subscrição com custo comprovado — soma ao custo das ações subscritas', () => {
+  // Exercício não é fato gerador; o valor pago soma ao custo das ações recebidas.
+  // Usa CORPORATE_ACTION + movimento explícito (normalizeEventType mapeia para SUBSCRIPTION).
+  // Na abertura fiscal, o evento do ano não gera linha de custo (custo é aplicado pelo
+  // tax-ledger via buildTaxLedger); a abertura apenas classifica a posição pré-2026.
+  const raw = [
+    { CANONICAL_ID: 'F3', DATE: '2026-02-10', TICKER: 'DEF3', PRODUCT: 'DIREITOS DEF11', TYPE: 'CORPORATE_ACTION',
+      MOVEMENT_RAW: 'Exercício de direito de subscrição', DIRECTION: 'Credito', QUANTITY: 20, UNIT_PRICE: 10.0, AMOUNT: 2000, STATUS: 'CERTIFIED', PROVENANCE: 'synthetic' },
+  ];
+  const opening = buildOpeningFiscal({ rawEvents: raw, anchors: {}, fiscalYear: 2026, registry });
+  const row = opening.ROWS.find((x) => x.ASSET === 'DEF3');
+  assert.ok(row, 'DEF3 in scope via year event');
+  assert.equal(row.ASSET_CLASS, 'RIGHTS_SUBSCRIPTION');
+  assert.equal(row.PENDING_FISCAL_TREATMENT, 'RIGHTS_POSITION_PENDING_FISCAL_TREATMENT');
+  // Sem posição pré-2026: custo de abertura não aplicável (evento do ano processado pelo ledger)
+  assert.equal(row.COST_STATUS, 'NOT_APPLICABLE');
+  assert.equal(row.OPENING_QTY, 0);
+});
+
+test('Fase3: evento sem documentação suficiente — custo não aplicável quando evento bloqueado', () => {
+  // Evento pré-2026 totalmente bloqueado (qty/amount nulos): custo fica 0 (estado inicial),
+  // status NOT_APPLICABLE — não há posição para classificar.
+  const raw = [
+    { CANONICAL_ID: 'F4', DATE: '2025-10-01', TICKER: 'GHI1', PRODUCT: 'DIREITOS GHI11', TYPE: 'BUY',
+      DIRECTION: 'Credito', QUANTITY: null, UNIT_PRICE: null, AMOUNT: null, STATUS: 'UNKNOWN', PROVENANCE: 'synthetic' },
+  ];
+  const anchors = { GHI1: { QTY: null, AS_OF: '2026-01-01' } };
+  const opening = buildOpeningFiscal({ rawEvents: raw, anchors, fiscalYear: 2026, registry });
+  const row = opening.ROWS.find((x) => x.ASSET === 'GHI1');
+  assert.ok(row, 'GHI1 in scope via anchor');
+  assert.equal(row.COST_STATUS, 'NOT_APPLICABLE'); // evento bloqueado, sem posição
+  assert.equal(row.OPENING_TOTAL_COST_CENTS, 0); // estado inicial, sem custo aplicado
+  assert.equal(row.OPENING_AVG_COST_CENTS, null);
+});
+
+test('Fase3: direito expirado — sem evento tributável, custo mantido se conhecido', () => {
+  // Expiração de direito sem venda nem exercício: não há evento tributável.
+  // O custo do direito expirado permanece conhecido se foi documentado na aquisição.
+  const raw = [
+    { CANONICAL_ID: 'F5', DATE: '2025-09-01', TICKER: 'JKL1', PRODUCT: 'DIREITOS JKL11', TYPE: 'BUY',
+      DIRECTION: 'Credito', QUANTITY: 30, UNIT_PRICE: 1.5, AMOUNT: 45, STATUS: 'CERTIFIED', PROVENANCE: 'synthetic' },
+  ];
+  const anchors = { JKL1: { QTY: 30, AS_OF: '2026-01-01' } };
+  const opening = buildOpeningFiscal({ rawEvents: raw, anchors, fiscalYear: 2026, registry });
+  const row = opening.ROWS.find((x) => x.ASSET === 'JKL1');
+  assert.ok(row, 'JKL1 in scope via anchor');
+  assert.equal(row.COST_STATUS, 'CERTIFIED');
+  assert.equal(row.OPENING_TOTAL_COST_CENTS, 4500); // 45 * 100
+  // Nenhum evento de expiração no engine — expiração não gera efeito fiscal
   assert.ok(row.BLOCKERS.includes('RIGHTS_FISCAL_TREATMENT_PENDING'));
 });
 

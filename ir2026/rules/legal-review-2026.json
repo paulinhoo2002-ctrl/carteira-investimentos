@@ -115,11 +115,11 @@
       "RULE_SUBSCRIPTION_COST_MODEL",
       "",
       "",
-      "Exercício, cessão e expiração ainda carecem de regra específica suficiente.",
-      "Bloquear até natureza e pagamento documentados.",
+      "Exercício, cessão e expiração de direitos de subscrição: regras verificadas em P&R IRPF 2026, Solução Consulta Cosit 166/2021 e IN RFB 1.585/2015. Exercício não é fato gerador (custo soma ao ativo subscrito); cessão tributada a 15% sem isenção R$20 mil; expiração sem evento tributável.",
+      "Certificar custo quando evidenciado (preço pago ou zero documentado para direitos recebidos grátis); manter UNKNOWN sem evidência.",
       "exercício; cessão; expiração",
       "LOW",
-      "NEEDS_MORE_SOURCE"
+      "VERIFIED_OFFICIAL_SOURCE"
     ],
     [
       "RULE_TRANSFER_NO_REALIZED_RESULT",
