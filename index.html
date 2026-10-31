@@ -23537,7 +23537,7 @@ const DATA_QUALITY_CATEGORIES=['Ativos','Dividendos','Renda Fixa','Metas','Movim
 const DATA_QUALITY_ENTITY_TYPES=['Ativo','Provento','Renda Fixa','Meta','Movimentacao'];
 
 function dataQualitySeverityLabel(severity){
-  return severity==='critical' ? 'Critico' : severity==='warning' ? 'Atencao' : 'Info';
+  return severity==='critical' ? 'Crítico' : severity==='warning' ? 'Atenção' : 'Info';
 }
 function dataQualitySeverityRank(severity){
   return severity==='critical' ? 3 : severity==='warning' ? 2 : severity==='info' ? 1 : 0;
@@ -24439,7 +24439,7 @@ function v257QualityModel(legacySnapshot=dataQualitySnapshot()){
     fixedIncomeManualAuthority:true
   });
 }
-function v257QualityStateLabel(value){ return ({OPEN:'Aberto',NEEDS_REVIEW:'Revisao necessaria',BLOCKED_BY_MISSING_DATA:'Bloqueado por dado ausente',RESOLVABLE:'Pode ser resolvido',INFORMATIONAL:'Informativo',RESOLVED:'Resolvido'}[String(value||'').toUpperCase()]||String(value||'')); }
+function v257QualityStateLabel(value){ return ({OPEN:'Aberto',NEEDS_REVIEW:'Revisão necessária',BLOCKED_BY_MISSING_DATA:'Bloqueado por dado ausente',RESOLVABLE:'Pode ser resolvido',INFORMATIONAL:'Informativo',RESOLVED:'Resolvido'}[String(value||'').toUpperCase()]||String(value||'')); }
 function v257QualitySeverityClass(value){ return String(value||'').toLowerCase()==='critical'?'critical':String(value||'').toLowerCase()==='warning'?'warning':'info'; }
 function setV257QualityFilter(field,value){
   S.v257QualityFilters={...(S.v257QualityFilters||{}),[field]:String(value||'')};
@@ -24451,9 +24451,9 @@ function v257DataQualityCenter(model){
   const filters={...(S.v257QualityFilters||{})};
   const filtered=engine.filter(model,{search:filters.search||'',state:filters.state||'ALL',severity:filters.severity||'ALL',domain:filters.domain||'ALL'});
   const option=(value,label,selected)=>`<option value="${esc(value)}"${selected===value?' selected':''}>${esc(label)}</option>`;
-  const cards=[['Pendencias abertas',model.summary.open,''],['Revisao necessaria',model.summary.needsReview,'warning'],['Criticos',model.summary.critical,'critical'],['Informativos',model.summary.informational,'info'],['Sem writes',model.writeCount,'']].map(([label,value,tone])=>`<article class="${tone}"><span>${esc(label)}</span><strong>${esc(String(value))}</strong></article>`).join('');
+  const cards=[['Pendências abertas',model.summary.open,''],['Revisão necessária',model.summary.needsReview,'warning'],['Críticos',model.summary.critical,'critical'],['Informativos',model.summary.informational,'info'],['Sem writes',model.writeCount,'']].map(([label,value,tone])=>`<article class="${tone}"><span>${esc(label)}</span><strong>${esc(String(value))}</strong></article>`).join('');
   const groups=(model.rootCauses||[]).slice(0,6).map(group=>`<span class="v257-remediation-group">${esc(group.rootCause)} · ${group.count}</span>`).join('');
-  const rows=filtered.length?filtered.slice(0,80).map(item=>`<article class="v257-remediation-item"><div><span class="v257-remediation-badge ${v257QualitySeverityClass(item.severity)}">${esc(item.severity)}</span><span class="v257-remediation-badge state">${esc(v257QualityStateLabel(item.state))}</span></div><div><strong>${esc(item.entityLabel)}</strong><small>${esc(item.domain)} · ${esc(item.dataState)} · ${esc(item.field)}</small></div><div><strong>${esc(item.message)}</strong><small>${esc(item.impact)}</small></div><div><strong>Proximo passo factual</strong><small>${esc(item.recommendedAction)}${item.route?` · destino seguro: ${esc(item.route)}`:''}</small></div></article>`).join(''):'<div class="v257-remediation-empty" role="status">Nenhum achado corresponde aos filtros. Ausência de achado não transforma dado desconhecido em zero.</div>';
+  const rows=filtered.length?filtered.slice(0,80).map(item=>`<article class="v257-remediation-item"><div><span class="v257-remediation-badge ${v257QualitySeverityClass(item.severity)}">${esc(item.severity)}</span><span class="v257-remediation-badge state">${esc(v257QualityStateLabel(item.state))}</span></div><div><strong>${esc(item.entityLabel)}</strong><small>${esc(item.domain)} · ${esc(item.dataState)} · ${esc(item.field)}</small></div><div><strong>${esc(item.message)}</strong><small>${esc(item.impact)}</small></div><div><strong>Próximo passo factual</strong><small>${esc(item.recommendedAction)}${item.route?` · destino seguro: ${esc(item.route)}`:''}</small></div></article>`).join(''):'<div class="v257-remediation-empty" role="status">Nenhum achado corresponde aos filtros. Ausência de achado não transforma dado desconhecido em zero.</div>';
   return `<section class="v257-remediation-center" id="data-quality-remediation-center" aria-labelledby="v257-remediation-title"><div class="v257-remediation-head"><div><div class="v257-remediation-kicker">V257 · centro factual</div><h2 id="v257-remediation-title">Centro de remediação da qualidade</h2><p>Achados derivados, agrupados por causa-raiz e separados por domínio. Esta área explica o que precisa de revisão, sem corrigir cadastro, promover histórico ou executar qualquer write.</p></div><span class="v257-remediation-readonly">Somente leitura · zero writes</span></div><div class="v257-remediation-summary">${cards}</div><div class="v257-remediation-filters"><label class="sr-only" for="v257-quality-search">Buscar achado</label><input id="v257-quality-search" type="search" placeholder="Buscar ticker, causa ou mensagem" value="${esc(filters.search||'')}" oninput="setV257QualityFilter('search',this.value)"><label class="sr-only" for="v257-quality-state">Estado</label><select id="v257-quality-state" onchange="setV257QualityFilter('state',this.value)">${option('ALL','Todos os estados',filters.state||'ALL')}${engine.STATES.map(value=>option(value,v257QualityStateLabel(value),filters.state||'ALL')).join('')}</select><label class="sr-only" for="v257-quality-domain">Domínio</label><select id="v257-quality-domain" onchange="setV257QualityFilter('domain',this.value)">${option('ALL','Todos os domínios',filters.domain||'ALL')}${engine.DOMAINS.map(value=>option(value,value,filters.domain||'ALL')).join('')}</select><label class="sr-only" for="v257-quality-severity">Severidade</label><select id="v257-quality-severity" onchange="setV257QualityFilter('severity',this.value)">${option('ALL','Todas as severidades',filters.severity||'ALL')}${engine.SEVERITIES.map(value=>option(value,value,filters.severity||'ALL')).join('')}</select></div><div class="v257-remediation-groups" aria-label="Causas-raiz mais frequentes">${groups||'<span class="v257-remediation-group">Nenhum grupo disponível</span>'}</div><div class="v257-remediation-note">${filtered.length} achado(s) exibido(s). Estados de cobertura e confiança permanecem explícitos; resolver uma pendência continua sendo uma ação humana ou de fluxo próprio, nunca automática nesta tela.</div><div class="v257-remediation-list">${rows}</div></section>`;
 }
 function v258MonitoringUserId(){ return String(globalThis.FB?.user?.uid || S.activeWalletId || 'anonymous'); }
@@ -24508,7 +24508,7 @@ function dataQualityTab(){
     (entityType==='all' || issue.entityType===entityType)
   );
   const healthy=snapshot.summary.criticalRecords===0 && snapshot.summary.warningRecords===0 && snapshot.summary.infoRecords===0;
-  const severityChips=[['all','Todos'],['critical','Criticos'],['warning','Atencao'],['info','Info']]
+  const severityChips=[['all','Todos'],['critical','Críticos'],['warning','Atenção'],['info','Info']]
     .map(([value,label])=>`<button class="data-quality-chip ${severity===value?'on':''}" onclick="setDataQualitySeverity('${value}')">${esc(label)}</button>`).join('');
   const categoryChips=[['all','Todas'],...DATA_QUALITY_CATEGORIES.map(value=>[value,value])]
     .map(([value,label])=>`<button class="data-quality-chip ${category===value?'on':''}" onclick="setDataQualityCategory(${JSON.stringify(value)})">${esc(label)}</button>`).join('');
@@ -24533,8 +24533,8 @@ function dataQualityTab(){
   const summaryCards=[
     ['Registros analisados', snapshot.summary.totalRecords, 'dados inspecionados'],
     ['Sem problemas', snapshot.summary.validRecords, 'registros sem achados relevantes'],
-    ['Atencao', snapshot.summary.warningRecords, 'registros com observacoes'],
-    ['Criticos', snapshot.summary.criticalRecords, 'registros que exigem revisao urgente'],
+    ['Atenção', snapshot.summary.warningRecords, 'registros com observações'],
+    ['Críticos', snapshot.summary.criticalRecords, 'registros que exigem revisão urgente'],
     ['Integridade', `${snapshot.score}%`, 'indice de registros validos']
   ].map(([label,value,sub],index)=>`<div class="data-quality-card ${index===2?'warning':index===3?'critical':index===4?integrityTone:'ok'}"><div class="data-quality-card-label wave-b-heading">${waveBIcon(index===2||index===3?'attention':index===1?'readonly':'analysis')}<span>${esc(label)}</span></div><div class="data-quality-card-value">${esc(String(value))}</div><div class="data-quality-card-sub">${esc(sub)}</div></div>`).join('');
   const healthyState=healthy
@@ -39684,6 +39684,11 @@ html:not([data-theme="light"]) .div-premium-tab.on,html:not([data-theme="light"]
 .aporte-count-card>small{font-size:12px;color:var(--muted)}
 @media (max-width:760px){.aporte-count-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.aporte-count-card{padding:12px}.aporte-count-card>strong{font-size:22px}}
 html[data-theme="light"] .aporte-count-card>strong{color:color-mix(in srgb,var(--cc) 70%,#000)}
+
+/* Utilitário de acessibilidade (rótulos só para leitor de tela) e filtros da Auditoria em linha */
+.sr-only{position:absolute !important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.v257-remediation-filters{display:grid;grid-template-columns:minmax(200px,1.4fr) repeat(3,minmax(0,1fr));gap:10px;align-items:center}
+@media (max-width:900px){.v257-remediation-filters{grid-template-columns:1fr 1fr}.v257-remediation-filters input[type=search]{grid-column:1/-1}}
 
 /* Ativos: tela-alvo (cartões de resumo, Comprar verde / Vender vermelho, editar visível, colunas completas em telas largas) */
 .assets-portfolio-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;border:0;background:transparent}
