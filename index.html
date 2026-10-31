@@ -26083,7 +26083,8 @@ function assetRankingListHtml(rows, mode){
 }
 function assetPremiumSection(title, subtitle, count, body, tone='muted', expanded=false){
   const icon=title.includes('alta')?'trend':title.includes('baixa')?'attention':title.includes('posição')?'ranking':title.includes('concentra')?'concentration':title.includes('incompleto')?'readonly':'attention';
-  return `<details class="asset-premium-section" ${expanded?'open':''}>
+  const openByDefault=expanded||Number(count)>0;
+  return `<details class="asset-premium-section" ${openByDefault?'open':''}>
     <summary>
       <div style="min-width:0"><div class="asset-premium-section-title wave-b-heading">${waveBIcon(icon)}<span>${esc(title)}</span></div><div class="asset-premium-section-sub">${esc(subtitle)}</div></div>
       <span class="asset-premium-section-meta analysis-pill ${esc(tone)}">${count} ${count===1?'ativo':'ativos'}</span>
@@ -39656,6 +39657,15 @@ html:not([data-theme="light"]) .div-premium-tab.on,html:not([data-theme="light"]
 .rebalance-alloc-bar-wrap{height:12px;border-radius:99px}
 .rebalance-alloc-bar{border-radius:99px}
 @media (max-width:760px){.rebalance-top-cards{grid-template-columns:1fr;gap:10px}}
+
+/* Renda Fixa e Análise: filtros em uma linha, cartões de leitura */
+@media (min-width:1100px){
+  .premium-rf-controls{display:grid;grid-template-columns:minmax(220px,1.2fr) minmax(0,2.8fr);gap:12px;align-items:end}
+  .premium-rf-filter-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+}
+.asset-premium-grid{gap:14px;align-items:start}
+.asset-premium-section{border-radius:16px}
+.asset-premium-section-title{font-size:15px}
 
 /* Ativos: tela-alvo (cartões de resumo, Comprar verde / Vender vermelho, editar visível, colunas completas em telas largas) */
 .assets-portfolio-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;border:0;background:transparent}
