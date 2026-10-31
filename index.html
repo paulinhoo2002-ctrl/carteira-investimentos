@@ -32395,8 +32395,6 @@ function patrimonioTab(){
         <div class="patrimonio-panel-head"><div><h2 class="patrimonio-panel-title">Top Ativos</h2><div class="patrimonio-panel-sub">Maiores posições por valor atual; barras e percentuais comparam as posições exibidas.</div></div><div class="patrimonio-panel-badge">${topAssets.length} ativos</div></div>
         <div class="patrimonio-top-asset-list">${topAssetsHtml}</div>
       </div>
-    </div>
-    <div class="patrimonio-grid patrimonio-grid-composition">
       <div class="patrimonio-panel patrimonio-panel-composition">
         <div class="patrimonio-panel-head"><div><h2 class="patrimonio-panel-title">Composição do Patrimônio</h2><div class="patrimonio-panel-sub">Quanto vem de capital aportado e quanto de ganho/perda de mercado.</div></div><div class="patrimonio-panel-badge ${resultTone}">${esc(resultLabel)}</div></div>
         ${resultKnown?`<div class="patrimony-composition">
@@ -39630,6 +39628,16 @@ html:not([data-theme="light"]) .div-premium-tab.on,html:not([data-theme="light"]
 .premium-dividends-3 .dividend-primary-grid-3 .div-collapsible-main{padding:0 2px}
 .premium-dividends-3 .dividend-primary-grid-3 .div-collapsible-title{font-size:14px}
 @media (max-width:760px){.premium-dividends-3 .dividend-kpis-canon-grid>.dividend-executive-kpi:last-child{grid-column:1/-1 !important}}
+
+/* Patrimônio: grade única, sem buraco sob o gráfico */
+.patrimonio-grid{align-items:start;align-content:start;grid-template-rows:min-content min-content 1fr min-content;row-gap:10px}
+.patrimonio-grid>.patrimonio-panel-top{align-self:stretch}
+.patrimonio-grid>.patrimonio-panel{min-height:0;align-self:start}
+.patrimonio-grid>.patrimonio-panel-chart{grid-column:1;grid-row:1}
+.patrimonio-grid>.patrimonio-panel-top{grid-column:2;grid-row:1/4}
+.patrimonio-grid>.patrimonio-panel-composition{grid-column:1;grid-row:2}
+.patrimonio-grid>.patrimonio-panel-insights{grid-column:1/-1;grid-row:4}
+@media (max-width:900px){.patrimonio-grid>.patrimonio-panel{grid-column:1 !important;grid-row:auto !important}}
 
 /* Ativos: tela-alvo (cartões de resumo, Comprar verde / Vender vermelho, editar visível, colunas completas em telas largas) */
 .assets-portfolio-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;border:0;background:transparent}
