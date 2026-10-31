@@ -29252,9 +29252,16 @@ function desktopTabs(){
   </nav>`;
 }
 function mobileTabs(){
+  const planejar=[['ia','💡 Insights'],['metas','🎯 Metas'],['rentabilidade','📈 Rentabilidade'],['renda-fixa','🧾 Renda Fixa'],['ajudar','⚖️ Rebalancear']];
+  const avancado=[['importacao','⇅ Importar dados'],['confiabilidade','🛡️ Confiabilidade'],['patrimonio','💎 Patrimônio (visão antiga)'],...REPORT_TABS];
   return `<nav class="tabs tabs-mobile" aria-label="Navegação principal da carteira" onfocusin="event.target.scrollIntoView({block:'nearest',inline:'nearest'})">
-    ${NAV_TABS.map(([k,l])=>navTabButton(k,l)).join('')}
-    ${navTabGroup('Relatórios',REPORT_TABS,'mobile')}
+    ${navTabButton('dashboard','📊 Resumo')}
+    ${navTabButton('ativos','💼 Ativos')}
+    ${navTabButton('aportes','💰 Lançamentos')}
+    ${navTabButton('dividendos','📅 Dividendos')}
+    ${navTabButton('analise','📊 Análise')}
+    ${navTabGroup('Planejar',planejar,'mobile-plan')}
+    ${navTabGroup('Avançado',avancado,'mobile-adv')}
     ${navTabButton('settings','⚙️ Configurações')}
   </nav>`;
 }
@@ -39527,7 +39534,29 @@ html[data-theme="light"] #ativosAccordion details.ag{background:#fff}
 
 /* Resumo: texto técnico de cobertura fica na tela Confiabilidade */
 .premium-dashboard .dashboard-v3-context{display:none}
-.tabs-desktop .nav-advanced .nav-more-summary{opacity:.85}
+
+html[data-theme="light"] .aporte-kind.renda-fixa{color:#1d4ed8 !important}
+
+/* Ativos em tablet (768-1099px): tabela enxuta, sem rolagem lateral, com Comprar/Vender */
+@media (min-width:768px) and (max-width:1099px){
+  #ativosAccordion table.ag-table{min-width:0 !important;width:100% !important;table-layout:auto !important}
+  #ativosAccordion table.ag-table th:nth-child(2),#ativosAccordion table.ag-table td:nth-child(2),
+  #ativosAccordion table.ag-table th:nth-child(3),#ativosAccordion table.ag-table td:nth-child(3),
+  #ativosAccordion table.ag-table th:nth-child(5),#ativosAccordion table.ag-table td:nth-child(5),
+  #ativosAccordion table.ag-table th:nth-child(7),#ativosAccordion table.ag-table td:nth-child(7),
+  #ativosAccordion table.ag-table th:nth-child(10),#ativosAccordion table.ag-table td:nth-child(10),
+  #ativosAccordion table.ag-table th:nth-child(11),#ativosAccordion table.ag-table td:nth-child(11),
+  #ativosAccordion table.ag-table th:nth-child(12),#ativosAccordion table.ag-table td:nth-child(12),
+  #ativosAccordion table.ag-table th:nth-child(13),#ativosAccordion table.ag-table td:nth-child(13),
+  #ativosAccordion table.ag-table th:nth-child(14),#ativosAccordion table.ag-table td:nth-child(14){display:none !important}
+  #ativosAccordion table.ag-table th,#ativosAccordion table.ag-table td{width:auto !important;min-width:0 !important;max-width:none !important;padding:8px 6px !important;white-space:nowrap;overflow:visible;text-overflow:clip}
+  #ativosAccordion table.ag-table th{white-space:normal;line-height:1.2;font-size:11px}
+  #ativosAccordion table.ag-table .asset-actions{min-width:0;gap:6px;justify-content:flex-end;flex-wrap:nowrap}
+  #ativosAccordion table.ag-table .asset-quick-actions{display:inline-flex;gap:4px}
+  #ativosAccordion table.ag-table .asset-action.asset-quick{min-height:36px !important;height:36px !important;min-width:0 !important;padding:4px 10px !important;font-size:12px}
+  #ativosAccordion table.ag-table .asset-action-trigger{min-width:36px !important;min-height:36px !important;padding:2px !important}
+  #ativosAccordion .assets-scroll-hint{display:none}
+}
 </style>
 </body>
 </html>
