@@ -29217,7 +29217,7 @@ function goAssetInner(tab){
 function desktopTabs(){
   const sideLu=S.lastUpdate?S.lastUpdate.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—';
   const isAtivos=S.tab==='ativos';
-  const navItem=(key,label,icon,active)=>`<button type="button" class="tab${active?' on':''}" onclick="go('${key}')"${active?' aria-current="page"':''} aria-label="${esc(label)}"><span class="side-nav-icon" aria-hidden="true">${icon}</span><span>${esc(label)}</span></button>`;
+  const navItem=(key,label,icon,active,count)=>`<button type="button" class="tab${active?' on':''}" onclick="go('${key}')"${active?' aria-current="page"':''} aria-label="${esc(label)}"><span class="side-nav-icon" aria-hidden="true">${icon}</span><span>${esc(label)}</span>${Number.isFinite(count)&&count>0?`<span class="side-nav-count" aria-hidden="true">${count>999?'999+':count}</span>`:''}</button>`;
   const navItemInner=(tooltip,label,icon,active)=>`<button type="button" class="tab${active?' on':''}" onclick="goAssetInner('${tooltip}')"${active?' aria-current="page"':''} aria-label="${esc(label)}"><span class="side-nav-icon" aria-hidden="true">${icon}</span><span>${esc(label)}</span></button>`;
   return `<nav class="tabs tabs-desktop" aria-label="Navegacion principal de la carteira">
     <div class="side-brand">
@@ -29226,9 +29226,9 @@ function desktopTabs(){
     </div>
     <button class="portfolio-search-trigger" type="button" onclick="portfolioSearchOpen()" aria-label="Buscar na carteira" title="Buscar na carteira (Ctrl+K)"><span aria-hidden="true">⌕</span><span>Buscar na carteira</span><kbd>Ctrl K</kbd></button>
     ${navItem('dashboard','Resumo','📊',S.tab==='dashboard')}
-    ${navItem('ativos','Ativos','💼',isAtivos)}
-    ${navItem('aportes','Lançamentos','💰',S.tab==='aportes')}
-    ${navItem('dividendos','Dividendos','📅',S.tab==='dividendos')}
+    ${navItem('ativos','Ativos','💼',isAtivos,(S.assets||[]).length)}
+    ${navItem('aportes','Lançamentos','💰',S.tab==='aportes',(S.aportes||[]).length)}
+    ${navItem('dividendos','Dividendos','📅',S.tab==='dividendos',(S.proventos||[]).length)}
     ${navItem('analise','Análise','📊',S.tab==='analise')}
     ${navItem('settings','Configurações','⚙️',S.tab==='settings')}
     <details class="nav-more"${['ia','rentabilidade','renda-fixa','ajudar','metas'].includes(S.tab)?' open':''}>
@@ -31890,6 +31890,7 @@ ${!S.assets.length ? `<div class="dashboard-empty-cta" role="region" aria-label=
         ${dashboardEvolutionPanel(data)}
         ${dashboardV3AllocationPanel()}
       </div>
+      ${dashboardUpcomingDividendsPanel()}
       ${dashboardV3PriorityPanel(data)}
       ${dashboardHomeHighsLowsPanel()}
       ${dashboardQuickActions()}
@@ -32078,6 +32079,20 @@ function package2HasRenderableSummary(summary){
 function package2KnownCount(value){
   const count=Number(value);
   return package2FiniteNumber(value)&&Number.isSafeInteger(count)&&count>=0?String(count):'contagem indisponível';
+}
+function dashboardUpcomingDividendsPanel(){
+  let rows=[];
+  try{ rows=dividendUpcomingRows(dividendPremiumRows()).slice(0,4); }catch(_){ return ''; }
+  const monthShort=['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+  const head=`<div class="home-upcoming-head"><div><h2 class="home-upcoming-title">Próximos recebimentos</h2><p class="home-upcoming-sub">Proventos já cadastrados com pagamento nos próximos 60 dias · previsto, ainda não recebido.</p></div><button type="button" class="btn bgh" onclick="go('dividendos')">Ver Dividendos</button></div>`;
+  if(!rows.length){
+    return `<section class="home-upcoming" aria-label="Próximos recebimentos">${head}<div class="home-upcoming-empty" role="status">Nenhum recebimento cadastrado para os próximos 60 dias. Nada é estimado: quando houver provento com data futura, ele aparece aqui.</div></section>`;
+  }
+  const cards=rows.map(row=>{
+    const d=row.paymentDt;
+    return `<article class="home-upcoming-card"><div class="home-upcoming-date" aria-hidden="true"><strong>${String(d.getDate()).padStart(2,'0')}</strong><span>${monthShort[d.getMonth()]}</span></div><div class="home-upcoming-main"><div class="home-upcoming-ticker">${esc(row.ticker)}</div><div class="home-upcoming-type">${esc(row.type||'Provento')}</div></div><div class="home-upcoming-value">${fmt(row.value)}</div></article>`;
+  }).join('');
+  return `<section class="home-upcoming" aria-label="Próximos recebimentos">${head}<div class="home-upcoming-grid">${cards}</div></section>`;
 }
 function dashboardPlainSummary(data){
   // Tela inicial em linguagem simples: 3 respostas (quanto tenho, quanto ganhei/perdi, o que fazer agora).
@@ -32798,7 +32813,7 @@ function ativos(){
       return `<tr data-id="${esc(a.id)}" class="asset-premium-card">
         <td>
           <div class="asset-info">
-            <div class="asset-logo" style="background:${esc(a.color || (type === 'Ação' ? '#3b82f6' : type === 'FII' ? '#8b5cf6' : type === 'ETF' ? '#f5c542' : type === 'Renda Fixa' ? '#10b981' : '#f59e0b'))}">${esc(a.ticker?.charAt(0) || '?')}</div>
+            <div class="asset-logo" aria-hidden="true" style="--lc:${esc(a.color || (type === 'Ação' ? '#3b82f6' : type === 'FII' ? '#8b5cf6' : type === 'ETF' ? '#f5c542' : type === 'Renda Fixa' ? '#10b981' : '#f59e0b'))}">${esc(String(a.ticker||'?').replace(/[^A-Za-z0-9]/g,'').slice(0,4).toUpperCase()||'?')}</div>
             <div>
               <div class="asset-name">${esc(a.ticker)}</div>
               <div class="asset-ticker">${esc(a.name)} ${yahooBadge}</div>
@@ -32874,7 +32889,7 @@ function ativos(){
       return `<details class="asset-premium-card" data-id="${esc(a.id)}">
         <summary class="asset-premium-card-summary">
           <div class="asset-info">
-            <div class="asset-logo" style="background:${esc(a.color || (type === 'Ação' ? '#3b82f6' : type === 'FII' ? '#8b5cf6' : type === 'ETF' ? '#f5c542' : type === 'Renda Fixa' ? '#10b981' : '#f59e0b'))}">${esc(a.ticker?.charAt(0) || '?')}</div>
+            <div class="asset-logo" aria-hidden="true" style="--lc:${esc(a.color || (type === 'Ação' ? '#3b82f6' : type === 'FII' ? '#8b5cf6' : type === 'ETF' ? '#f5c542' : type === 'Renda Fixa' ? '#10b981' : '#f59e0b'))}">${esc(String(a.ticker||'?').replace(/[^A-Za-z0-9]/g,'').slice(0,4).toUpperCase()||'?')}</div>
             <div>
               <div class="asset-name">${esc(a.ticker)} ${yahooBadge}</div>
               <div class="asset-ticker">${esc(a.name)}</div>
@@ -39721,6 +39736,33 @@ html[data-theme="light"] .aporte-count-card>strong{color:color-mix(in srgb,var(-
   .reports-premium-shell .reports-filter button{flex:1 1 30% !important;min-width:0 !important;white-space:normal;min-height:40px}
   .reports-premium-head-actions{width:100%}
 }
+
+/* Resumo: próximos recebimentos */
+.home-upcoming{border:1px solid var(--border);border-radius:16px;background:var(--panel);padding:18px 20px;margin:14px 0}
+.home-upcoming-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px}
+.home-upcoming-title{font-size:16px;font-weight:800;margin:0}
+.home-upcoming-sub{font-size:12px;color:var(--muted);margin:4px 0 0}
+.home-upcoming-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.home-upcoming-card{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;border:1px solid color-mix(in srgb,#10d981 30%,var(--border));background:linear-gradient(135deg,color-mix(in srgb,#10d981 10%,var(--panel)),var(--panel) 75%)}
+.home-upcoming-date{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:46px;height:50px;border-radius:12px;background:color-mix(in srgb,#10d981 16%,transparent);border:1px solid color-mix(in srgb,#10d981 40%,transparent)}
+.home-upcoming-date strong{font-size:18px;line-height:1;color:#10d981}
+.home-upcoming-date span{font-size:10px;font-weight:800;letter-spacing:.08em;color:var(--muted)}
+.home-upcoming-main{min-width:0;flex:1}
+.home-upcoming-ticker{font-weight:800;font-size:14px}
+.home-upcoming-type{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.home-upcoming-value{font-weight:800;font-size:14px;font-variant-numeric:tabular-nums;color:#10d981}
+.home-upcoming-empty{padding:14px;border:1px dashed var(--border);border-radius:12px;color:var(--muted);font-size:13px}
+html[data-theme="light"] .home-upcoming-date strong,html[data-theme="light"] .home-upcoming-value{color:#047857}
+@media (max-width:1100px){.home-upcoming-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:600px){.home-upcoming{padding:14px}.home-upcoming-head{flex-direction:column}.home-upcoming-grid{grid-template-columns:1fr}}
+
+/* Menu lateral: contadores */
+.tabs-desktop .tab .side-nav-count{margin-left:auto;min-width:22px;padding:2px 7px;border-radius:999px;font-size:11px;font-weight:800;line-height:1.4;text-align:center;background:rgba(139,123,255,.16);color:#e4e0ff;font-variant-numeric:tabular-nums}
+html[data-theme="light"] .tabs-desktop .tab .side-nav-count{color:#4c1d95;background:#ede9fe}
+
+/* Ativos: logo com 4 letras do ticker na cor da classe */
+.asset-logo{width:40px !important;height:34px !important;border-radius:9px !important;font-size:10px !important;font-weight:800 !important;letter-spacing:.02em;display:flex;align-items:center;justify-content:center;flex:0 0 auto;color:var(--lc,#8b7bff) !important;background:color-mix(in srgb,var(--lc,#8b7bff) 18%,transparent) !important;border:1px solid color-mix(in srgb,var(--lc,#8b7bff) 45%,transparent)}
+html[data-theme="light"] .asset-logo{color:color-mix(in srgb,var(--lc,#6d4cff) 55%,#000) !important}
 
 /* Ativos: tela-alvo (cartões de resumo, Comprar verde / Vender vermelho, editar visível, colunas completas em telas largas) */
 .assets-portfolio-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;border:0;background:transparent}
