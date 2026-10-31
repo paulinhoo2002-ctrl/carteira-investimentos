@@ -32499,7 +32499,8 @@ function assetActionMenuHtml(asset, isRF, context='default'){
   const secondary=isRF
     ? `<button type="button" class="btn bgh asset-action" onclick='openRfMovementEditor(${JSON.stringify(rfAssetEventId(asset))}, "resgate_parcial")'>Resgatar</button>`
     : `<button type="button" class="btn bgh asset-action" onclick='openAssetQuickMovement(${JSON.stringify(id)}, "venda")'>Vender</button>`;
-  return `<div class="asset-actions asset-action-menu" data-asset-actions="${esc(id)}">
+  const quickActions=context==='desktop' ? `<span class="asset-quick-actions">${primary.replace('bsv asset-action','bsv asset-action asset-quick')}${secondary.replace('bgh asset-action','bgh asset-action asset-quick')}</span>` : '';
+  return `<div class="asset-actions asset-action-menu" data-asset-actions="${esc(id)}">${quickActions}
     <button type="button" class="asset-action-trigger" aria-label="Mais ações para ${esc(asset.ticker||asset.name||'ativo')}" aria-haspopup="menu" aria-controls="${esc(menuId)}" aria-expanded="false" onclick='toggleAssetActionMenu(${JSON.stringify(menuId)}, event)'>⋯</button>
     <div class="asset-action-menu-panel" id="${esc(menuId)}" role="menu" aria-label="Ações para ${esc(asset.ticker||asset.name||'ativo')}">
       <button type="button" role="menuitem" onclick='openAssetDetail(${JSON.stringify(id)})'>Detalhes</button>
@@ -32923,7 +32924,7 @@ function ativos(){
 
     const tableHtml = `
       <div class="assets-table-wrap" tabindex="0" role="region" aria-label="Tabela de ativos · ${esc(type)} · use as setas para rolar" onkeydown="if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();this.scrollBy({left:(event.key==='ArrowRight'?1:-1)*80})}" onwheel="if(event.deltaX||event.shiftKey){event.preventDefault();this.scrollBy({left:event.deltaX||event.deltaY})}">
-        <div class="mu" style="padding:8px 12px">Role para os lados para ver todos os campos e ações.</div>
+        <div class="mu assets-scroll-hint" style="padding:8px 12px">Role para os lados para ver todos os campos e ações.</div>
         <table class="assets-table ag-table">
           <thead>
             <tr>
@@ -39386,6 +39387,30 @@ html[data-theme="light"] .premium-dividends-3 .div-premium-head .btn.bp:hover:no
   .premium-rf-page .premium-rf-controls{gap:6px;padding:8px 10px}
   .premium-rf-page .premium-rf-filter-details>summary{min-height:44px;padding:7px 10px}
   .premium-rf-page .premium-rf-active-filter-count{color:var(--text);font-size:12px;font-weight:600}
+}
+
+/* Ativos (desktop): tabela cabe na tela, sem rolar para o lado; Tipo já é o agrupamento/aba, Fonte e Estimativa ficam no detalhe */
+.asset-quick-actions{display:none}
+@media (min-width:1100px){
+  #ativosAccordion table.ag-table{--x:0}
+  #ativosAccordion table.ag-table{min-width:0 !important;width:100% !important;table-layout:auto !important}
+  #ativosAccordion table.ag-table th:nth-child(3),#ativosAccordion table.ag-table td:nth-child(3),
+  #ativosAccordion table.ag-table th:nth-child(12),#ativosAccordion table.ag-table td:nth-child(12),
+  #ativosAccordion table.ag-table th:nth-child(14),#ativosAccordion table.ag-table td:nth-child(14){display:none !important}
+  #ativosAccordion table.ag-table th,#ativosAccordion table.ag-table td{padding:8px 6px !important;white-space:nowrap;overflow:visible;text-overflow:clip}
+  #ativosAccordion table.ag-table th:last-child,#ativosAccordion table.ag-table td:last-child{width:auto;min-width:0}
+  #ativosAccordion table.ag-table .asset-actions{min-width:0;gap:6px;justify-content:flex-end;flex-wrap:nowrap}
+  #ativosAccordion table.ag-table .asset-quick-actions{display:inline-flex;gap:4px}
+  #ativosAccordion table.ag-table .asset-action.asset-quick{min-height:34px !important;height:34px !important;min-width:0 !important;padding:4px 9px !important;font-size:12px}
+  #ativosAccordion table.ag-table .asset-action-trigger{min-width:34px !important;min-height:34px !important;padding:2px !important}
+  #ativosAccordion table.ag-table th,#ativosAccordion table.ag-table td{width:auto !important;min-width:0 !important;max-width:none !important}
+  #ativosAccordion .assets-scroll-hint{display:none}
+  #ativosAccordion table.ag-table th{white-space:normal;line-height:1.2;font-size:11px}
+  #ativosAccordion table.ag-table td{font-size:12.5px}
+}
+@media (min-width:1100px) and (max-width:1499px){
+  #ativosAccordion table.ag-table th:nth-child(2),#ativosAccordion table.ag-table td:nth-child(2),
+  #ativosAccordion table.ag-table th:nth-child(13),#ativosAccordion table.ag-table td:nth-child(13){display:none !important}
 }
 </style>
 </body>
