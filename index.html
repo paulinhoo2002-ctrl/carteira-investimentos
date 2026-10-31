@@ -33587,6 +33587,12 @@ function apTab(){
           <input id="aporte-premium-search" value="${esc(S.apSearch||'')}" oninput="setAporteSearch(this.value)" placeholder="Buscar ticker, nome, tipo, setor, data, observação ou valor" aria-label="Buscar aportes por ticker, nome, tipo, setor, data, observação ou valor" spellcheck="false" autocomplete="off">
           ${q?`<button class="btn bgh" style="padding:4px 8px;font-size:12px" onclick="clearAporteSearch()">Limpar</button>`:''}
         </div>
+        ${movementSummary?`<div class="aporte-count-cards" aria-label="Quantidade de movimentações por tipo no filtro atual">
+          <article class="aporte-count-card c-buy"><span>Compras</span><strong>${movementSummary.buys}</strong><small>no filtro atual</small></article>
+          <article class="aporte-count-card c-sell"><span>Vendas</span><strong>${movementSummary.sells}</strong><small>no filtro atual</small></article>
+          <article class="aporte-count-card c-div"><span>Proventos</span><strong>${movementSummary.dividends}</strong><small>no filtro atual</small></article>
+          <article class="aporte-count-card c-rf"><span>Renda fixa</span><strong>${movementSummary.fixedIncomeApplications}</strong><small>aplicações</small></article>
+        </div>`:''}
         <div class="aporte-trust-summary" aria-label="Resumo das movimentações filtradas">${esc(aporteMovementSummaryText(movementSummary,extractRows.length))}</div>
       </div>`;
   const importsPanel=`<details class="card aportes-imports-panel">
@@ -39666,6 +39672,18 @@ html:not([data-theme="light"]) .div-premium-tab.on,html:not([data-theme="light"]
 .asset-premium-grid{gap:14px;align-items:start}
 .asset-premium-section{border-radius:16px}
 .asset-premium-section-title{font-size:15px}
+
+/* Lançamentos: cartões de contagem por tipo */
+.aporte-control-toolbar{flex-wrap:wrap}
+.aporte-control-toolbar .aporte-count-cards{flex:1 0 100%;width:100%;order:2}
+.aporte-count-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:4px 0 12px}
+.aporte-count-card{--cc:#10d981;display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:16px;border:1px solid color-mix(in srgb,var(--cc) 38%,var(--border));background:linear-gradient(135deg,color-mix(in srgb,var(--cc) 13%,var(--panel)),var(--panel) 72%)}
+.aporte-count-card.c-sell{--cc:#ff6f7d}.aporte-count-card.c-div{--cc:#ffb020}.aporte-count-card.c-rf{--cc:#8b7bff}
+.aporte-count-card>span{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.aporte-count-card>strong{font-size:26px;font-weight:800;color:var(--cc);font-variant-numeric:tabular-nums}
+.aporte-count-card>small{font-size:12px;color:var(--muted)}
+@media (max-width:760px){.aporte-count-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.aporte-count-card{padding:12px}.aporte-count-card>strong{font-size:22px}}
+html[data-theme="light"] .aporte-count-card>strong{color:color-mix(in srgb,var(--cc) 70%,#000)}
 
 /* Ativos: tela-alvo (cartões de resumo, Comprar verde / Vender vermelho, editar visível, colunas completas em telas largas) */
 .assets-portfolio-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;border:0;background:transparent}
