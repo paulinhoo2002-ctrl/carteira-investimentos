@@ -35858,14 +35858,15 @@ function canonDividendYearSummary(rows){
     const year=ordered[0];
     return `<div class="canon-year-summary-single"><strong>${year.year}</strong><span>Total conhecido</span><b>${fmt(year.total)}</b><small>${year.count} lançamento(s) pago(s) registrado(s)</small></div>`;
   }
-  const donut=canonDonutInteractive(ordered.map(g=>({name:String(g.year),value:g.total})),{fmt,id:'yearsum',centerText:fmt(total),centerSub:'Total conhecido'});
+  const yearColors=['#8b7bff','#2f9bff','#10d981','#ffb020','#ff6f7d','#22c8a6','#f9a8d4','#5fd7ff'];
+  const donut=canonDonutInteractive(ordered.map(g=>({name:String(g.year),value:g.total})),{fmt,id:'yearsum',colors:yearColors,centerText:fmt(total),centerSub:'Total conhecido'});
   return `<div class="canon-year-summary-body">
     <div class="canon-year-summary-donut">${donut}</div>
     <div class="canon-year-summary-list">${ordered.map(g=>{
       const share=total>0?g.total/total*100:0;
       return `<div class="canon-year-sum-row">
         <span class="canon-year-sum-year">${g.year}</span>
-        <span class="canon-year-sum-track"><i style="width:${Math.max(2,Math.min(100,share)).toFixed(1)}%"></i></span>
+        <span class="canon-year-sum-track"><i style="width:${Math.max(2,Math.min(100,share)).toFixed(1)}%;background:${yearColors[ordered.indexOf(g)%yearColors.length]}"></i></span>
         <span class="canon-year-sum-val">${fmt(g.total)}</span>
         <span class="canon-year-sum-count">${share.toFixed(1)}% · ${g.count} lançamento(s)</span>
       </div>`;
@@ -35916,15 +35917,14 @@ function canonDividendOverview(rows, kpisHtml){
     false
   );
   const upcoming=dividendUpcomingSection(rows,false);
-  const monthlyHistory=dividendMonthlyTableBlock(rows,false);
+  const monthlyHistory=dividendMonthlyTableBlock(rows,true);
   const incomeEvolution=`<section class="dividend-mode-content" aria-label="Evolução da renda"><div class="dividend-history-heading"><strong>Evolução da renda</strong><span>Valores recebidos por mês · período observado, sem projeção no histórico.</span></div>${dividendMonthlyTimeline(rows)}</section>`;
-  const topAssets=dividendCompactSectionHeader('asset','Top ativos',dividendAssetSummary(rows),dividendsByAssetView(rows),false);
+  const topAssets=dividendCompactSectionHeader('asset','Top ativos',dividendAssetSummary(rows),dividendsByAssetView(rows),true);
   const annualSummary=`<section class="premium-panel dividend-annual-summary" aria-labelledby="dividend-annual-summary-title"><div class="premium-panel-head"><div><div class="premium-panel-title" id="dividend-annual-summary-title">Resumo por ano</div><div class="premium-panel-sub">Recebimentos registrados por ano; períodos sem cobertura permanecem indisponíveis.</div></div></div>${canonDividendYearSummary(rows)}</section>`;
   return `
     <div class="canon-dividends dividend-calendar-view dividend-daily-overview">
       <section class="dividend-history-block" aria-label="Histórico mensal de recebimentos">${monthlyHistory}</section>
-      <div class="dividend-primary-grid">${incomeEvolution}${topAssets}</div>
-      ${annualSummary}
+      <div class="dividend-primary-grid dividend-primary-grid-3">${incomeEvolution}${topAssets}${annualSummary}</div>
       <section class="dividend-calendar-primary" aria-label="Recebimentos e próximos eventos">
         ${received}
         ${upcoming}
@@ -39588,6 +39588,48 @@ html[data-theme="light"] .dashboard-donut-hole{background:#fff}
 /* Dividendos: alinha o destaque à cor principal (roxo) em vez do verde-neon */
 html:not([data-theme="light"]) .canon-year-chip.on,html:not([data-theme="light"]) .canon-year-chip[aria-pressed="true"]{background:#6d4cff !important;color:#fff !important;border-color:#8b7bff !important}
 html:not([data-theme="light"]) .div-premium-tab.on,html:not([data-theme="light"]) .div-premium-tab.active,html:not([data-theme="light"]) .div-premium-tab[aria-selected="true"],html:not([data-theme="light"]) .div-premium-tab[aria-pressed="true"],html:not([data-theme="light"]) .div-premium-tab[aria-current="true"]{background:rgba(109,76,255,.22) !important;color:#e4e0ff !important}
+
+
+/* Dividendos: layout profissional (cartões coloridos, histórico aberto, 3 painéis) */
+.premium-dividends-3 .dividend-kpis-canon-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+.premium-dividends-3 .dividend-executive-kpi{--kc:#10d981;min-height:112px;padding:16px 16px 14px 70px;border-radius:16px;border:1px solid color-mix(in srgb,var(--kc) 35%,var(--border));background:linear-gradient(135deg,color-mix(in srgb,var(--kc) 14%,var(--panel)),var(--panel) 70%)}
+.premium-dividends-3 .dividend-executive-kpi::before{content:"$";position:absolute;left:16px;top:18px;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800;color:var(--kc);background:color-mix(in srgb,var(--kc) 18%,transparent);border:1px solid color-mix(in srgb,var(--kc) 45%,transparent)}
+.premium-dividends-3 .dividend-kpis-canon-grid>article:nth-child(2){--kc:#2f9bff}.premium-dividends-3 .dividend-kpis-canon-grid>article:nth-child(2)::before{content:"↗"}
+.premium-dividends-3 .dividend-kpis-canon-grid>article:nth-child(3){--kc:#a56bff}.premium-dividends-3 .dividend-kpis-canon-grid>article:nth-child(3)::before{content:"≈"}
+.premium-dividends-3 .dividend-kpis-canon-grid>article:nth-child(4){--kc:#ffb020}.premium-dividends-3 .dividend-kpis-canon-grid>article:nth-child(4)::before{content:"◷"}
+.premium-dividends-3 .dividend-kpis-canon-grid>article:nth-child(5){--kc:#22c8a6}.premium-dividends-3 .dividend-kpis-canon-grid>article:nth-child(5)::before{content:"◎"}
+.premium-dividends-3 .dividend-executive-kpi-label{font-size:11px;font-weight:700;letter-spacing:.04em}
+.premium-dividends-3 .dividend-executive-kpi-value{font-size:24px;color:var(--text)}
+.premium-dividends-3 .dividend-executive-kpi-value.good{color:var(--kc)}
+.premium-dividends-3 .dividend-primary-grid.dividend-primary-grid-3{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:stretch}
+.premium-dividends-3 .dividend-primary-grid-3>*{min-width:0;border:1px solid var(--border);border-radius:16px;background:var(--panel);padding:14px}
+.premium-dividends-3 .dividend-primary-grid-3 .div-collapsible{border:0;background:transparent;padding:0}
+.premium-dividends-3 .dividend-primary-grid-3 .div-collapsible-summary{pointer-events:none;padding:0 0 8px}
+.premium-dividends-3 .dividend-primary-grid-3 .div-collapsible-meta,.premium-dividends-3 .dividend-primary-grid-3 .div-collapsible-chev{display:none}
+.premium-dividends-3 .dividend-primary-grid-3 .div-collapsible-body{padding:0 !important}
+.premium-dividends-3 .dividend-primary-grid-3 .div-asset-list{max-height:300px}
+.premium-dividends-3 .dividend-primary-grid-3 .dividend-annual-summary{border:0;background:transparent;padding:0}
+.premium-dividends-3 .dividend-primary-grid-3 .canon-year-summary-body{grid-template-columns:1fr;justify-items:center;gap:10px}
+.premium-dividends-3 .dividend-primary-grid-3 .canon-year-summary-list{width:100%}
+.premium-dividends-3 .dividend-primary-grid-3 .canon-year-sum-row{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:6px 8px;align-items:center}
+.premium-dividends-3 .dividend-primary-grid-3 .canon-year-sum-count{grid-column:2/4;font-size:11px}
+.dividend-history-block .div-monthly-table-block{border-radius:16px}
+@media (max-width:1280px){.premium-dividends-3 .dividend-kpis-canon-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.premium-dividends-3 .dividend-primary-grid.dividend-primary-grid-3{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.premium-dividends-3 .dividend-primary-grid-3>:first-child{grid-column:1/-1}}
+@media (max-width:760px){.premium-dividends-3 .dividend-kpis-canon-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.premium-dividends-3 .dividend-executive-kpi{padding:14px 12px 12px;min-height:104px}.premium-dividends-3 .dividend-executive-kpi::before{position:static;width:30px;height:30px;font-size:14px;margin-bottom:6px}.premium-dividends-3 .dividend-executive-kpi-value{font-size:19px}.premium-dividends-3 .dividend-primary-grid.dividend-primary-grid-3{grid-template-columns:1fr}}
+
+.premium-dividends-3 .div-premium-kpi-bar .dividend-kpis-canon-grid>.dividend-executive-kpi{padding:16px 14px 14px 70px;min-height:112px;display:flex;flex-direction:column;justify-content:center;gap:6px}
+.premium-dividends-3 .dividend-kpis-canon-grid>.dividend-executive-kpi .dividend-executive-kpi-info{position:absolute;right:12px;top:12px}
+.premium-dividends-3 .dividend-primary-grid-3 .dividend-timeline-summary .div-timeline-summary-title,.premium-dividends-3 .dividend-primary-grid-3 .dividend-timeline-summary .div-timeline-summary-sub{display:none}
+.premium-dividends-3 .dividend-primary-grid-3 .dividend-history-heading{margin-bottom:8px}
+.premium-dividends-3 .dividend-primary-grid-3 .dividend-history-heading strong{display:block;font-size:14px}
+.premium-dividends-3 .dividend-primary-grid-3 .dividend-evolution-chart{min-height:230px}
+@media (max-width:760px){.premium-dividends-3 .div-premium-kpi-bar .dividend-kpis-canon-grid>.dividend-executive-kpi{padding:14px 12px 12px;min-height:104px;justify-content:flex-start}.premium-dividends-3 .dividend-kpis-canon-grid>.dividend-executive-kpi .dividend-executive-kpi-info{right:8px;top:8px}}
+
+.premium-dividends-3 .dividend-kpis-canon-grid>.dividend-executive-kpi{grid-column:auto !important}
+.premium-dividends-3 .dividend-kpis-canon-grid .dividend-executive-kpi-value{font-size:clamp(17px,1.6vw,22px);white-space:nowrap;overflow-wrap:normal}
+.premium-dividends-3 .dividend-primary-grid-3 .div-collapsible-main{padding:0 2px}
+.premium-dividends-3 .dividend-primary-grid-3 .div-collapsible-title{font-size:14px}
+@media (max-width:760px){.premium-dividends-3 .dividend-kpis-canon-grid>.dividend-executive-kpi:last-child{grid-column:1/-1 !important}}
 
 /* Ativos: tela-alvo (cartões de resumo, Comprar verde / Vender vermelho, editar visível, colunas completas em telas largas) */
 .assets-portfolio-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;border:0;background:transparent}
