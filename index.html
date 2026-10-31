@@ -25500,11 +25500,12 @@ function canonDonutInteractive(data, opts={}){
   }).filter(Boolean).join('');
   const centerText=opts.centerText||`${data.length}`;
   const centerSub=opts.centerSub||'classes';
+  const centerSize=String(centerText).length>9?12:15;
   return `<div class="canon-donut-seg-wrap" style="position:relative">
     <svg viewBox="0 0 180 180" width="180" height="180" style="display:block;margin:0 auto;overflow:visible">
       ${segs}
       <circle cx="${cx}" cy="${cy}" r="${innerR}" fill="#0a1522" stroke="#1b2a3a" stroke-width="2"></circle>
-      <text x="${cx}" y="${cy-6}" text-anchor="middle" fill="#f4f7fb" font-size="15" font-weight="700">${esc(centerText)}</text>
+      <text x="${cx}" y="${cy-6}" text-anchor="middle" fill="#f4f7fb" font-size="${centerSize}" font-weight="700">${esc(centerText)}</text>
       <text x="${cx}" y="${cy+12}" text-anchor="middle" fill="#8794a8" font-size="10">${esc(centerSub)}</text>
     </svg>
     <div class="canon-donut-tooltip" role="status" aria-live="polite" hidden></div>
@@ -31901,7 +31902,10 @@ function dashboardV3AllocationPanel(){
   const unknownCount=allocation.unknownPositionCount||0;
   const knownZero=allocation.knownPositionCount>0 && allocation.totalKnownValue===0;
   const hidden=!!S.hideValues;
-  const palette=['#5b8cff','#7cf4b5','#ffd76c','#ff6f7d','#5fd7ff'];
+  const palette=['#8b7bff','#38bdf8','#4ade80','#fbbf24','#f472b6','#fb923c'];
+  const donutPalette=['#8b7bff','#38bdf8','#4ade80','#fbbf24','#f472b6','#fb923c'];
+  let donutAcc=0;
+  const donutStops=rows.map((row,index)=>{const share=Math.max(0,Math.min(100,Number(row.shareOfKnown)||0));const from=donutAcc;donutAcc+=share;return `${donutPalette[index%donutPalette.length]} ${from.toFixed(2)}% ${Math.min(100,donutAcc).toFixed(2)}%`;}).join(',');
   const segments=rows.map((row,index)=>`<span style="width:${Math.max(0,Math.min(100,Number(row.shareOfKnown)||0)).toFixed(1)}%;background:${palette[index%palette.length]}" title="${esc(row.label)}"></span>`).join('');
   const list=hidden?'' : rows.length?rows.map((row,index)=>`<button type="button" class="dashboard-v3-allocation-row" data-class="${esc(row.label)}" onclick="dashboardOpenAllocationClass(this.dataset.class)" aria-label="Ver ${esc(row.label)} em Ativos"><span class="dashboard-v3-allocation-dot" style="background:${palette[index%palette.length]}"></span><span>${esc(row.label)}</span><strong>${globalThis.PortfolioAllocationIntelligence.formatPercent(row.shareOfKnown)}</strong></button>`).join(''):
     `<p class="dashboard-v3-allocation-empty">${knownZero?'Valor atual conhecido: zero; percentuais indisponíveis com base zero.':allocation.positionCount?'Valores atuais indisponíveis.':'Sem ativos cadastrados.'}</p>`;
@@ -31919,6 +31923,7 @@ function dashboardV3AllocationPanel(){
   return `<section class="dashboard-v3-allocation" aria-label="Alocação da carteira">
     <div class="dashboard-v3-section-head"><h2>Alocação</h2><button type="button" onclick="go('ativos')">Ver ativos</button></div>
     <p class="dashboard-v3-context">Participação por classe · base: valor atual conhecido.</p>
+    ${hidden||!rows.length?'':`<div class="dashboard-donut-wrap"><div class="dashboard-donut" role="img" aria-label="Rosca com a participação de cada classe" style="background:conic-gradient(${donutStops})"><div class="dashboard-donut-hole"><span>Total</span><strong>${fmt(allocation.totalKnownValue)}</strong></div></div></div>`}
     ${hidden?'<p class="dashboard-v3-allocation-hidden">Composição oculta</p>':`<div class="dashboard-v3-allocation-bar" role="img" aria-label="Participação das classes com valor conhecido">${segments}</div>`}
     <div class="dashboard-v3-allocation-list">${list}</div>${unknown}${unclassified}
     ${hidden?'':`<p class="dashboard-v3-context">Cobertura institucional: ${globalThis.PortfolioAllocationIntelligence.formatPercent(institutionCoverage.coverageCount)} das posições; ${globalThis.PortfolioAllocationIntelligence.formatPercent(institutionCoverage.coverageValue)} do patrimônio conhecido identificado. ${esc(institutionList)}. A instituição usa apenas metadado explícito, não o emissor.</p><p class="dashboard-v3-context">Data-base dos valores: ${esc(valuationDate)}.</p>`}
@@ -36813,7 +36818,7 @@ function rentabilidadeTab(){
   const historyCoverageLabel={
     FULL_COVERAGE:'Cobertura completa',
     PARTIAL_COVERAGE:'Cobertura parcial',
-    UNKNOWN:'Cobertura UNKNOWN · sem série histórica disponível',
+    UNKNOWN:'Cobertura desconhecida · sem série histórica disponível',
     INSUFFICIENT_DATA:'Cobertura insuficiente · série histórica indisponível'
   }[v248History.coverage]||'Cobertura indisponível';
   const view=Array.isArray(data.view)?data.view:[];
@@ -39557,6 +39562,32 @@ html[data-theme="light"] .aporte-kind.renda-fixa{color:#1d4ed8 !important}
   #ativosAccordion table.ag-table .asset-action-trigger{min-width:36px !important;min-height:36px !important;padding:2px !important}
   #ativosAccordion .assets-scroll-hint{display:none}
 }
+
+/* Resumo: comparação aportes x valor atual e rosca de alocação */
+.dashboard-compare{display:flex;flex-direction:column;gap:14px;padding:6px 2px 2px}
+.dashboard-compare-row{display:grid;grid-template-columns:150px minmax(0,1fr) auto;gap:14px;align-items:center;font-size:14px}
+.dashboard-compare-row>span{color:var(--muted);font-weight:700}
+.dashboard-compare-row>strong{font-variant-numeric:tabular-nums;color:var(--text)}
+.dashboard-compare-track{height:16px;border-radius:999px;background:rgba(148,163,184,.14);overflow:hidden}
+.dashboard-compare-track i{display:block;height:100%;border-radius:999px}
+.dashboard-compare-track i.is-invested{background:linear-gradient(90deg,#6d4cff,#8b7bff)}
+.dashboard-compare-track i.is-current{background:linear-gradient(90deg,#16a34a,#4ade80)}
+.dashboard-compare-note{margin:2px 0 0;font-size:13px;color:var(--muted);line-height:1.45}
+@media (max-width:640px){.dashboard-compare-row{grid-template-columns:1fr auto}.dashboard-compare-track{grid-column:1/-1;order:3}}
+.dashboard-donut-wrap{display:flex;justify-content:center;margin:6px 0 14px}
+.dashboard-donut{width:176px;height:176px;border-radius:50%;display:grid;place-items:center}
+.dashboard-donut-hole{width:112px;height:112px;border-radius:50%;background:var(--panel,#0e1527);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6px}
+.dashboard-donut-hole span{font-size:12px;color:var(--muted);font-weight:700}
+.dashboard-donut-hole strong{font-size:15px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.dashboard-v3-allocation .dashboard-v3-allocation-bar{display:none}
+html[data-theme="light"] .dashboard-donut-hole{background:#fff}
+
+/* Dividendos: respiro entre título e indicadores */
+.premium-dividends-3 .div-premium-head,.div-premium-head{margin-bottom:16px}
+
+/* Dividendos: alinha o destaque à cor principal (roxo) em vez do verde-neon */
+html:not([data-theme="light"]) .canon-year-chip.on,html:not([data-theme="light"]) .canon-year-chip[aria-pressed="true"]{background:#6d4cff !important;color:#fff !important;border-color:#8b7bff !important}
+html:not([data-theme="light"]) .div-premium-tab.on,html:not([data-theme="light"]) .div-premium-tab.active,html:not([data-theme="light"]) .div-premium-tab[aria-selected="true"],html:not([data-theme="light"]) .div-premium-tab[aria-pressed="true"],html:not([data-theme="light"]) .div-premium-tab[aria-current="true"]{background:rgba(109,76,255,.22) !important;color:#e4e0ff !important}
 </style>
 </body>
 </html>
