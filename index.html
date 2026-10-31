@@ -39713,6 +39713,15 @@ html[data-theme="light"] .aporte-count-card>strong{color:color-mix(in srgb,var(-
   .premium-rf-position-row>.premium-rf-row-actions{grid-column:1/-1;grid-row:2;justify-content:flex-end;flex-wrap:wrap;gap:8px;border-top:1px solid var(--border);padding-top:10px}
 }
 
+/* Celular: Patrimônio e Relatórios sem cortes */
+@media (max-width:760px){
+  .patrimonio-head{display:flex !important;flex-direction:column;align-items:stretch;gap:10px}
+  .patrimonio-head .patrimony-reading{width:100%;max-width:none}
+  .reports-premium-shell .reports-filter{display:flex !important;flex-wrap:wrap !important;overflow:visible !important;gap:6px;width:100%}
+  .reports-premium-shell .reports-filter button{flex:1 1 30% !important;min-width:0 !important;white-space:normal;min-height:40px}
+  .reports-premium-head-actions{width:100%}
+}
+
 /* Ativos: tela-alvo (cartões de resumo, Comprar verde / Vender vermelho, editar visível, colunas completas em telas largas) */
 .assets-portfolio-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;border:0;background:transparent}
 .assets-portfolio-summary>div{display:flex;flex-direction:column;gap:6px;padding:16px 18px;border:1px solid var(--border);border-radius:16px;background:var(--panel);min-width:0}
