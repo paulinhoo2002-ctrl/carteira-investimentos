@@ -32093,10 +32093,27 @@ function dashboardPlainSummary(data){
   else if(!currentKnown) next={title:'Complete os dados da carteira',note:'Alguns valores estão faltando, por isso o total ainda não aparece.',label:'Ver o que falta',action:"go('confiabilidade')"};
   else if(backupReminderMessage()) next={title:'Faça um backup dos seus dados',note:backupReminderMessage()+' Guarde o arquivo fora do computador, por exemplo no Google Drive.',label:'Exportar backup',action:'openBackupCenter()'};
   else if(availability.state==='STALE') next={title:'Cotações desatualizadas',note:availability.note||'Atualize as cotações para ver valores do dia.',label:'Ver ativos',action:"go('ativos')"};
+  const monthKey=passiveIncomeMonthKey(new Date());
+  const recent=data?.recent?.month===monthKey?data.recent:passiveIncomeMonthSummary(monthKey);
+  const recvNote=recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Cobertura parcial':'Cobertura desconhecida';
+  const pctText=(resultKnown&&!hidden&&typeof p.tGP==='number'&&Number.isFinite(p.tGP)&&totalApplied>0)?fmtP(p.tGP):'';
+  const signed=resultKnown?assetSignedMoneyText(p.tG):'—';
+  const arrow=resTone==='up'?'▲':resTone==='down'?'▼':'●';
+  const tile=(icon,label,value,note,tone)=>`<div class="home-tile tone-${tone||'neutral'}"><span class="home-tile-icon">${dashboardMetricIcon(icon)}</span><div><span class="home-tile-label">${esc(label)}</span><strong class="home-tile-value">${esc(value)}</strong><span class="home-tile-note">${esc(note)}</span></div></div>`;
   return `<section class="home-status" aria-label="Como está sua carteira hoje">
-    <div class="home-status-card"><span class="home-status-q">Quanto eu tenho hoje?</span><strong class="home-status-a">${holdText}</strong><span class="home-status-n">${esc(holdNote)}</span></div>
-    <div class="home-status-card tone-${resTone}"><span class="home-status-q">Estou ganhando ou perdendo?</span><strong class="home-status-a">${resText}</strong><span class="home-status-n">${esc(resNote)}</span></div>
+    <div class="home-hero tone-${resTone}">
+      <span class="home-status-q">Quanto eu tenho hoje?</span>
+      <strong class="home-hero-value">${holdText}</strong>
+      <span class="home-hero-chip tone-${resTone}"><b aria-hidden="true">${arrow}</b> ${resText}</span>
+      <span class="home-status-n">${esc(holdNote)} · ${esc(resNote)}</span>
+    </div>
     <div class="home-status-card home-status-next"><span class="home-status-q">O que fazer agora?</span><strong class="home-status-a">${esc(next.title)}</strong><span class="home-status-n">${esc(next.note)}</span><button type="button" class="btn bp" onclick="${next.action}">${esc(next.label)}</button></div>
+    <div class="home-tiles">
+      ${tile('wallet','Investido',currentKnown||totalApplied>0?money(totalApplied):'—','Capital cadastrado','neutral')}
+      ${tile('trend','Resultado',resultKnown?(hidden?'R$ ••••':signed):'—',resultKnown?'Valor atual menos investido':resNote,resTone)}
+      ${tile('percent','Rentabilidade',pctText||'—','Sobre o capital cadastrado',resTone)}
+      ${tile('cash','Recebido no mês',passiveIncomeValue(recent.total),recvNote,'up')}
+    </div>
   </section>`;
 }
 function executiveKPIs(data){
@@ -39444,17 +39461,57 @@ html[data-theme="light"] .premium-dividends-3 .div-premium-head .btn.bp:hover:no
   #ativosAccordion table.ag-table th:nth-child(13),#ativosAccordion table.ag-table td:nth-child(13){display:none !important}
 }
 
-/* Tela inicial: 3 respostas em linguagem simples */
-.home-status{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 16px}
-.home-status-card{display:flex;flex-direction:column;gap:6px;padding:16px 18px;border:1px solid var(--border);border-radius:14px;background:var(--panel,var(--surface));min-width:0}
-.home-status-q{font-size:13px;font-weight:700;color:var(--muted)}
-.home-status-a{font-size:24px;line-height:1.2;font-weight:800;color:var(--text);overflow-wrap:anywhere}
-.home-status-n{font-size:13px;line-height:1.4;color:var(--muted)}
-.home-status-card.tone-up .home-status-a{color:var(--success,#16a34a)}
-.home-status-card.tone-down .home-status-a{color:var(--danger,#dc2626)}
-.home-status-next{border-color:color-mix(in srgb,var(--accent,#19c2b5) 45%,var(--border))}
-.home-status-next .btn{align-self:flex-start;margin-top:6px;min-height:44px}
-@media (max-width:900px){.home-status{grid-template-columns:1fr}.home-status-a{font-size:22px}}
+/* ===== Visual premium v2 (aprovado: azul-marinho escuro + roxo). Só tokens e camada de apresentação. ===== */
+html:not([data-theme="light"]){
+  --bg:#070b16;--panel:#0e1527;--card:#0e1527;--surface:#0b1222;--surface-2:#0a1020;--border:#1f2a48;
+  --primary:#6d4cff;--accent:#8b7bff;--muted:#8d9bbd;
+}
+html:not([data-theme="light"]) body{background:radial-gradient(1100px 520px at 12% -8%,rgba(109,76,255,.16),transparent 60%),radial-gradient(900px 480px at 100% 0,rgba(56,189,248,.07),transparent 55%),#070b16}
+html:not([data-theme="light"]) .tabs-desktop .tab.on{background:linear-gradient(90deg,rgba(109,76,255,.28),rgba(109,76,255,.08));color:#fff;box-shadow:inset 3px 0 0 #8b7bff}
+html:not([data-theme="light"]) .premium-dashboard .dash-chip.on,html:not([data-theme="light"]) .dashboard-period-selector .dash-chip.on{background:#6d4cff !important;color:#fff !important;border-color:#8b7bff !important}
+html:not([data-theme="light"]) .assets-class-tab.on{color:#fff;border-bottom-color:#8b7bff}
+html:not([data-theme="light"]) .assets-class-tab.on .assets-class-tab-n{background:rgba(139,123,255,.28);color:#e4e0ff}
+
+/* Tela inicial */
+.home-status{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:16px;margin:0 0 20px}
+.home-hero{position:relative;display:flex;flex-direction:column;gap:10px;padding:26px 28px;border-radius:22px;border:1px solid color-mix(in srgb,#8b7bff 38%,var(--border));background:radial-gradient(520px 260px at 0 0,rgba(109,76,255,.30),transparent 70%),linear-gradient(160deg,#131b33,#0c1326);overflow:hidden;min-width:0}
+.home-hero-value{font-size:clamp(34px,4.4vw,54px);line-height:1.05;font-weight:800;letter-spacing:-.02em;color:var(--text);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.home-status-q{font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.01em}
+.home-status-n{font-size:13px;line-height:1.45;color:var(--muted)}
+.home-hero-chip{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;font-weight:800;font-size:15px;background:rgba(148,163,184,.14);color:var(--text)}
+.home-hero-chip.tone-up{background:rgba(34,197,94,.16);color:#4ade80}
+.home-hero-chip.tone-down{background:rgba(239,68,68,.16);color:#fca5a5}
+.home-status-card{display:flex;flex-direction:column;gap:8px;padding:22px;border:1px solid var(--border);border-radius:22px;background:linear-gradient(180deg,#101830,#0c1326);min-width:0}
+.home-status-a{font-size:22px;line-height:1.2;font-weight:800;color:var(--text)}
+.home-status-next{border-color:color-mix(in srgb,#8b7bff 45%,var(--border))}
+.home-status-next .btn{align-self:flex-start;margin-top:auto;min-height:44px;background:#6d4cff;color:#fff;border-color:#8b7bff;box-shadow:0 8px 24px rgba(109,76,255,.35)}
+.home-tiles{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.home-tile{display:flex;gap:14px;align-items:center;padding:16px 18px;border-radius:18px;border:1px solid var(--border);background:var(--panel);min-width:0}
+.home-tile-icon{flex:0 0 44px;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:rgba(139,123,255,.16);color:#b8aeff}
+.home-tile-icon .dashboard-metric-glyph{display:grid;place-items:center;width:22px;height:22px}
+.home-tile-icon svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.home-tile>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.home-tile-label{font-size:12px;font-weight:700;color:var(--muted)}
+.home-tile-value{font-size:20px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.home-tile-note{font-size:12px;color:var(--muted)}
+.home-tile.tone-up .home-tile-icon{background:rgba(34,197,94,.16);color:#4ade80}.home-tile.tone-up .home-tile-value{color:#4ade80}
+.home-tile.tone-down .home-tile-icon{background:rgba(239,68,68,.16);color:#fca5a5}.home-tile.tone-down .home-tile-value{color:#fca5a5}
+.home-status ~ .dashboard-executive-kpis{display:none}
+@media (max-width:1100px){.home-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:900px){.home-status{grid-template-columns:1fr}.home-hero{padding:22px 20px}.home-tiles{grid-column:auto}}
+@media (max-width:420px){.home-tiles{grid-template-columns:1fr}}
+html[data-theme="light"] .home-hero{background:radial-gradient(520px 260px at 0 0,rgba(109,76,255,.16),transparent 70%),linear-gradient(160deg,#fff,#f1f0ff);border-color:#cfc8ff}
+html[data-theme="light"] .home-status-card{background:#fff}
+html[data-theme="light"] .home-hero-chip.tone-up{color:#15803d}html[data-theme="light"] .home-hero-chip.tone-down{color:#b91c1c}
+html[data-theme="light"] .home-tile.tone-up .home-tile-value{color:#15803d}html[data-theme="light"] .home-tile.tone-down .home-tile-value{color:#b91c1c}
+html[data-theme="light"] .home-tile-icon{color:#5b3fe0}
+
+/* Ativos: cartões por classe */
+#ativosAccordion details.ag{border-radius:20px;border:1px solid var(--border);background:linear-gradient(180deg,#0f1730,#0b1224);transition:border-color .15s,box-shadow .15s}
+#ativosAccordion details.ag:hover,#ativosAccordion details.ag[open]{border-color:color-mix(in srgb,#8b7bff 45%,var(--border));box-shadow:0 12px 34px rgba(5,8,20,.45)}
+html[data-theme="light"] #ativosAccordion details.ag{background:#fff}
+#ativosAccordion table.ag-table th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+#ativosAccordion table.ag-table tbody tr:hover td{background:rgba(139,123,255,.07)}
 
 .tabs-desktop .nav-more{margin:6px 0 0;border-top:1px solid var(--border);padding-top:6px}
 .tabs-desktop .nav-more-summary{cursor:pointer;list-style:none;padding:10px;min-height:44px;box-sizing:border-box;display:flex;align-items:center;color:var(--muted);font-size:13px;font-weight:700;border-radius:10px}
