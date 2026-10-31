@@ -37138,6 +37138,11 @@ function ajudarTab(){
     <h1 class="rebalance-title">Rebalanceamento</h1>
     <div class="rebalance-subtitle">Compare a distribuição atual com as metas cadastradas. Simulações são opcionais e não alteram a carteira.</div>
   </div>
+  ${allocRows.length?`<section class="rebalance-top-cards" aria-label="Leitura rápida da alocação">
+    <article class="rebalance-top-card tone-violet"><span>Maior desvio</span><strong>${topGap?esc(topGap.type):'—'}</strong><small>${topGap?`${topGap.diff>=0?'+':''}${topGap.diff.toFixed(1)} p.p. ${topGap.diff>0?'acima':'abaixo'} da meta`:'Sem metas cadastradas'}</small></article>
+    <article class="rebalance-top-card tone-amber"><span>Acima da meta</span><strong>${aboveTarget}</strong><small>${aboveTarget===1?'classe':'classes'} com excesso</small></article>
+    <article class="rebalance-top-card tone-green"><span>Abaixo da meta</span><strong>${belowTarget}</strong><small>${belowTarget===1?'classe':'classes'} com espaço para aporte</small></article>
+  </section>`:''}
   ${allocSection}
   <details class="rebalance-tools">
     <summary>Simular e comparar aportes <span>Ferramentas opcionais · não executam operações</span></summary>
@@ -39638,6 +39643,19 @@ html:not([data-theme="light"]) .div-premium-tab.on,html:not([data-theme="light"]
 .patrimonio-grid>.patrimonio-panel-composition{grid-column:1;grid-row:2}
 .patrimonio-grid>.patrimonio-panel-insights{grid-column:1/-1;grid-row:4}
 @media (max-width:900px){.patrimonio-grid>.patrimonio-panel{grid-column:1 !important;grid-row:auto !important}}
+
+/* Rebalanceamento: leitura rápida e tabela mais legível */
+.rebalance-top-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:0 0 14px}
+.rebalance-top-card{--tc:#8b7bff;display:flex;flex-direction:column;gap:6px;padding:16px 18px;border-radius:16px;border:1px solid color-mix(in srgb,var(--tc) 38%,var(--border));background:linear-gradient(135deg,color-mix(in srgb,var(--tc) 14%,var(--panel)),var(--panel) 70%)}
+.rebalance-top-card.tone-amber{--tc:#ffb020}.rebalance-top-card.tone-green{--tc:#10d981}
+.rebalance-top-card>span{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rebalance-top-card>strong{font-size:26px;font-weight:800;color:var(--tc);font-variant-numeric:tabular-nums}
+.rebalance-top-card>small{font-size:12px;color:var(--muted)}
+.rebalance-alloc-row{min-height:46px}
+.rebalance-alloc-item .rebalance-alloc-class,.rebalance-alloc-item .rebalance-alloc-pct,.rebalance-alloc-item .rebalance-alloc-diff{font-size:15px}
+.rebalance-alloc-bar-wrap{height:12px;border-radius:99px}
+.rebalance-alloc-bar{border-radius:99px}
+@media (max-width:760px){.rebalance-top-cards{grid-template-columns:1fr;gap:10px}}
 
 /* Ativos: tela-alvo (cartões de resumo, Comprar verde / Vender vermelho, editar visível, colunas completas em telas largas) */
 .assets-portfolio-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;border:0;background:transparent}
