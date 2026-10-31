@@ -7635,6 +7635,13 @@ html[data-theme="light"] .assets-premium-shell .assets-portfolio-summary .positi
 .analysis-destination>.sh>div:first-child{display:block!important;width:auto!important;overflow:visible!important;flex-wrap:initial!important;gap:0!important}
 .analysis-destination>.sh .mu{white-space:normal!important;overflow:visible!important;text-overflow:clip!important}
 .assets-premium-shell .assets-premium-controls{display:flex;align-items:center;gap:8px;position:relative;margin:0 0 10px;min-width:0}
+.assets-class-tabs{display:flex;gap:2px;margin:0 0 10px;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:thin}
+.assets-class-tab{flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--muted);font:inherit;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+.assets-class-tab:hover{color:var(--text)}
+.assets-class-tab:focus-visible{outline:2px solid #19c2b5;outline-offset:-2px;border-radius:6px}
+.assets-class-tab.on{color:var(--text);border-bottom-color:#19c2b5}
+.assets-class-tab-n{min-width:22px;padding:2px 7px;border-radius:999px;background:rgba(127,140,160,.18);font-size:12px;font-weight:600;text-align:center;font-variant-numeric:tabular-nums}
+.assets-class-tab.on .assets-class-tab-n{background:rgba(25,194,181,.22)}
 .assets-premium-shell .assets-premium-controls .assets-premium-search{flex:1 1 320px;min-width:0}
 .assets-premium-shell .assets-premium-controls .assets-premium-filters{flex:0 0 auto}
 .assets-premium-shell .assets-premium-controls .assets-premium-filter-panel{top:calc(100% + 6px)}
@@ -7709,7 +7716,9 @@ html[data-theme="light"] .assets-premium-shell .assets-portfolio-summary .positi
   .assets-premium-shell .assets-portfolio-summary>div:nth-child(3){border-left:0;border-top:1px solid var(--border)}
   .assets-premium-shell .assets-portfolio-summary>div:nth-child(4){border-top:1px solid var(--border)}
   .assets-premium-shell .assets-portfolio-summary strong{font-size:16px}
-  .assets-premium-shell .assets-premium-controls{flex-wrap:nowrap;gap:7px;margin-bottom:8px}
+  .assets-premium-shell .assets-premium-controls{flex-wrap:wrap;gap:7px;margin-bottom:8px}
+  .assets-premium-shell .assets-premium-controls .assets-filter-summary{flex:1 1 100%;order:4}
+  .assets-premium-shell .assets-premium-controls .assets-premium-search{min-width:140px}
   .assets-premium-shell .assets-premium-controls:has(.assets-review-filter){flex-wrap:wrap}
   .assets-premium-shell .assets-premium-controls .assets-premium-search{flex:1 1 auto;flex-basis:0;order:1}
   .assets-premium-shell .assets-premium-controls .assets-premium-filters{order:2}
@@ -12805,11 +12814,35 @@ async function exportBackup({encrypted=true}={}){
   setTimeout(()=>URL.revokeObjectURL(a.href),1000);
   document.getElementById('backup-encryption-passphrase').value='';
   document.getElementById('backup-encryption-confirm').value='';
+  backupMarkExported();
   try{
     const archived=await BackupPortability.saveLocalBackup(payload,{cadence:'manual',supportedAssetTypes:TYPE_CHOICES,ownerId});
     if(!archived.ok) debugWarn('backup local archive skipped:',archived.status);
   }catch(error){debugWarn('backup local archive unavailable:',error?.name||'UNKNOWN');}
   toast(encrypted?'💾 Arquivo protegido exportado com AES-GCM e integridade SHA-256. Guarde a senha: ela não pode ser recuperada.':'⚠️ Arquivo sem senha exportado sem criptografia. Guarde-o somente em local privado.');
+}
+// Lembrete de backup exportado (UX): guarda só a data do último arquivo baixado neste navegador.
+// Não toca em dados financeiros nem no formato do backup.
+const BACKUP_EXPORT_KEY='carteira_last_export_at';
+const BACKUP_REMINDER_DAYS=30;
+function backupMarkExported(){
+  try{ localStorage.setItem(BACKUP_EXPORT_KEY,String(Date.now())); }catch(error){ /* storage indisponível: lembrete continua visível */ }
+}
+function backupDaysSinceExport(now=Date.now()){
+  let raw=null;
+  try{ raw=localStorage.getItem(BACKUP_EXPORT_KEY); }catch(error){ raw=null; }
+  const at=Number(raw);
+  if(!raw || !Number.isFinite(at) || at<=0 || at>now) return null;
+  return Math.floor((now-at)/86400000);
+}
+function dashboardBackupReminder(){
+  if(!Array.isArray(S.assets) || S.assets.length===0) return '';
+  const days=backupDaysSinceExport();
+  if(days!==null && days<BACKUP_REMINDER_DAYS) return '';
+  const message=days===null
+    ? 'Nenhum backup exportado neste navegador.'
+    : `Último backup exportado há ${days} ${days===1?'dia':'dias'}.`;
+  return `<aside class="dashboard-v3-priority dashboard-backup-reminder" role="status" aria-label="Lembrete de backup"><div><strong>${message}</strong><span>Exporte um arquivo protegido e guarde fora do computador, por exemplo no Google Drive.</span></div><button type="button" class="btn bgh" onclick="openBackupCenter()">Exportar backup</button></aside>`;
 }
 function v324PeriodicBackupEligible(){
   return typeof BackupPortability!=='undefined'&&typeof FB!=='undefined'&&!!FB.user&&FB.access?.allowed===true&&FB.cloudLoaded===true&&!FB.pendingCloudSave&&!FB.syncInFlight&&!FB.applying&&!FB.lastCloudError&&!isLocalTestMode()&&!isActiveWalletHostMode()&&!isAuthoritativeLocalRecoveryBoot()&&!isProtectedReadOnlyQaBoot();
@@ -25548,6 +25581,14 @@ function setRentBench(bench){
     render();
   }
 
+  // Abas por classe: atalho para o mesmo filtro de tipo do painel (S.assetsFilterClasses).
+  function setAssetsClassTab(type){
+    const value=String(type||'');
+    S.assetsFilterClasses = value ? [value] : [];
+    S.activeAssetsGroup='';
+    render();
+  }
+
   function setAssetsPerformanceFilter(value){
     const allowed=['all','positive','negative','neutral'];
     S.assetsPerformanceFilter=allowed.includes(String(value||'')) ? String(value) : 'all';
@@ -31841,6 +31882,7 @@ ${!S.assets.length ? `<div class="dashboard-empty-cta" role="region" aria-label=
         ${dashboardEvolutionPanel(data)}
         ${dashboardV3AllocationPanel()}
       </div>
+      ${dashboardBackupReminder()}
       ${dashboardV3PriorityPanel(data)}
       ${dashboardHomeHighsLowsPanel()}
       ${dashboardQuickActions()}
@@ -32572,6 +32614,12 @@ function ativos(){
   const classFilterSet = new Set(S.assetsFilterClasses || []);
   const sectorOptions = [...new Set(S.assets.map(a => String(a?.sector || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
   const assetClassOptions = [...new Set(S.assets.map(a => String(a?.assetClass || a?.class || a?.category || a?.type || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  const assetClassTabLabels = {'Ação':'Ações','FII':'FIIs','ETF':'ETFs','BDR':'BDRs'};
+  const activeClassTab = (S.assetsFilterClasses || []).length === 1 ? S.assetsFilterClasses[0] : '';
+  const assetClassTabsHtml = S.assets.length ? `<div class="assets-class-tabs" role="group" aria-label="Filtrar por classe de ativo">
+    <button type="button" class="assets-class-tab${(S.assetsFilterClasses || []).length === 0 ? ' on' : ''}" aria-pressed="${(S.assetsFilterClasses || []).length === 0 ? 'true' : 'false'}" onclick="setAssetsClassTab('')">Todos<span class="assets-class-tab-n">${S.assets.length}</span></button>
+    ${groupNames.map(type => `<button type="button" class="assets-class-tab${activeClassTab === type ? ' on' : ''}" aria-pressed="${activeClassTab === type ? 'true' : 'false'}" data-asset-type="${esc(type)}" onclick="setAssetsClassTab(this.dataset.assetType)">${esc(assetClassTabLabels[type] || type)}<span class="assets-class-tab-n">${(grouped.get(type) || []).length}</span></button>`).join('')}
+  </div>` : '';
   const assetControls = `<div class="assets-premium-controls">
     <div class="assets-premium-search"><input type="search" class="assets-premium-search-input" placeholder="Buscar ativo..." aria-label="Buscar ativo por ticker ou nome" id="assets-premium-search" autocomplete="off" value="${esc(S.assetsSearch || '')}" oninput="onAssetsSearchInput(this.value)"></div>
     <div class="assets-premium-filters"><button type="button" class="assets-premium-filter-btn" onclick="toggleAssetsFilterPanel()" aria-controls="assets-filter-panel" aria-expanded="${S.assetsFilterPanelOpen ? 'true' : 'false'}">Filtros <span class="filter-count" id="assets-filter-count">${activeAssetFilterCount}</span></button></div>
@@ -32936,6 +32984,7 @@ function ativos(){
     </div>
     ${assetPortfolioSummaryHtml}
     ${innerTabsHtml}
+    ${assetClassTabsHtml}
     ${assetControls}
     ${reviewBanner}
     ${coverageNote}
