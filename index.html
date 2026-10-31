@@ -12835,14 +12835,11 @@ function backupDaysSinceExport(now=Date.now()){
   if(!raw || !Number.isFinite(at) || at<=0 || at>now) return null;
   return Math.floor((now-at)/86400000);
 }
-function dashboardBackupReminder(){
+function backupReminderMessage(){
   if(!Array.isArray(S.assets) || S.assets.length===0) return '';
   const days=backupDaysSinceExport();
   if(days!==null && days<BACKUP_REMINDER_DAYS) return '';
-  const message=days===null
-    ? 'Nenhum backup exportado neste navegador.'
-    : `Último backup exportado há ${days} ${days===1?'dia':'dias'}.`;
-  return `<aside class="dashboard-v3-priority dashboard-backup-reminder" role="status" aria-label="Lembrete de backup"><div><strong>${message}</strong><span>Exporte um arquivo protegido e guarde fora do computador, por exemplo no Google Drive.</span></div><button type="button" class="btn bgh" onclick="openBackupCenter()">Exportar backup</button></aside>`;
+  return days===null ? 'Você ainda não baixou um arquivo de backup neste navegador.' : `Seu último backup baixado tem ${days} ${days===1?'dia':'dias'}.`;
 }
 function v324PeriodicBackupEligible(){
   return typeof BackupPortability!=='undefined'&&typeof FB!=='undefined'&&!!FB.user&&FB.access?.allowed===true&&FB.cloudLoaded===true&&!FB.pendingCloudSave&&!FB.syncInFlight&&!FB.applying&&!FB.lastCloudError&&!isLocalTestMode()&&!isActiveWalletHostMode()&&!isAuthoritativeLocalRecoveryBoot()&&!isProtectedReadOnlyQaBoot();
@@ -29226,26 +29223,24 @@ function desktopTabs(){
       <div class="side-brand-text"><div class="side-brand-name">Carteira</div><div class="side-brand-sub"><span class="side-avatar" aria-hidden="true">PS</span>Paulo Sérgio</div></div>
     </div>
     <button class="portfolio-search-trigger" type="button" onclick="portfolioSearchOpen()" aria-label="Buscar na carteira" title="Buscar na carteira (Ctrl+K)"><span aria-hidden="true">⌕</span><span>Buscar na carteira</span><kbd>Ctrl K</kbd></button>
-    <div class="nav-section-title">CARTEIRA</div>
     ${navItem('dashboard','Resumo','📊',S.tab==='dashboard')}
-    ${navItem('patrimonio','Patrimônio','◈',S.tab==='patrimonio')}
     ${navItem('ativos','Ativos','💼',isAtivos)}
     ${navItem('aportes','Lançamentos','💰',S.tab==='aportes')}
-    <div class="nav-section-title">RENDA &amp; PERFORMANCE</div>
     ${navItem('dividendos','Dividendos','📅',S.tab==='dividendos')}
-    ${navItem('rentabilidade','Rentabilidade','📈',S.tab==='rentabilidade')}
-    ${navItem('renda-fixa','Renda Fixa','🧾',S.tab==='renda-fixa')}
-    <div class="nav-section-title">ANÁLISE</div>
     ${navItem('analise','Análise','📊',S.tab==='analise')}
-    ${navItem('ajudar','Rebalancear','⚖️',S.tab==='ajudar')}
-    ${navItem('metas','Metas','🎯',S.tab==='metas')}
-    ${navItem('ia','Insights','💡',S.tab==='ia')}
-    <div class="nav-section-title">DADOS</div>
-    ${navItem('confiabilidade','Confiabilidade','🛡️',S.tab==='confiabilidade')}
-    ${navItem('importacao','Importar dados','⇅',S.tab==='importacao')}
-    <div class="nav-section-title">MAIS</div>
-    ${navTabGroup('Relatórios',REPORT_TABS,'desktop')}
     ${navItem('settings','Configurações','⚙️',S.tab==='settings')}
+    <details class="nav-more"${['patrimonio','rentabilidade','renda-fixa','ajudar','metas','ia','confiabilidade','importacao'].includes(S.tab)||REPORT_TABS.some(t=>t[0]===S.tab)?' open':''}>
+      <summary class="nav-more-summary">Mais ferramentas</summary>
+      ${navItem('patrimonio','Patrimônio','◈',S.tab==='patrimonio')}
+      ${navItem('renda-fixa','Renda Fixa','🧾',S.tab==='renda-fixa')}
+      ${navItem('rentabilidade','Rentabilidade','📈',S.tab==='rentabilidade')}
+      ${navItem('ajudar','Rebalancear','⚖️',S.tab==='ajudar')}
+      ${navItem('metas','Metas','🎯',S.tab==='metas')}
+      ${navItem('ia','Insights','💡',S.tab==='ia')}
+      ${navItem('confiabilidade','Confiabilidade','🛡️',S.tab==='confiabilidade')}
+      ${navItem('importacao','Importar dados','⇅',S.tab==='importacao')}
+      ${navTabGroup('Relatórios',REPORT_TABS,'desktop')}
+    </details>
     <div class="side-utilities" aria-label="Preferências da carteira">
       ${hideValuesToggleButton('sidebar')}
       <button class="tab side-theme side-utility" onclick="toggleTheme()" aria-label="Alternar entre tema escuro e claro" title="Alternar tema">🌗 Tema</button>
@@ -31869,6 +31864,7 @@ function dash(){
           <span class="canon-last-update" aria-live="polite">Atualizado ${dashMeta} · ${data.analysis.length} ativos</span>
         </div>
       </div>
+      ${dashboardPlainSummary(data)}
       ${executiveKPIs(data)}
             ${package2ExecutivePanel(!dashboardHasEconomicCertification(data?.portfolioEconomicResult))}
 ${!S.assets.length ? `<div class="dashboard-empty-cta" role="region" aria-label="Primeiros passos">
@@ -31882,7 +31878,6 @@ ${!S.assets.length ? `<div class="dashboard-empty-cta" role="region" aria-label=
         ${dashboardEvolutionPanel(data)}
         ${dashboardV3AllocationPanel()}
       </div>
-      ${dashboardBackupReminder()}
       ${dashboardV3PriorityPanel(data)}
       ${dashboardHomeHighsLowsPanel()}
       ${dashboardQuickActions()}
@@ -32067,6 +32062,42 @@ function package2HasRenderableSummary(summary){
 function package2KnownCount(value){
   const count=Number(value);
   return package2FiniteNumber(value)&&Number.isSafeInteger(count)&&count>=0?String(count):'contagem indisponível';
+}
+function dashboardPlainSummary(data){
+  // Tela inicial em linguagem simples: 3 respostas (quanto tenho, quanto ganhei/perdi, o que fazer agora).
+  // Usa os mesmos critérios de disponibilidade dos cartões executivos: valor desconhecido nunca vira zero.
+  const p=data?.portfolio||cx();
+  const hasAssets=Array.isArray(S.assets)&&S.assets.length>0;
+  const availability=dashboardCurrentValueAvailability();
+  const totalCurrent=Number(p.tC)||0;
+  const totalApplied=Number(p.tI)||0;
+  const currentKnown=hasAssets&&!['UNKNOWN','PARTIAL','NO_DATA'].includes(availability.state);
+  const amountValid=typeof p.tG==='number'&&Number.isFinite(p.tG);
+  const resultKnown=currentKnown&&amountValid&&p.appliedComplete!==false;
+  const hidden=!!S.hideValues;
+  const money=v=>hidden?'R$ ••••':fmt(v);
+  const holdText=currentKnown?money(totalCurrent):'Ainda não dá para calcular';
+  const holdNote=currentKnown?(totalApplied>0?`Você investiu ${money(totalApplied)}`:'Valor atual das suas posições'):(hasAssets?(availability.note||'Faltam cotações ou dados para somar tudo.'):'Cadastre seu primeiro ativo para começar.');
+  let resText='Sem resultado ainda';
+  let resNote=hasAssets?'Faltam dados para comparar com o que você investiu.':'O resultado aparece depois do primeiro ativo.';
+  let resTone='neutral';
+  if(resultKnown){
+    const abs=money(Math.abs(p.tG));
+    const pct=(!hidden&&typeof p.tGP==='number'&&Number.isFinite(p.tGP)&&totalApplied>0)?` (${fmtP(Math.abs(p.tGP))})`:'';
+    if(p.tG>0){ resText=`${abs} acima do investido${pct}`; resTone='up'; resNote='Valor atual menos o capital que você cadastrou.'; }
+    else if(p.tG<0){ resText=`${abs} abaixo do investido${pct}`; resTone='down'; resNote='Valor atual menos o capital que você cadastrou.'; }
+    else { resText='Igual ao que você investiu'; resNote='Valor atual igual ao capital cadastrado.'; }
+  }
+  let next={title:'Nada urgente agora',note:'Suas posições estão com dados suficientes. Volte quando fizer um aporte ou venda.',label:'Ver ativos',action:"go('ativos')"};
+  if(!hasAssets) next={title:'Cadastre seu primeiro ativo',note:'Comece por uma ação, FII ou título de renda fixa.',label:'Cadastrar ativo',action:"go('ativos')"};
+  else if(!currentKnown) next={title:'Complete os dados da carteira',note:'Alguns valores estão faltando, por isso o total ainda não aparece.',label:'Ver o que falta',action:"go('confiabilidade')"};
+  else if(backupReminderMessage()) next={title:'Faça um backup dos seus dados',note:backupReminderMessage()+' Guarde o arquivo fora do computador, por exemplo no Google Drive.',label:'Exportar backup',action:'openBackupCenter()'};
+  else if(availability.state==='STALE') next={title:'Cotações desatualizadas',note:availability.note||'Atualize as cotações para ver valores do dia.',label:'Ver ativos',action:"go('ativos')"};
+  return `<section class="home-status" aria-label="Como está sua carteira hoje">
+    <div class="home-status-card"><span class="home-status-q">Quanto eu tenho hoje?</span><strong class="home-status-a">${holdText}</strong><span class="home-status-n">${esc(holdNote)}</span></div>
+    <div class="home-status-card tone-${resTone}"><span class="home-status-q">Estou ganhando ou perdendo?</span><strong class="home-status-a">${resText}</strong><span class="home-status-n">${esc(resNote)}</span></div>
+    <div class="home-status-card home-status-next"><span class="home-status-q">O que fazer agora?</span><strong class="home-status-a">${esc(next.title)}</strong><span class="home-status-n">${esc(next.note)}</span><button type="button" class="btn bp" onclick="${next.action}">${esc(next.label)}</button></div>
+  </section>`;
 }
 function executiveKPIs(data){
   const p=data?.portfolio||cx();
@@ -39412,6 +39443,25 @@ html[data-theme="light"] .premium-dividends-3 .div-premium-head .btn.bp:hover:no
   #ativosAccordion table.ag-table th:nth-child(2),#ativosAccordion table.ag-table td:nth-child(2),
   #ativosAccordion table.ag-table th:nth-child(13),#ativosAccordion table.ag-table td:nth-child(13){display:none !important}
 }
+
+/* Tela inicial: 3 respostas em linguagem simples */
+.home-status{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 16px}
+.home-status-card{display:flex;flex-direction:column;gap:6px;padding:16px 18px;border:1px solid var(--border);border-radius:14px;background:var(--panel,var(--surface));min-width:0}
+.home-status-q{font-size:13px;font-weight:700;color:var(--muted)}
+.home-status-a{font-size:24px;line-height:1.2;font-weight:800;color:var(--text);overflow-wrap:anywhere}
+.home-status-n{font-size:13px;line-height:1.4;color:var(--muted)}
+.home-status-card.tone-up .home-status-a{color:var(--success,#16a34a)}
+.home-status-card.tone-down .home-status-a{color:var(--danger,#dc2626)}
+.home-status-next{border-color:color-mix(in srgb,var(--accent,#19c2b5) 45%,var(--border))}
+.home-status-next .btn{align-self:flex-start;margin-top:6px;min-height:44px}
+@media (max-width:900px){.home-status{grid-template-columns:1fr}.home-status-a{font-size:22px}}
+
+.tabs-desktop .nav-more{margin:6px 0 0;border-top:1px solid var(--border);padding-top:6px}
+.tabs-desktop .nav-more-summary{cursor:pointer;list-style:none;padding:10px;min-height:44px;box-sizing:border-box;display:flex;align-items:center;color:var(--muted);font-size:13px;font-weight:700;border-radius:10px}
+.tabs-desktop .nav-more-summary::-webkit-details-marker{display:none}
+.tabs-desktop .nav-more-summary::after{content:"▾";margin-left:auto;transition:transform .15s}
+.tabs-desktop .nav-more:not([open]) .nav-more-summary::after{transform:rotate(-90deg)}
+.tabs-desktop .nav-more-summary:hover,.tabs-desktop .nav-more-summary:focus-visible{background:var(--surface-2,var(--surface));color:var(--text)}
 </style>
 </body>
 </html>
