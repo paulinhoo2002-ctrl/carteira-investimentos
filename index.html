@@ -32080,7 +32080,6 @@ function dash(){
           <span class="canon-last-update" aria-live="polite">Atualizado ${dashMeta} · ${data.analysis.length} ativos</span>
         </div>
       </div>
-      ${dashboardPlainSummary(data)}
       ${executiveKPIs(data)}
             ${package2ExecutivePanel(!dashboardHasEconomicCertification(data?.portfolioEconomicResult))}
 ${!S.assets.length ? `<div class="dashboard-empty-cta" role="region" aria-label="Primeiros passos">
