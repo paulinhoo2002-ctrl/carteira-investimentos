@@ -39230,8 +39230,8 @@ html[data-theme="light"] .data-trust-diagnostics>summary:after{color:#526174}
 html[data-theme="light"] .data-trust-authority-details{background:#fff;border-color:#d9e2ec}
 html[data-theme="light"] .data-trust-authority-details>summary,html[data-theme="light"] .data-trust-authority-list article strong{color:#172033}
 html[data-theme="light"] .data-trust-authority-details>summary:after,html[data-theme="light"] .data-trust-authority-list article span{color:#526174}
-html[data-theme="light"] .corporate-events-summary-card span{color:#cbd5e1}
-html[data-theme="light"] .corporate-events-center label{color:#f1f5f9}
+html[data-theme="light"] .corporate-events-summary-card span{color:var(--muted)!important}
+html[data-theme="light"] .corporate-events-center label{color:var(--muted)!important}
 html[data-theme="light"] .data-quality-card-label{color:#526174!important}
 html[data-theme="light"] .metas-goal-status--info{color:#0369a1}
 html[data-theme="light"] .import-support.full{color:#166534}
@@ -39329,6 +39329,40 @@ html[data-theme="light"] #investBottomNav button span:last-child{color:#526174!i
 /* V274: Corporate Events keeps dark-theme status literals inside light surfaces. */
 html[data-theme="light"] .corporate-events-legend span{color:#0f766e;background:#f0fdfa}
 html[data-theme="light"] .corporate-events-review-queue strong{color:#854d0e}
+html[data-theme="light"] .corporate-events-center-head{
+  background:var(--panel)!important;
+  border-color:var(--border)!important;
+}
+html[data-theme="light"] .corporate-events-center-head h1{
+  color:var(--text)!important;
+}
+html[data-theme="light"] .corporate-events-readonly-badge{
+  color:#166534!important;
+  background:#f0fdf4!important;
+  border-color:#bbf7d0!important;
+}
+html[data-theme="light"] .corporate-events-summary-card{
+  background:var(--surface)!important;
+  border-color:var(--border)!important;
+}
+html[data-theme="light"] .corporate-events-filters{
+  background:var(--panel)!important;
+  border-color:var(--border)!important;
+}
+html[data-theme="light"] .corporate-events-filters select,
+html[data-theme="light"] .corporate-events-filters input{
+  background:var(--panel)!important;
+  color:var(--text)!important;
+  border-color:var(--border)!important;
+}
+html[data-theme="light"] .corporate-event-row{
+  background:var(--surface)!important;
+  border-color:var(--border)!important;
+}
+html[data-theme="light"] .corporate-event-status-MATCH{color:#166534!important}
+html[data-theme="light"] .corporate-event-status-MISMATCH{color:#b91c1c!important}
+html[data-theme="light"] .corporate-event-status-REVIEW_REQUIRED{color:#92400e!important}
+html[data-theme="light"] .corporate-event-status-UNSUPPORTED{color:#6d28d9!important}
 /* V274: keep Dashboard quick-action text and its light-theme surface in the same semantic theme. */
 html[data-theme="light"] .canon-dashboard .dashboard-quick-action{color:#1e293b;background:#f8fafc}
 html[data-theme="light"] .canon-dashboard .dashboard-quick-action-sub{color:#526174}
