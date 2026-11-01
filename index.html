@@ -3686,6 +3686,12 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
 .div-premium .div-upcoming-subline{font-size:9px;color:var(--muted);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .div-premium .div-upcoming-item .div-type-badge{flex:none}
 .div-premium .div-upcoming-empty{padding:9px;border:1px dashed var(--border);border-radius:12px;background:var(--panel);color:var(--muted);line-height:1.4}
+.corp-event-review-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.corp-event-review-toggle{min-height:36px;padding:6px 12px;font-size:11px;font-weight:800;white-space:nowrap;border-radius:999px}
+.corp-event-review-toggle[aria-pressed="true"]{background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.4);color:var(--success)}
+.corp-event-review-item{border-radius:10px;padding-left:8px;padding-right:8px}
+.corp-event-review-item-done{background:rgba(34,197,94,.06);border-left:3px solid var(--success)}
+@media (max-width:600px){.corp-event-review-actions{justify-content:space-between;width:100%}.corp-event-review-toggle{min-height:40px}}
 .div-premium .div-recent-list,.div-premium .div-asset-list,.div-premium .div-month-list{gap:5px}
 .div-premium .div-receipt-card{padding:7px 8px;gap:4px;border-radius:12px}
 .div-premium .div-receipt-top{gap:5px}
@@ -9064,6 +9070,7 @@ const OWNER_FIREBASE_UID = 'yaypxiiv7Ye7pwpDZ0nqhG3Yj7E3';
 const OWNER_FIREBASE_EMAIL = 'paulinhoo2002@gmail.com';
 const THEME_STOR   = 'carteira_theme';
 const HIDE_VALUES_STOR = 'carteira_hide_values';
+const CORP_EVENT_REVIEW_STOR = 'carteira_corp_event_reviewed';
 const THEME_COLOR  = { dark:'#07090f', light:'#e8eff6' };
 
 function isV250OfflineCachedSession(){
@@ -12656,6 +12663,26 @@ function hideValuesToggleButton(context='default'){
   const classes=context==='sidebar'?'side-utility hdr-mobile-btn':'btn bgh hdr-mobile-btn';
   const style=context==='sidebar'?'':' style="font-size:11px;padding:6px 10px;min-height:44px;line-height:1;white-space:nowrap;border-radius:999px;letter-spacing:.2px;opacity:.96"';
   return `<button class="${classes}"${style} onclick="toggleHideValues()"><span class="hdr-mobile-icon">${S.hideValues?'👁️':'🙈'}</span><span class="hdr-mobile-label">${S.hideValues?'Mostrar valores':'Ocultar valores'}</span></button>`;
+}
+function loadCorpEventReviewedState(){
+  try{
+    const raw=localStorage.getItem(CORP_EVENT_REVIEW_STOR);
+    const parsed=raw?JSON.parse(raw):null;
+    return parsed && typeof parsed==='object' && !Array.isArray(parsed) ? parsed : {};
+  }catch(e){ return {}; }
+}
+function isCorpEventReviewed(id){
+  if(!id) return false;
+  return Boolean(loadCorpEventReviewedState()[id]);
+}
+function toggleCorpEventReviewed(id){
+  if(!id) return;
+  try{
+    const state=loadCorpEventReviewedState();
+    if(state[id]) delete state[id]; else state[id]=Date.now();
+    localStorage.setItem(CORP_EVENT_REVIEW_STOR, JSON.stringify(state));
+  }catch(e){}
+  render();
 }
 function toggleHideValues(){
   S.hideValues = !S.hideValues;
@@ -34833,8 +34860,12 @@ function corporateEventsAnnouncementSection(){
   const refreshAction=window.__PUBLIC_EVENTS_RUNTIME_CONTROLLER__ ? `<button type="button" class="btn-secondary" onclick="window.__PUBLIC_EVENTS_RUNTIME_CONTROLLER__.refresh().catch(()=>{})">Atualizar dados</button>` : '';
   const sourceBadge=e=>/cvm|official/i.test(String(e.sourceProvider||''))?'Oficial':/b3/i.test(String(e.sourceProvider||''))?'B3 conferência':'Fonte pública';
   const items=window.CorporateEventsCore?.buildUpcomingIncomeView(events)||[];
-  const body=items.length?items.slice(0,8).map(e=>`<div class="div-upcoming-item"><div class="div-upcoming-main"><div class="div-upcoming-title"><span class="div-upcoming-ticker">${esc(e.symbol)}</span><span class="div-type-badge rendimento">${esc(e.eventType)}</span><span class="div-type-badge neutral">${esc(sourceBadge(e))}</span></div><div class="div-upcoming-subline">${esc(e.paymentDate)} · ${esc(e.sourceProvider||'Fonte não informada')} · ${esc(e.confidence||'')}</div></div><div class="div-upcoming-value">${e.expectedNet==null?'—':fmt(e.expectedNet)}</div></div>`).join(''):`<div class="div-upcoming-empty-compact" role="status"><strong>Eventos anunciados</strong><span>Nenhuma fonte automática configurada para esta carteira.</span></div>`;
-  return `<section class="div-upcoming-shell" aria-labelledby="corporate-events-title"><div class="div-upcoming-summary"><div class="div-upcoming-card"><div class="div-upcoming-label" id="corporate-events-title">Proventos a receber</div><div class="div-upcoming-value good">${items.length}</div><div class="div-upcoming-sub">Eventos esperados, separados do realizado</div></div><div class="div-upcoming-card"><div class="div-upcoming-label">Sincronização</div><div class="div-upcoming-value" style="font-size:18px">${esc(status==='UPDATED'?'Atualizada':'Disponível')}</div><div class="div-upcoming-sub">B3 permanece como auditoria opcional</div>${refreshAction}</div></div><div class="div-upcoming-note">Anunciado/previsto não altera o total recebido. A promoção para realizado exige reconciliação.</div><div class="div-upcoming-list">${body}</div></section>`;
+  const reviewedCount=items.filter(e=>isCorpEventReviewed(e.id)).length;
+  const body=items.length?items.slice(0,8).map(e=>{
+    const reviewed=isCorpEventReviewed(e.id);
+    return `<div class="div-upcoming-item corp-event-review-item${reviewed?' corp-event-review-item-done':''}"><div class="div-upcoming-main"><div class="div-upcoming-title"><span class="div-upcoming-ticker">${esc(e.symbol)}</span><span class="div-type-badge rendimento">${esc(e.eventType)}</span><span class="div-type-badge neutral">${esc(sourceBadge(e))}</span></div><div class="div-upcoming-subline">${esc(e.paymentDate)} · ${esc(e.sourceProvider||'Fonte não informada')} · ${esc(e.confidence||'')}</div></div><div class="corp-event-review-actions"><div class="div-upcoming-value">${e.expectedNet==null?'—':fmt(e.expectedNet)}</div><button type="button" class="btn-secondary corp-event-review-toggle" data-corp-review-id="${esc(e.id)}" aria-pressed="${reviewed?'true':'false'}" onclick="toggleCorpEventReviewed(this.dataset.corpReviewId)">${reviewed?'✓ Conferido':'Conferir'}</button></div></div>`;
+  }).join(''):`<div class="div-upcoming-empty-compact" role="status"><strong>Eventos anunciados</strong><span>Nenhuma fonte automática configurada para esta carteira.</span></div>`;
+  return `<section class="div-upcoming-shell" aria-labelledby="corporate-events-title"><div class="div-upcoming-summary"><div class="div-upcoming-card"><div class="div-upcoming-label" id="corporate-events-title">Proventos a receber</div><div class="div-upcoming-value good">${items.length}</div><div class="div-upcoming-sub">Eventos esperados, separados do realizado</div></div><div class="div-upcoming-card"><div class="div-upcoming-label">Sincronização</div><div class="div-upcoming-value" style="font-size:18px">${esc(status==='UPDATED'?'Atualizada':'Disponível')}</div><div class="div-upcoming-sub">B3 permanece como auditoria opcional</div>${refreshAction}</div></div><div class="div-upcoming-note">Anunciado/previsto não altera o total recebido. A promoção para realizado exige reconciliação. Conferir aqui marca apenas que você já olhou este evento — é uma anotação local, não lança o provento.${items.length?` <strong>${reviewedCount}/${items.length} conferidos.</strong>`:''}</div><div class="div-upcoming-list">${body}</div></section>`;
 }
 function dividendMonthlySummary(rows){
   const months=dividendMonthlyRows(rows);
