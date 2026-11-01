@@ -8270,6 +8270,8 @@ html[data-theme="light"] .acc-metric-goal-gap.below{color:#1d4ed8}
 .premium-dividends-3 .dividend-executive-kpi-label{font-size:12px;color:var(--canon-muted);text-transform:none;letter-spacing:normal}
 .premium-dividends-3 .dividend-executive-kpi-value{font-size:20px;line-height:1.1;color:var(--canon-text);font-variant-numeric:tabular-nums}
 .premium-dividends-3 .dividend-executive-kpi-value.good{color:var(--canon-green)}
+.premium-dividends-3 .canon-kpi-card.is-unknown{background:transparent;border-style:dashed;opacity:.62}
+.premium-dividends-3 .canon-kpi-card.is-unknown .dividend-executive-kpi-value{font-size:16px;opacity:.7}
 .premium-dividends-3 .dividend-executive-kpi-sub{font-size:10px;color:var(--canon-muted)}
 .premium-dividends-3 .dividend-executive-kpi{position:relative}
 .premium-dividends-3 .dividend-executive-kpi-info{position:absolute;z-index:3;top:4px;right:4px;color:var(--canon-muted)}
@@ -35910,7 +35912,7 @@ function dividendExecutiveKpis(rows=dividendPremiumRows()){
     ['Último mês',previousMonthKnown?fmt(previousMonth.total):'—',previousMonthSub,previousMonthKnown&&previousMonth.total>0?'good':''],
     ['Projeção anual',complete&&stats.annualProjection!=null?fmt(stats.annualProjection):'—',complete?'Estimativa · não recebida · somente meses completos':'Indisponível · exige 12 meses completos',complete&&stats.annualProjection>0?'good':'']
   ];
-  return `<section class="dividend-executive-kpis div-exec-kpis div-kpis-canon" aria-label="Resumo financeiro de dividendos"><div class="dividend-kpis-canon-grid">${cards.map(([label,value,sub,tone])=>`<article class="dividend-executive-kpi div-premium-metric canon-kpi-card"><div class="dividend-executive-kpi-label div-premium-metric-label">${esc(label)}</div><div class="dividend-executive-kpi-value div-premium-metric-value ${tone}" aria-label="${esc(`${label}: ${value}`)}">${value}</div><details class="dividend-executive-kpi-info"><summary aria-label="Mais informações sobre ${esc(label)}">ⓘ</summary><span class="dividend-executive-kpi-sub div-premium-metric-sub">${esc(sub)}</span></details></article>`).join('')}</div></section>`;
+  return `<section class="dividend-executive-kpis div-exec-kpis div-kpis-canon" aria-label="Resumo financeiro de dividendos"><div class="dividend-kpis-canon-grid">${cards.map(([label,value,sub,tone])=>`<article class="dividend-executive-kpi div-premium-metric canon-kpi-card${value==='—'?' is-unknown':''}"><div class="dividend-executive-kpi-label div-premium-metric-label">${esc(label)}</div><div class="dividend-executive-kpi-value div-premium-metric-value ${tone}" aria-label="${esc(`${label}: ${value}`)}">${value}</div><details class="dividend-executive-kpi-info"><summary aria-label="Mais informações sobre ${esc(label)}">ⓘ</summary><span class="dividend-executive-kpi-sub div-premium-metric-sub">${esc(sub)}</span></details></article>`).join('')}</div></section>`;
 }
 function dividendDistributionRow(month, maxVal){
   const dt=new Date(month.key+'-01T12:00:00');
