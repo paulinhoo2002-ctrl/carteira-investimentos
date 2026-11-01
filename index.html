@@ -7795,6 +7795,12 @@ html[data-theme="light"] .assets-premium-shell .assets-portfolio-summary span{co
 html[data-theme="light"] .assets-premium-shell .assets-portfolio-summary .positive-text{color:#0f5c2d}
 .assets-premium-shell .accordion-header .acc-metric-label{font-size:11px;text-transform:none;letter-spacing:normal}
 .assets-premium-shell .accordion-header .acc-metric-value{font-variant-numeric:tabular-nums}
+.acc-metric-sub-label{color:var(--muted);font-weight:600}
+.acc-metric-goal-gap{font-size:11px;font-weight:700;white-space:nowrap}
+.acc-metric-goal-gap.above{color:#f59e0b}
+.acc-metric-goal-gap.below{color:#60a5fa}
+html[data-theme="light"] .acc-metric-goal-gap.above{color:#b45309}
+html[data-theme="light"] .acc-metric-goal-gap.below{color:#1d4ed8}
 .assets-premium-shell .assets-premium-subtitle{font-size:11px}
 .assets-premium-shell h1#assets-page-title{font-size:24px;line-height:1.2;letter-spacing:-.025em}
 .assets-premium-shell .assets-secondary-summary{margin:10px 0;color:var(--text)}
@@ -32901,6 +32907,9 @@ function ativos(){
     <div><span>Rentabilidade</span><strong class="${portfolioReturnTone}">${portfolioReturn == null ? '—' : fmtP(portfolioReturn)}</strong><small>Resultado sobre o valor investido</small></div>
   </section>`;
 
+  // Metas de alocação por classe (mesma fonte usada em Rebalancear), somente leitura aqui.
+  const assetsAllocationGoalMap = Object.fromEntries(allocationGoalItems().map(item => [item.type, Number(item.pct) || 0]));
+
   // Build accordion categories using details/summary for test compatibility
   const accordionHtml = groupNames.map(type => {
     const assets = grouped.get(type) || [];
@@ -32918,6 +32927,8 @@ function ativos(){
     const typeResult = typeTotalValue == null ? null : typeTotalValue - typeInvested;
     const typeReturn = typeResult != null && typeInvested > 0 ? (typeResult / typeInvested) * 100 : null;
     const typeWeight = typeResult != null && portfolioTotal > 0 ? (typeTotalValue / portfolioTotal) * 100 : null;
+    const typeGoalPct = Object.prototype.hasOwnProperty.call(assetsAllocationGoalMap, type) ? assetsAllocationGoalMap[type] : null;
+    const typeGoalGap = typeGoalPct != null && typeWeight != null ? typeWeight - typeGoalPct : null;
     const typeCount = typeDisplayAssets.length;
     const categoryOpen = assetFiltersActive && typeDisplayAssets.length > 0;
 
@@ -33106,8 +33117,8 @@ function ativos(){
         <div class="acc-metric-value ${returnTone}">${typeReturn == null ? '—' : fmtP(typeReturn)}</div>
       </div>
       <div>
-        <div class="acc-metric-label ag-k">Peso</div>
-        <div class="acc-metric-value">${typeWeight == null ? '—' : `${typeWeight.toFixed(2)}%`}</div>
+        <div class="acc-metric-label ag-k">Peso <span class="acc-metric-sub-label">· Meta ${typeGoalPct == null ? '—' : `${typeGoalPct.toFixed(1)}%`}</span></div>
+        <div class="acc-metric-value">${typeWeight == null ? '—' : `${typeWeight.toFixed(2)}%`}${typeGoalGap == null ? '' : ` <span class="acc-metric-goal-gap ${typeGoalGap>0?'above':typeGoalGap<0?'below':''}">(${typeGoalGap>=0?'+':''}${typeGoalGap.toFixed(1)} p.p.)</span>`}</div>
       </div>
       <span class="acc-toggle" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
     `;
