@@ -995,7 +995,7 @@ test('Ativos inicia por categoria e concentra acoes contextuais em um menu acess
     const menuId = await menuTrigger.getAttribute('aria-controls');
     const menu = runtime.page.locator(`#${menuId}`);
     assert.equal(await menu.getAttribute('role'), 'menu');
-    assert.deepEqual(await menu.getByRole('menuitem').allInnerTexts(), ['Detalhes', 'Comprar', 'Vender', 'Editar']);
+    assert.deepEqual(await menu.getByRole('menuitem').allInnerTexts(), ['Detalhes', 'Comprar', 'Vender', 'Editar', 'Excluir ativo']);
     assert.equal(await menuTrigger.getAttribute('aria-expanded'), 'true');
     await runtime.page.keyboard.press('Escape');
     assert.equal(await menuTrigger.getAttribute('aria-expanded'), 'false');

@@ -1880,6 +1880,10 @@ tbody tr{transition:background .1s}tbody tr:hover{background:color-mix(in srgb, 
 .asset-action-menu-panel.open{display:flex;flex-direction:column;gap:3px}
 .asset-action-menu-panel button{min-height:44px;padding:8px 10px;border:0;border-radius:7px;background:transparent;color:var(--text);text-align:left;font-weight:700;cursor:pointer}
 .asset-action-menu-panel button:hover,.asset-action-menu-panel button:focus-visible{background:var(--surface-2)}
+.asset-action-menu-panel button.asset-action-danger{color:#f87171}
+.asset-action-menu-panel button.asset-action-danger:hover,.asset-action-menu-panel button.asset-action-danger:focus-visible{background:rgba(248,113,113,.1)}
+html[data-theme="light"] .asset-action-menu-panel button.asset-action-danger{color:#b91c1c}
+html[data-theme="light"] .asset-action-menu-panel button.asset-action-danger:hover,html[data-theme="light"] .asset-action-menu-panel button.asset-action-danger:focus-visible{background:rgba(185,28,28,.08)}
 .asset-actions button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media (max-width:640px){.asset-actions{min-width:0;flex-wrap:wrap}.asset-action{flex:0 0 auto}.asset-action-menu-panel{right:auto;left:0}}
 .bdi{background:transparent;border:1px solid rgba(127,29,29,.5);border-radius:7px;padding:3px 9px;color:#f87171;font-size:13px}
@@ -32753,8 +32757,33 @@ function assetActionMenuHtml(asset, isRF, context='default'){
       ${primary.replace('<button ', '<button role="menuitem" ')}
       ${secondary.replace('<button ', '<button role="menuitem" ')}
       <button type="button" role="menuitem" aria-label="Editar ${esc(asset.ticker||asset.name||'ativo')}" onclick='edA(${JSON.stringify(id)})'>Editar</button>
+      <button type="button" role="menuitem" class="asset-action-danger" aria-label="Excluir ${esc(asset.ticker||asset.name||'ativo')} e todo o histórico" onclick='deleteAssetFull(${JSON.stringify(String(asset.ticker||''))})'>Excluir ativo</button>
     </div>
   </div>`;
+}
+function deleteAssetFull(ticker){
+  if(!canEditFromThisTab('excluir ativo')) return;
+  const normalized=String(ticker||'').trim().toUpperCase();
+  if(!normalized){ toast('⚠️ Ticker inválido.','#f87171'); return; }
+  const matchTicker=value=>String(value||'').trim().toUpperCase()===normalized;
+  const aportesCount=(S.aportes||[]).filter(a=>matchTicker(a.ticker)).length;
+  const proventosCount=(S.proventos||[]).filter(p=>matchTicker(p.ticker)).length;
+  const assetExists=(S.assets||[]).some(a=>matchTicker(a.ticker));
+  if(aportesCount===0 && proventosCount===0 && !assetExists){ toast('⚠️ Nenhum registro encontrado para esse ticker.','#f87171'); return; }
+  const ok=confirm(`Excluir ${normalized} da carteira?\n\nIsso remove permanentemente a posição e ${aportesCount} movimentação(ões) e ${proventosCount} provento(s) registrados para este ativo. Esta ação não pode ser desfeita.`);
+  if(!ok) return;
+  const typed=prompt(`Para confirmar, digite o ticker ${normalized}`);
+  if(String(typed||'').trim().toUpperCase()!==normalized) return;
+  S.aportes=(S.aportes||[]).filter(a=>!matchTicker(a.ticker));
+  S.proventos=(S.proventos||[]).filter(p=>!matchTicker(p.ticker));
+  // Remoção direta e pontual de S.assets (em vez de syncAssetsFromAportes, que
+  // reconstrói a lista inteira a partir de S.aportes e descartaria qualquer
+  // ativo sem movimentação correspondente, mesmo que não tenha relação com
+  // este ticker).
+  S.assets=(S.assets||[]).filter(a=>!matchTicker(a.ticker));
+  save();
+  toast(`🗑️ ${normalized} e seu histórico foram excluídos.`);
+  render();
 }
 function assetEditModal(){
   return `<div class="note-overlay" role="dialog" aria-modal="true" aria-label="Editar ativo" onclick="if(event.target===this)clA()">
