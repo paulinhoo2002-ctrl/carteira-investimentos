@@ -1086,7 +1086,7 @@ html[data-theme="light"] .asset-class-results-title{color:#0f172a}
 .aporte-premium .ap-summary .cl{font-size:11px}
 .aporte-premium .ap-summary .cv{font-size:18px}
 .aporte-premium .aporte-extract{overflow-x:auto}
-.aporte-contribution-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 12px}
+.aporte-contribution-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 12px}
 .aporte-contribution-grid .card{min-width:0;min-height:86px;padding:10px 11px}
 .aporte-contribution-grid .cv{font-size:19px;line-height:1.05;word-break:break-word}
 .aporte-contribution-grid .cs{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -33541,7 +33541,12 @@ function aporteInvestmentStats(rows=S.aportes||[]){
   const months=[...monthly.values()].sort((a,b)=>a.key.localeCompare(b.key));
   const total=known.reduce((sum,item)=>sum+item.value,0);
   const latest=[...known].sort((a,b)=>(b.date?.getTime()||0)-(a.date?.getTime()||0)).slice(0,5);
-  return {rows:known,total,average:months.length?total/months.length:0,largest:Math.max(0,...known.map(item=>item.value)),months,classes:[...byClass.entries()].sort((a,b)=>b[1]-a[1]),latest,missingValueCount,unknownDateCount,unknownMovementCount,unknownInvestmentCount};
+  const now=new Date();
+  const currentMonthKey=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const currentYear=now.getFullYear();
+  const thisMonth=known.filter(item=>item.date && item.date.getFullYear()===now.getFullYear() && item.date.getMonth()===now.getMonth()).reduce((sum,item)=>sum+item.value,0);
+  const thisYear=known.filter(item=>item.date && item.date.getFullYear()===currentYear).reduce((sum,item)=>sum+item.value,0);
+  return {rows:known,total,average:months.length?total/months.length:0,largest:Math.max(0,...known.map(item=>item.value)),months,classes:[...byClass.entries()].sort((a,b)=>b[1]-a[1]),latest,missingValueCount,unknownDateCount,unknownMovementCount,unknownInvestmentCount,thisMonth,thisYear,currentMonthKey,currentYear};
 }
 function aporteInvestmentMetric(stats,key){
   const uncertain=stats.missingValueCount>0 || stats.unknownInvestmentCount>0 || (key!=='total' && stats.unknownDateCount>0);
@@ -33589,6 +33594,8 @@ function apTab(){
   const reserve=reserveStats();
   const contributionStats=aporteInvestmentStats(S.aportes);
   const summaryCards=S.aportes.length?`<div class="aporte-contribution-grid">
+    <div class="card"><div class="cl">Este mês</div><div class="cv" style="color:#fbbf24">${aporteInvestmentMetric(contributionStats,'thisMonth')}</div><div class="cs">Compras e aplicações no mês atual</div></div>
+    <div class="card"><div class="cl">Este ano</div><div class="cv" style="color:#f472b6">${aporteInvestmentMetric(contributionStats,'thisYear')}</div><div class="cs">Compras e aplicações em ${contributionStats.currentYear}</div></div>
     <div class="card"><div class="cl">Total investido em compras e aplicações</div><div class="cv" style="color:#34d399">${aporteInvestmentMetric(contributionStats,'total')}</div><div class="cs">Vendas e proventos ficam fora</div></div>
     <div class="card"><div class="cl">Média mensal</div><div class="cv" style="color:#60a5fa">${aporteInvestmentMetric(contributionStats,'average')}</div><div class="cs">Meses com aporte</div></div>
     <div class="card"><div class="cl">Maior entrada</div><div class="cv" style="color:#a78bfa">${aporteInvestmentMetric(contributionStats,'largest')}</div><div class="cs">Compra ou aplicação de renda fixa</div></div>
