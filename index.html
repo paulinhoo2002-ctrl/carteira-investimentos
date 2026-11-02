@@ -32987,8 +32987,8 @@ function executiveKPIs(data){
     ${totalResultStatus}
     <div class="dashboard-executive-kpis">
       ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',patrimonyValue,patrimonyContext,'var(--semantic-official)','var(--semantic-official-bg)',`${patrimonyContext} · Data-base financeira não informada`)}
+      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Cobertura parcial':'Cobertura desconhecida','var(--success)','rgba(16,185,129,.14)',recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida')}
       ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado da posição',resultValue,resultAvailable?'Sobre capital cadastrado':resultNote,resultTone,resultGlow,resultNote)}
-      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Cobertura parcial':'Cobertura desconhecida','var(--success)','rgba(16,185,129,.14)',recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida')}
     </div>
   `;
 }
