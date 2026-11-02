@@ -1090,7 +1090,7 @@ html[data-theme="light"] .asset-class-results-title{color:#0f172a}
 .aporte-premium .ap-summary .cl{font-size:11px}
 .aporte-premium .ap-summary .cv{font-size:18px}
 .aporte-premium .aporte-extract{overflow-x:auto}
-.aporte-contribution-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 12px}
+.aporte-contribution-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 12px}
 .aporte-contribution-grid .card{min-width:0;min-height:86px;padding:10px 11px}
 .aporte-contribution-grid .cv{font-size:19px;line-height:1.05;word-break:break-word}
 .aporte-contribution-grid .cs{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1884,6 +1884,10 @@ tbody tr{transition:background .1s}tbody tr:hover{background:color-mix(in srgb, 
 .asset-action-menu-panel.open{display:flex;flex-direction:column;gap:3px}
 .asset-action-menu-panel button{min-height:44px;padding:8px 10px;border:0;border-radius:7px;background:transparent;color:var(--text);text-align:left;font-weight:700;cursor:pointer}
 .asset-action-menu-panel button:hover,.asset-action-menu-panel button:focus-visible{background:var(--surface-2)}
+.asset-action-menu-panel button.asset-action-danger{color:#f87171}
+.asset-action-menu-panel button.asset-action-danger:hover,.asset-action-menu-panel button.asset-action-danger:focus-visible{background:rgba(248,113,113,.1)}
+html[data-theme="light"] .asset-action-menu-panel button.asset-action-danger{color:#b91c1c}
+html[data-theme="light"] .asset-action-menu-panel button.asset-action-danger:hover,html[data-theme="light"] .asset-action-menu-panel button.asset-action-danger:focus-visible{background:rgba(185,28,28,.08)}
 .asset-actions button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media (max-width:640px){.asset-actions{min-width:0;flex-wrap:wrap}.asset-action{flex:0 0 auto}.asset-action-menu-panel{right:auto;left:0}}
 .bdi{background:transparent;border:1px solid rgba(127,29,29,.5);border-radius:7px;padding:3px 9px;color:#f87171;font-size:13px}
@@ -3686,6 +3690,12 @@ html[data-theme="light"] .div-timeline-card{box-shadow:0 8px 22px rgba(15,23,42,
 .div-premium .div-upcoming-subline{font-size:9px;color:var(--muted);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .div-premium .div-upcoming-item .div-type-badge{flex:none}
 .div-premium .div-upcoming-empty{padding:9px;border:1px dashed var(--border);border-radius:12px;background:var(--panel);color:var(--muted);line-height:1.4}
+.corp-event-review-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.corp-event-review-toggle{min-height:36px;padding:6px 12px;font-size:11px;font-weight:800;white-space:nowrap;border-radius:999px}
+.corp-event-review-toggle[aria-pressed="true"]{background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.4);color:var(--success)}
+.corp-event-review-item{border-radius:10px;padding-left:8px;padding-right:8px}
+.corp-event-review-item-done{background:rgba(34,197,94,.06);border-left:3px solid var(--success)}
+@media (max-width:600px){.corp-event-review-actions{justify-content:space-between;width:100%}.corp-event-review-toggle{min-height:40px}}
 .div-premium .div-recent-list,.div-premium .div-asset-list,.div-premium .div-month-list{gap:5px}
 .div-premium .div-receipt-card{padding:7px 8px;gap:4px;border-radius:12px}
 .div-premium .div-receipt-top{gap:5px}
@@ -4618,6 +4628,8 @@ html[data-theme="light"] .reports-title,
 html[data-theme="light"] .analysis-card-title,
 html[data-theme="light"] .analysis-ranking-title,
 html[data-theme="light"] .asset-premium-title,
+html[data-theme="light"] .premium-settings-title,
+html[data-theme="light"] .import-center-title,
 html[data-theme="light"] .patrimony-title,
 html[data-theme="light"] .data-audit-title,
 html[data-theme="light"] .sec-title,
@@ -4698,6 +4710,12 @@ html[data-theme="light"] .analysis-ranking,
 html[data-theme="light"] .asset-premium-hero,
 html[data-theme="light"] .asset-premium-section,
 html[data-theme="light"] .asset-premium-kpi,
+html[data-theme="light"] .premium-settings-section,
+html[data-theme="light"] .import-center-panel,
+html[data-theme="light"] .import-center-hero,
+html[data-theme="light"] .premium-settings-row,
+html[data-theme="light"] .import-center-step,
+html[data-theme="light"] .import-review-card,
 html[data-theme="light"] .asset-performance-row,
 html[data-theme="light"] .asset-insight-row,
 html[data-theme="light"] .patrimony-hero,
@@ -4738,6 +4756,172 @@ html[data-theme="light"] .quick-movement-preview-card{
   border-color:var(--border)!important;
   box-shadow:var(--shadow)!important;
   color:var(--text)!important;
+}
+html[data-theme="light"] .import-center-safety{
+  color:#92400e!important;
+  background:#fffbeb!important;
+  border-color:#fde68a!important;
+}
+html[data-theme="light"] .premium-settings-badge.ok{
+  color:#166534!important;
+  background:#f0fdf4!important;
+  border-color:#bbf7d0!important;
+}
+html[data-theme="light"] .premium-settings-badge.warn{
+  color:#92400e!important;
+  background:#fffbeb!important;
+  border-color:#fde68a!important;
+}
+html[data-theme="light"] .premium-settings-badge.info{
+  color:#3730a3!important;
+  background:#eef2ff!important;
+  border-color:#c7d2fe!important;
+}
+html[data-theme="light"] .asset-detail-hero,
+html[data-theme="light"] .asset-detail-kpi,
+html[data-theme="light"] .asset-detail-panel{
+  background:var(--panel)!important;
+  border-color:var(--border)!important;
+  box-shadow:var(--shadow)!important;
+}
+html[data-theme="light"] .asset-detail-title,
+html[data-theme="light"] .asset-detail-kpi-value,
+html[data-theme="light"] .asset-detail-panel h2,
+html[data-theme="light"] .asset-detail-row strong,
+html[data-theme="light"] .asset-detail-value-block strong{
+  color:var(--text)!important;
+}
+html[data-theme="light"] .asset-detail-kicker,
+html[data-theme="light"] .asset-detail-subtitle,
+html[data-theme="light"] .asset-detail-kpi-label,
+html[data-theme="light"] .asset-detail-label,
+html[data-theme="light"] .asset-detail-kpi-note,
+html[data-theme="light"] .asset-detail-panel p,
+html[data-theme="light"] .asset-detail-row span:first-child,
+html[data-theme="light"] .asset-detail-empty,
+html[data-theme="light"] .asset-detail-tab{
+  color:var(--muted)!important;
+}
+html[data-theme="light"] .asset-detail-tabs{
+  border-bottom-color:var(--border)!important;
+}
+html[data-theme="light"] .asset-detail-tab:hover{
+  color:var(--text)!important;
+  background:var(--surface-2,var(--surface))!important;
+}
+html[data-theme="light"] .asset-detail-badge{
+  color:var(--text)!important;
+  background:var(--surface-2,var(--surface))!important;
+  border-color:var(--border)!important;
+}
+html[data-theme="light"] .asset-detail-badge.accent,
+html[data-theme="light"] .asset-detail-tab.on{
+  color:#166534!important;
+  background:#f0fdf4!important;
+  border-color:#bbf7d0!important;
+}
+html[data-theme="light"] .asset-detail-kpi-value.pos{color:#15803d!important}
+html[data-theme="light"] .asset-detail-kpi-value.neg{color:#b91c1c!important}
+html[data-theme="light"] .asset-detail-value-block{
+  background:#f0fdf4!important;
+  border-color:#bbf7d0!important;
+}
+html[data-theme="light"] .asset-detail-interpretation{
+  color:var(--muted)!important;
+  background:#eff6ff!important;
+  border-color:#bfdbfe!important;
+}
+html[data-theme="light"] .asset-detail-interpretation strong{
+  color:#1e40af!important;
+}
+html[data-theme="light"] .asset-detail-link{
+  color:#047857!important;
+  background:#f0fdf4!important;
+  border-color:#bbf7d0!important;
+}
+html[data-theme="light"] .v257-remediation-center,
+html[data-theme="light"] .v258-monitoring-center{
+  background:var(--panel)!important;
+  border-color:var(--border)!important;
+  color:var(--text)!important;
+}
+html[data-theme="light"] .v257-remediation-head h2,
+html[data-theme="light"] .v258-monitoring-head h2,
+html[data-theme="light"] .v257-remediation-item strong,
+html[data-theme="light"] .v258-monitoring-alert strong,
+html[data-theme="light"] .v257-remediation-summary strong,
+html[data-theme="light"] .v258-monitoring-summary strong{
+  color:var(--text)!important;
+}
+html[data-theme="light"] .v257-remediation-head p,
+html[data-theme="light"] .v258-monitoring-head p,
+html[data-theme="light"] .v257-remediation-summary span,
+html[data-theme="light"] .v258-monitoring-summary span,
+html[data-theme="light"] .v257-remediation-item small,
+html[data-theme="light"] .v258-monitoring-alert small,
+html[data-theme="light"] .v257-remediation-note,
+html[data-theme="light"] .v258-monitoring-note,
+html[data-theme="light"] .v257-remediation-group,
+html[data-theme="light"] .v257-remediation-empty,
+html[data-theme="light"] .v258-monitoring-empty{
+  color:var(--muted)!important;
+}
+html[data-theme="light"] .v257-remediation-kicker,
+html[data-theme="light"] .v258-monitoring-kicker{
+  color:#1d4ed8!important;
+}
+html[data-theme="light"] .v257-remediation-readonly,
+html[data-theme="light"] .v258-monitoring-readonly{
+  color:#166534!important;
+  background:#f0fdf4!important;
+  border-color:#bbf7d0!important;
+}
+html[data-theme="light"] .v257-remediation-summary article,
+html[data-theme="light"] .v258-monitoring-summary article,
+html[data-theme="light"] .v257-remediation-item,
+html[data-theme="light"] .v258-monitoring-alert,
+html[data-theme="light"] .v257-remediation-group{
+  background:var(--surface)!important;
+  border-color:var(--border)!important;
+}
+html[data-theme="light"] .v257-remediation-empty,
+html[data-theme="light"] .v258-monitoring-empty{
+  border-color:var(--border)!important;
+}
+html[data-theme="light"] .v257-remediation-summary .warning strong,
+html[data-theme="light"] .v258-monitoring-summary .changed strong{color:#b45309!important}
+html[data-theme="light"] .v257-remediation-summary .critical strong,
+html[data-theme="light"] .v258-monitoring-summary .critical strong{color:#b91c1c!important}
+html[data-theme="light"] .v257-remediation-summary .info strong,
+html[data-theme="light"] .v258-monitoring-summary .new strong{color:#1d4ed8!important}
+html[data-theme="light"] .v258-monitoring-summary .resolved strong{color:#15803d!important}
+html[data-theme="light"] .v257-remediation-filters input,
+html[data-theme="light"] .v257-remediation-filters select,
+html[data-theme="light"] .v258-monitoring-filters input,
+html[data-theme="light"] .v258-monitoring-filters select,
+html[data-theme="light"] .v258-monitoring-button{
+  background:var(--panel)!important;
+  color:var(--text)!important;
+  border-color:var(--border)!important;
+}
+html[data-theme="light"] .v257-remediation-badge.critical{color:#b91c1c!important}
+html[data-theme="light"] .v257-remediation-badge.warning{color:#92400e!important}
+html[data-theme="light"] .v257-remediation-badge.info{color:#1d4ed8!important}
+html[data-theme="light"] .v257-remediation-badge.state{color:#6d28d9!important}
+html[data-theme="light"] .v258-monitoring-badge.new{color:#1d4ed8!important;background:#eef2ff!important}
+html[data-theme="light"] .v258-monitoring-badge.changed{color:#92400e!important;background:#fffbeb!important}
+html[data-theme="light"] .v258-monitoring-badge.resolved{color:#166534!important;background:#f0fdf4!important}
+html[data-theme="light"] .v258-monitoring-badge.ongoing,
+html[data-theme="light"] .v258-monitoring-badge.informational{color:var(--muted)!important;background:var(--surface)!important}
+html[data-theme="light"] .canon-donut-seg-wrap svg circle{
+  fill:var(--panel)!important;
+  stroke:var(--border)!important;
+}
+html[data-theme="light"] .canon-donut-seg-wrap svg text:nth-of-type(1){
+  fill:var(--text)!important;
+}
+html[data-theme="light"] .canon-donut-seg-wrap svg text:nth-of-type(2){
+  fill:var(--muted)!important;
 }
 html[data-theme="light"] .quick-movement-modal .fc{
   background:var(--panel)!important;
@@ -7625,6 +7809,12 @@ html[data-theme="light"] .assets-premium-shell .assets-portfolio-summary span{co
 html[data-theme="light"] .assets-premium-shell .assets-portfolio-summary .positive-text{color:#0f5c2d}
 .assets-premium-shell .accordion-header .acc-metric-label{font-size:11px;text-transform:none;letter-spacing:normal}
 .assets-premium-shell .accordion-header .acc-metric-value{font-variant-numeric:tabular-nums}
+.acc-metric-sub-label{color:var(--muted);font-weight:600}
+.acc-metric-goal-gap{font-size:11px;font-weight:700;white-space:nowrap}
+.acc-metric-goal-gap.above{color:#f59e0b}
+.acc-metric-goal-gap.below{color:#60a5fa}
+html[data-theme="light"] .acc-metric-goal-gap.above{color:#b45309}
+html[data-theme="light"] .acc-metric-goal-gap.below{color:#1d4ed8}
 .assets-premium-shell .assets-premium-subtitle{font-size:11px}
 .assets-premium-shell h1#assets-page-title{font-size:24px;line-height:1.2;letter-spacing:-.025em}
 .assets-premium-shell .assets-secondary-summary{margin:10px 0;color:var(--text)}
@@ -7639,6 +7829,13 @@ html[data-theme="light"] .assets-premium-shell .assets-portfolio-summary .positi
 .analysis-destination>.sh>div:first-child{display:block!important;width:auto!important;overflow:visible!important;flex-wrap:initial!important;gap:0!important}
 .analysis-destination>.sh .mu{white-space:normal!important;overflow:visible!important;text-overflow:clip!important}
 .assets-premium-shell .assets-premium-controls{display:flex;align-items:center;gap:8px;position:relative;margin:0 0 10px;min-width:0}
+.assets-class-tabs{display:flex;gap:2px;margin:0 0 10px;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:thin}
+.assets-class-tab{flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--muted);font:inherit;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+.assets-class-tab:hover{color:var(--text)}
+.assets-class-tab:focus-visible{outline:2px solid #19c2b5;outline-offset:-2px;border-radius:6px}
+.assets-class-tab.on{color:var(--text);border-bottom-color:#19c2b5}
+.assets-class-tab-n{min-width:22px;padding:2px 7px;border-radius:999px;background:rgba(127,140,160,.18);font-size:12px;font-weight:600;text-align:center;font-variant-numeric:tabular-nums}
+.assets-class-tab.on .assets-class-tab-n{background:rgba(25,194,181,.22)}
 .assets-premium-shell .assets-premium-controls .assets-premium-search{flex:1 1 320px;min-width:0}
 .assets-premium-shell .assets-premium-controls .assets-premium-filters{flex:0 0 auto}
 .assets-premium-shell .assets-premium-controls .assets-premium-filter-panel{top:calc(100% + 6px)}
@@ -7713,7 +7910,9 @@ html[data-theme="light"] .assets-premium-shell .assets-portfolio-summary .positi
   .assets-premium-shell .assets-portfolio-summary>div:nth-child(3){border-left:0;border-top:1px solid var(--border)}
   .assets-premium-shell .assets-portfolio-summary>div:nth-child(4){border-top:1px solid var(--border)}
   .assets-premium-shell .assets-portfolio-summary strong{font-size:16px}
-  .assets-premium-shell .assets-premium-controls{flex-wrap:nowrap;gap:7px;margin-bottom:8px}
+  .assets-premium-shell .assets-premium-controls{flex-wrap:wrap;gap:7px;margin-bottom:8px}
+  .assets-premium-shell .assets-premium-controls .assets-filter-summary{flex:1 1 100%;order:4}
+  .assets-premium-shell .assets-premium-controls .assets-premium-search{min-width:140px}
   .assets-premium-shell .assets-premium-controls:has(.assets-review-filter){flex-wrap:wrap}
   .assets-premium-shell .assets-premium-controls .assets-premium-search{flex:1 1 auto;flex-basis:0;order:1}
   .assets-premium-shell .assets-premium-controls .assets-premium-filters{order:2}
@@ -8075,6 +8274,8 @@ html[data-theme="light"] .assets-premium-shell .assets-portfolio-summary .positi
 .premium-dividends-3 .dividend-executive-kpi-label{font-size:12px;color:var(--canon-muted);text-transform:none;letter-spacing:normal}
 .premium-dividends-3 .dividend-executive-kpi-value{font-size:20px;line-height:1.1;color:var(--canon-text);font-variant-numeric:tabular-nums}
 .premium-dividends-3 .dividend-executive-kpi-value.good{color:var(--canon-green)}
+.premium-dividends-3 .canon-kpi-card.is-unknown{background:transparent;border-style:dashed;opacity:.62}
+.premium-dividends-3 .canon-kpi-card.is-unknown .dividend-executive-kpi-value{font-size:16px;opacity:.7}
 .premium-dividends-3 .dividend-executive-kpi-sub{font-size:10px;color:var(--canon-muted)}
 .premium-dividends-3 .dividend-executive-kpi{position:relative}
 .premium-dividends-3 .dividend-executive-kpi-info{position:absolute;z-index:3;top:4px;right:4px;color:var(--canon-muted)}
@@ -8881,6 +9082,7 @@ const OWNER_FIREBASE_UID = 'yaypxiiv7Ye7pwpDZ0nqhG3Yj7E3';
 const OWNER_FIREBASE_EMAIL = 'paulinhoo2002@gmail.com';
 const THEME_STOR   = 'carteira_theme';
 const HIDE_VALUES_STOR = 'carteira_hide_values';
+const CORP_EVENT_REVIEW_STOR = 'carteira_corp_event_reviewed';
 const THEME_COLOR  = { dark:'#07090f', light:'#e8eff6' };
 
 function isV250OfflineCachedSession(){
@@ -12474,6 +12676,26 @@ function hideValuesToggleButton(context='default'){
   const style=context==='sidebar'?'':' style="font-size:11px;padding:6px 10px;min-height:44px;line-height:1;white-space:nowrap;border-radius:999px;letter-spacing:.2px;opacity:.96"';
   return `<button class="${classes}"${style} onclick="toggleHideValues()"><span class="hdr-mobile-icon">${S.hideValues?'👁️':'🙈'}</span><span class="hdr-mobile-label">${S.hideValues?'Mostrar valores':'Ocultar valores'}</span></button>`;
 }
+function loadCorpEventReviewedState(){
+  try{
+    const raw=localStorage.getItem(CORP_EVENT_REVIEW_STOR);
+    const parsed=raw?JSON.parse(raw):null;
+    return parsed && typeof parsed==='object' && !Array.isArray(parsed) ? parsed : {};
+  }catch(e){ return {}; }
+}
+function isCorpEventReviewed(id){
+  if(!id) return false;
+  return Boolean(loadCorpEventReviewedState()[id]);
+}
+function toggleCorpEventReviewed(id){
+  if(!id) return;
+  try{
+    const state=loadCorpEventReviewedState();
+    if(state[id]) delete state[id]; else state[id]=Date.now();
+    localStorage.setItem(CORP_EVENT_REVIEW_STOR, JSON.stringify(state));
+  }catch(e){}
+  render();
+}
 function toggleHideValues(){
   S.hideValues = !S.hideValues;
   if(!isLocalTestMode()){
@@ -12815,11 +13037,32 @@ async function exportBackup({encrypted=true}={}){
   setTimeout(()=>URL.revokeObjectURL(a.href),1000);
   document.getElementById('backup-encryption-passphrase').value='';
   document.getElementById('backup-encryption-confirm').value='';
+  backupMarkExported();
   try{
     const archived=await BackupPortability.saveLocalBackup(payload,{cadence:'manual',supportedAssetTypes:TYPE_CHOICES,ownerId});
     if(!archived.ok) debugWarn('backup local archive skipped:',archived.status);
   }catch(error){debugWarn('backup local archive unavailable:',error?.name||'UNKNOWN');}
   toast(encrypted?'💾 Arquivo protegido exportado com AES-GCM e integridade SHA-256. Guarde a senha: ela não pode ser recuperada.':'⚠️ Arquivo sem senha exportado sem criptografia. Guarde-o somente em local privado.');
+}
+// Lembrete de backup exportado (UX): guarda só a data do último arquivo baixado neste navegador.
+// Não toca em dados financeiros nem no formato do backup.
+const BACKUP_EXPORT_KEY='carteira_last_export_at';
+const BACKUP_REMINDER_DAYS=30;
+function backupMarkExported(){
+  try{ localStorage.setItem(BACKUP_EXPORT_KEY,String(Date.now())); }catch(error){ /* storage indisponível: lembrete continua visível */ }
+}
+function backupDaysSinceExport(now=Date.now()){
+  let raw=null;
+  try{ raw=localStorage.getItem(BACKUP_EXPORT_KEY); }catch(error){ raw=null; }
+  const at=Number(raw);
+  if(!raw || !Number.isFinite(at) || at<=0 || at>now) return null;
+  return Math.floor((now-at)/86400000);
+}
+function backupReminderMessage(){
+  if(!Array.isArray(S.assets) || S.assets.length===0) return '';
+  const days=backupDaysSinceExport();
+  if(days!==null && days<BACKUP_REMINDER_DAYS) return '';
+  return days===null ? 'Você ainda não baixou um arquivo de backup neste navegador.' : `Seu último backup baixado tem ${days} ${days===1?'dia':'dias'}.`;
 }
 function v324PeriodicBackupEligible(){
   return typeof BackupPortability!=='undefined'&&typeof FB!=='undefined'&&!!FB.user&&FB.access?.allowed===true&&FB.cloudLoaded===true&&!FB.pendingCloudSave&&!FB.syncInFlight&&!FB.applying&&!FB.lastCloudError&&!isLocalTestMode()&&!isActiveWalletHostMode()&&!isAuthoritativeLocalRecoveryBoot()&&!isProtectedReadOnlyQaBoot();
@@ -23978,7 +24221,7 @@ const DATA_QUALITY_CATEGORIES=['Ativos','Dividendos','Renda Fixa','Metas','Movim
 const DATA_QUALITY_ENTITY_TYPES=['Ativo','Provento','Renda Fixa','Meta','Movimentacao'];
 
 function dataQualitySeverityLabel(severity){
-  return severity==='critical' ? 'Critico' : severity==='warning' ? 'Atencao' : 'Info';
+  return severity==='critical' ? 'Crítico' : severity==='warning' ? 'Atenção' : 'Info';
 }
 function dataQualitySeverityRank(severity){
   return severity==='critical' ? 3 : severity==='warning' ? 2 : severity==='info' ? 1 : 0;
@@ -24880,7 +25123,7 @@ function v257QualityModel(legacySnapshot=dataQualitySnapshot()){
     fixedIncomeManualAuthority:true
   });
 }
-function v257QualityStateLabel(value){ return ({OPEN:'Aberto',NEEDS_REVIEW:'Revisao necessaria',BLOCKED_BY_MISSING_DATA:'Bloqueado por dado ausente',RESOLVABLE:'Pode ser resolvido',INFORMATIONAL:'Informativo',RESOLVED:'Resolvido'}[String(value||'').toUpperCase()]||String(value||'')); }
+function v257QualityStateLabel(value){ return ({OPEN:'Aberto',NEEDS_REVIEW:'Revisão necessária',BLOCKED_BY_MISSING_DATA:'Bloqueado por dado ausente',RESOLVABLE:'Pode ser resolvido',INFORMATIONAL:'Informativo',RESOLVED:'Resolvido'}[String(value||'').toUpperCase()]||String(value||'')); }
 function v257QualitySeverityClass(value){ return String(value||'').toLowerCase()==='critical'?'critical':String(value||'').toLowerCase()==='warning'?'warning':'info'; }
 function setV257QualityFilter(field,value){
   S.v257QualityFilters={...(S.v257QualityFilters||{}),[field]:String(value||'')};
@@ -24892,9 +25135,9 @@ function v257DataQualityCenter(model){
   const filters={...(S.v257QualityFilters||{})};
   const filtered=engine.filter(model,{search:filters.search||'',state:filters.state||'ALL',severity:filters.severity||'ALL',domain:filters.domain||'ALL'});
   const option=(value,label,selected)=>`<option value="${esc(value)}"${selected===value?' selected':''}>${esc(label)}</option>`;
-  const cards=[['Pendencias abertas',model.summary.open,''],['Revisao necessaria',model.summary.needsReview,'warning'],['Criticos',model.summary.critical,'critical'],['Informativos',model.summary.informational,'info'],['Sem writes',model.writeCount,'']].map(([label,value,tone])=>`<article class="${tone}"><span>${esc(label)}</span><strong>${esc(String(value))}</strong></article>`).join('');
+  const cards=[['Pendências abertas',model.summary.open,''],['Revisão necessária',model.summary.needsReview,'warning'],['Críticos',model.summary.critical,'critical'],['Informativos',model.summary.informational,'info'],['Sem writes',model.writeCount,'']].map(([label,value,tone])=>`<article class="${tone}"><span>${esc(label)}</span><strong>${esc(String(value))}</strong></article>`).join('');
   const groups=(model.rootCauses||[]).slice(0,6).map(group=>`<span class="v257-remediation-group">${esc(group.rootCause)} · ${group.count}</span>`).join('');
-  const rows=filtered.length?filtered.slice(0,80).map(item=>`<article class="v257-remediation-item"><div><span class="v257-remediation-badge ${v257QualitySeverityClass(item.severity)}">${esc(item.severity)}</span><span class="v257-remediation-badge state">${esc(v257QualityStateLabel(item.state))}</span></div><div><strong>${esc(item.entityLabel)}</strong><small>${esc(item.domain)} · ${esc(item.dataState)} · ${esc(item.field)}</small></div><div><strong>${esc(item.message)}</strong><small>${esc(item.impact)}</small></div><div><strong>Proximo passo factual</strong><small>${esc(item.recommendedAction)}${item.route?` · destino seguro: ${esc(item.route)}`:''}</small></div></article>`).join(''):'<div class="v257-remediation-empty" role="status">Nenhum achado corresponde aos filtros. Ausência de achado não transforma dado desconhecido em zero.</div>';
+  const rows=filtered.length?filtered.slice(0,80).map(item=>`<article class="v257-remediation-item"><div><span class="v257-remediation-badge ${v257QualitySeverityClass(item.severity)}">${esc(item.severity)}</span><span class="v257-remediation-badge state">${esc(v257QualityStateLabel(item.state))}</span></div><div><strong>${esc(item.entityLabel)}</strong><small>${esc(item.domain)} · ${esc(item.dataState)} · ${esc(item.field)}</small></div><div><strong>${esc(item.message)}</strong><small>${esc(item.impact)}</small></div><div><strong>Próximo passo factual</strong><small>${esc(item.recommendedAction)}${item.route?` · destino seguro: ${esc(item.route)}`:''}</small></div></article>`).join(''):'<div class="v257-remediation-empty" role="status">Nenhum achado corresponde aos filtros. Ausência de achado não transforma dado desconhecido em zero.</div>';
   return `<section class="v257-remediation-center" id="data-quality-remediation-center" aria-labelledby="v257-remediation-title"><div class="v257-remediation-head"><div><div class="v257-remediation-kicker">V257 · centro factual</div><h2 id="v257-remediation-title">Centro de remediação da qualidade</h2><p>Achados derivados, agrupados por causa-raiz e separados por domínio. Esta área explica o que precisa de revisão, sem corrigir cadastro, promover histórico ou executar qualquer write.</p></div><span class="v257-remediation-readonly">Somente leitura · zero writes</span></div><div class="v257-remediation-summary">${cards}</div><div class="v257-remediation-filters"><label class="sr-only" for="v257-quality-search">Buscar achado</label><input id="v257-quality-search" type="search" placeholder="Buscar ticker, causa ou mensagem" value="${esc(filters.search||'')}" oninput="setV257QualityFilter('search',this.value)"><label class="sr-only" for="v257-quality-state">Estado</label><select id="v257-quality-state" onchange="setV257QualityFilter('state',this.value)">${option('ALL','Todos os estados',filters.state||'ALL')}${engine.STATES.map(value=>option(value,v257QualityStateLabel(value),filters.state||'ALL')).join('')}</select><label class="sr-only" for="v257-quality-domain">Domínio</label><select id="v257-quality-domain" onchange="setV257QualityFilter('domain',this.value)">${option('ALL','Todos os domínios',filters.domain||'ALL')}${engine.DOMAINS.map(value=>option(value,value,filters.domain||'ALL')).join('')}</select><label class="sr-only" for="v257-quality-severity">Severidade</label><select id="v257-quality-severity" onchange="setV257QualityFilter('severity',this.value)">${option('ALL','Todas as severidades',filters.severity||'ALL')}${engine.SEVERITIES.map(value=>option(value,value,filters.severity||'ALL')).join('')}</select></div><div class="v257-remediation-groups" aria-label="Causas-raiz mais frequentes">${groups||'<span class="v257-remediation-group">Nenhum grupo disponível</span>'}</div><div class="v257-remediation-note">${filtered.length} achado(s) exibido(s). Estados de cobertura e confiança permanecem explícitos; resolver uma pendência continua sendo uma ação humana ou de fluxo próprio, nunca automática nesta tela.</div><div class="v257-remediation-list">${rows}</div></section>`;
 }
 function v258MonitoringUserId(){ return String(globalThis.FB?.user?.uid || S.activeWalletId || 'anonymous'); }
@@ -24949,7 +25192,7 @@ function dataQualityTab(){
     (entityType==='all' || issue.entityType===entityType)
   );
   const healthy=snapshot.summary.criticalRecords===0 && snapshot.summary.warningRecords===0 && snapshot.summary.infoRecords===0;
-  const severityChips=[['all','Todos'],['critical','Criticos'],['warning','Atencao'],['info','Info']]
+  const severityChips=[['all','Todos'],['critical','Críticos'],['warning','Atenção'],['info','Info']]
     .map(([value,label])=>`<button class="data-quality-chip ${severity===value?'on':''}" onclick="setDataQualitySeverity('${value}')">${esc(label)}</button>`).join('');
   const categoryChips=[['all','Todas'],...DATA_QUALITY_CATEGORIES.map(value=>[value,value])]
     .map(([value,label])=>`<button class="data-quality-chip ${category===value?'on':''}" onclick="setDataQualityCategory(${JSON.stringify(value)})">${esc(label)}</button>`).join('');
@@ -24974,8 +25217,8 @@ function dataQualityTab(){
   const summaryCards=[
     ['Registros analisados', snapshot.summary.totalRecords, 'dados inspecionados'],
     ['Sem problemas', snapshot.summary.validRecords, 'registros sem achados relevantes'],
-    ['Atencao', snapshot.summary.warningRecords, 'registros com observacoes'],
-    ['Criticos', snapshot.summary.criticalRecords, 'registros que exigem revisao urgente'],
+    ['Atenção', snapshot.summary.warningRecords, 'registros com observações'],
+    ['Críticos', snapshot.summary.criticalRecords, 'registros que exigem revisão urgente'],
     ['Integridade', `${snapshot.score}%`, 'indice de registros validos']
   ].map(([label,value,sub],index)=>`<div class="data-quality-card ${index===2?'warning':index===3?'critical':index===4?integrityTone:'ok'}"><div class="data-quality-card-label wave-b-heading">${waveBIcon(index===2||index===3?'attention':index===1?'readonly':'analysis')}<span>${esc(label)}</span></div><div class="data-quality-card-value">${esc(String(value))}</div><div class="data-quality-card-sub">${esc(sub)}</div></div>`).join('');
   const healthyState=healthy
@@ -25941,11 +26184,12 @@ function canonDonutInteractive(data, opts={}){
   }).filter(Boolean).join('');
   const centerText=opts.centerText||`${data.length}`;
   const centerSub=opts.centerSub||'classes';
+  const centerSize=String(centerText).length>9?12:15;
   return `<div class="canon-donut-seg-wrap" style="position:relative">
     <svg viewBox="0 0 180 180" width="180" height="180" style="display:block;margin:0 auto;overflow:visible">
       ${segs}
       <circle cx="${cx}" cy="${cy}" r="${innerR}" fill="#0a1522" stroke="#1b2a3a" stroke-width="2"></circle>
-      <text x="${cx}" y="${cy-6}" text-anchor="middle" fill="#f4f7fb" font-size="15" font-weight="700">${esc(centerText)}</text>
+      <text x="${cx}" y="${cy-6}" text-anchor="middle" fill="#f4f7fb" font-size="${centerSize}" font-weight="700">${esc(centerText)}</text>
       <text x="${cx}" y="${cy+12}" text-anchor="middle" fill="#8794a8" font-size="10">${esc(centerSub)}</text>
     </svg>
     <div class="canon-donut-tooltip" role="status" aria-live="polite" hidden></div>
@@ -26016,6 +26260,14 @@ function setRentBench(bench){
     if(window.innerWidth < 768){
       S.assetsFilterPanelOpen = false;
     }
+    render();
+  }
+
+  // Abas por classe: atalho para o mesmo filtro de tipo do painel (S.assetsFilterClasses).
+  function setAssetsClassTab(type){
+    const value=String(type||'');
+    S.assetsFilterClasses = value ? [value] : [];
+    S.activeAssetsGroup='';
     render();
   }
 
@@ -26515,7 +26767,8 @@ function assetRankingListHtml(rows, mode){
 }
 function assetPremiumSection(title, subtitle, count, body, tone='muted', expanded=false){
   const icon=title.includes('alta')?'trend':title.includes('baixa')?'attention':title.includes('posição')?'ranking':title.includes('concentra')?'concentration':title.includes('incompleto')?'readonly':'attention';
-  return `<details class="asset-premium-section" ${expanded?'open':''}>
+  const openByDefault=expanded||Number(count)>0;
+  return `<details class="asset-premium-section" ${openByDefault?'open':''}>
     <summary>
       <div style="min-width:0"><div class="asset-premium-section-title wave-b-heading">${waveBIcon(icon)}<span>${esc(title)}</span></div><div class="asset-premium-section-sub">${esc(subtitle)}</div></div>
       <span class="asset-premium-section-meta analysis-pill ${esc(tone)}">${count} ${count===1?'ativo':'ativos'}</span>
@@ -29775,7 +30028,7 @@ function goAssetInner(tab){
 function desktopTabs(){
   const sideLu=S.lastUpdate?S.lastUpdate.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—';
   const isAtivos=S.tab==='ativos';
-  const navItem=(key,label,icon,active)=>`<button type="button" class="tab${active?' on':''}" onclick="go('${key}')"${active?' aria-current="page"':''} aria-label="${esc(label)}"><span class="side-nav-icon" aria-hidden="true">${icon}</span><span>${esc(label)}</span></button>`;
+  const navItem=(key,label,icon,active,count)=>`<button type="button" class="tab${active?' on':''}" onclick="go('${key}')"${active?' aria-current="page"':''} aria-label="${esc(label)}"><span class="side-nav-icon" aria-hidden="true">${icon}</span><span>${esc(label)}</span>${Number.isFinite(count)&&count>0?`<span class="side-nav-count" aria-hidden="true">${count>999?'999+':count}</span>`:''}</button>`;
   const navItemInner=(tooltip,label,icon,active)=>`<button type="button" class="tab${active?' on':''}" onclick="goAssetInner('${tooltip}')"${active?' aria-current="page"':''} aria-label="${esc(label)}"><span class="side-nav-icon" aria-hidden="true">${icon}</span><span>${esc(label)}</span></button>`;
   return `<nav class="tabs tabs-desktop" aria-label="Navegacion principal de la carteira">
     <div class="side-brand">
@@ -29783,26 +30036,27 @@ function desktopTabs(){
       <div class="side-brand-text"><div class="side-brand-name">Carteira</div><div class="side-brand-sub"><span class="side-avatar" aria-hidden="true">PS</span>Paulo Sérgio</div></div>
     </div>
     <button class="portfolio-search-trigger" type="button" onclick="portfolioSearchOpen()" aria-label="Buscar na carteira" title="Buscar na carteira (Ctrl+K)"><span aria-hidden="true">⌕</span><span>Buscar na carteira</span><kbd>Ctrl K</kbd></button>
-    <div class="nav-section-title">CARTEIRA</div>
     ${navItem('dashboard','Resumo','📊',S.tab==='dashboard')}
-    ${navItem('patrimonio','Patrimônio','◈',S.tab==='patrimonio')}
-    ${navItem('ativos','Ativos','💼',isAtivos)}
-    ${navItem('aportes','Lançamentos','💰',S.tab==='aportes')}
-    <div class="nav-section-title">RENDA &amp; PERFORMANCE</div>
-    ${navItem('dividendos','Dividendos','📅',S.tab==='dividendos')}
-    ${navItem('rentabilidade','Rentabilidade','📈',S.tab==='rentabilidade')}
-    ${navItem('renda-fixa','Renda Fixa','🧾',S.tab==='renda-fixa')}
-    <div class="nav-section-title">ANÁLISE</div>
+    ${navItem('ativos','Ativos','💼',isAtivos,(S.assets||[]).length)}
+    ${navItem('aportes','Lançamentos','💰',S.tab==='aportes',(S.aportes||[]).length)}
+    ${navItem('dividendos','Dividendos','📅',S.tab==='dividendos',(S.proventos||[]).length)}
     ${navItem('analise','Análise','📊',S.tab==='analise')}
-    ${navItem('ajudar','Rebalancear','⚖️',S.tab==='ajudar')}
-    ${navItem('metas','Metas','🎯',S.tab==='metas')}
-    ${navItem('ia','Insights','💡',S.tab==='ia')}
-    <div class="nav-section-title">DADOS</div>
-    ${navItem('confiabilidade','Confiabilidade','🛡️',S.tab==='confiabilidade')}
-    ${navItem('importacao','Importar dados','⇅',S.tab==='importacao')}
-    <div class="nav-section-title">MAIS</div>
-    ${navTabGroup('Relatórios',REPORT_TABS,'desktop')}
     ${navItem('settings','Configurações','⚙️',S.tab==='settings')}
+    <details class="nav-more" open>
+      <summary class="nav-more-summary">Planejar e acompanhar</summary>
+      ${navItem('ia','Insights','💡',S.tab==='ia')}
+      ${navItem('metas','Metas','🎯',S.tab==='metas')}
+      ${navItem('patrimonio','Patrimônio','◈',S.tab==='patrimonio')}
+      ${navItem('rentabilidade','Rentabilidade','📈',S.tab==='rentabilidade')}
+      ${navItem('renda-fixa','Renda Fixa','🧾',S.tab==='renda-fixa')}
+      ${navItem('ajudar','Rebalancear','⚖️',S.tab==='ajudar')}
+    </details>
+    <details class="nav-more nav-advanced"${['confiabilidade','importacao'].includes(S.tab)||REPORT_TABS.some(t=>t[0]===S.tab)?' open':''}>
+      <summary class="nav-more-summary">Avançado</summary>
+      ${navItem('importacao','Importar dados','⇅',S.tab==='importacao')}
+      ${navItem('confiabilidade','Confiabilidade dos dados','🛡️',S.tab==='confiabilidade')}
+      ${navTabGroup('Relatórios',REPORT_TABS,'desktop')}
+    </details>
     <div class="side-utilities" aria-label="Preferências da carteira">
       ${hideValuesToggleButton('sidebar')}
       <button class="tab side-theme side-utility" onclick="toggleTheme()" aria-label="Alternar entre tema escuro e claro" title="Alternar tema">🌗 Tema</button>
@@ -32439,6 +32693,7 @@ ${!S.assets.length ? `<div class="dashboard-empty-cta" role="region" aria-label=
         ${dashboardEvolutionPanel(data)}
         ${dashboardV3AllocationPanel()}
       </div>
+      ${dashboardUpcomingDividendsPanel()}
       ${dashboardV3PriorityPanel(data)}
       ${dashboardHomeHighsLowsPanel()}
       ${dashboardQuickActions()}
@@ -32452,7 +32707,10 @@ function dashboardV3AllocationPanel(){
   const unknownCount=allocation.unknownPositionCount||0;
   const knownZero=allocation.knownPositionCount>0 && allocation.totalKnownValue===0;
   const hidden=!!S.hideValues;
-  const palette=['#5b8cff','#7cf4b5','#ffd76c','#ff6f7d','#5fd7ff'];
+  const palette=['#8b7bff','#38bdf8','#4ade80','#fbbf24','#f472b6','#fb923c'];
+  const donutPalette=['#8b7bff','#38bdf8','#4ade80','#fbbf24','#f472b6','#fb923c'];
+  let donutAcc=0;
+  const donutStops=rows.map((row,index)=>{const share=Math.max(0,Math.min(100,Number(row.shareOfKnown)||0));const from=donutAcc;donutAcc+=share;return `${donutPalette[index%donutPalette.length]} ${from.toFixed(2)}% ${Math.min(100,donutAcc).toFixed(2)}%`;}).join(',');
   const segments=rows.map((row,index)=>`<span style="width:${Math.max(0,Math.min(100,Number(row.shareOfKnown)||0)).toFixed(1)}%;background:${palette[index%palette.length]}" title="${esc(row.label)}"></span>`).join('');
   const list=hidden?'' : rows.length?rows.map((row,index)=>`<button type="button" class="dashboard-v3-allocation-row" data-class="${esc(row.label)}" onclick="dashboardOpenAllocationClass(this.dataset.class)" aria-label="Ver ${esc(row.label)} em Ativos"><span class="dashboard-v3-allocation-dot" style="background:${palette[index%palette.length]}"></span><span>${esc(row.label)}</span><strong>${globalThis.PortfolioAllocationIntelligence.formatPercent(row.shareOfKnown)}</strong></button>`).join(''):
     `<p class="dashboard-v3-allocation-empty">${knownZero?'Valor atual conhecido: zero; percentuais indisponíveis com base zero.':allocation.positionCount?'Valores atuais indisponíveis.':'Sem ativos cadastrados.'}</p>`;
@@ -32470,6 +32728,7 @@ function dashboardV3AllocationPanel(){
   return `<section class="dashboard-v3-allocation" aria-label="Alocação da carteira">
     <div class="dashboard-v3-section-head"><h2>Alocação</h2><button type="button" onclick="go('ativos')">Ver ativos</button></div>
     <p class="dashboard-v3-context">Participação por classe · base: valor atual conhecido.</p>
+    ${hidden||!rows.length?'':`<div class="dashboard-donut-wrap"><div class="dashboard-donut" role="img" aria-label="Rosca com a participação de cada classe" style="background:conic-gradient(${donutStops})"><div class="dashboard-donut-hole"><span>Total</span><strong>${fmt(allocation.totalKnownValue)}</strong></div></div></div>`}
     ${hidden?'<p class="dashboard-v3-allocation-hidden">Composição oculta</p>':`<div class="dashboard-v3-allocation-bar" role="img" aria-label="Participação das classes com valor conhecido">${segments}</div>`}
     <div class="dashboard-v3-allocation-list">${list}</div>${unknown}${unclassified}
     ${hidden?'':`<p class="dashboard-v3-context">Cobertura institucional: ${globalThis.PortfolioAllocationIntelligence.formatPercent(institutionCoverage.coverageCount)} das posições; ${globalThis.PortfolioAllocationIntelligence.formatPercent(institutionCoverage.coverageValue)} do patrimônio conhecido identificado. ${esc(institutionList)}. A instituição usa apenas metadado explícito, não o emissor.</p><p class="dashboard-v3-context">Data-base dos valores: ${esc(valuationDate)}.</p>`}
@@ -32623,6 +32882,69 @@ function package2HasRenderableSummary(summary){
 function package2KnownCount(value){
   const count=Number(value);
   return package2FiniteNumber(value)&&Number.isSafeInteger(count)&&count>=0?String(count):'contagem indisponível';
+}
+function dashboardUpcomingDividendsPanel(){
+  let rows=[];
+  try{ rows=dividendUpcomingRows(dividendPremiumRows()).slice(0,4); }catch(_){ return ''; }
+  const monthShort=['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+  const head=`<div class="home-upcoming-head"><div><h2 class="home-upcoming-title">Próximos recebimentos</h2><p class="home-upcoming-sub">Proventos já cadastrados com pagamento nos próximos 60 dias · previsto, ainda não recebido.</p></div><button type="button" class="btn bgh" onclick="go('dividendos')">Ver Dividendos</button></div>`;
+  if(!rows.length){
+    return `<section class="home-upcoming" aria-label="Próximos recebimentos">${head}<div class="home-upcoming-empty" role="status">Nenhum recebimento cadastrado para os próximos 60 dias. Nada é estimado: quando houver provento com data futura, ele aparece aqui.</div></section>`;
+  }
+  const cards=rows.map(row=>{
+    const d=row.paymentDt;
+    return `<article class="home-upcoming-card"><div class="home-upcoming-date" aria-hidden="true"><strong>${String(d.getDate()).padStart(2,'0')}</strong><span>${monthShort[d.getMonth()]}</span></div><div class="home-upcoming-main"><div class="home-upcoming-ticker">${esc(row.ticker)}</div><div class="home-upcoming-type">${esc(row.type||'Provento')}</div></div><div class="home-upcoming-value">${fmt(row.value)}</div></article>`;
+  }).join('');
+  return `<section class="home-upcoming" aria-label="Próximos recebimentos">${head}<div class="home-upcoming-grid">${cards}</div></section>`;
+}
+function dashboardPlainSummary(data){
+  // Tela inicial em linguagem simples: 3 respostas (quanto tenho, quanto ganhei/perdi, o que fazer agora).
+  // Usa os mesmos critérios de disponibilidade dos cartões executivos: valor desconhecido nunca vira zero.
+  const p=data?.portfolio||cx();
+  const hasAssets=Array.isArray(S.assets)&&S.assets.length>0;
+  const availability=dashboardCurrentValueAvailability();
+  const totalCurrent=Number(p.tC)||0;
+  const totalApplied=Number(p.tI)||0;
+  const currentKnown=hasAssets&&!['UNKNOWN','PARTIAL','NO_DATA'].includes(availability.state);
+  const amountValid=typeof p.tG==='number'&&Number.isFinite(p.tG);
+  const resultKnown=currentKnown&&amountValid&&p.appliedComplete!==false;
+  const hidden=!!S.hideValues;
+  const money=v=>hidden?'R$ ••••':fmt(v);
+  const holdText=currentKnown?money(totalCurrent):'Ainda não dá para calcular';
+  const holdNote=currentKnown?(totalApplied>0?`Você investiu ${money(totalApplied)}`:'Valor atual das suas posições'):(hasAssets?(availability.note||'Faltam cotações ou dados para somar tudo.'):'Cadastre seu primeiro ativo para começar.');
+  let resText='Sem resultado ainda';
+  let resNote=hasAssets?'Faltam dados para comparar com o que você investiu.':'O resultado aparece depois do primeiro ativo.';
+  let resTone='neutral';
+  if(resultKnown){
+    const abs=money(Math.abs(p.tG));
+    const pct=(!hidden&&typeof p.tGP==='number'&&Number.isFinite(p.tGP)&&totalApplied>0)?` (${fmtP(Math.abs(p.tGP))})`:'';
+    if(p.tG>0){ resText=`${abs} acima do investido${pct}`; resTone='up'; resNote='Valor atual menos o capital que você cadastrou.'; }
+    else if(p.tG<0){ resText=`${abs} abaixo do investido${pct}`; resTone='down'; resNote='Valor atual menos o capital que você cadastrou.'; }
+    else { resText='Igual ao que você investiu'; resNote='Valor atual igual ao capital cadastrado.'; }
+  }
+  const topImportantInsight=(Array.isArray(data?.insights)?data.insights:[]).map(i=>({...i,relatedRoute:/^[a-z-]+$/.test(String(i?.relatedRoute||''))?i.relatedRoute:'ia'})).find(i=>i.severity==='IMPORTANT')||null;
+  let next={title:'Nada urgente agora',note:'Suas posições estão com dados suficientes. Volte quando fizer um aporte ou venda.',label:'Ver ativos',action:"go('ativos')"};
+  if(!hasAssets) next={title:'Cadastre seu primeiro ativo',note:'Comece por uma ação, FII ou título de renda fixa.',label:'Cadastrar ativo',action:"go('ativos')"};
+  else if(!currentKnown) next={title:'Complete os dados da carteira',note:'Alguns valores estão faltando, por isso o total ainda não aparece.',label:'Ver o que falta',action:"go('confiabilidade')"};
+  else if(topImportantInsight) next={title:topImportantInsight.title,note:topImportantInsight.description,label:topImportantInsight.actionLabel||'Ver detalhes',action:`go('${topImportantInsight.relatedRoute}')`};
+  else if(backupReminderMessage()) next={title:'Faça um backup dos seus dados',note:backupReminderMessage()+' Guarde o arquivo fora do computador, por exemplo no Google Drive.',label:'Exportar backup',action:'openBackupCenter()'};
+  else if(availability.state==='STALE') next={title:'Cotações desatualizadas',note:availability.note||'Atualize as cotações para ver valores do dia.',label:'Ver ativos',action:"go('ativos')"};
+  const monthKey=passiveIncomeMonthKey(new Date());
+  const recent=data?.recent?.month===monthKey?data.recent:passiveIncomeMonthSummary(monthKey);
+  const recvNote=recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Cobertura parcial':'Cobertura desconhecida';
+  const pctText=(resultKnown&&!hidden&&typeof p.tGP==='number'&&Number.isFinite(p.tGP)&&totalApplied>0)?fmtP(p.tGP):'';
+  const signed=resultKnown?assetSignedMoneyText(p.tG):'—';
+  const arrow=resTone==='up'?'▲':resTone==='down'?'▼':'●';
+  const tile=(icon,label,value,note,tone)=>`<div class="home-tile tone-${tone||'neutral'}"><span class="home-tile-icon">${dashboardMetricIcon(icon)}</span><div><span class="home-tile-label">${esc(label)}</span><strong class="home-tile-value">${esc(value)}</strong><span class="home-tile-note">${esc(note)}</span></div></div>`;
+  return `<section class="home-status" aria-label="Como está sua carteira hoje">
+    <div class="home-hero tone-${resTone}">
+      <span class="home-status-q">Quanto eu tenho hoje?</span>
+      <strong class="home-hero-value">${holdText}</strong>
+      <span class="home-hero-chip tone-${resTone}"><b aria-hidden="true">${arrow}</b> ${resText}</span>
+      <span class="home-status-n">${esc(holdNote)} · ${esc(resNote)}</span>
+    </div>
+    <div class="home-status-card home-status-next"><span class="home-status-q">O que fazer agora?</span><strong class="home-status-a">${esc(next.title)}</strong><span class="home-status-n">${esc(next.note)}</span><button type="button" class="btn bp" onclick="${next.action}">${esc(next.label)}</button></div>
+  </section>`;
 }
 function executiveKPIs(data){
   const p=data?.portfolio||cx();
@@ -32886,8 +33208,6 @@ function patrimonioTab(){
         <div class="patrimonio-panel-head"><div><h2 class="patrimonio-panel-title">Top Ativos</h2><div class="patrimonio-panel-sub">Maiores posições por valor atual; barras e percentuais comparam as posições exibidas.</div></div><div class="patrimonio-panel-badge">${topAssets.length} ativos</div></div>
         <div class="patrimonio-top-asset-list">${topAssetsHtml}</div>
       </div>
-    </div>
-    <div class="patrimonio-grid patrimonio-grid-composition">
       <div class="patrimonio-panel patrimonio-panel-composition">
         <div class="patrimonio-panel-head"><div><h2 class="patrimonio-panel-title">Composição do Patrimônio</h2><div class="patrimonio-panel-sub">Quanto vem de capital aportado e quanto de ganho/perda de mercado.</div></div><div class="patrimonio-panel-badge ${resultTone}">${esc(resultLabel)}</div></div>
         ${resultKnown?`<div class="patrimony-composition">
@@ -33055,15 +33375,41 @@ function assetActionMenuHtml(asset, isRF, context='default'){
   const secondary=isRF
     ? `<button type="button" class="btn bgh asset-action" onclick='openRfMovementEditor(${JSON.stringify(rfAssetEventId(asset))}, "resgate_parcial")'>Resgatar</button>`
     : `<button type="button" class="btn bgh asset-action" onclick='openAssetQuickMovement(${JSON.stringify(id)}, "venda")'>Vender</button>`;
-  return `<div class="asset-actions asset-action-menu" data-asset-actions="${esc(id)}">
+  const quickActions=context==='desktop' ? `<span class="asset-quick-actions">${primary.replace('bsv asset-action','bsv asset-action asset-quick')}${secondary.replace('bgh asset-action','bgh asset-action asset-quick asset-quick-sell')}${isRF?'':`<button type="button" class="asset-icon-btn" aria-label="Editar ${esc(asset.ticker||asset.name||'ativo')}" title="Editar" onclick='edA(${JSON.stringify(id)})'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>`}</span>` : '';
+  return `<div class="asset-actions asset-action-menu" data-asset-actions="${esc(id)}">${quickActions}
     <button type="button" class="asset-action-trigger" aria-label="Mais ações para ${esc(asset.ticker||asset.name||'ativo')}" aria-haspopup="menu" aria-controls="${esc(menuId)}" aria-expanded="false" onclick='toggleAssetActionMenu(${JSON.stringify(menuId)}, event)'>⋯</button>
     <div class="asset-action-menu-panel" id="${esc(menuId)}" role="menu" aria-label="Ações para ${esc(asset.ticker||asset.name||'ativo')}">
       <button type="button" role="menuitem" onclick='openAssetDetail(${JSON.stringify(id)})'>Detalhes</button>
       ${primary.replace('<button ', '<button role="menuitem" ')}
       ${secondary.replace('<button ', '<button role="menuitem" ')}
       <button type="button" role="menuitem" aria-label="Editar ${esc(asset.ticker||asset.name||'ativo')}" onclick='edA(${JSON.stringify(id)})'>Editar</button>
+      <button type="button" role="menuitem" class="asset-action-danger" aria-label="Excluir ${esc(asset.ticker||asset.name||'ativo')} e todo o histórico" onclick='deleteAssetFull(${JSON.stringify(String(asset.ticker||''))})'>Excluir ativo</button>
     </div>
   </div>`;
+}
+function deleteAssetFull(ticker){
+  if(!canEditFromThisTab('excluir ativo')) return;
+  const normalized=String(ticker||'').trim().toUpperCase();
+  if(!normalized){ toast('⚠️ Ticker inválido.','#f87171'); return; }
+  const matchTicker=value=>String(value||'').trim().toUpperCase()===normalized;
+  const aportesCount=(S.aportes||[]).filter(a=>matchTicker(a.ticker)).length;
+  const proventosCount=(S.proventos||[]).filter(p=>matchTicker(p.ticker)).length;
+  const assetExists=(S.assets||[]).some(a=>matchTicker(a.ticker));
+  if(aportesCount===0 && proventosCount===0 && !assetExists){ toast('⚠️ Nenhum registro encontrado para esse ticker.','#f87171'); return; }
+  const ok=confirm(`Excluir ${normalized} da carteira?\n\nIsso remove permanentemente a posição e ${aportesCount} movimentação(ões) e ${proventosCount} provento(s) registrados para este ativo. Esta ação não pode ser desfeita.`);
+  if(!ok) return;
+  const typed=prompt(`Para confirmar, digite o ticker ${normalized}`);
+  if(String(typed||'').trim().toUpperCase()!==normalized) return;
+  S.aportes=(S.aportes||[]).filter(a=>!matchTicker(a.ticker));
+  S.proventos=(S.proventos||[]).filter(p=>!matchTicker(p.ticker));
+  // Remoção direta e pontual de S.assets (em vez de syncAssetsFromAportes, que
+  // reconstrói a lista inteira a partir de S.aportes e descartaria qualquer
+  // ativo sem movimentação correspondente, mesmo que não tenha relação com
+  // este ticker).
+  S.assets=(S.assets||[]).filter(a=>!matchTicker(a.ticker));
+  save();
+  toast(`🗑️ ${normalized} e seu histórico foram excluídos.`);
+  render();
 }
 function assetEditModal(){
   return `<div class="note-overlay" role="dialog" aria-modal="true" aria-label="Editar ativo" onclick="if(event.target===this)clA()">
@@ -33170,6 +33516,12 @@ function ativos(){
   const classFilterSet = new Set(S.assetsFilterClasses || []);
   const sectorOptions = [...new Set(S.assets.map(a => String(a?.sector || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
   const assetClassOptions = [...new Set(S.assets.map(a => String(a?.assetClass || a?.class || a?.category || a?.type || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  const assetClassTabLabels = {'Ação':'Ações','FII':'FIIs','ETF':'ETFs','BDR':'BDRs'};
+  const activeClassTab = (S.assetsFilterClasses || []).length === 1 ? S.assetsFilterClasses[0] : '';
+  const assetClassTabsHtml = S.assets.length ? `<div class="assets-class-tabs" role="group" aria-label="Filtrar por classe de ativo">
+    <button type="button" class="assets-class-tab${(S.assetsFilterClasses || []).length === 0 ? ' on' : ''}" aria-pressed="${(S.assetsFilterClasses || []).length === 0 ? 'true' : 'false'}" onclick="setAssetsClassTab('')">Todos<span class="assets-class-tab-n">${S.assets.length}</span></button>
+    ${groupNames.map(type => `<button type="button" class="assets-class-tab${activeClassTab === type ? ' on' : ''}" aria-pressed="${activeClassTab === type ? 'true' : 'false'}" data-asset-type="${esc(type)}" onclick="setAssetsClassTab(this.dataset.assetType)">${esc(assetClassTabLabels[type] || type)}<span class="assets-class-tab-n">${(grouped.get(type) || []).length}</span></button>`).join('')}
+  </div>` : '';
   const assetControls = `<div class="assets-premium-controls">
     <div class="assets-premium-search"><input type="search" class="assets-premium-search-input" placeholder="Buscar ativo..." aria-label="Buscar ativo por ticker ou nome" id="assets-premium-search" autocomplete="off" value="${esc(S.assetsSearch || '')}" oninput="onAssetsSearchInput(this.value)"></div>
     <div class="assets-premium-filters"><button type="button" class="assets-premium-filter-btn" onclick="toggleAssetsFilterPanel()" aria-controls="assets-filter-panel" aria-expanded="${S.assetsFilterPanelOpen ? 'true' : 'false'}">Filtros <span class="filter-count" id="assets-filter-count">${activeAssetFilterCount}</span></button></div>
@@ -33204,11 +33556,14 @@ function ativos(){
   const portfolioResultTone = portfolioResult == null || portfolioResult === 0 ? '' : portfolioResult > 0 ? 'positive-text' : 'negative-text';
   const portfolioReturnTone = portfolioReturn == null || portfolioReturn === 0 ? '' : portfolioReturn > 0 ? 'positive-text' : 'negative-text';
   const assetPortfolioSummaryHtml = `<section class="assets-portfolio-summary" aria-label="Resumo da carteira">
-    <div><span>Investido</span><strong>${assetSummaryInvested == null ? '—' : fmt(assetSummaryInvested)}</strong></div>
-    <div><span>Valor atual</span><strong>${assetSummaryCurrent == null ? '—' : fmt(assetSummaryCurrent)}</strong></div>
-    <div><span>Resultado</span><strong class="${portfolioResultTone}">${portfolioResult == null ? '—' : `${portfolioResult > 0 ? '+' : ''}${fmt(portfolioResult)}`}</strong></div>
-    <div><span>Rentabilidade</span><strong class="${portfolioReturnTone}">${portfolioReturn == null ? '—' : fmtP(portfolioReturn)}</strong></div>
+    <div><span>Total investido</span><strong>${assetSummaryInvested == null ? '—' : fmt(assetSummaryInvested)}</strong><small>Capital aplicado na carteira</small></div>
+    <div><span>Valor atual</span><strong>${assetSummaryCurrent == null ? '—' : fmt(assetSummaryCurrent)}</strong><small>Valor estimado das posições</small></div>
+    <div><span>Lucro/Prejuízo</span><strong class="${portfolioResultTone}">${portfolioResult == null ? '—' : `${portfolioResult > 0 ? '+' : ''}${fmt(portfolioResult)}`}</strong><small>Diferença entre atual e investido</small></div>
+    <div><span>Rentabilidade</span><strong class="${portfolioReturnTone}">${portfolioReturn == null ? '—' : fmtP(portfolioReturn)}</strong><small>Resultado sobre o valor investido</small></div>
   </section>`;
+
+  // Metas de alocação por classe (mesma fonte usada em Rebalancear), somente leitura aqui.
+  const assetsAllocationGoalMap = Object.fromEntries(allocationGoalItems().map(item => [item.type, Number(item.pct) || 0]));
 
   // Build accordion categories using details/summary for test compatibility
   const accordionHtml = groupNames.map(type => {
@@ -33227,6 +33582,8 @@ function ativos(){
     const typeResult = typeTotalValue == null ? null : typeTotalValue - typeInvested;
     const typeReturn = typeResult != null && typeInvested > 0 ? (typeResult / typeInvested) * 100 : null;
     const typeWeight = typeResult != null && portfolioTotal > 0 ? (typeTotalValue / portfolioTotal) * 100 : null;
+    const typeGoalPct = Object.prototype.hasOwnProperty.call(assetsAllocationGoalMap, type) ? assetsAllocationGoalMap[type] : null;
+    const typeGoalGap = typeGoalPct != null && typeWeight != null ? typeWeight - typeGoalPct : null;
     const typeCount = typeDisplayAssets.length;
     const categoryOpen = assetFiltersActive && typeDisplayAssets.length > 0;
 
@@ -33283,7 +33640,7 @@ function ativos(){
       return `<tr data-id="${esc(a.id)}" class="asset-premium-card">
         <td>
           <div class="asset-info">
-            <div class="asset-logo" style="background:${esc(a.color || (type === 'Ação' ? '#3b82f6' : type === 'FII' ? '#8b5cf6' : type === 'ETF' ? '#f5c542' : type === 'Renda Fixa' ? '#10b981' : '#f59e0b'))}">${esc(a.ticker?.charAt(0) || '?')}</div>
+            <div class="asset-logo" aria-hidden="true" style="--lc:${esc(a.color || (type === 'Ação' ? '#3b82f6' : type === 'FII' ? '#8b5cf6' : type === 'ETF' ? '#f5c542' : type === 'Renda Fixa' ? '#10b981' : '#f59e0b'))}">${esc(String(a.ticker||'?').replace(/[^A-Za-z0-9]/g,'').slice(0,4).toUpperCase()||'?')}</div>
             <div>
               <div class="asset-name">${esc(a.ticker)}</div>
               <div class="asset-ticker">${esc(a.name)} ${yahooBadge}</div>
@@ -33359,7 +33716,7 @@ function ativos(){
       return `<details class="asset-premium-card" data-id="${esc(a.id)}">
         <summary class="asset-premium-card-summary">
           <div class="asset-info">
-            <div class="asset-logo" style="background:${esc(a.color || (type === 'Ação' ? '#3b82f6' : type === 'FII' ? '#8b5cf6' : type === 'ETF' ? '#f5c542' : type === 'Renda Fixa' ? '#10b981' : '#f59e0b'))}">${esc(a.ticker?.charAt(0) || '?')}</div>
+            <div class="asset-logo" aria-hidden="true" style="--lc:${esc(a.color || (type === 'Ação' ? '#3b82f6' : type === 'FII' ? '#8b5cf6' : type === 'ETF' ? '#f5c542' : type === 'Renda Fixa' ? '#10b981' : '#f59e0b'))}">${esc(String(a.ticker||'?').replace(/[^A-Za-z0-9]/g,'').slice(0,4).toUpperCase()||'?')}</div>
             <div>
               <div class="asset-name">${esc(a.ticker)} ${yahooBadge}</div>
               <div class="asset-ticker">${esc(a.name)}</div>
@@ -33395,7 +33752,7 @@ function ativos(){
         <div class="acc-icon" style="background: ${type === 'Ação' ? 'rgba(59, 130, 246, 0.15)' : type === 'FII' ? 'rgba(139, 92, 246, 0.15)' : type === 'ETF' ? 'rgba(245, 197, 66, 0.15)' : type === 'Renda Fixa' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)'}; color: ${type === 'Ação' ? 'var(--info)' : type === 'FII' ? 'var(--ds-info)' : type === 'ETF' ? 'var(--warning)' : type === 'Renda Fixa' ? 'var(--success)' : 'var(--warning)'}">${icon}</div>
         <div>
           <div class="acc-name">${esc(type)}</div>
-          <div class="acc-sub">${type === 'Renda Fixa' ? `${typeCount} título${typeCount !== 1 ? 's' : ''}` : `${typeCount} ativo${typeCount !== 1 ? 's' : ''}`} ${reviewFilterActive ? ' · filtrados' : ''}</div>
+          <div class="acc-sub">${type === 'Renda Fixa' ? `${typeCount} título${typeCount !== 1 ? 's' : ''}` : `${typeCount} ativo${typeCount !== 1 ? 's' : ''}`}${typeTotalValue == null || S.hideValues ? '' : ` • ${fmt(typeTotalValue)}`}${typeWeight == null || S.hideValues ? '' : ` • ${typeWeight.toFixed(1)}% da carteira`} ${reviewFilterActive ? ' · filtrados' : ''}</div>
         </div>
       </div>
       <div>
@@ -33415,8 +33772,8 @@ function ativos(){
         <div class="acc-metric-value ${returnTone}">${typeReturn == null ? '—' : fmtP(typeReturn)}</div>
       </div>
       <div>
-        <div class="acc-metric-label ag-k">Peso</div>
-        <div class="acc-metric-value">${typeWeight == null ? '—' : `${typeWeight.toFixed(2)}%`}</div>
+        <div class="acc-metric-label ag-k">Peso <span class="acc-metric-sub-label">· Meta ${typeGoalPct == null ? '—' : `${typeGoalPct.toFixed(1)}%`}</span></div>
+        <div class="acc-metric-value">${typeWeight == null ? '—' : `${typeWeight.toFixed(2)}%`}${typeGoalGap == null ? '' : ` <span class="acc-metric-goal-gap ${typeGoalGap>0?'above':typeGoalGap<0?'below':''}">(${typeGoalGap>=0?'+':''}${typeGoalGap.toFixed(1)} p.p.)</span>`}</div>
       </div>
       <span class="acc-toggle" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
     `;
@@ -33473,7 +33830,7 @@ function ativos(){
 
     const tableHtml = `
       <div class="assets-table-wrap" tabindex="0" role="region" aria-label="Tabela de ativos · ${esc(type)} · use as setas para rolar" onkeydown="if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();this.scrollBy({left:(event.key==='ArrowRight'?1:-1)*80})}" onwheel="if(event.deltaX||event.shiftKey){event.preventDefault();this.scrollBy({left:event.deltaX||event.deltaY})}">
-        <div class="mu" style="padding:8px 12px">Role para os lados para ver todos os campos e ações.</div>
+        <div class="mu assets-scroll-hint" style="padding:8px 12px">Role para os lados para ver todos os campos e ações.</div>
         <table class="assets-table ag-table">
           <thead>
             <tr>
@@ -33535,6 +33892,7 @@ function ativos(){
     </div>
     ${assetPortfolioSummaryHtml}
     ${innerTabsHtml}
+    ${assetClassTabsHtml}
     ${assetControls}
     ${reviewBanner}
     ${coverageNote}
@@ -33850,7 +34208,12 @@ function aporteInvestmentStats(rows=S.aportes||[]){
   const months=[...monthly.values()].sort((a,b)=>a.key.localeCompare(b.key));
   const total=known.reduce((sum,item)=>sum+item.value,0);
   const latest=[...known].sort((a,b)=>(b.date?.getTime()||0)-(a.date?.getTime()||0)).slice(0,5);
-  return {rows:known,total,average:months.length?total/months.length:0,largest:Math.max(0,...known.map(item=>item.value)),months,classes:[...byClass.entries()].sort((a,b)=>b[1]-a[1]),latest,missingValueCount,unknownDateCount,unknownMovementCount,unknownInvestmentCount};
+  const now=new Date();
+  const currentMonthKey=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const currentYear=now.getFullYear();
+  const thisMonth=known.filter(item=>item.date && item.date.getFullYear()===now.getFullYear() && item.date.getMonth()===now.getMonth()).reduce((sum,item)=>sum+item.value,0);
+  const thisYear=known.filter(item=>item.date && item.date.getFullYear()===currentYear).reduce((sum,item)=>sum+item.value,0);
+  return {rows:known,total,average:months.length?total/months.length:0,largest:Math.max(0,...known.map(item=>item.value)),months,classes:[...byClass.entries()].sort((a,b)=>b[1]-a[1]),latest,missingValueCount,unknownDateCount,unknownMovementCount,unknownInvestmentCount,thisMonth,thisYear,currentMonthKey,currentYear};
 }
 function aporteInvestmentMetric(stats,key){
   const uncertain=stats.missingValueCount>0 || stats.unknownInvestmentCount>0 || (key!=='total' && stats.unknownDateCount>0);
@@ -33898,6 +34261,8 @@ function apTab(){
   const reserve=reserveStats();
   const contributionStats=aporteInvestmentStats(S.aportes);
   const summaryCards=S.aportes.length?`<div class="aporte-contribution-grid">
+    <div class="card"><div class="cl">Este mês</div><div class="cv" style="color:#fbbf24">${aporteInvestmentMetric(contributionStats,'thisMonth')}</div><div class="cs">Compras e aplicações no mês atual</div></div>
+    <div class="card"><div class="cl">Este ano</div><div class="cv" style="color:#f472b6">${aporteInvestmentMetric(contributionStats,'thisYear')}</div><div class="cs">Compras e aplicações em ${contributionStats.currentYear}</div></div>
     <div class="card"><div class="cl">Total investido em compras e aplicações</div><div class="cv" style="color:#34d399">${aporteInvestmentMetric(contributionStats,'total')}</div><div class="cs">Vendas e proventos ficam fora</div></div>
     <div class="card"><div class="cl">Média mensal</div><div class="cv" style="color:#60a5fa">${aporteInvestmentMetric(contributionStats,'average')}</div><div class="cs">Meses com aporte</div></div>
     <div class="card"><div class="cl">Maior entrada</div><div class="cv" style="color:#a78bfa">${aporteInvestmentMetric(contributionStats,'largest')}</div><div class="cs">Compra ou aplicação de renda fixa</div></div>
@@ -34072,6 +34437,12 @@ function apTab(){
           <input id="aporte-premium-search" value="${esc(S.apSearch||'')}" oninput="setAporteSearch(this.value)" placeholder="Buscar ticker, nome, tipo, setor, data, observação ou valor" aria-label="Buscar aportes por ticker, nome, tipo, setor, data, observação ou valor" spellcheck="false" autocomplete="off">
           ${q?`<button class="btn bgh" style="padding:4px 8px;font-size:12px" onclick="clearAporteSearch()">Limpar</button>`:''}
         </div>
+        ${movementSummary?`<div class="aporte-count-cards" aria-label="Quantidade de movimentações por tipo no filtro atual">
+          <article class="aporte-count-card c-buy"><span>Compras</span><strong>${movementSummary.buys}</strong><small>no filtro atual</small></article>
+          <article class="aporte-count-card c-sell"><span>Vendas</span><strong>${movementSummary.sells}</strong><small>no filtro atual</small></article>
+          <article class="aporte-count-card c-div"><span>Proventos</span><strong>${movementSummary.dividends}</strong><small>no filtro atual</small></article>
+          <article class="aporte-count-card c-rf"><span>Renda fixa</span><strong>${movementSummary.fixedIncomeApplications}</strong><small>aplicações</small></article>
+        </div>`:''}
         <div class="aporte-trust-summary" aria-label="Resumo das movimentações filtradas">${esc(aporteMovementSummaryText(movementSummary,extractRows.length))}</div>
       </div>`;
   const importsPanel=`<details class="card aportes-imports-panel">
@@ -35158,8 +35529,12 @@ function corporateEventsAnnouncementSection(){
   const refreshAction=window.__PUBLIC_EVENTS_RUNTIME_CONTROLLER__ ? `<button type="button" class="btn-secondary" onclick="window.__PUBLIC_EVENTS_RUNTIME_CONTROLLER__.refresh().catch(()=>{})">Atualizar dados</button>` : '';
   const sourceBadge=e=>/cvm|official/i.test(String(e.sourceProvider||''))?'Oficial':/b3/i.test(String(e.sourceProvider||''))?'B3 conferência':'Fonte pública';
   const items=window.CorporateEventsCore?.buildUpcomingIncomeView(events)||[];
-  const body=items.length?items.slice(0,8).map(e=>`<div class="div-upcoming-item"><div class="div-upcoming-main"><div class="div-upcoming-title"><span class="div-upcoming-ticker">${esc(e.symbol)}</span><span class="div-type-badge rendimento">${esc(e.eventType)}</span><span class="div-type-badge neutral">${esc(sourceBadge(e))}</span></div><div class="div-upcoming-subline">${esc(e.paymentDate)} · ${esc(e.sourceProvider||'Fonte não informada')} · ${esc(e.confidence||'')}</div></div><div class="div-upcoming-value">${e.expectedNet==null?'—':fmt(e.expectedNet)}</div></div>`).join(''):`<div class="div-upcoming-empty-compact" role="status"><strong>Eventos anunciados</strong><span>Nenhuma fonte automática configurada para esta carteira.</span></div>`;
-  return `<section class="div-upcoming-shell" aria-labelledby="corporate-events-title"><div class="div-upcoming-summary"><div class="div-upcoming-card"><div class="div-upcoming-label" id="corporate-events-title">Proventos a receber</div><div class="div-upcoming-value good">${items.length}</div><div class="div-upcoming-sub">Eventos esperados, separados do realizado</div></div><div class="div-upcoming-card"><div class="div-upcoming-label">Sincronização</div><div class="div-upcoming-value" style="font-size:18px">${esc(status==='UPDATED'?'Atualizada':'Disponível')}</div><div class="div-upcoming-sub">B3 permanece como auditoria opcional</div>${refreshAction}</div></div><div class="div-upcoming-note">Anunciado/previsto não altera o total recebido. A promoção para realizado exige reconciliação.</div><div class="div-upcoming-list">${body}</div></section>`;
+  const reviewedCount=items.filter(e=>isCorpEventReviewed(e.id)).length;
+  const body=items.length?items.slice(0,8).map(e=>{
+    const reviewed=isCorpEventReviewed(e.id);
+    return `<div class="div-upcoming-item corp-event-review-item${reviewed?' corp-event-review-item-done':''}"><div class="div-upcoming-main"><div class="div-upcoming-title"><span class="div-upcoming-ticker">${esc(e.symbol)}</span><span class="div-type-badge rendimento">${esc(e.eventType)}</span><span class="div-type-badge neutral">${esc(sourceBadge(e))}</span></div><div class="div-upcoming-subline">${esc(e.paymentDate)} · ${esc(e.sourceProvider||'Fonte não informada')} · ${esc(e.confidence||'')}</div></div><div class="corp-event-review-actions"><div class="div-upcoming-value">${e.expectedNet==null?'—':fmt(e.expectedNet)}</div><button type="button" class="btn-secondary corp-event-review-toggle" data-corp-review-id="${esc(e.id)}" aria-pressed="${reviewed?'true':'false'}" onclick="toggleCorpEventReviewed(this.dataset.corpReviewId)">${reviewed?'✓ Conferido':'Conferir'}</button></div></div>`;
+  }).join(''):`<div class="div-upcoming-empty-compact" role="status"><strong>Eventos anunciados</strong><span>Nenhuma fonte automática configurada para esta carteira.</span></div>`;
+  return `<section class="div-upcoming-shell" aria-labelledby="corporate-events-title"><div class="div-upcoming-summary"><div class="div-upcoming-card"><div class="div-upcoming-label" id="corporate-events-title">Proventos a receber</div><div class="div-upcoming-value good">${items.length}</div><div class="div-upcoming-sub">Eventos esperados, separados do realizado</div></div><div class="div-upcoming-card"><div class="div-upcoming-label">Sincronização</div><div class="div-upcoming-value" style="font-size:18px">${esc(status==='UPDATED'?'Atualizada':'Disponível')}</div><div class="div-upcoming-sub">B3 permanece como auditoria opcional</div>${refreshAction}</div></div><div class="div-upcoming-note">Anunciado/previsto não altera o total recebido. A promoção para realizado exige reconciliação. Conferir aqui marca apenas que você já olhou este evento — é uma anotação local, não lança o provento.${items.length?` <strong>${reviewedCount}/${items.length} conferidos.</strong>`:''}</div><div class="div-upcoming-list">${body}</div></section>`;
 }
 function dividendMonthlySummary(rows){
   const months=dividendMonthlyRows(rows);
@@ -36205,7 +36580,7 @@ function dividendExecutiveKpis(rows=dividendPremiumRows()){
     ['Último mês',previousMonthKnown?fmt(previousMonth.total):'—',previousMonthSub,previousMonthKnown&&previousMonth.total>0?'good':''],
     ['Projeção anual',complete&&stats.annualProjection!=null?fmt(stats.annualProjection):'—',complete?'Estimativa · não recebida · somente meses completos':'Indisponível · exige 12 meses completos',complete&&stats.annualProjection>0?'good':'']
   ];
-  return `<section class="dividend-executive-kpis div-exec-kpis div-kpis-canon" aria-label="Resumo financeiro de dividendos"><div class="dividend-kpis-canon-grid">${cards.map(([label,value,sub,tone])=>`<article class="dividend-executive-kpi div-premium-metric canon-kpi-card"><div class="dividend-executive-kpi-label div-premium-metric-label">${esc(label)}</div><div class="dividend-executive-kpi-value div-premium-metric-value ${tone}" aria-label="${esc(`${label}: ${value}`)}">${value}</div><details class="dividend-executive-kpi-info"><summary aria-label="Mais informações sobre ${esc(label)}">ⓘ</summary><span class="dividend-executive-kpi-sub div-premium-metric-sub">${esc(sub)}</span></details></article>`).join('')}</div></section>`;
+  return `<section class="dividend-executive-kpis div-exec-kpis div-kpis-canon" aria-label="Resumo financeiro de dividendos"><div class="dividend-kpis-canon-grid">${cards.map(([label,value,sub,tone])=>`<article class="dividend-executive-kpi div-premium-metric canon-kpi-card${value==='—'?' is-unknown':''}"><div class="dividend-executive-kpi-label div-premium-metric-label">${esc(label)}</div><div class="dividend-executive-kpi-value div-premium-metric-value ${tone}" aria-label="${esc(`${label}: ${value}`)}">${value}</div><details class="dividend-executive-kpi-info"><summary aria-label="Mais informações sobre ${esc(label)}">ⓘ</summary><span class="dividend-executive-kpi-sub div-premium-metric-sub">${esc(sub)}</span></details></article>`).join('')}</div></section>`;
 }
 function dividendDistributionRow(month, maxVal){
   const dt=new Date(month.key+'-01T12:00:00');
@@ -36411,14 +36786,15 @@ function canonDividendYearSummary(rows){
     const year=ordered[0];
     return `<div class="canon-year-summary-single"><strong>${year.year}</strong><span>Total conhecido</span><b>${fmt(year.total)}</b><small>${year.count} lançamento(s) pago(s) registrado(s)</small></div>`;
   }
-  const donut=canonDonutInteractive(ordered.map(g=>({name:String(g.year),value:g.total})),{fmt,id:'yearsum',centerText:fmt(total),centerSub:'Total conhecido'});
+  const yearColors=['#8b7bff','#2f9bff','#10d981','#ffb020','#ff6f7d','#22c8a6','#f9a8d4','#5fd7ff'];
+  const donut=canonDonutInteractive(ordered.map(g=>({name:String(g.year),value:g.total})),{fmt,id:'yearsum',colors:yearColors,centerText:fmt(total),centerSub:'Total conhecido'});
   return `<div class="canon-year-summary-body">
     <div class="canon-year-summary-donut">${donut}</div>
     <div class="canon-year-summary-list">${ordered.map(g=>{
       const share=total>0?g.total/total*100:0;
       return `<div class="canon-year-sum-row">
         <span class="canon-year-sum-year">${g.year}</span>
-        <span class="canon-year-sum-track"><i style="width:${Math.max(2,Math.min(100,share)).toFixed(1)}%"></i></span>
+        <span class="canon-year-sum-track"><i style="width:${Math.max(2,Math.min(100,share)).toFixed(1)}%;background:${yearColors[ordered.indexOf(g)%yearColors.length]}"></i></span>
         <span class="canon-year-sum-val">${fmt(g.total)}</span>
         <span class="canon-year-sum-count">${share.toFixed(1)}% · ${g.count} lançamento(s)</span>
       </div>`;
@@ -36469,15 +36845,14 @@ function canonDividendOverview(rows, kpisHtml){
     false
   );
   const upcoming=dividendUpcomingSection(rows,false);
-  const monthlyHistory=dividendMonthlyTableBlock(rows,false);
+  const monthlyHistory=dividendMonthlyTableBlock(rows,true);
   const incomeEvolution=`<section class="dividend-mode-content" aria-label="Evolução da renda"><div class="dividend-history-heading"><strong>Evolução da renda</strong><span>Valores recebidos por mês · período observado, sem projeção no histórico.</span></div>${dividendMonthlyTimeline(rows)}</section>`;
-  const topAssets=dividendCompactSectionHeader('asset','Top ativos',dividendAssetSummary(rows),dividendsByAssetView(rows),false);
+  const topAssets=dividendCompactSectionHeader('asset','Top ativos',dividendAssetSummary(rows),dividendsByAssetView(rows),true);
   const annualSummary=`<section class="premium-panel dividend-annual-summary" aria-labelledby="dividend-annual-summary-title"><div class="premium-panel-head"><div><div class="premium-panel-title" id="dividend-annual-summary-title">Resumo por ano</div><div class="premium-panel-sub">Recebimentos registrados por ano; períodos sem cobertura permanecem indisponíveis.</div></div></div>${canonDividendYearSummary(rows)}</section>`;
   return `
     <div class="canon-dividends dividend-calendar-view dividend-daily-overview">
       <section class="dividend-history-block" aria-label="Histórico mensal de recebimentos">${monthlyHistory}</section>
-      <div class="dividend-primary-grid">${incomeEvolution}${topAssets}</div>
-      ${annualSummary}
+      <div class="dividend-primary-grid dividend-primary-grid-3">${incomeEvolution}${topAssets}${annualSummary}</div>
       <section class="dividend-calendar-primary" aria-label="Recebimentos e próximos eventos">
         ${received}
         ${upcoming}
@@ -37378,7 +37753,7 @@ function rentabilidadeTab(){
   const historyCoverageLabel={
     FULL_COVERAGE:'Cobertura completa',
     PARTIAL_COVERAGE:'Cobertura parcial',
-    UNKNOWN:'Cobertura UNKNOWN · sem série histórica disponível',
+    UNKNOWN:'Cobertura desconhecida · sem série histórica disponível',
     INSUFFICIENT_DATA:'Cobertura insuficiente · série histórica indisponível'
   }[v248History.coverage]||'Cobertura indisponível';
   const view=Array.isArray(data.view)?data.view:[];
@@ -37700,6 +38075,11 @@ function ajudarTab(){
     <h1 class="rebalance-title">Rebalanceamento</h1>
     <div class="rebalance-subtitle">Compare a distribuição atual com as metas cadastradas. Simulações são opcionais e não alteram a carteira.</div>
   </div>
+  ${allocRows.length?`<section class="rebalance-top-cards" aria-label="Leitura rápida da alocação">
+    <article class="rebalance-top-card tone-violet"><span>Maior desvio</span><strong>${topGap?esc(topGap.type):'—'}</strong><small>${topGap?`${topGap.diff>=0?'+':''}${topGap.diff.toFixed(1)} p.p. ${topGap.diff>0?'acima':'abaixo'} da meta`:'Sem metas cadastradas'}</small></article>
+    <article class="rebalance-top-card tone-amber"><span>Acima da meta</span><strong>${aboveTarget}</strong><small>${aboveTarget===1?'classe':'classes'} com excesso</small></article>
+    <article class="rebalance-top-card tone-green"><span>Abaixo da meta</span><strong>${belowTarget}</strong><small>${belowTarget===1?'classe':'classes'} com espaço para aporte</small></article>
+  </section>`:''}
   ${allocSection}
   <details class="rebalance-tools">
     <summary>Simular e comparar aportes <span>Ferramentas opcionais · não executam operações</span></summary>
@@ -39604,8 +39984,44 @@ html[data-theme="light"] .data-trust-diagnostics>summary:after{color:#526174}
 html[data-theme="light"] .data-trust-authority-details{background:#fff;border-color:#d9e2ec}
 html[data-theme="light"] .data-trust-authority-details>summary,html[data-theme="light"] .data-trust-authority-list article strong{color:#172033}
 html[data-theme="light"] .data-trust-authority-details>summary:after,html[data-theme="light"] .data-trust-authority-list article span{color:#526174}
-html[data-theme="light"] .corporate-events-summary-card span{color:#cbd5e1}
-html[data-theme="light"] .corporate-events-center label{color:#f1f5f9}
+html[data-theme="light"] .data-trust-card,
+html[data-theme="light"] .data-trust-panel{
+  background:var(--panel)!important;
+  border-color:var(--border)!important;
+  box-shadow:none!important;
+}
+html[data-theme="light"] .data-trust-panel h3{color:var(--text)!important}
+html[data-theme="light"] .data-trust-status{
+  background:var(--surface)!important;
+  border-color:var(--border)!important;
+}
+html[data-theme="light"] .data-trust-status span{color:var(--muted)!important}
+html[data-theme="light"] .data-trust-link,
+html[data-theme="light"] .data-trust-filter select,
+html[data-theme="light"] .data-trust-filter input{
+  background:var(--panel)!important;
+  border-color:var(--border)!important;
+  color:var(--text)!important;
+}
+html[data-theme="light"] .data-trust-link{color:#047857!important}
+html[data-theme="light"] .data-trust-row{
+  background:var(--surface)!important;
+  border-color:var(--border)!important;
+}
+html[data-theme="light"] .data-trust-row small,
+html[data-theme="light"] .data-trust-source-date,
+html[data-theme="light"] .data-trust-empty{color:var(--muted)!important}
+html[data-theme="light"] .data-trust-details summary{color:#047857!important}
+html[data-theme="light"] .data-trust-pill.ok{background:#f0fdf4!important;color:#166534!important}
+html[data-theme="light"] .data-trust-pill.warn{background:#fffbeb!important;color:#92400e!important}
+html[data-theme="light"] .data-trust-pill.bad{background:#fef2f2!important;color:#b91c1c!important}
+html[data-theme="light"] .data-trust-pill.info{background:#eef2ff!important;color:#3730a3!important}
+html[data-theme="light"] .data-trust-pill.neutral{background:#f1f5f9!important;color:#475569!important}
+html[data-theme="light"] .data-trust-card-label,
+html[data-theme="light"] .data-trust-card-note{color:var(--muted)!important}
+html[data-theme="light"] .data-trust-card-value{color:var(--text)!important}
+html[data-theme="light"] .corporate-events-summary-card span{color:var(--muted)!important}
+html[data-theme="light"] .corporate-events-center label{color:var(--muted)!important}
 html[data-theme="light"] .data-quality-card-label{color:#526174!important}
 html[data-theme="light"] .metas-goal-status--info{color:#0369a1}
 html[data-theme="light"] .import-support.full{color:#166534}
@@ -39703,6 +40119,40 @@ html[data-theme="light"] #investBottomNav button span:last-child{color:#526174!i
 /* V274: Corporate Events keeps dark-theme status literals inside light surfaces. */
 html[data-theme="light"] .corporate-events-legend span{color:#0f766e;background:#f0fdfa}
 html[data-theme="light"] .corporate-events-review-queue strong{color:#854d0e}
+html[data-theme="light"] .corporate-events-center-head{
+  background:var(--panel)!important;
+  border-color:var(--border)!important;
+}
+html[data-theme="light"] .corporate-events-center-head h1{
+  color:var(--text)!important;
+}
+html[data-theme="light"] .corporate-events-readonly-badge{
+  color:#166534!important;
+  background:#f0fdf4!important;
+  border-color:#bbf7d0!important;
+}
+html[data-theme="light"] .corporate-events-summary-card{
+  background:var(--surface)!important;
+  border-color:var(--border)!important;
+}
+html[data-theme="light"] .corporate-events-filters{
+  background:var(--panel)!important;
+  border-color:var(--border)!important;
+}
+html[data-theme="light"] .corporate-events-filters select,
+html[data-theme="light"] .corporate-events-filters input{
+  background:var(--panel)!important;
+  color:var(--text)!important;
+  border-color:var(--border)!important;
+}
+html[data-theme="light"] .corporate-event-row{
+  background:var(--surface)!important;
+  border-color:var(--border)!important;
+}
+html[data-theme="light"] .corporate-event-status-MATCH{color:#166534!important}
+html[data-theme="light"] .corporate-event-status-MISMATCH{color:#b91c1c!important}
+html[data-theme="light"] .corporate-event-status-REVIEW_REQUIRED{color:#92400e!important}
+html[data-theme="light"] .corporate-event-status-UNSUPPORTED{color:#6d28d9!important}
 /* V274: keep Dashboard quick-action text and its light-theme surface in the same semantic theme. */
 html[data-theme="light"] .canon-dashboard .dashboard-quick-action{color:#1e293b;background:#f8fafc}
 html[data-theme="light"] .canon-dashboard .dashboard-quick-action-sub{color:#526174}
@@ -39915,10 +40365,11 @@ html[data-theme="light"] .canon-dashboard .dashboard-page-heading p{font-size:13
 html[data-theme="light"] .canon-dashboard .dashboard-page-heading-meta{background:transparent;border:0;padding:0;color:var(--dash-muted)}
 html[data-theme="light"] .canon-dashboard .canon-dash-meta .dash-chip{min-height:40px;color:#435a73;background:#fff;border-color:var(--dash-line)}
 html[data-theme="light"] .canon-dashboard .canon-dash-meta .dash-chip.on{color:#214f87;background:#eaf1f9;border-color:#b7cbe2}
-html[data-theme="light"] .canon-dashboard .dashboard-executive-kpis .premium-metric{border-radius:12px;border-color:var(--dash-line);box-shadow:none}
-html[data-theme="light"] .canon-dashboard .dashboard-executive-kpis .premium-metric:first-child{border-color:var(--semantic-official);background:#edf3fa;box-shadow:0 0 0 1px var(--semantic-official)}
-html[data-theme="light"] .canon-dashboard .dashboard-executive-kpis .premium-metric:nth-child(2){border-color:var(--semantic-operational)}
-html[data-theme="light"] .canon-dashboard .dashboard-executive-kpis .premium-metric:nth-child(3){border-color:var(--success)}
+html[data-theme="light"] .canon-dashboard .dashboard-executive-kpis .premium-metric{border-radius:12px;border-color:var(--dash-line)!important;box-shadow:none!important}
+html[data-theme="light"] .canon-dashboard .dashboard-executive-kpis .premium-metric:first-child{border-color:var(--semantic-official)!important;background:#edf3fa!important;box-shadow:0 0 0 1px var(--semantic-official)!important}
+html[data-theme="light"] .canon-dashboard .dashboard-executive-kpis .premium-metric:nth-child(2){border-color:var(--semantic-operational)!important}
+html[data-theme="light"] .canon-dashboard .dashboard-executive-kpis .premium-metric:nth-child(3){border-color:var(--success)!important}
+html[data-theme="light"] .canon-dashboard .dashboard-executive-kpis .premium-metric-icon{background:#eef3fb!important;border-color:var(--dash-line)!important;color:var(--dash-ink)}
 html[data-theme="light"] .canon-dashboard .dashboard-executive-kpis .premium-metric-value{font-variant-numeric:tabular-nums;color:var(--dash-ink)}
 html[data-theme="light"] .canon-dashboard .dashboard-executive-kpis .premium-metric:nth-child(1) .premium-metric-value{color:var(--semantic-official)}
 html[data-theme="light"] .canon-dashboard .dashboard-executive-kpis .premium-metric:nth-child(2) .premium-metric-value{color:var(--semantic-operational)}
@@ -40012,6 +40463,308 @@ html[data-theme="light"] .premium-dividends-3 .div-premium-head .btn.bp:hover:no
   .premium-rf-page .premium-rf-controls{gap:6px;padding:8px 10px}
   .premium-rf-page .premium-rf-filter-details>summary{min-height:44px;padding:7px 10px}
   .premium-rf-page .premium-rf-active-filter-count{color:var(--text);font-size:12px;font-weight:600}
+}
+
+/* Ativos (desktop): tabela cabe na tela, sem rolar para o lado; Tipo já é o agrupamento/aba, Fonte e Estimativa ficam no detalhe */
+.asset-quick-actions{display:none}
+@media (min-width:1100px){
+  #ativosAccordion table.ag-table{--x:0}
+  #ativosAccordion table.ag-table{min-width:0 !important;width:100% !important;table-layout:auto !important}
+  #ativosAccordion table.ag-table th:nth-child(3),#ativosAccordion table.ag-table td:nth-child(3),
+  #ativosAccordion table.ag-table th:nth-child(12),#ativosAccordion table.ag-table td:nth-child(12),
+  #ativosAccordion table.ag-table th:nth-child(14),#ativosAccordion table.ag-table td:nth-child(14){display:none !important}
+  #ativosAccordion table.ag-table th,#ativosAccordion table.ag-table td{padding:8px 6px !important;white-space:nowrap;overflow:visible;text-overflow:clip}
+  #ativosAccordion table.ag-table th:last-child,#ativosAccordion table.ag-table td:last-child{width:auto;min-width:0}
+  #ativosAccordion table.ag-table .asset-actions{min-width:0;gap:6px;justify-content:flex-end;flex-wrap:nowrap}
+  #ativosAccordion table.ag-table .asset-quick-actions{display:inline-flex;gap:4px}
+  #ativosAccordion table.ag-table .asset-action.asset-quick{min-height:34px !important;height:34px !important;min-width:0 !important;padding:4px 9px !important;font-size:12px}
+  #ativosAccordion table.ag-table .asset-action-trigger{min-width:44px !important;min-height:44px !important;padding:2px !important;margin:-6px 0 !important}
+  #ativosAccordion table.ag-table th,#ativosAccordion table.ag-table td{width:auto !important;min-width:0 !important;max-width:none !important}
+  #ativosAccordion .assets-scroll-hint{display:none}
+  #ativosAccordion table.ag-table th{white-space:normal;line-height:1.2;font-size:11px}
+  #ativosAccordion table.ag-table td{font-size:12.5px}
+}
+@media (min-width:1100px) and (max-width:1499px){
+  #ativosAccordion table.ag-table th:nth-child(2),#ativosAccordion table.ag-table td:nth-child(2),
+  #ativosAccordion table.ag-table th:nth-child(13),#ativosAccordion table.ag-table td:nth-child(13){display:none !important}
+}
+
+/* ===== Visual premium v2 (aprovado: azul-marinho escuro + roxo). Só tokens e camada de apresentação. ===== */
+html:not([data-theme="light"]){
+  --bg:#070b16;--panel:#0e1527;--card:#0e1527;--surface:#0b1222;--surface-2:#0a1020;--border:#1f2a48;
+  --primary:#6d4cff;--accent:#8b7bff;--muted:#8d9bbd;
+}
+html:not([data-theme="light"]) body{background:radial-gradient(1100px 520px at 12% -8%,rgba(109,76,255,.16),transparent 60%),radial-gradient(900px 480px at 100% 0,rgba(56,189,248,.07),transparent 55%),#070b16}
+html:not([data-theme="light"]) .tabs-desktop .tab.on{background:linear-gradient(90deg,rgba(109,76,255,.28),rgba(109,76,255,.08));color:#fff;box-shadow:inset 3px 0 0 #8b7bff}
+html:not([data-theme="light"]) .premium-dashboard .dash-chip.on,html:not([data-theme="light"]) .dashboard-period-selector .dash-chip.on{background:#6d4cff !important;color:#fff !important;border-color:#8b7bff !important}
+html:not([data-theme="light"]) .assets-class-tab.on{color:#fff;border-bottom-color:#8b7bff}
+html:not([data-theme="light"]) .assets-class-tab.on .assets-class-tab-n{background:rgba(139,123,255,.28);color:#e4e0ff}
+
+/* Tela inicial */
+.home-status{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:14px;margin:0 0 14px}
+.home-hero{position:relative;display:flex;flex-direction:column;gap:8px;padding:18px 24px;border-radius:22px;border:1px solid color-mix(in srgb,#8b7bff 38%,var(--border));background:radial-gradient(520px 260px at 0 0,rgba(109,76,255,.30),transparent 70%),linear-gradient(160deg,#131b33,#0c1326);overflow:hidden;min-width:0}
+.home-hero-value{font-size:clamp(32px,3.6vw,44px);line-height:1.05;font-weight:800;letter-spacing:-.02em;color:var(--text);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.home-status-q{font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.01em}
+.home-status-n{font-size:13px;line-height:1.45;color:var(--muted)}
+.home-hero-chip{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;font-weight:800;font-size:15px;background:rgba(148,163,184,.14);color:var(--text)}
+.home-hero-chip.tone-up{background:rgba(34,197,94,.16);color:#4ade80}
+.home-hero-chip.tone-down{background:rgba(239,68,68,.16);color:#fca5a5}
+.home-status-card{display:flex;flex-direction:column;gap:6px;padding:16px 20px;border:1px solid var(--border);border-radius:22px;background:linear-gradient(180deg,#101830,#0c1326);min-width:0}
+.home-status-a{font-size:22px;line-height:1.2;font-weight:800;color:var(--text)}
+.home-status-next{border-color:color-mix(in srgb,#8b7bff 45%,var(--border))}
+.home-status-next .btn{align-self:flex-start;margin-top:auto;min-height:44px;background:#6d4cff;color:#fff;border-color:#8b7bff;box-shadow:0 8px 24px rgba(109,76,255,.35)}
+.home-tiles{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.home-tile{display:flex;gap:14px;align-items:center;padding:16px 18px;border-radius:18px;border:1px solid var(--border);background:var(--panel);min-width:0}
+.home-tile-icon{flex:0 0 44px;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:rgba(139,123,255,.16);color:#b8aeff}
+.home-tile-icon .dashboard-metric-glyph{display:grid;place-items:center;width:22px;height:22px}
+.home-tile-icon svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.home-tile>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.home-tile-label{font-size:12px;font-weight:700;color:var(--muted)}
+.home-tile-value{font-size:20px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.home-tile-note{font-size:12px;color:var(--muted)}
+.home-tile.tone-up .home-tile-icon{background:rgba(34,197,94,.16);color:#4ade80}.home-tile.tone-up .home-tile-value{color:#4ade80}
+.home-tile.tone-down .home-tile-icon{background:rgba(239,68,68,.16);color:#fca5a5}.home-tile.tone-down .home-tile-value{color:#fca5a5}
+@media (max-width:1100px){.home-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:900px){.home-status{grid-template-columns:1fr}.home-hero{padding:22px 20px}.home-tiles{grid-column:auto}}
+@media (max-width:420px){.home-tiles{grid-template-columns:1fr}}
+html[data-theme="light"] .home-hero{background:radial-gradient(520px 260px at 0 0,rgba(109,76,255,.16),transparent 70%),linear-gradient(160deg,#fff,#f1f0ff);border-color:#cfc8ff}
+html[data-theme="light"] .home-status-card{background:#fff}
+html[data-theme="light"] .home-hero-chip.tone-up{color:#15803d}html[data-theme="light"] .home-hero-chip.tone-down{color:#b91c1c}
+html[data-theme="light"] .home-tile.tone-up .home-tile-value{color:#15803d}html[data-theme="light"] .home-tile.tone-down .home-tile-value{color:#b91c1c}
+html[data-theme="light"] .home-tile-icon{color:#5b3fe0}
+
+/* Ativos: cartões por classe */
+#ativosAccordion details.ag{border-radius:20px;border:1px solid var(--border);background:linear-gradient(180deg,#0f1730,#0b1224);transition:border-color .15s,box-shadow .15s}
+#ativosAccordion details.ag:hover,#ativosAccordion details.ag[open]{border-color:color-mix(in srgb,#8b7bff 45%,var(--border));box-shadow:0 12px 34px rgba(5,8,20,.45)}
+html[data-theme="light"] #ativosAccordion details.ag{background:#fff}
+#ativosAccordion table.ag-table th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+#ativosAccordion table.ag-table tbody tr:hover td{background:rgba(139,123,255,.07)}
+
+.tabs-desktop .nav-more{margin:6px 0 0;border-top:1px solid var(--border);padding-top:6px}
+.tabs-desktop .nav-more-summary{cursor:pointer;list-style:none;padding:10px;min-height:44px;box-sizing:border-box;display:flex;align-items:center;color:var(--muted);font-size:13px;font-weight:700;border-radius:10px}
+.tabs-desktop .nav-more-summary::-webkit-details-marker{display:none}
+.tabs-desktop .nav-more-summary::after{content:"▾";margin-left:auto;transition:transform .15s}
+.tabs-desktop .nav-more:not([open]) .nav-more-summary::after{transform:rotate(-90deg)}
+.tabs-desktop .nav-more-summary:hover,.tabs-desktop .nav-more-summary:focus-visible{background:var(--surface-2,var(--surface));color:var(--text)}
+
+
+html[data-theme="light"] .aporte-kind.renda-fixa{color:#1d4ed8 !important}
+
+/* Ativos em tablet (768-1099px): tabela enxuta, sem rolagem lateral, com Comprar/Vender */
+@media (min-width:768px) and (max-width:1099px){
+  #ativosAccordion table.ag-table{min-width:0 !important;width:100% !important;table-layout:auto !important}
+  #ativosAccordion table.ag-table th:nth-child(2),#ativosAccordion table.ag-table td:nth-child(2),
+  #ativosAccordion table.ag-table th:nth-child(3),#ativosAccordion table.ag-table td:nth-child(3),
+  #ativosAccordion table.ag-table th:nth-child(5),#ativosAccordion table.ag-table td:nth-child(5),
+  #ativosAccordion table.ag-table th:nth-child(7),#ativosAccordion table.ag-table td:nth-child(7),
+  #ativosAccordion table.ag-table th:nth-child(10),#ativosAccordion table.ag-table td:nth-child(10),
+  #ativosAccordion table.ag-table th:nth-child(11),#ativosAccordion table.ag-table td:nth-child(11),
+  #ativosAccordion table.ag-table th:nth-child(12),#ativosAccordion table.ag-table td:nth-child(12),
+  #ativosAccordion table.ag-table th:nth-child(13),#ativosAccordion table.ag-table td:nth-child(13),
+  #ativosAccordion table.ag-table th:nth-child(14),#ativosAccordion table.ag-table td:nth-child(14){display:none !important}
+  #ativosAccordion table.ag-table th,#ativosAccordion table.ag-table td{width:auto !important;min-width:0 !important;max-width:none !important;padding:8px 6px !important;white-space:nowrap;overflow:visible;text-overflow:clip}
+  #ativosAccordion table.ag-table th{white-space:normal;line-height:1.2;font-size:11px}
+  #ativosAccordion table.ag-table .asset-actions{min-width:0;gap:6px;justify-content:flex-end;flex-wrap:nowrap}
+  #ativosAccordion table.ag-table .asset-quick-actions{display:inline-flex;gap:4px}
+  #ativosAccordion table.ag-table .asset-action.asset-quick{min-height:36px !important;height:36px !important;min-width:0 !important;padding:4px 10px !important;font-size:12px}
+  #ativosAccordion table.ag-table .asset-action-trigger{min-width:44px !important;min-height:44px !important;padding:2px !important;margin:-6px 0 !important}
+  #ativosAccordion .assets-scroll-hint{display:none}
+}
+
+/* Resumo: comparação aportes x valor atual e rosca de alocação */
+.dashboard-compare{display:flex;flex-direction:column;gap:14px;padding:6px 2px 2px}
+.dashboard-compare-row{display:grid;grid-template-columns:150px minmax(0,1fr) auto;gap:14px;align-items:center;font-size:14px}
+.dashboard-compare-row>span{color:var(--muted);font-weight:700}
+.dashboard-compare-row>strong{font-variant-numeric:tabular-nums;color:var(--text)}
+.dashboard-compare-track{height:16px;border-radius:999px;background:rgba(148,163,184,.14);overflow:hidden}
+.dashboard-compare-track i{display:block;height:100%;border-radius:999px}
+.dashboard-compare-track i.is-invested{background:linear-gradient(90deg,#6d4cff,#8b7bff)}
+.dashboard-compare-track i.is-current{background:linear-gradient(90deg,#16a34a,#4ade80)}
+.dashboard-compare-note{margin:2px 0 0;font-size:13px;color:var(--muted);line-height:1.45}
+@media (max-width:640px){.dashboard-compare-row{grid-template-columns:1fr auto}.dashboard-compare-track{grid-column:1/-1;order:3}}
+.dashboard-donut-wrap{display:flex;justify-content:center;margin:6px 0 14px}
+.dashboard-donut{width:176px;height:176px;border-radius:50%;display:grid;place-items:center}
+.dashboard-donut-hole{width:112px;height:112px;border-radius:50%;background:var(--panel,#0e1527);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6px}
+.dashboard-donut-hole span{font-size:12px;color:var(--muted);font-weight:700}
+.dashboard-donut-hole strong{font-size:15px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.dashboard-v3-allocation .dashboard-v3-allocation-bar{display:none}
+html[data-theme="light"] .dashboard-donut-hole{background:#fff}
+
+/* Dividendos: respiro entre título e indicadores */
+.premium-dividends-3 .div-premium-head,.div-premium-head{margin-bottom:16px}
+
+/* Dividendos: alinha o destaque à cor principal (roxo) em vez do verde-neon */
+html:not([data-theme="light"]) .canon-year-chip.on,html:not([data-theme="light"]) .canon-year-chip[aria-pressed="true"]{background:#6d4cff !important;color:#fff !important;border-color:#8b7bff !important}
+html:not([data-theme="light"]) .div-premium-tab.on,html:not([data-theme="light"]) .div-premium-tab.active,html:not([data-theme="light"]) .div-premium-tab[aria-selected="true"],html:not([data-theme="light"]) .div-premium-tab[aria-pressed="true"],html:not([data-theme="light"]) .div-premium-tab[aria-current="true"]{background:rgba(109,76,255,.22) !important;color:#e4e0ff !important}
+
+
+/* Dividendos: layout profissional (cartões coloridos, histórico aberto, 3 painéis) */
+.premium-dividends-3 .dividend-kpis-canon-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+.premium-dividends-3 .dividend-executive-kpi{--kc:#10d981;min-height:112px;padding:16px 16px 14px 70px;border-radius:16px;border:1px solid color-mix(in srgb,var(--kc) 35%,var(--border));background:linear-gradient(135deg,color-mix(in srgb,var(--kc) 14%,var(--panel)),var(--panel) 70%)}
+.premium-dividends-3 .dividend-executive-kpi::before{content:"$";position:absolute;left:16px;top:18px;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800;color:var(--kc);background:color-mix(in srgb,var(--kc) 18%,transparent);border:1px solid color-mix(in srgb,var(--kc) 45%,transparent)}
+.premium-dividends-3 .dividend-kpis-canon-grid>article:nth-child(2){--kc:#2f9bff}.premium-dividends-3 .dividend-kpis-canon-grid>article:nth-child(2)::before{content:"↗"}
+.premium-dividends-3 .dividend-kpis-canon-grid>article:nth-child(3){--kc:#a56bff}.premium-dividends-3 .dividend-kpis-canon-grid>article:nth-child(3)::before{content:"≈"}
+.premium-dividends-3 .dividend-kpis-canon-grid>article:nth-child(4){--kc:#ffb020}.premium-dividends-3 .dividend-kpis-canon-grid>article:nth-child(4)::before{content:"◷"}
+.premium-dividends-3 .dividend-kpis-canon-grid>article:nth-child(5){--kc:#22c8a6}.premium-dividends-3 .dividend-kpis-canon-grid>article:nth-child(5)::before{content:"◎"}
+.premium-dividends-3 .dividend-executive-kpi-label{font-size:11px;font-weight:700;letter-spacing:.04em}
+.premium-dividends-3 .dividend-executive-kpi-value{font-size:24px;color:var(--text)}
+.premium-dividends-3 .dividend-executive-kpi-value.good{color:var(--kc)}
+.premium-dividends-3 .dividend-primary-grid.dividend-primary-grid-3{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:stretch}
+.premium-dividends-3 .dividend-primary-grid-3>*{min-width:0;border:1px solid var(--border);border-radius:16px;background:var(--panel);padding:14px}
+.premium-dividends-3 .dividend-primary-grid-3 .div-collapsible{border:0;background:transparent;padding:0}
+.premium-dividends-3 .dividend-primary-grid-3 .div-collapsible-summary{pointer-events:none;padding:0 0 8px}
+.premium-dividends-3 .dividend-primary-grid-3 .div-collapsible-meta,.premium-dividends-3 .dividend-primary-grid-3 .div-collapsible-chev{display:none}
+.premium-dividends-3 .dividend-primary-grid-3 .div-collapsible-body{padding:0 !important}
+.premium-dividends-3 .dividend-primary-grid-3 .div-asset-list{max-height:300px}
+.premium-dividends-3 .dividend-primary-grid-3 .dividend-annual-summary{border:0;background:transparent;padding:0}
+.premium-dividends-3 .dividend-primary-grid-3 .canon-year-summary-body{grid-template-columns:1fr;justify-items:center;gap:10px}
+.premium-dividends-3 .dividend-primary-grid-3 .canon-year-summary-list{width:100%}
+.premium-dividends-3 .dividend-primary-grid-3 .canon-year-sum-row{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:6px 8px;align-items:center}
+.premium-dividends-3 .dividend-primary-grid-3 .canon-year-sum-count{grid-column:2/4;font-size:11px}
+.dividend-history-block .div-monthly-table-block{border-radius:16px}
+@media (max-width:1280px){.premium-dividends-3 .dividend-kpis-canon-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.premium-dividends-3 .dividend-primary-grid.dividend-primary-grid-3{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.premium-dividends-3 .dividend-primary-grid-3>:first-child{grid-column:1/-1}}
+@media (max-width:760px){.premium-dividends-3 .dividend-kpis-canon-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.premium-dividends-3 .dividend-executive-kpi{padding:14px 12px 12px;min-height:104px}.premium-dividends-3 .dividend-executive-kpi::before{position:static;width:30px;height:30px;font-size:14px;margin-bottom:6px}.premium-dividends-3 .dividend-executive-kpi-value{font-size:19px}.premium-dividends-3 .dividend-primary-grid.dividend-primary-grid-3{grid-template-columns:1fr}}
+
+.premium-dividends-3 .div-premium-kpi-bar .dividend-kpis-canon-grid>.dividend-executive-kpi{padding:16px 14px 14px 70px;min-height:112px;display:flex;flex-direction:column;justify-content:center;gap:6px}
+.premium-dividends-3 .dividend-kpis-canon-grid>.dividend-executive-kpi .dividend-executive-kpi-info{position:absolute;right:12px;top:12px}
+.premium-dividends-3 .dividend-primary-grid-3 .dividend-timeline-summary .div-timeline-summary-title,.premium-dividends-3 .dividend-primary-grid-3 .dividend-timeline-summary .div-timeline-summary-sub{display:none}
+.premium-dividends-3 .dividend-primary-grid-3 .dividend-history-heading{margin-bottom:8px}
+.premium-dividends-3 .dividend-primary-grid-3 .dividend-history-heading strong{display:block;font-size:14px}
+.premium-dividends-3 .dividend-primary-grid-3 .dividend-evolution-chart{min-height:230px}
+@media (max-width:760px){.premium-dividends-3 .div-premium-kpi-bar .dividend-kpis-canon-grid>.dividend-executive-kpi{padding:14px 12px 12px;min-height:104px;justify-content:flex-start}.premium-dividends-3 .dividend-kpis-canon-grid>.dividend-executive-kpi .dividend-executive-kpi-info{right:8px;top:8px}}
+
+.premium-dividends-3 .dividend-kpis-canon-grid>.dividend-executive-kpi{grid-column:auto !important}
+.premium-dividends-3 .dividend-kpis-canon-grid .dividend-executive-kpi-value{font-size:clamp(17px,1.6vw,22px);white-space:nowrap;overflow-wrap:normal}
+.premium-dividends-3 .dividend-primary-grid-3 .div-collapsible-main{padding:0 2px}
+.premium-dividends-3 .dividend-primary-grid-3 .div-collapsible-title{font-size:14px}
+@media (max-width:760px){.premium-dividends-3 .dividend-kpis-canon-grid>.dividend-executive-kpi:last-child{grid-column:1/-1 !important}}
+
+/* Patrimônio: grade única, sem buraco sob o gráfico */
+.patrimonio-grid{align-items:start;align-content:start;grid-template-rows:min-content min-content 1fr min-content;row-gap:10px}
+.patrimonio-grid>.patrimonio-panel-top{align-self:stretch}
+.patrimonio-grid>.patrimonio-panel{min-height:0;align-self:start}
+.patrimonio-grid>.patrimonio-panel-chart{grid-column:1;grid-row:1}
+.patrimonio-grid>.patrimonio-panel-top{grid-column:2;grid-row:1/4}
+.patrimonio-grid>.patrimonio-panel-composition{grid-column:1;grid-row:2}
+.patrimonio-grid>.patrimonio-panel-insights{grid-column:1/-1;grid-row:4}
+@media (max-width:900px){.patrimonio-grid>.patrimonio-panel{grid-column:1 !important;grid-row:auto !important}}
+
+/* Rebalanceamento: leitura rápida e tabela mais legível */
+.rebalance-top-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:0 0 14px}
+.rebalance-top-card{--tc:#8b7bff;display:flex;flex-direction:column;gap:6px;padding:16px 18px;border-radius:16px;border:1px solid color-mix(in srgb,var(--tc) 38%,var(--border));background:linear-gradient(135deg,color-mix(in srgb,var(--tc) 14%,var(--panel)),var(--panel) 70%)}
+.rebalance-top-card.tone-amber{--tc:#ffb020}.rebalance-top-card.tone-green{--tc:#10d981}
+.rebalance-top-card>span{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rebalance-top-card>strong{font-size:26px;font-weight:800;color:var(--tc);font-variant-numeric:tabular-nums}
+.rebalance-top-card>small{font-size:12px;color:var(--muted)}
+.rebalance-alloc-row{min-height:46px}
+.rebalance-alloc-item .rebalance-alloc-class,.rebalance-alloc-item .rebalance-alloc-pct,.rebalance-alloc-item .rebalance-alloc-diff{font-size:15px}
+.rebalance-alloc-bar-wrap{height:12px;border-radius:99px}
+.rebalance-alloc-bar{border-radius:99px}
+@media (max-width:760px){.rebalance-top-cards{grid-template-columns:1fr;gap:10px}}
+
+/* Renda Fixa e Análise: filtros em uma linha, cartões de leitura */
+@media (min-width:1100px){
+  .premium-rf-controls{display:grid;grid-template-columns:minmax(220px,1.2fr) minmax(0,2.8fr);gap:12px;align-items:end}
+  .premium-rf-filter-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+}
+.asset-premium-grid{gap:14px;align-items:start}
+.asset-premium-section{border-radius:16px}
+.asset-premium-section-title{font-size:15px}
+
+/* Lançamentos: cartões de contagem por tipo */
+.aporte-control-toolbar{flex-wrap:wrap}
+.aporte-control-toolbar .aporte-count-cards{flex:1 0 100%;width:100%;order:2}
+.aporte-count-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:4px 0 12px}
+.aporte-count-card{--cc:#10d981;display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:16px;border:1px solid color-mix(in srgb,var(--cc) 38%,var(--border));background:linear-gradient(135deg,color-mix(in srgb,var(--cc) 13%,var(--panel)),var(--panel) 72%)}
+.aporte-count-card.c-sell{--cc:#ff6f7d}.aporte-count-card.c-div{--cc:#ffb020}.aporte-count-card.c-rf{--cc:#8b7bff}
+.aporte-count-card>span{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.aporte-count-card>strong{font-size:26px;font-weight:800;color:var(--cc);font-variant-numeric:tabular-nums}
+.aporte-count-card>small{font-size:12px;color:var(--muted)}
+@media (max-width:760px){.aporte-count-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.aporte-count-card{padding:12px}.aporte-count-card>strong{font-size:22px}}
+html[data-theme="light"] .aporte-count-card>strong{color:color-mix(in srgb,var(--cc) 70%,#000)}
+
+/* Utilitário de acessibilidade (rótulos só para leitor de tela) e filtros da Auditoria em linha */
+.sr-only{position:absolute !important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.v257-remediation-filters{display:grid;grid-template-columns:minmax(200px,1.4fr) repeat(3,minmax(0,1fr));gap:10px;align-items:center}
+@media (max-width:900px){.v257-remediation-filters{grid-template-columns:1fr 1fr}.v257-remediation-filters input[type=search]{grid-column:1/-1}}
+
+/* IRPF (prontidão): seções em painéis, listas legíveis (somente layout; textos de bloqueio intactos) */
+.ir2026-readiness{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+.ir2026-readiness>.irpf-head,.ir2026-readiness>.irpf-summary{grid-column:1/-1}
+.ir2026-readiness .irpf-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.ir2026-readiness .irpf-summary-card{border-radius:16px;padding:16px 18px}
+.ir2026-readiness .irpf-section{border:1px solid var(--border);border-radius:16px;background:var(--panel);padding:18px 20px}
+.ir2026-readiness .irpf-section:last-child{grid-column:1/-1}
+.ir2026-readiness .irpf-section-title{font-size:15px;margin:0 0 12px;color:var(--text)}
+.ir2026-readiness .ir2026-blockers,.ir2026-readiness .ir2026-priorities{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:10px;font-size:14px;line-height:1.45}
+.ir2026-readiness .ir2026-priorities small{color:var(--muted);font-size:12px}
+.ir2026-readiness .ir2026-checklist{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 18px;font-size:14px}
+.ir2026-readiness .ir2026-checklist li{display:flex;align-items:center;gap:10px}
+@media (max-width:1100px){.ir2026-readiness .irpf-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:860px){.ir2026-readiness{grid-template-columns:1fr}.ir2026-readiness .ir2026-checklist{grid-template-columns:1fr}.ir2026-readiness .irpf-section{padding:14px 16px}}
+
+/* Renda Fixa: linha de posição compacta (identificação à esquerda, valores à direita, ações embaixo) */
+@media (min-width:700px){
+  .premium-rf-position-row{display:grid !important;grid-template-columns:minmax(0,1fr) minmax(220px,auto);column-gap:20px;row-gap:10px;align-items:start;padding:16px 18px}
+  .premium-rf-position-row>.premium-rf-row-main{grid-column:1;grid-row:1}
+  .premium-rf-position-row>.premium-rf-row-value{grid-column:2;grid-row:1;text-align:right}
+  .premium-rf-position-row>.premium-rf-row-actions{grid-column:1/-1;grid-row:2;justify-content:flex-end;flex-wrap:wrap;gap:8px;border-top:1px solid var(--border);padding-top:10px}
+}
+
+/* Celular: Patrimônio e Relatórios sem cortes */
+@media (max-width:760px){
+  .patrimonio-head{display:flex !important;flex-direction:column;align-items:stretch;gap:10px}
+  .patrimonio-head .patrimony-reading{width:100%;max-width:none}
+  .reports-premium-shell .reports-filter{display:flex !important;flex-wrap:wrap !important;overflow:visible !important;gap:6px;width:100%}
+  .reports-premium-shell .reports-filter button{flex:1 1 30% !important;min-width:0 !important;white-space:normal;min-height:40px}
+  .reports-premium-head-actions{width:100%}
+}
+
+/* Resumo: próximos recebimentos */
+.home-upcoming{border:1px solid var(--border);border-radius:16px;background:var(--panel);padding:18px 20px;margin:14px 0}
+.home-upcoming-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px}
+.home-upcoming-title{font-size:16px;font-weight:800;margin:0}
+.home-upcoming-sub{font-size:12px;color:var(--muted);margin:4px 0 0}
+.home-upcoming-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.home-upcoming-card{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;border:1px solid color-mix(in srgb,#10d981 30%,var(--border));background:linear-gradient(135deg,color-mix(in srgb,#10d981 10%,var(--panel)),var(--panel) 75%)}
+.home-upcoming-date{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:46px;height:50px;border-radius:12px;background:color-mix(in srgb,#10d981 16%,transparent);border:1px solid color-mix(in srgb,#10d981 40%,transparent)}
+.home-upcoming-date strong{font-size:18px;line-height:1;color:#10d981}
+.home-upcoming-date span{font-size:10px;font-weight:800;letter-spacing:.08em;color:var(--muted)}
+.home-upcoming-main{min-width:0;flex:1}
+.home-upcoming-ticker{font-weight:800;font-size:14px}
+.home-upcoming-type{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.home-upcoming-value{font-weight:800;font-size:14px;font-variant-numeric:tabular-nums;color:#10d981}
+.home-upcoming-empty{padding:14px;border:1px dashed var(--border);border-radius:12px;color:var(--muted);font-size:13px}
+html[data-theme="light"] .home-upcoming-date strong,html[data-theme="light"] .home-upcoming-value{color:#047857}
+@media (max-width:1100px){.home-upcoming-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:600px){.home-upcoming{padding:14px}.home-upcoming-head{flex-direction:column}.home-upcoming-grid{grid-template-columns:1fr}}
+
+/* Menu lateral: contadores */
+.tabs-desktop .tab .side-nav-count{margin-left:auto;min-width:22px;padding:2px 7px;border-radius:999px;font-size:11px;font-weight:800;line-height:1.4;text-align:center;background:rgba(139,123,255,.16);color:#e4e0ff;font-variant-numeric:tabular-nums}
+html[data-theme="light"] .tabs-desktop .tab .side-nav-count{color:#4c1d95;background:#ede9fe}
+
+/* Ativos: logo com 4 letras do ticker na cor da classe */
+.asset-logo{width:40px !important;height:34px !important;border-radius:9px !important;font-size:10px !important;font-weight:800 !important;letter-spacing:.02em;display:flex;align-items:center;justify-content:center;flex:0 0 auto;color:var(--lc,#8b7bff) !important;background:color-mix(in srgb,var(--lc,#8b7bff) 18%,transparent) !important;border:1px solid color-mix(in srgb,var(--lc,#8b7bff) 45%,transparent)}
+html[data-theme="light"] .asset-logo{color:color-mix(in srgb,var(--lc,#6d4cff) 55%,#000) !important}
+
+/* Ativos: tela-alvo (cartões de resumo, Comprar verde / Vender vermelho, editar visível, colunas completas em telas largas) */
+.assets-portfolio-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;border:0;background:transparent}
+.assets-portfolio-summary>div{display:flex;flex-direction:column;gap:6px;padding:16px 18px;border:1px solid var(--border);border-radius:16px;background:var(--panel);min-width:0}
+.assets-portfolio-summary>div>span{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.assets-portfolio-summary>div>strong{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.assets-portfolio-summary>div>small{font-size:12px;color:var(--muted)}
+@media (max-width:900px){.assets-portfolio-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.assets-portfolio-summary>div>strong{font-size:20px}}
+#ativosAccordion table.ag-table .asset-action.asset-quick.bsv{background:#0f9d63 !important;border-color:#0f9d63 !important;color:#fff !important}
+#ativosAccordion table.ag-table .asset-action.asset-quick-sell{background:rgba(239,68,68,.14) !important;border-color:rgba(239,68,68,.55) !important;color:#fca5a5 !important}
+html[data-theme="light"] #ativosAccordion table.ag-table .asset-action.asset-quick-sell{color:#b91c1c !important;background:#fee2e2 !important}
+.asset-icon-btn{display:none;align-items:center;justify-content:center;width:34px !important;height:34px !important;min-width:34px !important;min-height:34px !important;padding:0 !important;border:1px solid var(--border);border-radius:9px;background:transparent;color:var(--muted);cursor:pointer}
+.asset-icon-btn:hover,.asset-icon-btn:focus-visible{background:var(--surface-2);color:var(--text);border-color:var(--accent)}
+@media (min-width:768px){#ativosAccordion table.ag-table .asset-icon-btn{display:inline-flex}}
+@media (min-width:1800px){
+  #ativosAccordion table.ag-table th:nth-child(2),#ativosAccordion table.ag-table td:nth-child(2),
+  #ativosAccordion table.ag-table th:nth-child(3),#ativosAccordion table.ag-table td:nth-child(3),
+  #ativosAccordion table.ag-table th:nth-child(13),#ativosAccordion table.ag-table td:nth-child(13),
+  #ativosAccordion table.ag-table th:nth-child(14),#ativosAccordion table.ag-table td:nth-child(14){display:table-cell !important}
 }
 </style>
 </body>

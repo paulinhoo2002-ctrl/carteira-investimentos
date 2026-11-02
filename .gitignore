@@ -91,3 +91,7 @@ playwright-report/
 
 # Codex local cache (not committed)
 .codex-local/
+
+# Skill install artifacts (npx skills add)
+.claude/
+agent/

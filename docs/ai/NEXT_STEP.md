@@ -1,16 +1,65 @@
 # Próximo passo oficial
 
-OPERATING_MODE=DR_REVALIDATION_THEN_CERTIFICATION_AND_MERGE
-VISUAL_PHASE=M1959_COMPLETE
-QA_FIX=M1960_MIME_APPLIED_PENDING_RETEST
+OPERATING_MODE=MAINTENANCE_AND_DATA_CERTIFICATION_MODE
+VISUAL_PHASE=UX_OVERLOAD_REDUCTION_IN_PROGRESS (PR #542)
+
+## Estado em 2026-11-01
+
+Branch `ux/ativos-abas-backup`, PR #542 (draft, não mergeada). `origin/main`
+ainda em `941d311` (PR #541) — nenhuma correção abaixo está em produção.
+
+Três correções pontuais já commitadas e com CI verde nessa branch, em
+resposta direta à queixa do proprietário ("muita informação, difícil de
+entender"):
+
+1. `169e4ff` — Dashboard: removida `dashboardPlainSummary()`, eliminando
+   patrimônio e alerta duplicados na tela de início.
+2. `317d149` — Dividendos: 4 dos 5 cards de KPI que mostram "—" em carteiras
+   sem 12 meses de histórico agora aparecem visualmente discretos (borda
+   tracejada, opacidade reduzida), sem reordenar/remover/renomear nada —
+   preserva locks posicionais de `v289-visual-regression.test.js` e
+   `v333-dividend-month-coverage.browser.test.js`.
+3. `26f0bf7` — `v250-runtime.js`: `SW_CACHE` estava desatualizado
+   (`v250.1` vs. `v250.3` real em `sw.js`), causando falso-positivo
+   permanente no diagnóstico `checkVersionCoherence()`. Corrigido. Isto NÃO
+   foi confirmado como causa raiz do bug relatado de splash travado no PWA
+   mobile (vídeo do usuário, 2026-11-01) — falta log de console capturado no
+   momento da falha. `sw.js` não foi tocado (área protegida).
+
+Ativos foi auditado nesta sessão e não apresenta problema análogo (já bem
+estruturado, sem KPI vazio/duplicado). Rentabilidade mostra vários
+"Indisponível" no fixture sintético de QA — isto é comportamento protegido
+(`FINANCIAL_MISSING_DATA_RULE=true`, não fabricar retorno histórico sem
+série de preços), não um bug; provável artefato do fixture sintético, a
+confirmar contra dados reais do proprietário.
 
 ## Ação atual
 
-**P0: Revalidação M1960 do QA local** (bug MIME corrigido — ver M1960 em `PROJECT_MEMORY.md`) → **Certificação DR completa** → autorização para merge `feat/financial-evolution-premium` → `main`.
+1. **Bloqueado no usuário:** marcar PR #542 ready-for-review e fazer squash
+   merge manualmente no GitHub. Claude Code tem restrição própria de
+   classificador que impede chamadas de API que mudam estado de PR —
+   confirmado, não contornável.
+2. Após merge: confirmar em produção (Vercel, tracking `main`) que as 3
+   correções aparecem e que o bug de splash travado do PWA não se repete.
+3. Pendente do lado do usuário: screenshot da carteira pública Investidor10
+   (`investidor10.com.br/wallet/public/2206425` — bloqueado por robots.txt
+   para fetch direto) e acesso a `G:\Meu Drive\Codex\skills` (PC sem energia
+   em 2026-11-01).
+4. Reconstrução completa da tela de início no padrão "Model A" (hero +
+   sparkline, grid 2 colunas) continua bloqueada por ~10 arquivos de teste
+   com lock posicional em `executiveKPIs()`/`dashboardV3PriorityPanel()`;
+   decisão pendente do proprietário entre reescrever esses testes ou aceitar
+   versão intermediária (CSS/reorganização sem tocar estrutura testada).
 
-M1959 concluída: reconciliação HEAD verificada, melhorias M1955/M1958 preservadas (Ativos tabela premium + cards mobile, Dividendos KPIs canônicos + disclosure, semântica ±verde/vermelho, filtros UX, readonly preview), `verify:release` PASS (273+ testes, 39 visual regression, 0 erros), QA smoke 7 viewports limpo, galeria visual 8 capturas, preview sintético read-only ativo.
+## Stack analytics/PWA/CI e PDF hardening (2026-11-02)
 
-DR Plan documentado em `docs/DISASTER_RECOVERY_PLAN.md`. Gaps: backup real não exportado, diretório aprovado inexistente, sidecars SHA-256 ausentes, drills não executados.
+PRs #545 (`stack/pr4-ci-docs`, acumula pr1→pr2→pr3→pr4: analytics, PWA/security,
+CI/docs) e #546 (`integration/m2561-pdf-hardened`, CDN para PDF.js/jsPDF,
+remoção de vendor local) abertas como draft, pendentes de CI e revisão.
+Conteúdo antigo deste arquivo referente a `feat/financial-evolution-premium`
+(M1959/M1960/DR) está superado — essa branch não corresponde ao estado atual
+de `main` e seu histórico de certificação DR deve ser revalidado à parte
+antes de qualquer reaproveitamento.
 
 ## Prioridades
 
