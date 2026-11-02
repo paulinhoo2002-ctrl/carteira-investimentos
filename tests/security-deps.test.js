@@ -50,5 +50,6 @@ test('npm ci works without errors', () => {
 test('engines.node specified in package.json', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
   assert.ok(pkg.engines && pkg.engines.node);
-  assert.match(pkg.engines.node, /^>=20/);
+  // Aceita qualquer >=N (não hardcoda a versão major — Node 20 -> 22 em 2026-11-02, release.yml exige semantic-release@25)
+  assert.match(pkg.engines.node, /^>=\d+/);
 });
