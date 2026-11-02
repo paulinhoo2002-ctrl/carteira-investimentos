@@ -11756,6 +11756,7 @@ function cloudSyncErrorMessage(error){
   if(code.includes('permission-denied') || /insufficient permissions/i.test(message)) return 'Sem permissão para salvar na nuvem.';
   if(code.includes('unauth') || /not authenticated|unauthenticated/i.test(message)) return 'Faça login com Google para sincronizar.';
   if(/undefined/i.test(message)) return 'O payload da nuvem contém campos inválidos.';
+  if(/CLOUD_WRITE_BLOCKED_EMPTY_/.test(message)) return 'Gravação bloqueada: os dados locais estavam vazios, mas a nuvem já tem dados salvos. Nada foi apagado. Recarregue a página antes de tentar salvar de novo.';
   if(/invalid|failed-precondition|failed to set/i.test(message)) return 'A estrutura enviada para a nuvem foi recusada.';
   if(/network|offline|unavailable|deadline/i.test(message)) return 'Falha temporária de conexão com a nuvem.';
   return 'Falha técnica ao sincronizar com a nuvem.';
@@ -12176,6 +12177,24 @@ async function uploadLocalToCloud(show=true, options={}){
       }
     }
     const payload=mergeCloudReferencePayload(cloudPayload(), currentCloud);
+    // Trava de segurança: mergeCloudReferencePayload não faz merge de verdade hoje
+    // (window.ProtectedCloudPersistence nunca foi implementado, cai sempre no payload
+    // cru). Sem essa trava, se S.assets/aportes/proventos/rfEvents estiver vazio na
+    // memória por qualquer bug no momento do save, a gravação apagaria o campo na
+    // nuvem mesmo que ela já tenha dados reais. Bloqueia esse caso específico (campo
+    // que tinha dado na nuvem e chegaria vazio) em vez de deixar a gravação passar
+    // silenciosamente. Nenhum fluxo real do app hoje grava um apagão intencional
+    // desses 4 campos de uma vez (ver uploadLocalToCloud call sites); se um dia
+    // existir essa necessidade, o caller deve passar options.confirmBulkDelete=true.
+    if(options.confirmBulkDelete!==true){
+      const wipeGuardKeys=['assets','aportes','proventos','rfEvents'];
+      const wipedKey=wipeGuardKeys.find(key=>{
+        const cloudLen=Array.isArray(currentCloud?.[key]) ? currentCloud[key].length : 0;
+        const localLen=Array.isArray(payload?.[key]) ? payload[key].length : 0;
+        return cloudLen>0 && localLen===0;
+      });
+      if(wipedKey) throw new Error(`CLOUD_WRITE_BLOCKED_EMPTY_${wipedKey.toUpperCase()}`);
+    }
     payload.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
     await ref.set(payload, {merge:true});
     const cloudReadback=options.requireCloudReadback ? await readFreshCloudPayload() : null;
