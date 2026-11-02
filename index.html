@@ -18288,7 +18288,7 @@ document.getElementById('nota-file').addEventListener('change',async e=>{
   const file=e.target.files[0]; if(!file) return;
   if(typeof XLSX==='undefined'){ try{ await ensureXLSX(); }catch(err){ debugError(err); alert('Não foi possível carregar o leitor de planilhas. Verifique sua conexão e tente novamente.'); e.target.value=''; return; } }
   try{
-      const isCsv=/\\.csv$/i.test(file.name) || String(file.type||'').includes('csv');
+      const isCsv=/\.csv$/i.test(file.name) || String(file.type||'').includes('csv');
     const wb=isCsv
       ? XLSX.read(await file.text(),{type:'string'})
       : XLSX.read(await file.arrayBuffer(),{type:'array'});
