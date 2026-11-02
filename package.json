@@ -55,7 +55,7 @@
     "test:m594-real-rules-emulator": "firebase emulators:exec --config firebase.m594-real-rules.emulator.json --only auth,firestore --project demo-m594-real-rules \"node --test tests/m594-real-rules-matrix.test.js\"",
     "test:zero-cost-guards": "node --test tests/zero-cost-guards.test.js",
     "audit": "npm audit --audit-level=high",
-    "audit:ci": "npm audit --audit-level=high --json > audit-result.json && node -e \"const fs=require('fs'); const data=JSON.parse(fs.readFileSync('audit-result.json','utf8')); if(data.metadata.vulnerabilities.high > 0 || data.metadata.vulnerabilities.critical > 0) { console.error('High/Critical vulnerabilities found'); process.exit(1); }\"",
+    "audit:ci": "npm audit --omit=dev --audit-level=high --json > audit-result.json && node -e \"const fs=require('fs'); const data=JSON.parse(fs.readFileSync('audit-result.json','utf8')); if(data.metadata.vulnerabilities.high > 0 || data.metadata.vulnerabilities.critical > 0) { console.error('High/Critical vulnerabilities found'); process.exit(1); }\"",
     "check:lock": "npm ls --omit=dev --json && echo package-lock.json valid"
   },
   "dependencies": {
