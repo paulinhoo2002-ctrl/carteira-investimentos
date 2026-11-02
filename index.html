@@ -34030,8 +34030,6 @@ function aporteExtractRows(){
 function filteredAporteRows(rows=aporteExtractRows()){
   const q=String(S.apSearch||'').trim().toLowerCase();
   const filter=String(S.aportesFilter||'todos');
-  const helperRows=globalThis.V213TransactionTrust?.filterTransactions?.(rows.map(row=>({...row,type:row.kind,value:row.total})),{type:filter==='todos'?'Todos':filter})||rows;
-  const helperIds=new Set(helperRows.map(row=>row._v213Index ?? row.id));
   const helperSearch=globalThis.V213TransactionTrust?.searchTransactions?.(rows,q)||rows;
   const helperSearchIds=new Set(helperSearch.map(row=>row._v213Index ?? row.id));
   return rows.filter((row,index)=>{
@@ -34042,7 +34040,7 @@ function filteredAporteRows(rows=aporteExtractRows()){
       .join(' ');
     const hay=[row.date,row.label,row.kind,row.ticker,row.name,row.type,row.sector,row.note,row.source,numberText]
       .filter(Boolean).join(' ').toLowerCase();
-    return hay.includes(q) || helperSearchIds.has(row._v213Index ?? row.id) || helperIds.has(row._v213Index ?? row.id);
+    return hay.includes(q) || helperSearchIds.has(row._v213Index ?? row.id);
   });
 }
 function sortedAporteRows(rows=filteredAporteRows()){
