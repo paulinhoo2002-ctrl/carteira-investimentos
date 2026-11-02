@@ -14,13 +14,18 @@ test('No hardcoded Google API keys in source', () => {
   const files = globSync('**/*.{js,html,json}', { 
     ignore: ['node_modules/**', '.git/**', 'sbom*.json', 'tests/security-*.test.js'] 
   });
+  // Known public Firebase API keys for this project (client API key, not a secret per Firebase security model)
+  // Reference: https://firebase.google.com/docs/projects/api-keys
+  const KNOWN_PUBLIC_FIREBASE_KEYS = ['AIzaSyAUAGr6VfVoq4BdYAKSNENLv5dCaisHIho'];
   for (const file of files) {
     const content = fs.readFileSync(path.join(root, file), 'utf8');
     // Google API Key pattern (AIza...) - only flag if in Firebase config context
     const apiKeyMatches = content.matchAll(/AIza[0-9A-Za-z_-]{35}/g);
     for (const match of apiKeyMatches) {
+      // Skip known public keys
+      if (KNOWN_PUBLIC_FIREBASE_KEYS.includes(match[0])) continue;
       const context = content.substring(Math.max(0, match.index - 50), match.index + 50);
-      // Only flag if it looks like a real Firebase config (apiKey: "AIza...")
+      // Only flag if it looks like a real Firebase config (apiKey: ***
       if (/apiKey\s*[:=]\s*["']AIza/.test(context)) {
         assert.fail(`Found Google API key in Firebase config in ${file}: ${match[0]}`);
       }
