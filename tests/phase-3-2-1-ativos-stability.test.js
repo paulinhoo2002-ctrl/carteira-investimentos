@@ -13,9 +13,11 @@ test('Phase 3.2.1: Ativos e Renda Fixa usam rotas independentes', () => {
 });
 
 test('Phase 3.2.1: Ativos prioriza categorias recolhíveis e não duplica a tabela de RF', () => {
-  // Categorias seguem acordeões <details>; a abertura transitória é controlada
-  // pelos filtros ativos, sem persistir estado de acordeão.
-  assert.match(source, /const categoryOpen = assetFiltersActive && typeDisplayAssets\.length > 0;/);
+  // Categorias seguem acordeões <details>. S.activeAssetsGroup persiste a categoria
+  // aberta manualmente pelo usuário entre re-renders (ex.: refresh de cotação), com
+  // fallback para a abertura transitória por filtro quando nada foi aberto manualmente.
+  // Reset de S.activeAssetsGroup (busca/filtro/troca de aba) continua coberto no teste abaixo.
+  assert.match(source, /const categoryOpen = S\.activeAssetsGroup\s*\n\s*\? S\.activeAssetsGroup === type\s*\n\s*: \(assetFiltersActive && typeDisplayAssets\.length > 0\);/);
   assert.match(source, /<details class="accordion-category ag" data-asset-group="\$\{esc\(type\)\}"\$\{categoryOpen \? ' open' : ''\}>/);
   assert.match(source, /Gestão detalhada em Renda Fixa/);
   assert.match(source, /onclick="go\('renda-fixa'\)"\>Ver Renda Fixa/);

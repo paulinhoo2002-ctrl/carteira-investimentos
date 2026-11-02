@@ -33591,7 +33591,13 @@ function ativos(){
     const typeGoalPct = Object.prototype.hasOwnProperty.call(assetsAllocationGoalMap, type) ? assetsAllocationGoalMap[type] : null;
     const typeGoalGap = typeGoalPct != null && typeWeight != null ? typeWeight - typeGoalPct : null;
     const typeCount = typeDisplayAssets.length;
-    const categoryOpen = assetFiltersActive && typeDisplayAssets.length > 0;
+    // S.activeAssetsGroup persiste a categoria aberta manualmente pelo usuário (mesmo
+    // mecanismo já usado em outras abas via toggleAssetGroup/setActiveAssetGroup).
+    // Sem isso, cada render() (ex.: refresh de cotação a cada QI segundos) recalculava
+    // categoryOpen do zero e fechava qualquer categoria que o usuário tivesse aberto.
+    const categoryOpen = S.activeAssetsGroup
+      ? S.activeAssetsGroup === type
+      : (assetFiltersActive && typeDisplayAssets.length > 0);
 
     const resultTone = typeResult == null || typeResult === 0 ? '' : typeResult > 0 ? 'positive-text' : 'negative-text';
     const returnTone = typeReturn == null || typeReturn === 0 ? '' : typeReturn > 0 ? 'positive-text' : 'negative-text';
@@ -33829,7 +33835,7 @@ function ativos(){
           <button type="button" class="btn bgh touch-target-utility" style="align-self:flex-start" onclick="go('renda-fixa')">Ver Renda Fixa</button>
         </div>`;
       return `<details class="accordion-category ag" data-asset-group="${esc(type)}"${categoryOpen ? ' open' : ''}>
-        <summary class="accordion-header">${headerHtml}</summary>
+        <summary class="accordion-header" onclick='toggleAssetGroup(${JSON.stringify(type)}, event)'>${headerHtml}</summary>
         <div class="accordion-body ag-body open">${rfBodyHtml}</div>
       </details>`;
     }
@@ -33864,7 +33870,7 @@ function ativos(){
     // Use details/summary for test compatibility (V84 expects .ag with summary)
     // Also include mobile cards for the V84 mobile test
     return `<details class="accordion-category ag" data-asset-group="${esc(type)}"${categoryOpen ? ' open' : ''}>
-      <summary class="accordion-header" >${headerHtml}</summary>
+      <summary class="accordion-header" onclick='toggleAssetGroup(${JSON.stringify(type)}, event)'>${headerHtml}</summary>
       <div class="accordion-body ag-body open">
         ${tableHtml}
         <div class="asset-mobile-cards">${mobileCardsHtml}</div>
