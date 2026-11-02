@@ -2741,6 +2741,8 @@ html[data-theme="light"] .reports-premium-shell .reports-filter button.on{backgr
 .pdf-report-row{display:grid;grid-template-columns:minmax(100px,1.2fr) repeat(3,minmax(70px,.7fr));gap:8px;align-items:center;padding:7px 8px;border:1px solid #e0e7ef;border-radius:8px;background:#fff;break-inside:avoid;page-break-inside:avoid;font:500 9px/1.3 system-ui,sans-serif}
 .pdf-report-row-main{min-width:0;font-weight:800;color:#1f2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pdf-report-row-value{text-align:right;color:#334155;white-space:nowrap}
+.pdf-report-row-value.negative{color:var(--negative)!important}
+.pdf-report-row-value.positive{color:var(--positive)!important}
 .pdf-report-bar{height:5px;border-radius:999px;background:#e5eaf0;overflow:hidden;margin-top:5px}
 .pdf-report-bar>span{display:block;height:100%;border-radius:inherit;background:#3b82f6}
 .pdf-report-alert{border-left:3px solid #f59e0b}
@@ -28648,8 +28650,8 @@ function reportCardPdfPreview(type, printMode=false){
             <div class="pdf-report-row-value">${fmt(Number(row.currentPrice)||0)}</div>
             <div class="pdf-report-row-value">${fmt(Number(row.applied)||0)}</div>
             <div class="pdf-report-row-value">${fmt(current)}</div>
-            <div class="pdf-report-row-value">${fmt(Number(row.result)||0)}</div>
-            <div class="pdf-report-row-value">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
+            <div class="pdf-report-row-value ${Number(row.result) < 0 ? 'negative' : 'positive' }">${fmt(Number(row.result)||0)}</div>
+            <div class="pdf-report-row-value ${Number(row.resultPct) < 0 ? 'negative' : 'positive'}">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
             <div class="pdf-report-row-value">${share!=null?fmtP(share):'—'}</div>
           </div>`;
         },
@@ -28674,7 +28676,7 @@ function reportCardPdfPreview(type, printMode=false){
           <div class="pdf-report-row-value">${fmt(Number(row.applied)||0)}</div>
           <div class="pdf-report-row-value">${fmt(current)}</div>
           <div class="pdf-report-row-value">${fmt(Number(row.profit)||0)}</div>
-          <div class="pdf-report-row-value">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
+          <div class="pdf-report-row-value ${Number(row.resultPct) < 0 ? 'negative' : 'positive'}">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
           <div class="pdf-report-row-value">${share!=null?fmtP(share):'—'}</div>
           <div class="pdf-report-row-value">${esc(row.maturityDate||'—')}</div>
         </div>`;
@@ -28797,8 +28799,8 @@ function reportCardPdfAssetsPreview(printMode=false){
         <div class="pdf-report-row-value">${fmt(Number(row.currentPrice)||0)}</div>
         <div class="pdf-report-row-value">${fmt(Number(row.applied)||0)}</div>
         <div class="pdf-report-row-value">${fmt(Number(row.current)||0)}</div>
-        <div class="pdf-report-row-value">${fmt(Number(row.result)||0)}</div>
-        <div class="pdf-report-row-value">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
+        <div class="pdf-report-row-value ${Number(row.result) < 0 ? 'negative' : 'positive' }">${fmt(Number(row.result)||0)}</div>
+        <div class="pdf-report-row-value ${Number(row.resultPct) < 0 ? 'negative' : 'positive'}">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
         <div class="pdf-report-row-value" style="overflow:hidden;text-overflow:ellipsis">${esc(row.source||'—')}</div>
       </div>`;
     },
@@ -28829,8 +28831,8 @@ function reportCardPdfAssetsPreview(printMode=false){
     noData,
     row=>`<div class="pdf-report-row" style="grid-template-columns:minmax(0,1.2fr) auto auto">
       <div class="pdf-report-row-main">${esc(row.ticker||'—')} · ${esc(row.name||'—')}</div>
-      <div class="pdf-report-row-value">${fmt(Number(row.result)||0)}</div>
-      <div class="pdf-report-row-value">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
+      <div class="pdf-report-row-value ${Number(row.result) < 0 ? 'negative' : 'positive' }">${fmt(Number(row.result)||0)}</div>
+      <div class="pdf-report-row-value ${Number(row.resultPct) < 0 ? 'negative' : 'positive'}">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
     </div>`,
     'minmax(0,1.2fr) auto auto'
   );
@@ -28842,8 +28844,8 @@ function reportCardPdfAssetsPreview(printMode=false){
     noData,
     row=>`<div class="pdf-report-row" style="grid-template-columns:minmax(0,1.2fr) auto auto">
       <div class="pdf-report-row-main">${esc(row.ticker||'—')} · ${esc(row.name||'—')}</div>
-      <div class="pdf-report-row-value">${fmt(Number(row.result)||0)}</div>
-      <div class="pdf-report-row-value">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
+      <div class="pdf-report-row-value ${Number(row.result) < 0 ? 'negative' : 'positive' }">${fmt(Number(row.result)||0)}</div>
+      <div class="pdf-report-row-value ${Number(row.resultPct) < 0 ? 'negative' : 'positive'}">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
     </div>`,
     'minmax(0,1.2fr) auto auto'
   );
@@ -28963,7 +28965,7 @@ function reportCardPdfFixedPreview(printMode=false){
         <div class="pdf-report-row-value">${fmt(Number(row.applied)||0)}</div>
         <div class="pdf-report-row-value">${fmt(Number(row.current)||0)}</div>
         <div class="pdf-report-row-value">${fmt(Number(row.profit)||0)}</div>
-        <div class="pdf-report-row-value">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
+        <div class="pdf-report-row-value ${Number(row.resultPct) < 0 ? 'negative' : 'positive'}">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
         <div class="pdf-report-row-value">${esc(row.maturityDate||'—')}</div>
         <div class="pdf-report-row-value" style="overflow:hidden;text-overflow:ellipsis">${esc(status||'—')}</div>
       </div>`;
@@ -29151,7 +29153,7 @@ function reportPdfPreview(){
           <div class="pdf-report-row-value">${fmt(Number(row.avgPrice)||0)}</div>
           <div class="pdf-report-row-value">${fmt(Number(row.currentPrice)||0)}</div>
           <div class="pdf-report-row-value">${fmt(rowCurrent)}</div>
-          <div class="pdf-report-row-value">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
+          <div class="pdf-report-row-value ${Number(row.resultPct) < 0 ? 'negative' : 'positive'}">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
           <div class="pdf-report-row-value">${sharePct!=null?fmtP(sharePct):'—'}</div>
           <div class="pdf-report-row-value">${dyValue}</div>
         </div>`;
@@ -29174,7 +29176,7 @@ function reportPdfPreview(){
           <div class="pdf-report-row-value">${fmt(Number(row.applied)||0)}</div>
           <div class="pdf-report-row-value">${fmt(currentValue)}</div>
           <div class="pdf-report-row-value">${fmt(Number(row.profit)||0)}</div>
-          <div class="pdf-report-row-value">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
+          <div class="pdf-report-row-value ${Number(row.resultPct) < 0 ? 'negative' : 'positive'}">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
           <div class="pdf-report-row-value">${esc(row.maturityDate||'—')}</div>
           <div class="pdf-report-row-value">${esc(row.indexer||'—')}</div>
         </div>`;
@@ -30746,7 +30748,7 @@ function dashboardPassiveIncomePanel(data){
     <div class="dash-income-grid">
       <div class="dash-income-main">
         <div class="premium-metrics">
-          ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida','#34d399','rgba(52,211,153,.14)')}
+          ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'':'Cobertura desconhecida','#34d399','rgba(52,211,153,.14)')}
           ${dashboardMetricCard(dashboardMetricIcon('bars'),'Média 12 meses',passiveIncomeValue(monthlyAvg),`Meses completos: ${income.completeMonthCount??0}/12`,'#60a5fa','rgba(96,165,250,.14)')}
           ${dashboardMetricCard(dashboardMetricIcon('target'),'Meta mensal',target>0?fmt(target):'—',target>0?'Meta configurada na aba Metas':'Defina a meta para acompanhar progresso',target>0?'#60a5fa':'#94a3b8','rgba(96,165,250,.14)')}
           ${dashboardMetricCard(dashboardMetricIcon('flag'),'Falta para meta — média 12M',passiveIncomeValue(goalReached),!target?'Sem meta definida':goalReached===null?'Indisponível · exige 12 meses completos':goalReached>0?'Valor restante para atingir a meta':'Meta atingida',goalReached>0?'#fbbf24':goalReached===null?'#94a3b8':'#34d399',goalReached>0?'rgba(251,191,36,.14)':'rgba(52,211,153,.14)')}
@@ -32987,7 +32989,7 @@ function executiveKPIs(data){
     ${totalResultStatus}
     <div class="dashboard-executive-kpis">
       ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',patrimonyValue,patrimonyContext,'var(--semantic-official)','var(--semantic-official-bg)',`${patrimonyContext} · Data-base financeira não informada`)}
-      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Cobertura parcial':'Cobertura desconhecida','var(--success)','rgba(16,185,129,.14)',recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida')}
+      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'':'Cobertura desconhecida','var(--success)','rgba(16,185,129,.14)',recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'':'Cobertura desconhecida')}
       ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado da posição',resultValue,resultAvailable?'Sobre capital cadastrado':resultNote,resultTone,resultGlow,resultNote)}
     </div>
   `;
@@ -33083,7 +33085,7 @@ function dashboardIncomePanel(data){
     <div class="dashboard-income-card">
       <div class="dashboard-income-header"><div><div class="premium-panel-title">Renda passiva</div><div class="premium-panel-sub">Recebido no mês, média 12M e meta mensal</div></div><div class="premium-panel-badge">${esc(monthLabel)}</div></div>
       <div class="dashboard-income-grid"><div class="premium-metrics">
-        ${dashboardMetricCard('💵','Recebido no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida','#34d399','rgba(52,211,153,.14)')}
+        ${dashboardMetricCard('💵','Recebido no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'':'Cobertura desconhecida','#34d399','rgba(52,211,153,.14)')}
         ${dashboardMetricCard('📊','Média 12 meses',passiveIncomeValue(monthlyAvg),`Meses completos: ${income.completeMonthCount??0}/12`,'#60a5fa','rgba(96,165,250,.14)')}
         ${dashboardMetricCard('🎯','Meta mensal',target>0?fmt(target):'—',target>0?'Meta configurada na aba Metas':'Defina a meta para acompanhar progresso',target>0?'#60a5fa':'#94a3b8','rgba(96,165,250,.14)')}
         ${dashboardMetricCard('🧭','Falta para meta — média 12M',passiveIncomeValue(goalReached),!target?'Sem meta definida':goalReached===null?'Indisponível · exige 12 meses completos':goalReached>0?'Valor restante para atingir a meta':'Meta atingida',goalReached>0?'#fbbf24':goalReached===null?'#94a3b8':'#34d399',goalReached>0?'rgba(251,191,36,.14)':'rgba(52,211, 153,.14)')}
@@ -33377,8 +33379,10 @@ function assetActionMenuHtml(asset, isRF, context='default'){
     : `<button type="button" class="btn bgh asset-action" onclick='openAssetQuickMovement(${JSON.stringify(id)}, "venda")'>Vender</button>`;
   const quickActions=context==='desktop' ? `<span class="asset-quick-actions">${primary.replace('bsv asset-action','bsv asset-action asset-quick')}${secondary.replace('bgh asset-action','bgh asset-action asset-quick asset-quick-sell')}${isRF?'':`<button type="button" class="asset-icon-btn" aria-label="Editar ${esc(asset.ticker||asset.name||'ativo')}" title="Editar" onclick='edA(${JSON.stringify(id)})'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>`}</span>` : '';
   return `<div class="asset-actions asset-action-menu" data-asset-actions="${esc(id)}">${quickActions}
-    <button type="button" class="asset-action-trigger" aria-label="Mais ações para ${esc(asset.ticker||asset.name||'ativo')}" aria-haspopup="menu" aria-controls="${esc(menuId)}" aria-expanded="false" onclick='toggleAssetActionMenu(${JSON.stringify(menuId)}, event)'>⋯</button>
-    <div class="asset-action-menu-panel" id="${esc(menuId)}" role="menu" aria-label="Ações para ${esc(asset.ticker||asset.name||'ativo')}">
+
+      <button type="button" class="asset-action-trigger" aria-label="Mais ações para ${esc(asset.ticker||asset.name||'ativo')}" aria-haspopup="menu" aria-controls="${esc(menuId)}" aria-expanded="false" onclick='toggleAssetActionMenu(${JSON.stringify(menuId)}, event)'>⋯</button>
+
+      <div class="asset-action-menu-panel" id="${esc(menuId)}" role="menu" aria-label="Ações para ${esc(asset.ticker||asset.name||'ativo')}">
       <button type="button" role="menuitem" onclick='openAssetDetail(${JSON.stringify(id)})'>Detalhes</button>
       ${primary.replace('<button ', '<button role="menuitem" ')}
       ${secondary.replace('<button ', '<button role="menuitem" ')}
