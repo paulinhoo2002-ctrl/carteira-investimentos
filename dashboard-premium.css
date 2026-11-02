@@ -1,0 +1,961 @@
+/* ==========================================================================
+   DASHBOARD PREMIUM - Modern Visual Layer
+   Inspired by index2027-4.html patterns
+   ========================================================================== */
+
+:root {
+  /* Premium Dark Theme - from index2027 */
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #111827;
+  --bg-card: #1a2234;
+  --bg-card-hover: #1f2a40;
+  --border: #2a3550;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  /* Contrast-safe muted token for dark theme (WCAG AA 4.5:1 on --bg-card) */
+  --text-muted-contrast: #94a3b8;
+  --gold: #f5c542;
+  --gold-dark: #d4a017;
+  --green: #10b981;
+  --green-light: #34d399;
+  --red: #ef4444;
+  --blue: #3b82f6;
+  --purple: #8b5cf6;
+  --orange: #f59e0b;
+  --cyan: #06b6d4;
+}
+
+/* Light theme overrides - ensure contrast on light surfaces */
+html[data-theme="light"] {
+  --bg-primary: #e8eff6;
+  --bg-secondary: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f6f9fc;
+  --border: #b8c8d6;
+  --text-primary: #111827;
+  --text-secondary: #4f6175;
+  --text-muted: #4f6175;
+  --text-muted-contrast: #4f6175;
+  /* Contrast-safe semantic colors for light theme (WCAG AA 3:1 large text / 4.5:1 normal text on light backgrounds) */
+  --gold: #b8860b;
+  --gold-dark: #967009;
+  --green-light: #059669;
+  --red: #c62828;
+  --cyan: #0891b2;
+  --purple: #7c3aed;
+  --orange: #d97706;
+  --blue: #2563eb;
+}
+
+/* ==========================================================================
+   LAYOUT STRUCTURE
+   ========================================================================== */
+
+.dashboard-premium {
+  padding: 20px 28px;
+  max-width: 100%;
+}
+
+.dashboard-premium .section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.dashboard-premium .section-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.dashboard-premium .section-subtitle {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+}
+
+/* ==========================================================================
+   HERO METRICS (4 cards row) - from index2027
+   ========================================================================== */
+
+.hero-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.hero-metric {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  transition: all 0.2s ease;
+}
+
+.hero-metric:hover {
+  border-color: rgba(245, 197, 66, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.hero-metric-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted-contrast);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.hero-metric-value {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+
+.hero-metric-value.positive { color: var(--green-light); }
+.hero-metric-value.negative { color: var(--red); }
+.hero-metric-value.gold { color: var(--gold); }
+
+.hero-metric-sub { font-size: 11px; color: var(--text-muted-contrast); }
+
+/* ==========================================================================
+   ACCORDION CATEGORY CARDS - from index2027
+   ========================================================================== */
+
+.accordion-category {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.accordion-category:hover { border-color: rgba(245, 197, 66, 0.2); }
+
+.accordion-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr auto;
+  align-items: center;
+  padding: 12px 16px;
+  gap: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.accordion-header:hover { background: var(--bg-card-hover); }
+
+.acc-info { display: flex; align-items: center; gap: 12px; }
+
+.acc-icon {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.acc-name { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+.acc-sub { font-size: 11px; color: var(--text-muted-contrast); }
+
+.acc-metric-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted-contrast);
+  margin-bottom: 3px;
+  font-weight: 600;
+}
+
+.acc-metric-value { font-size: 16px; font-weight: 700; }
+
+.acc-toggle {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.acc-toggle.open { transform: rotate(180deg); }
+
+.accordion-body {
+  display: none;
+  border-top: 1px solid var(--border);
+}
+
+.accordion-body.open { display: block; }
+
+/* ==========================================================================
+   TABLE STYLES
+   ========================================================================== */
+
+.assets-table-wrap { overflow-x: auto; }
+
+.assets-table { 
+  width: 100%; 
+  border-collapse: collapse; 
+  font-size: 12px; 
+  min-width: 900px; 
+}
+
+.assets-table th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,0.2);
+  white-space: nowrap;
+}
+
+.assets-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.assets-table tr:last-child td { border-bottom: none; }
+
+.assets-table tbody tr { transition: background 0.2s ease; }
+.assets-table tbody tr:hover { background: var(--bg-card-hover); }
+
+.asset-info { display: flex; align-items: center; gap: 8px; }
+
+.asset-logo {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+  font-size: 10px;
+  flex-shrink: 0;
+  color: white;
+}
+
+.asset-name { font-weight: 600; font-size: 12px; }
+.asset-ticker { font-size: 10px; color: var(--text-muted-contrast); }
+
+.asset-change {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.asset-type {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.type-acao { background: rgba(59, 130, 246, 0.15); color: var(--blue); }
+.type-fii { background: rgba(139, 92, 246, 0.15); color: var(--purple); }
+.type-etf { background: rgba(245, 197, 66, 0.15); color: var(--gold); }
+.type-rf { background: rgba(16, 185, 129, 0.15); color: var(--green); }
+.type-cripto { background: rgba(245, 158, 11, 0.15); color: var(--orange); }
+.type-bdr { background: rgba(245, 158, 11, 0.15); color: var(--orange); }
+
+/* .positive-text / .negative-text defined in main index.html with theme-aware --success / --danger */
+/* .neutral-text uses var(--text-muted) from main theme */
+
+.yahoo-tag {
+  display: inline-block;
+  font-size: 9px;
+  color: var(--cyan);
+  margin-left: 4px;
+  font-weight: 600;
+}
+
+.yahoo-time { font-size: 9px; color: var(--text-muted-contrast); display: block; }
+
+.action-btns { display: flex; gap: 4px; }
+
+.icon-action {
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+
+.icon-action:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+.icon-action.delete:hover { background: rgba(239, 68, 68, 0.15); color: var(--red); border-color: rgba(239, 68, 68, 0.3); }
+
+.btn-buy {
+  background: linear-gradient(135deg, var(--green) 0%, #059669 100%);
+  color: white;
+  padding: 5px 10px;
+  font-size: 10px;
+}
+
+.btn-buy:hover { box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+
+.btn-sell {
+  background: linear-gradient(135deg, var(--red) 0%, #dc2626 100%);
+  color: white;
+  padding: 5px 10px;
+  font-size: 10px;
+}
+
+.btn-sell:hover { box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
+
+/* ==========================================================================
+   PATRIMÔNIO GRID - from index2027
+   ========================================================================== */
+
+.patrimonio-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 1100px) { .patrimonio-grid { grid-template-columns: 1fr; } }
+
+.patrimonio-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.patrimonio-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.patrimonio-card-title-icon {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(245, 197, 66, 0.1);
+  color: var(--gold);
+}
+
+/* Top Assets List */
+.top-asset-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.top-asset-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.top-asset-rank {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: #0a0e1a;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.top-asset-rank.silver { background: var(--text-secondary); }
+.top-asset-rank.bronze { background: var(--orange); }
+
+.top-asset-info { flex: 1; min-width: 0; }
+.top-asset-ticker { font-size: 12px; font-weight: 700; }
+.top-asset-name { font-size: 10px; color: var(--text-muted); }
+.top-asset-value { text-align: right; }
+.top-asset-amount { font-size: 12px; font-weight: 700; }
+.top-asset-perc { font-size: 10px; color: var(--text-muted); }
+
+/* Broker List */
+.broker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.broker-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.broker-info { display: flex; align-items: center; gap: 10px; }
+
+.broker-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+  font-size: 11px;
+  color: white;
+}
+
+.broker-name { font-size: 12px; font-weight: 600; }
+.broker-sub { font-size: 10px; color: var(--text-muted); }
+.broker-value { font-size: 13px; font-weight: 700; }
+
+/* Risk Indicator */
+.risk-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.risk-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--bg-card);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.risk-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.risk-label { font-size: 11px; font-weight: 600; min-width: 80px; }
+.risk-value { font-size: 11px; color: var(--text-muted); min-width: 40px; text-align: right; }
+
+/* ==========================================================================
+   CHARTS GRID
+   ========================================================================== */
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 1100px) { .charts-grid { grid-template-columns: 1fr; } }
+
+.chart-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chart-title { font-size: 14px; font-weight: 700; }
+.chart-subtitle { font-size: 11px; color: var(--text-muted-contrast); margin-top: 2px; }
+
+.chart-tabs {
+  display: flex;
+  gap: 3px;
+  background: var(--bg-primary);
+  padding: 3px;
+  border-radius: 8px;
+}
+
+.chart-tab {
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chart-tab.active { background: var(--gold); color: #0a0e1a; }
+.chart-tab:hover:not(.active) { color: var(--text-primary); }
+
+.chart-container { position: relative; height: 200px; }
+
+/* ==========================================================================
+   CALENDAR / DIVIDENDS
+   ========================================================================== */
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.calendar-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+}
+
+.calendar-card:hover {
+  border-color: rgba(16, 185, 129, 0.3);
+  transform: translateY(-2px);
+}
+
+.calendar-date {
+  width: 48px;
+  text-align: center;
+  padding: 6px 0;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.calendar-day { font-size: 18px; font-weight: 800; color: var(--green-light); line-height: 1; }
+.calendar-month { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+.calendar-info { flex: 1; min-width: 0; }
+.calendar-ticker { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+.calendar-type { font-size: 10px; color: var(--text-muted); margin-bottom: 3px; }
+.calendar-value { font-size: 12px; color: var(--green-light); font-weight: 600; }
+
+/* ==========================================================================
+   NEWS / INSIGHTS
+   ========================================================================== */
+
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.news-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.news-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(245, 197, 66, 0.3);
+}
+
+.news-tag {
+  display: inline-block;
+  padding: 2px 7px;
+  background: rgba(245, 197, 66, 0.15);
+  color: var(--gold);
+  border-radius: 5px;
+  font-size: 9px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.news-tag.opportunity { background: rgba(16, 185, 129, 0.15); color: var(--green-light); }
+.news-tag.fii { background: rgba(139, 92, 246, 0.15); color: var(--purple); }
+.news-tag.macro { background: rgba(59, 130, 246, 0.15); color: var(--blue); }
+
+/* Light theme news tag overrides - WCAG AA 4.5:1 for 9px text */
+html[data-theme="light"] .news-tag {
+  background: rgba(184, 134, 11, 0.2);
+  color: #7c5c07;
+}
+html[data-theme="light"] .news-tag.opportunity {
+  background: rgba(5, 150, 105, 0.15);
+  color: #056b4a;
+}
+html[data-theme="light"] .news-tag.fii {
+  background: rgba(124, 58, 237, 0.2);
+  color: #6d28d9;
+}
+html[data-theme="light"] .news-tag.macro {
+  background: rgba(37, 99, 235, 0.2);
+  color: #1d4ed8;
+}
+
+/* Dark theme news tag overrides - WCAG AA 4.5:1 for 9px text */
+html[data-theme="dark"] .news-tag.fii {
+  background: rgba(139, 92, 246, 0.25);
+  color: #c4b5fd;
+}
+html[data-theme="dark"] .news-tag.macro {
+  background: rgba(59, 130, 246, 0.25);
+  color: #93c5fd;
+}
+
+.news-title { font-size: 13px; font-weight: 700; margin-bottom: 5px; line-height: 1.4; }
+.news-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 8px; }
+.news-meta { font-size: 10px; color: var(--text-secondary); }
+
+/* ==========================================================================
+   DIVIDEND SUMMARY
+   ========================================================================== */
+
+.dividend-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.div-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.div-card-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; font-weight: 600; }
+.div-card-value { font-size: 20px; font-weight: 700; }
+.div-card-sub { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+
+/* ==========================================================================
+   MOBILE RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 1100px) { 
+  .accordion-header { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .acc-info { grid-column: 1 / -1; }
+}
+
+@media (max-width: 900px) {
+  .dashboard-premium { padding: 14px; }
+  .hero-metrics { grid-template-columns: 1fr 1fr; }
+  .accordion-header { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .acc-info { grid-column: 1 / -1; }
+}
+
+@media (max-width: 640px) {
+  .hero-metrics { grid-template-columns: 1fr; }
+  .patrimonio-grid { grid-template-columns: 1fr; }
+}
+
+/* ==========================================================================
+   MOBILE REFINEMENTS - M2191
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  /* Dividendos page mobile optimizations */
+  .div-premium-hero {
+    padding: 12px 0;
+  }
+  .div-premium-title {
+    font-size: 20px;
+  }
+  .div-premium-sub {
+    font-size: 12px;
+  }
+  .div-premium-kpi-bar {
+    gap: 8px;
+  }
+  .div-premium-tabs {
+    gap: 4px;
+    padding: 4px;
+  }
+  .div-premium-tab {
+    padding: 8px 12px;
+    font-size: 12px;
+    min-height: 40px;
+  }
+  .div-dividend-toolbar {
+    padding: 8px;
+  }
+  .div-premium-search input {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+  .div-premium-chip {
+    padding: 6px 10px;
+    font-size: 11px;
+    min-height: 36px;
+  }
+  .div-dividend-toolbar-main {
+    gap: 8px;
+  }
+  .div-dividend-toolbar-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .btn.bgh {
+    padding: 8px 12px;
+    font-size: 12px;
+    min-height: 40px;
+  }
+  
+  /* Ativos mobile cards improvements */
+  .asset-premium-card-summary {
+    padding: 12px;
+    gap: 8px;
+  }
+  .asset-premium-card-summary .asset-logo {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+  .asset-premium-card-summary .asset-name {
+    font-size: 13px;
+  }
+  .asset-premium-card-summary .asset-ticker {
+    font-size: 10px;
+    max-width: 180px;
+  }
+  .asset-premium-card-meta {
+    gap: 6px 12px;
+    font-size: 10px;
+    min-width: 160px;
+  }
+  .asset-premium-card-meta > div {
+    gap: 4px;
+  }
+  .asset-premium-card-meta span {
+    font-size: 12px;
+  }
+  .asset-premium-card-meta strong {
+    font-size: 14px;
+  }
+  .asset-premium-card-summary .asset-name {
+    font-size: 14px;
+  }
+  .asset-premium-card-summary .asset-ticker {
+    font-size: 12px;
+  }
+  .asset-premium-card-details {
+    padding: 8px 10px;
+    gap: 4px 8px;
+  }
+  .asset-premium-card-row {
+    gap: 2px;
+  }
+  .asset-premium-card-label {
+    font-size: 9px;
+  }
+  .asset-premium-card-value {
+    font-size: 12px;
+  }
+  .asset-premium-card-actions {
+    padding: 8px 10px;
+    gap: 4px;
+  }
+  .asset-premium-card-action {
+    padding: 8px 6px;
+    font-size: 11px;
+    min-height: 40px;
+  }
+  
+  /* Dashboard mobile spacing */
+  .dashboard-premium {
+    padding: 12px;
+  }
+  .hero-metrics {
+    gap: 6px;
+  }
+  .hero-metric {
+    padding: 8px;
+    border-radius: 8px;
+  }
+  .hero-metric-label {
+    font-size: 9px;
+  }
+  .hero-metric-value {
+    font-size: 20px;
+  }
+  .hero-metric-sub {
+    font-size: 10px;
+  }
+  .section-header {
+    margin-bottom: 6px;
+    gap: 4px;
+  }
+  .section-title {
+    font-size: 14px;
+  }
+  .section-subtitle {
+    font-size: 10px;
+  }
+  .charts-grid {
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .chart-card {
+    padding: 10px;
+    border-radius: 8px;
+  }
+  .chart-header {
+    margin-bottom: 6px;
+    gap: 6px;
+  }
+  .chart-title {
+    font-size: 13px;
+  }
+  .chart-subtitle {
+    font-size: 10px;
+  }
+  .chart-tabs {
+    gap: 2px;
+    padding: 2px;
+  }
+  .chart-tab {
+    padding: 4px 8px;
+    font-size: 10px;
+    border-radius: 4px;
+  }
+  .chart-container {
+    height: 160px;
+  }
+  
+  /* Dividendos mobile */
+  .div-premium-hero {
+    padding: 10px 0;
+  }
+  .div-premium-kpi-bar {
+    gap: 6px;
+  }
+  .div-premium-tabs {
+    padding: 3px;
+  }
+  .div-premium-tab {
+    padding: 6px 10px;
+    font-size: 11px;
+    min-height: 36px;
+  }
+  .div-dividend-toolbar {
+    padding: 6px;
+  }
+  .div-premium-search input {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  .div-premium-chip {
+    padding: 5px 8px;
+    font-size: 10px;
+    min-height: 32px;
+  }
+  .div-dividend-toolbar-main {
+    gap: 6px;
+  }
+  .div-dividend-toolbar-actions {
+    gap: 6px;
+  }
+  
+  /* Metas, Patrimônio, Rentabilidade mobile spacing */
+  .patrimonio-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .patrimonio-card {
+    padding: 14px;
+  }
+  .patrimonio-card-title {
+    font-size: 13px;
+  }
+  .patrimonio-card-title-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+  }
+  
+  /* Accordion mobile */
+  .accordion-category {
+    border-radius: 8px;
+    margin-bottom: 6px;
+  }
+  .accordion-header {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+  .acc-name {
+    font-size: 14px;
+  }
+  .acc-sub {
+    font-size: 10px;
+  }
+  .acc-metric-label {
+    font-size: 9px;
+    margin-bottom: 2px;
+  }
+  .acc-metric-value {
+    font-size: 14px;
+  }
+  .acc-toggle {
+    width: 28px;
+    height: 28px;
+  }
+  
+  /* Asset mobile cards in accordion */
+  .asset-mobile-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 0;
+  }
+}
+
+/* Chart empty states */
+.chart-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 160px;
+  text-align: center;
+  padding: 20px;
+}
+
+/* Asset mobile cards container */
+.asset-mobile-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+/* Dividendos page mobile actions */
+.div-premium-canon-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.div-premium-canon-actions .btn {
+  flex: 1;
+  min-width: 120px;
+  justify-content: center;
+}

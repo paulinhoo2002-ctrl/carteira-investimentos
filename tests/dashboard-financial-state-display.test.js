@@ -81,5 +81,5 @@ test('monthly income KPI identifies the value as received', () => {
     totalApplied: 90,
   });
 
-  assert.match(html, /premium-metric-label">Recebido</);
+  assert.match(html, /premium-metric-label">Recebido no m/);
 });

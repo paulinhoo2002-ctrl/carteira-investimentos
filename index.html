@@ -57,14 +57,14 @@
 <style>
 :root{
   --bg:#0b1220;
-  --text:#f0f5ff;
-  --muted:#7d8cad;
+  --text:#f4f7fb;
+  --muted:#9ab4d6;
   --panel:#121d2f;
   --panel-2:#0f1a2c;
   --card:#121d2f;
   --surface:#101a2b;
   --surface-2:#0d1625;
-  --border:#26344b;
+  --border:#2a3a5c;
   --primary:#4f46e5;
   --success:#22c55e;
   --danger:#ef4444;
@@ -112,7 +112,7 @@
   --canon-panel-2:#0c1826;
   --canon-border:#1b2a3a;
   --canon-text:#f4f7fb;
-  --canon-muted:#8794a8;
+  --canon-muted:#9ab4d6;
   --canon-green:#10d981;
   --canon-blue:#3292ff;
   --canon-red:#ff4d5f;
@@ -399,6 +399,10 @@ html[data-theme="light"] .dashboard-history-disclosure-body{background:var(--sur
 @media (max-width: 430px) {
   .dashboard-evolution-header{flex-direction:column;align-items:flex-start;gap:8px}
   .dashboard-history-disclosure summary{min-width:0}
+  /* Modal fix for mobile - ensure modal fits in viewport */
+  .note-overlay{padding:8px}
+  .note-modal{border-radius:14px;max-height:min(85dvh,700px)}
+  .note-modal .btn{min-height:40px}
 }
 
 .dashboard-master-primary .premium-panel{padding:12px}
@@ -2308,7 +2312,7 @@ html[data-theme="light"] .aporte-kind.outro{color:#64748b}
 .toast{position:fixed;bottom:20px;right:20px;background:#064e3b;color:#6ee7b7;border:1px solid rgba(52,211,153,.3);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;z-index:3000;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:fadeIn .2s;pointer-events:none}
 #toast-area{pointer-events:none}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.note-overlay{position:fixed;inset:0;z-index:9998;background:rgba(2,6,23,.82);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:22px;overflow:hidden}
+.note-overlay{position:fixed;inset:0;z-index:9998;background:rgba(2,6,23,.82);backdrop-filter:blur(6px);display:flex;align-items:flex-start;justify-content:center;padding:22px 22px 100px;overflow:hidden}
 .note-modal{width:min(1240px,100%);max-height:min(90dvh,900px);background:#0b1020;border:1px solid #27324a;border-radius:18px;box-shadow:0 28px 80px rgba(0,0,0,.55);overflow:hidden;margin:0;display:flex;flex-direction:column}
 body.modal-open{overflow:hidden}
 .note-head{padding:18px 18px 14px;border-bottom:1px solid #182033;background:linear-gradient(180deg,#0f1527,#0b1020);flex:0 0 auto}
@@ -2737,6 +2741,8 @@ html[data-theme="light"] .reports-premium-shell .reports-filter button.on{backgr
 .pdf-report-row{display:grid;grid-template-columns:minmax(100px,1.2fr) repeat(3,minmax(70px,.7fr));gap:8px;align-items:center;padding:7px 8px;border:1px solid #e0e7ef;border-radius:8px;background:#fff;break-inside:avoid;page-break-inside:avoid;font:500 9px/1.3 system-ui,sans-serif}
 .pdf-report-row-main{min-width:0;font-weight:800;color:#1f2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pdf-report-row-value{text-align:right;color:#334155;white-space:nowrap}
+.pdf-report-row-value.negative{color:var(--negative)!important}
+.pdf-report-row-value.positive{color:var(--positive)!important}
 .pdf-report-bar{height:5px;border-radius:999px;background:#e5eaf0;overflow:hidden;margin-top:5px}
 .pdf-report-bar>span{display:block;height:100%;border-radius:inherit;background:#3b82f6}
 .pdf-report-alert{border-left:3px solid #f59e0b}
@@ -7302,11 +7308,12 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     .hdr{padding-top:calc(10px + var(--safe-top))!important}
   }
   @media(min-width:641px){
-    .toast{bottom:calc(20px + var(--safe-bottom))}
-    .note-overlay{padding-top:calc(22px + var(--safe-top));padding-bottom:calc(22px + var(--safe-bottom))}
-    .pmp-modal{padding-top:calc(16px + var(--safe-top));padding-bottom:calc(16px + var(--safe-bottom))}
-    #investMenuSheet{padding-bottom:calc(32px + var(--safe-bottom))}
-  }
+      .toast{bottom:calc(20px + var(--safe-bottom))}
+      .note-overlay{padding-top:calc(22px + var(--safe-top));padding-bottom:calc(22px + var(--safe-bottom))}
+      .note-modal{max-height:calc(90dvh - var(--safe-bottom))!important}
+      .pmp-modal{padding-top:calc(16px + var(--safe-top));padding-bottom:calc(16px + var(--safe-bottom))}
+      #investMenuSheet{padding-bottom:calc(32px + var(--safe-bottom))}
+    }
   @media(orientation:landscape){
     .hdr{padding-left:calc(18px + var(--safe-left))!important;padding-right:calc(18px + var(--safe-right))!important}
     .tabs-desktop{padding-left:calc(10px + var(--safe-left));padding-right:calc(10px + var(--safe-right))}
@@ -8976,6 +8983,12 @@ document.write([
 <script src="persistence-core.js"></script>
 <script src="backup-portability.js"></script>
 <script src="protected-local-cloud-authority.js?v=phase4i-authority-2"></script>
+<script src="analytics-passive-income-projection.js"></script>
+<script src="analytics-dividend-evolution.js"></script>
+<script src="analytics-asset-class-comparison.js"></script>
+<script src="analytics-wealth-goals.js"></script>
+<script src="analytics-financial-insights.js"></script>
+<script src="analytics-code-splitter.js"></script>
 <script src="rf-reconstruction.js"></script>
 <script src="income-linkage-reconciliation.js"></script>
 <script src="corporate-events-core.js"></script>
@@ -21431,11 +21444,472 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
           </div>
         </details>` : ''}
         ${contextualAction}
-      </div>
-    </div>
-  </details>`;
-}
-function proventoAuditMonthKey(dateLike){
+              </div>
+            </div>
+          </details>`;
+        }
+        function passiveIncomeProjectionEnhanced(stats, projectedMonthly, assets, proventos, goals) {
+          try {
+            if (typeof PassiveIncomeProjection === 'undefined') {
+              return '<div class="mu" style="font-size:11px;color:var(--muted)">Motor de projeção não disponível</div>';
+            }
+            const report = PassiveIncomeProjection.generateFullProjectionReport({
+              assets: assets,
+              proventos: proventos,
+              goals: goals,
+              monthlyContribution: Number(goals?.patrimonio?.aporte) || 0,
+              years: 10
+            });
+            const base = report.baseProjection;
+            const scenarios = report.scenarios;
+            const mc = report.monteCarlo;
+            const tax = report.taxProjection;
+            const goalTrack = report.goalTracking;
+            const portfolio = report.portfolio;
+            const cagr = report.dividendCAGR;
+
+            const formatMoney = (v) => {
+              if (v === undefined || v === null) return '—';
+              if (v >= 1e9) return (v / 1e9).toFixed(2) + ' B';
+              if (v >= 1e6) return (v / 1e6).toFixed(2) + ' M';
+              if (v >= 1e3) return (v / 1e3).toFixed(1) + ' K';
+              return v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            };
+            const formatPct = (v) => v ? v.toFixed(2) + '%' : '—';
+
+            return `
+            <details class="sec metas-goal-section" style="margin-top:8px;margin-bottom:0">
+              <summary>
+                <div>
+                  <div class="sec-title">Projeção Avançada de Renda Passiva (M1401)</div>
+                  <div class="sec-meta">DRIP + Cenários + Monte Carlo + Imposto · 10 anos</div>
+                </div>
+                <div class="sec-meta">Abrir</div>
+              </summary>
+              <div class="sec-body">
+                <div class="mu" style="font-size:11px;line-height:1.45;margin-bottom:8px">
+                  <strong>Disclaimer:</strong> ${esc(report.disclaimer)}
+                </div>
+
+                <div class="passive-goal-grid main" style="margin-bottom:12px">
+                  <div class="passive-goal-card info">
+                    <div class="passive-goal-kicker">Carteira Atual</div>
+                    <div class="passive-goal-value">${formatMoney(portfolio.totalValue)}</div>
+                    <div class="passive-goal-sub">Renda mensal: ${formatMoney(portfolio.monthlyIncome)} · DY: ${portfolio.avgDY.toFixed(2)}%</div>
+                  </div>
+                  <div class="passive-goal-card ${goalTrack.progressPercent >= 100 ? 'ok' : goalTrack.progressPercent >= 50 ? 'info' : 'warn'}">
+                    <div class="passive-goal-kicker">Meta Mensal</div>
+                    <div class="passive-goal-value">${formatMoney(goalTrack.targetMonthly)}</div>
+                    <div class="passive-goal-sub">Progresso: ${goalTrack.progressPercent.toFixed(1)}% · Falta: ${formatMoney(goalTrack.gap)}</div>
+                  </div>
+                  <div class="passive-goal-card info">
+                    <div class="passive-goal-kicker">CAGR Dividendos</div>
+                    <div class="passive-goal-value">${cagr.annualGrowth.toFixed(2)}%</div>
+                    <div class="passive-goal-sub">Períodos: ${cagr.periods} · Confiança: ${cagr.confidence}</div>
+                  </div>
+                </div>
+
+                <div class="passive-goal-grid main" style="margin-bottom:12px">
+                  <div class="passive-goal-card ok">
+                    <div class="passive-goal-kicker">Projeção Base (10a)</div>
+                    <div class="passive-goal-value">${formatMoney(base.finalPortfolioValue)}</div>
+                    <div class="passive-goal-sub">Renda mensal: ${formatMoney(base.finalMonthlyIncome)} · Investido: ${formatMoney(base.totalInvested)}</div>
+                  </div>
+                  <div class="passive-goal-card warn">
+                    <div class="passive-goal-kicker">Pessimista (10a)</div>
+                    <div class="passive-goal-value">${formatMoney(scenarios.bear.finalPortfolioValue)}</div>
+                    <div class="passive-goal-sub">Renda mensal: ${formatMoney(scenarios.bear.finalMonthlyIncome)}</div>
+                  </div>
+                  <div class="passive-goal-card info">
+                    <div class="passive-goal-kicker">Otimista (10a)</div>
+                    <div class="passive-goal-value">${formatMoney(scenarios.bull.finalPortfolioValue)}</div>
+                    <div class="passive-goal-sub">Renda mensal: ${formatMoney(scenarios.bull.finalMonthlyIncome)}</div>
+                  </div>
+                </div>
+
+                <div class="passive-goal-grid main" style="margin-bottom:12px">
+                  <div class="passive-goal-card muted">
+                    <div class="passive-goal-kicker">Monte Carlo (10a)</div>
+                    <div class="passive-goal-value">${mc.probabilitySuccess.toFixed(1)}%</div>
+                    <div class="passive-goal-sub">Prob. atingir ${formatMoney(mc.targetValue)} · Mediana: ${formatMoney(mc.percentiles.p50)}</div>
+                  </div>
+                  <div class="passive-goal-card muted">
+                    <div class="passive-goal-kicker">Imposto (Ano 10)</div>
+                    <div class="passive-goal-value">${formatMoney(tax[9]?.tax || 0)}</div>
+                    <div class="passive-goal-sub">Taxa efetiva: ${formatPct(tax[9]?.effectiveRate || 0)} · Líquido: ${formatMoney(tax[9]?.net || 0)}</div>
+                  </div>
+                  <div class="passive-goal-card muted">
+                    <div class="passive-goal-kicker">Recebido Total (10a)</div>
+                    <div class="passive-goal-value">${formatMoney(base.totalDividendsReceived)}</div>
+                    <div class="passive-goal-sub">Reinvestido: ${formatMoney(base.totalReinvested)} · Caixa: ${formatMoney(base.totalCashFlow)}</div>
+                  </div>
+                </div>
+
+                <details class="sec" style="margin-top:8px">
+                  <summary>
+                    <div class="sec-title">Evolução Anual (Base)</div>
+                    <div class="sec-meta">Valores de carteira, dividendos e investido por ano</div>
+                  </summary>
+                  <div class="sec-body">
+                    <div class="ts" tabindex="0" role="region" aria-label="Tabela de evolução anual" style="overflow-x:auto">
+                      <table class="tw" style="min-width:600px">
+                        <thead>
+                          <tr><th>Ano</th><th>Carteira</th><th>Dividendos/ano</th><th>Investido Acum.</th><th>Reinvestido</th><th>Caixa</th></tr>
+                        </thead>
+                        <tbody>
+                          ${base.yearlyResults.map(y => `
+                            <tr>
+                              <td style="font-weight:600">${y.year}</td>
+                              <td>${formatMoney(y.portfolioValue)}</td>
+                              <td>${formatMoney(y.annualDividends)}</td>
+                              <td>${formatMoney(y.totalInvested)}</td>
+                              <td>${formatMoney(y.totalReinvested)}</td>
+                              <td>${formatMoney(y.totalCashFlow || 0)}</td>
+                            </tr>
+                          `).join('')}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </details>
+
+                <details class="sec" style="margin-top:8px">
+                  <summary>
+                    <div class="sec-title">Cenários Detalhados</div>
+                    <div class="sec-meta">Comparação Pessimista / Base / Otimista em 10 anos</div>
+                  </summary>
+                  <div class="sec-body">
+                    <div class="ts" tabindex="0" role="region" aria-label="Tabela de cenários" style="overflow-x:auto">
+                      <table class="tw" style="min-width:600px">
+                        <thead>
+                          <tr><th>Cenário</th><th>Carteira Final</th><th>Renda Mensal</th><th>Renda Anual</th><th>Investido</th><th>Reinvestido</th></tr>
+                        </thead>
+                        <tbody>
+                          ${Object.keys(scenarios).map(k => {
+                            const s = scenarios[k];
+                            return `<tr>
+                              <td style="font-weight:600">${s.name}</td>
+                              <td>${formatMoney(s.finalPortfolioValue)}</td>
+                              <td>${formatMoney(s.finalMonthlyIncome)}</td>
+                              <td>${formatMoney(s.finalAnnualIncome)}</td>
+                              <td>${formatMoney(s.totalInvested)}</td>
+                              <td>${formatMoney(s.totalReinvested)}</td>
+                            </tr>`;
+                          }).join('')}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </details>
+
+                <details class="sec" style="margin-top:8px">
+                  <summary>
+                    <div class="sec-title">Projeção de Imposto de Renda</div>
+                    <div class="sec-meta">Evolução do impacto tributário nos dividendos (10 anos)</div>
+                  </summary>
+                  <div class="sec-body">
+                    <div class="ts" tabindex="0" role="region" aria-label="Tabela de projeção de imposto" style="overflow-x:auto">
+                      <table class="tw" style="min-width:600px">
+                        <thead>
+                          <tr><th>Ano</th><th>Bruto</th><th>Tributável</th><th>Imposto (15%)</th><th>Líquido</th><th>Taxa Efetiva</th></tr>
+                        </thead>
+                        <tbody>
+                          ${tax.map(t => `
+                            <tr>
+                              <td style="font-weight:600">${t.year}</td>
+                              <td>${formatMoney(t.grossAnnual)}</td>
+                              <td>${formatMoney(t.taxable)}</td>
+                              <td style="color:var(--danger)">${formatMoney(t.tax)}</td>
+                              <td style="color:var(--success)">${formatMoney(t.net)}</td>
+                              <td>${formatPct(t.effectiveRate)}</td>
+                            </tr>
+                          `).join('')}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </details>
+
+                <div class="goal-context-action-row" style="margin-top:8px">
+                  <button type="button" class="btn bgh" onclick="passiveIncomeDownloadProjection('${btoa(JSON.stringify(report))}')">Exportar JSON</button>
+                </div>
+              </div>
+            </details>`;
+          } catch (e) {
+            return '<div class="mu" style="font-size:11px;color:var(--danger)">Erro na projeção avançada: ' + esc(e.message) + '</div>';
+          }
+        }
+                function wealthGoalsPanel(assets, goals){
+                  if (typeof WealthGoalsTracking === 'undefined') {
+                    return '<div class="mu" style="font-size:11px;color:var(--muted);padding:20px">Motor de metas não disponível</div>';
+                  }
+                  try {
+                    const report = WealthGoalsTracking.generateWealthGoalReport({
+                      assets: assets,
+                      goals: goals,
+                      monthlyContribution: Number(goals?.patrimonio?.aporte) || 0,
+                      expectedReturn: 0.10,
+                      volatility: 0.15,
+                      projectionYears: 10
+                    });
+                    const progress = report.progress;
+                    const timeEst = report.timeEstimate;
+                    const mc = report.monteCarlo;
+
+                    const formatMoney = (v) => {
+                      if (v === undefined || v === null) return '—';
+                      if (v >= 1e9) return (v / 1e9).toFixed(2) + ' B';
+                      if (v >= 1e6) return (v / 1e6).toFixed(2) + ' M';
+                      if (v >= 1e3) return (v / 1e3).toFixed(1) + ' K';
+                      return v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    };
+
+                    const statusColors = {
+                      ACHIEVED: '#34d399',
+                      ON_TRACK: '#60a5fa',
+                      PROGRESSING: '#fbbf24',
+                      BEHIND: '#f87171'
+                    };
+                    const statusLabels = {
+                      ACHIEVED: 'Atingida',
+                      ON_TRACK: 'No caminho',
+                      PROGRESSING: 'Em progresso',
+                      BEHIND: 'Atrasada'
+                    };
+
+                    return `
+                    <details class="sec metas-goal-section" style="margin-top:8px;margin-bottom:0">
+                      <summary>
+                        <div>
+                          <div class="sec-title">Metas de Patrimônio - Projeção Monte Carlo (M1431)</div>
+                          <div class="sec-meta">Progresso, marcos, probabilidade de sucesso · 10 anos</div>
+                        </div>
+                        <div class="sec-meta">Abrir</div>
+                      </summary>
+                      <div class="sec-body">
+                        <div class="mu" style="font-size:11px;line-height:1.45;margin-bottom:8px">
+                          <strong>Disclaimer:</strong> ${esc(report.disclaimer)}
+                        </div>
+
+                        <div class="passive-goal-grid main" style="margin-bottom:12px">
+                          <div class="passive-goal-card ${progress ? progress.status : 'muted'}" style="border-left-color:${progress ? statusColors[progress.status] : 'var(--muted)'}">
+                            <div class="passive-goal-kicker">Patrimônio Atual</div>
+                            <div class="passive-goal-value">${formatMoney(report.currentValue)}</div>
+                            <div class="passive-goal-sub">Meta: ${formatMoney(report.targetValue)}</div>
+                          </div>
+                          <div class="passive-goal-card ${progress ? progress.status : 'muted'}" style="border-left-color:${progress ? statusColors[progress.status] : 'var(--muted)'}">
+                            <div class="passive-goal-kicker">Progresso</div>
+                            <div class="passive-goal-value">${progress ? progress.progressPercent.toFixed(1) + '%' : '—'}</div>
+                            <div class="passive-goal-sub">${progress ? statusLabels[progress.status] : 'Sem meta'} · Falta: ${progress ? formatMoney(progress.remaining) : '—'}</div>
+                          </div>
+                          <div class="passive-goal-card info">
+                            <div class="passive-goal-kicker">Tempo Estimado</div>
+                            <div class="passive-goal-value">${timeEst ? timeEst.years + 'a ' + timeEst.remainingMonths + 'm' : '—'}</div>
+                            <div class="passive-goal-sub">${timeEst ? 'Chegada estimada: ' + timeEst.estimatedDate : 'Sem aporte ou meta'}</div>
+                          </div>
+                        </div>
+
+                        <div class="passive-goal-grid main" style="margin-bottom:12px">
+                          <div class="passive-goal-card ok">
+                            <div class="passive-goal-kicker">Prob. Sucesso (MC)</div>
+                            <div class="passive-goal-value">${mc.probability.toFixed(1)}%</div>
+                            <div class="passive-goal-sub">Mediana: ${formatMoney(mc.percentiles.p50)} · P90: ${formatMoney(mc.percentiles.p90)}</div>
+                          </div>
+                          <div class="passive-goal-card warn">
+                            <div class="passive-goal-kicker">Pessimista (P10)</div>
+                            <div class="passive-goal-value">${formatMoney(mc.percentiles.p10)}</div>
+                            <div class="passive-goal-sub">Cenário adverso em ${report.assumptions.projectionYears} anos</div>
+                          </div>
+                          <div class="passive-goal-card info">
+                            <div class="passive-goal-kicker">Otimista (P90)</div>
+                            <div class="passive-goal-value">${formatMoney(mc.percentiles.p90)}</div>
+                            <div class="passive-goal-sub">Cenário favorável em ${report.assumptions.projectionYears} anos</div>
+                          </div>
+                        </div>
+
+                        <details class="sec" style="margin-top:8px">
+                          <summary>
+                            <div class="sec-title">Marcos Intermediários</div>
+                            <div class="sec-meta">Pontos de verificação no caminho até a meta</div>
+                          </summary>
+                          <div class="sec-body">
+                            <div class="ts" tabindex="0" role="region" aria-label="Tabela de marcos" style="overflow-x:auto">
+                              <table class="tw" style="min-width:500px">
+                                <thead>
+                                  <tr><th>Marco</th><th>Valor</th><th>%</th><th>Status</th><th>Progresso</th></tr>
+                                </thead>
+                                <tbody>
+                                  ${report.milestones.map(m => `
+                                    <tr>
+                                      <td style="font-weight:600">${m.label}</td>
+                                      <td>${formatMoney(m.value)}</td>
+                                      <td>${m.percent}%</td>
+                                      <td><span class="analysis-pill ${m.achieved ? 'ok' : 'muted'}">${m.achieved ? 'Atingido' : 'Pendente'}</span></td>
+                                      <td>${m.progress}%</td>
+                                    </tr>
+                                  `).join('')}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </details>
+
+                        <details class="sec" style="margin-top:8px">
+                          <summary>
+                            <div class="sec-title">Premissas da Simulação</div>
+                            <div class="sec-meta">Parâmetros utilizados no Monte Carlo</div>
+                          </summary>
+                          <div class="sec-body">
+                            <div class="passive-goal-grid main">
+                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Retorno Esperado</div><div class="passive-goal-value">${(report.assumptions.expectedReturn * 100).toFixed(1)}% a.a.</div></div>
+                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Volatilidade</div><div class="passive-goal-value">${(report.assumptions.volatility * 100).toFixed(1)}% a.a.</div></div>
+                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Aporte Mensal</div><div class="passive-goal-value">${formatMoney(report.assumptions.monthlyContribution)}</div></div>
+                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Horizonte</div><div class="passive-goal-value">${report.assumptions.projectionYears} anos</div></div>
+                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Simulações</div><div class="passive-goal-value">${report.monteCarlo.simulations}</div></div>
+                            </div>
+                          </div>
+                        </details>
+
+                        <div class="goal-context-action-row" style="margin-top:8px">
+                          <button type="button" class="btn bgh" onclick="exportWealthGoals()">Exportar JSON</button>
+                        </div>
+                      </div>
+                    </details>`;
+                  } catch (e) {
+                    return '<div class="mu" style="font-size:11px;color:var(--danger)">Erro nas metas de patrimônio: ' + esc(e.message) + '</div>';
+                  }
+                }
+                                function financialInsightsPanel(assets, proventos, goals, movements){
+                                  if (typeof FinancialInsights === 'undefined') {
+                                    return '<div class="mu" style="font-size:11px;color:var(--muted);padding:20px">Motor de insights não disponível</div>';
+                                  }
+                                  try {
+                                    const report = FinancialInsights.generateInsightsReport(assets, proventos, goals, movements);
+                                    const health = report.health;
+                                    const anomalies = report.anomalies;
+                                    const summary = report.summary;
+
+                                    const formatMoney = (v) => {
+                                      if (v === undefined || v === null) return '—';
+                                      if (v >= 1e9) return (v / 1e9).toFixed(2) + ' B';
+                                      if (v >= 1e6) return (v / 1e6).toFixed(2) + ' M';
+                                      if (v >= 1e3) return (v / 1e3).toFixed(1) + ' K';
+                                      return v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                                    };
+
+                                    const healthColors = {
+                                      EXCELENTE: '#34d399',
+                                      BOM: '#60a5fa',
+                                      ATENÇÃO: '#fbbf24',
+                                      CRÍTICO: '#f87171'
+                                    };
+
+                                    return `
+                                    <details class="sec metas-goal-section" style="margin-top:8px;margin-bottom:0">
+                                      <summary>
+                                        <div>
+                                          <div class="sec-title">Insights Financeiros & Saúde da Carteira (M1441)</div>
+                                          <div class="sec-meta">Score de saúde, alertas, anomalias, oportunidades</div>
+                                        </div>
+                                        <div class="sec-meta">Abrir</div>
+                                      </summary>
+                                      <div class="sec-body">
+                                        <div class="mu" style="font-size:11px;line-height:1.45;margin-bottom:8px">
+                                          <strong>Disclaimer:</strong> ${esc(report.disclaimer)}
+                                        </div>
+
+                                        <div class="passive-goal-grid main" style="margin-bottom:12px">
+                                          <div class="passive-goal-card" style="border-left-color:${healthColors[health.healthLabel]}">
+                                            <div class="passive-goal-kicker">Score de Saúde</div>
+                                            <div class="passive-goal-value" style="color:${healthColors[health.healthLabel]}">${health.score}/100</div>
+                                            <div class="passive-goal-sub">${health.healthLabel} · Patrimônio: ${formatMoney(health.totalValue)}</div>
+                                          </div>
+                                          <div class="passive-goal-card ${health.alerts.filter(a=>a.severity==='HIGH').length > 0 ? 'danger' : health.alerts.length > 0 ? 'warn' : 'ok'}">
+                                            <div class="passive-goal-kicker">Alertas Ativos</div>
+                                            <div class="passive-goal-value">${health.alerts.length}</div>
+                                            <div class="passive-goal-sub">Críticos: ${summary.highAlerts} · Total: ${summary.totalAlerts}</div>
+                                          </div>
+                                          <div class="passive-goal-card ${anomalies.filter(a=>a.severity==='HIGH').length > 0 ? 'danger' : anomalies.length > 0 ? 'warn' : 'ok'}">
+                                            <div class="passive-goal-kicker">Anomalias Detectadas</div>
+                                            <div class="passive-goal-value">${anomalies.length}</div>
+                                            <div class="passive-goal-sub">Críticas: ${summary.highAnomalies} · Oportunidades: ${summary.opportunities}</div>
+                                          </div>
+                                        </div>
+
+                                        ${health.alerts.length > 0 ? `
+                                        <details class="sec" style="margin-top:8px" open>
+                                          <summary>
+                                            <div class="sec-title">Alertas (${health.alerts.length})</div>
+                                            <div class="sec-meta">Ordenados por severidade</div>
+                                          </summary>
+                                          <div class="sec-body">
+                                            ${health.alerts.map(a => `
+                                              <div class="analysis-pill ${a.severity}" style="margin:4px 0;padding:8px 12px;display:flex;align-items:center;gap:8px">
+                                                <span style="font-weight:700">${a.severity}</span>
+                                                <span>${esc(a.message)}</span>
+                                              </div>
+                                            `).join('')}
+                                          </div>
+                                        </details>` : ''}
+
+                                        ${anomalies.length > 0 ? `
+                                        <details class="sec" style="margin-top:8px" open>
+                                          <summary>
+                                            <div class="sec-title">Anomalias (${anomalies.length})</div>
+                                            <div class="sec-meta">Dados inconsistentes ou duplicados</div>
+                                          </summary>
+                                          <div class="sec-body">
+                                            ${anomalies.map(a => `
+                                              <div class="analysis-pill ${a.severity}" style="margin:4px 0;padding:8px 12px;display:flex;align-items:center;gap:8px">
+                                                <span style="font-weight:700">${a.severity}</span>
+                                                <span>${esc(a.type)}: ${esc(a.message)}</span>
+                                              </div>
+                                            `).join('')}
+                                          </div>
+                                        </details>` : ''}
+
+                                        ${health.opportunities.length > 0 ? `
+                                        <details class="sec" style="margin-top:8px" open>
+                                          <summary>
+                                            <div class="sec-title">Oportunidades (${health.opportunities.length})</div>
+                                            <div class="sec-meta">Melhorias sugeridas para sua carteira</div>
+                                          </summary>
+                                          <div class="sec-body">
+                                            ${health.opportunities.map(o => `
+                                              <div class="analysis-pill info" style="margin:4px 0;padding:8px 12px;display:flex;align-items:center;gap:8px">
+                                                <span style="font-weight:700">${o.type}</span>
+                                                <span>${esc(o.message)}</span>
+                                              </div>
+                                            `).join('')}
+                                          </div>
+                                        </details>` : ''}
+
+                                        <details class="sec" style="margin-top:8px">
+                                          <summary>
+                                            <div class="sec-title">Métricas de Saúde</div>
+                                            <div class="sec-meta">Detalhes técnicos do diagnóstico</div>
+                                          </summary>
+                                          <div class="sec-body">
+                                            <div class="passive-goal-grid main">
+                                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Concentração Máx.</div><div class="passive-goal-value">${health.metrics.concentration.toFixed(2)}%</div></div>
+                                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Classes de Ativos</div><div class="passive-goal-value">${health.metrics.diversificationClasses}</div></div>
+                                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Ativos sem Cotação</div><div class="passive-goal-value">${health.metrics.staleAssets}</div></div>
+                                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Proventos Recentes</div><div class="passive-goal-value">${health.metrics.recentProventos}</div></div>
+                                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Desvio Alocação</div><div class="passive-goal-value">${health.metrics.allocationDeviation ? health.metrics.allocationDeviation.toFixed(1) + '%' : '—'}</div></div>
+                                            </div>
+                                          </div>
+                                        </details>
+
+                                        <div class="goal-context-action-row" style="margin-top:8px">
+                                          <button type="button" class="btn bgh" onclick="exportFinancialInsights()">Exportar JSON</button>
+                                        </div>
+                                      </div>
+                                    </details>`;
+                                  } catch (e) {
+                                    return '<div class="mu" style="font-size:11px;color:var(--danger)">Erro nos insights: ' + esc(e.message) + '</div>';
+                                  }
+                                }
+                                function proventoAuditMonthKey(dateLike){
   const dt=parseAnyDate(dateLike);
   if(!dt) return '';
   return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
@@ -26642,8 +27116,135 @@ function assetPerformanceOverviewPanel(){
       <div class="perf-list">${listBody}</div>
     </div>
   </div>`;
-}
-function setAssetsAnalysisRankingMode(mode){
+  }
+  function assetClassComparisonPanel(){
+    if (typeof AssetClassComparison === 'undefined') {
+      return '<div class="mu" style="font-size:11px;color:var(--muted);padding:20px">Motor de comparação não disponível</div>';
+    }
+    try {
+      const report = AssetClassComparison.generateComparisonReport(S.assets, S.goals);
+      const actions = AssetClassComparison.getRebalanceActions(report);
+      const total = report.totalPortfolio;
+
+      const formatMoney = (v) => {
+        if (v === undefined || v === null) return '—';
+        if (v >= 1e9) return (v / 1e9).toFixed(2) + ' B';
+        if (v >= 1e6) return (v / 1e6).toFixed(2) + ' M';
+        if (v >= 1e3) return (v / 1e3).toFixed(1) + ' K';
+        return v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      };
+
+      return `
+      <div class="alloc-shell">
+        <div class="alloc-header">
+          <div class="alloc-title-row">
+            <h2 class="st">Comparativo por Classe de Ativos (M1421)</h2>
+            <div class="alloc-meta">Carteira total: ${formatMoney(total)} · Risco: ${report.riskScore}/10 · ${report.summary.concentrationRisk}</div>
+          </div>
+          <div class="alloc-disclaimer mu">${esc(report.disclaimer)}</div>
+        </div>
+
+        <div class="alloc-grid-main" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin:16px 0">
+          ${report.classes.map(c => `
+            <div class="alloc-card" style="border-left:4px solid ${c.color};background:var(--surface);border-radius:12px;padding:16px">
+              <div class="alloc-card-head" style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                <span style="font-size:20px">${c.icon}</span>
+                <div class="alloc-card-name" style="font-weight:700;color:${c.color}">${c.name}</div>
+                <div class="alloc-card-alloc" style="margin-left:auto;font-weight:700;color:var(--text)">${c.allocation.toFixed(1)}%</div>
+              </div>
+              <div class="alloc-card-metrics" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
+                <div><div class="mu">Valor</div><div class="st">${formatMoney(c.totalValue)}</div></div>
+                <div><div class="mu">Investido</div><div class="st">${formatMoney(c.totalInvested)}</div></div>
+                <div><div class="mu">Resultado</div><div class="st ${c.gainLoss>=0?'gn':'rd'}">${c.gainLoss>=0?'+':''}${formatMoney(c.gainLoss)} (${c.gainLossPct.toFixed(2)}%)</div></div>
+                <div><div class="mu">Dividendos/ano</div><div class="st">${formatMoney(c.totalDividends)}</div></div>
+                <div><div class="mu">DY médio</div><div class="st">${c.avgDY.toFixed(2)}%</div></div>
+                <div><div class="mu">Yield on Cost</div><div class="st">${c.yieldOnCost.toFixed(2)}%</div></div>
+                <div><div class="mu">Rent. média</div><div class="st ${c.avgPL>=0?'gn':'rd'}">${c.avgPL>=0?'+':''}${c.avgPL.toFixed(2)}%</div></div>
+                <div><div class="mu">Ativos</div><div class="st">${c.count}</div></div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <details class="sec alloc-details" style="margin-top:16px" open>
+          <summary>
+            <div class="sec-title">Detalhamento por Ativo</div>
+            <div class="sec-meta">Clique para expandir cada classe</div>
+          </summary>
+          <div class="sec-body">
+            ${report.classes.filter(c => c.count > 0).map(c => `
+              <details class="sec alloc-class-detail" style="margin:8px 0;border:1px solid var(--border);border-radius:10px;overflow:hidden">
+                <summary style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);cursor:pointer">
+                  <span style="font-size:20px">${c.icon}</span>
+                  <div class="st" style="color:${c.color}">${c.name}</div>
+                  <div class="mu" style="margin-left:auto">${c.allocation.toFixed(1)}% · ${formatMoney(c.totalValue)}</div>
+                </summary>
+                <div class="sec-body">
+                  <div class="ts" tabindex="0" style="overflow-x:auto">
+                    <table class="tw" style="min-width:700px">
+                      <thead>
+                        <tr><th>Ticker</th><th class="num">Qtd</th><th class="num">Preço</th><th class="num">Preço médio</th><th class="num">DY</th><th class="num">Valor</th><th class="num">Investido</th><th class="num">Resultado</th><th class="num">Rent.</th><th class="num">Div/ano</th></tr>
+                      </thead>
+                      <tbody>
+                        ${c.assets.sort((a,b)=>b.value-a.value).map(a => `
+                          <tr>
+                            <td style="font-weight:600">${a.ticker}</td>
+                            <td class="num">${a.qty.toLocaleString('pt-BR')}</td>
+                            <td class="num">${formatMoney(a.price)}</td>
+                            <td class="num">${formatMoney(a.avgPrice)}</td>
+                            <td class="num">${a.dy.toFixed(2)}%</td>
+                            <td class="num">${formatMoney(a.value)}</td>
+                            <td class="num">${formatMoney(a.invested)}</td>
+                            <td class="num ${a.pl>=0?'gn':'rd'}">${a.pl>=0?'+':''}${formatMoney(a.value - a.invested)}</td>
+                            <td class="num ${a.pl>=0?'gn':'rd'}">${a.pl>=0?'+':''}${a.pl.toFixed(2)}%</td>
+                            <td class="num">${formatMoney(a.annualDiv)}</td>
+                          </tr>
+                        `).join('')}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </details>
+            `).join('')}
+          </div>
+        </details>
+
+        ${actions.length > 0 ? `
+        <details class="sec alloc-rebalance" style="margin-top:16px">
+          <summary>
+            <div class="sec-title">Ações de Rebalanceamento Sugeridas</div>
+            <div class="sec-meta">Baseado nas metas de alocação definidas nas Metas</div>
+          </summary>
+          <div class="sec-body">
+            <div class="ts" tabindex="0" style="overflow-x:auto">
+              <table class="tw" style="min-width:500px">
+                <thead><tr><th>Classe</th><th>Ação</th><th class="num">Valor</th><th>Prioridade</th></tr></thead>
+                <tbody>
+                  ${actions.map(a => `
+                    <tr>
+                      <td style="font-weight:600">${a.class}</td>
+                      <td><span class="analysis-pill ${a.action==='COMPRAR'?'ok':'danger'}">${a.action}</span></td>
+                      <td class="num">${formatMoney(a.amount)}</td>
+                      <td><span class="analysis-pill ${a.priority==='ALTA'?'danger':a.priority==='MÉDIA'?'warn':'muted'}">${a.priority}</span></td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+            <div class="mu" style="margin-top:8px;font-size:11px">Valores aproximados. Considere custos de corretagem e impostos antes de executar.</div>
+          </div>
+        </details>` : ''}
+
+        <div class="alloc-actions" style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+          <button type="button" class="btn bgh" onclick="exportAssetClassComparison()">Exportar JSON</button>
+          <button type="button" class="btn bgh" onclick="go('metas')">Configurar Metas de Alocação</button>
+        </div>
+      </div>`;
+    } catch (e) {
+      return '<div class="mu" style="font-size:11px;color:var(--danger);padding:20px">Erro na comparação: ' + esc(e.message) + '</div>';
+    }
+  }
+  function setAssetsAnalysisRankingMode(mode){
   S.assetsAnalysisRankingMode = ['positions','concentration','best','worst','opportunity'].includes(mode) ? mode : 'positions';
   render();
 }
@@ -28050,8 +28651,8 @@ function reportCardPdfPreview(type, printMode=false){
             <div class="pdf-report-row-value">${fmt(Number(row.currentPrice)||0)}</div>
             <div class="pdf-report-row-value">${fmt(Number(row.applied)||0)}</div>
             <div class="pdf-report-row-value">${fmt(current)}</div>
-            <div class="pdf-report-row-value">${fmt(Number(row.result)||0)}</div>
-            <div class="pdf-report-row-value">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
+            <div class="pdf-report-row-value ${Number(row.result) < 0 ? 'negative' : 'positive' }">${fmt(Number(row.result)||0)}</div>
+            <div class="pdf-report-row-value ${Number(row.resultPct) < 0 ? 'negative' : 'positive'}">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
             <div class="pdf-report-row-value">${share!=null?fmtP(share):'—'}</div>
           </div>`;
         },
@@ -28076,7 +28677,7 @@ function reportCardPdfPreview(type, printMode=false){
           <div class="pdf-report-row-value">${fmt(Number(row.applied)||0)}</div>
           <div class="pdf-report-row-value">${fmt(current)}</div>
           <div class="pdf-report-row-value">${fmt(Number(row.profit)||0)}</div>
-          <div class="pdf-report-row-value">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
+          <div class="pdf-report-row-value ${Number(row.resultPct) < 0 ? 'negative' : 'positive'}">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
           <div class="pdf-report-row-value">${share!=null?fmtP(share):'—'}</div>
           <div class="pdf-report-row-value">${esc(row.maturityDate||'—')}</div>
         </div>`;
@@ -28199,8 +28800,8 @@ function reportCardPdfAssetsPreview(printMode=false){
         <div class="pdf-report-row-value">${fmt(Number(row.currentPrice)||0)}</div>
         <div class="pdf-report-row-value">${fmt(Number(row.applied)||0)}</div>
         <div class="pdf-report-row-value">${fmt(Number(row.current)||0)}</div>
-        <div class="pdf-report-row-value">${fmt(Number(row.result)||0)}</div>
-        <div class="pdf-report-row-value">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
+        <div class="pdf-report-row-value ${Number(row.result) < 0 ? 'negative' : 'positive' }">${fmt(Number(row.result)||0)}</div>
+        <div class="pdf-report-row-value ${Number(row.resultPct) < 0 ? 'negative' : 'positive'}">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
         <div class="pdf-report-row-value" style="overflow:hidden;text-overflow:ellipsis">${esc(row.source||'—')}</div>
       </div>`;
     },
@@ -28231,8 +28832,8 @@ function reportCardPdfAssetsPreview(printMode=false){
     noData,
     row=>`<div class="pdf-report-row" style="grid-template-columns:minmax(0,1.2fr) auto auto">
       <div class="pdf-report-row-main">${esc(row.ticker||'—')} · ${esc(row.name||'—')}</div>
-      <div class="pdf-report-row-value">${fmt(Number(row.result)||0)}</div>
-      <div class="pdf-report-row-value">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
+      <div class="pdf-report-row-value ${Number(row.result) < 0 ? 'negative' : 'positive' }">${fmt(Number(row.result)||0)}</div>
+      <div class="pdf-report-row-value ${Number(row.resultPct) < 0 ? 'negative' : 'positive'}">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
     </div>`,
     'minmax(0,1.2fr) auto auto'
   );
@@ -28244,8 +28845,8 @@ function reportCardPdfAssetsPreview(printMode=false){
     noData,
     row=>`<div class="pdf-report-row" style="grid-template-columns:minmax(0,1.2fr) auto auto">
       <div class="pdf-report-row-main">${esc(row.ticker||'—')} · ${esc(row.name||'—')}</div>
-      <div class="pdf-report-row-value">${fmt(Number(row.result)||0)}</div>
-      <div class="pdf-report-row-value">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
+      <div class="pdf-report-row-value ${Number(row.result) < 0 ? 'negative' : 'positive' }">${fmt(Number(row.result)||0)}</div>
+      <div class="pdf-report-row-value ${Number(row.resultPct) < 0 ? 'negative' : 'positive'}">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
     </div>`,
     'minmax(0,1.2fr) auto auto'
   );
@@ -28365,7 +28966,7 @@ function reportCardPdfFixedPreview(printMode=false){
         <div class="pdf-report-row-value">${fmt(Number(row.applied)||0)}</div>
         <div class="pdf-report-row-value">${fmt(Number(row.current)||0)}</div>
         <div class="pdf-report-row-value">${fmt(Number(row.profit)||0)}</div>
-        <div class="pdf-report-row-value">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
+        <div class="pdf-report-row-value ${Number(row.resultPct) < 0 ? 'negative' : 'positive'}">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
         <div class="pdf-report-row-value">${esc(row.maturityDate||'—')}</div>
         <div class="pdf-report-row-value" style="overflow:hidden;text-overflow:ellipsis">${esc(status||'—')}</div>
       </div>`;
@@ -28553,7 +29154,7 @@ function reportPdfPreview(){
           <div class="pdf-report-row-value">${fmt(Number(row.avgPrice)||0)}</div>
           <div class="pdf-report-row-value">${fmt(Number(row.currentPrice)||0)}</div>
           <div class="pdf-report-row-value">${fmt(rowCurrent)}</div>
-          <div class="pdf-report-row-value">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
+          <div class="pdf-report-row-value ${Number(row.resultPct) < 0 ? 'negative' : 'positive'}">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
           <div class="pdf-report-row-value">${sharePct!=null?fmtP(sharePct):'—'}</div>
           <div class="pdf-report-row-value">${dyValue}</div>
         </div>`;
@@ -28576,7 +29177,7 @@ function reportPdfPreview(){
           <div class="pdf-report-row-value">${fmt(Number(row.applied)||0)}</div>
           <div class="pdf-report-row-value">${fmt(currentValue)}</div>
           <div class="pdf-report-row-value">${fmt(Number(row.profit)||0)}</div>
-          <div class="pdf-report-row-value">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
+          <div class="pdf-report-row-value ${Number(row.resultPct) < 0 ? 'negative' : 'positive'}">${Number.isFinite(Number(row.resultPct))?fmtP(Number(row.resultPct)):'—'}</div>
           <div class="pdf-report-row-value">${esc(row.maturityDate||'—')}</div>
           <div class="pdf-report-row-value">${esc(row.indexer||'—')}</div>
         </div>`;
@@ -30148,7 +30749,7 @@ function dashboardPassiveIncomePanel(data){
     <div class="dash-income-grid">
       <div class="dash-income-main">
         <div class="premium-metrics">
-          ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida','#34d399','rgba(52,211,153,.14)')}
+          ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'':'Cobertura desconhecida','#34d399','rgba(52,211,153,.14)')}
           ${dashboardMetricCard(dashboardMetricIcon('bars'),'Média 12 meses',passiveIncomeValue(monthlyAvg),`Meses completos: ${income.completeMonthCount??0}/12`,'#60a5fa','rgba(96,165,250,.14)')}
           ${dashboardMetricCard(dashboardMetricIcon('target'),'Meta mensal',target>0?fmt(target):'—',target>0?'Meta configurada na aba Metas':'Defina a meta para acompanhar progresso',target>0?'#60a5fa':'#94a3b8','rgba(96,165,250,.14)')}
           ${dashboardMetricCard(dashboardMetricIcon('flag'),'Falta para meta — média 12M',passiveIncomeValue(goalReached),!target?'Sem meta definida':goalReached===null?'Indisponível · exige 12 meses completos':goalReached>0?'Valor restante para atingir a meta':'Meta atingida',goalReached>0?'#fbbf24':goalReached===null?'#94a3b8':'#34d399',goalReached>0?'rgba(251,191,36,.14)':'rgba(52,211,153,.14)')}
@@ -32389,8 +32990,8 @@ function executiveKPIs(data){
     ${totalResultStatus}
     <div class="dashboard-executive-kpis">
       ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',patrimonyValue,patrimonyContext,'var(--semantic-official)','var(--semantic-official-bg)',`${patrimonyContext} · Data-base financeira não informada`)}
+      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'':'Cobertura desconhecida','var(--success)','rgba(16,185,129,.14)',recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'':'Cobertura desconhecida')}
       ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado da posição',resultValue,resultAvailable?'Sobre capital cadastrado':resultNote,resultTone,resultGlow,resultNote)}
-      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Cobertura parcial':'Cobertura desconhecida','var(--success)','rgba(16,185,129,.14)',recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida')}
     </div>
   `;
 }
@@ -32485,7 +33086,7 @@ function dashboardIncomePanel(data){
     <div class="dashboard-income-card">
       <div class="dashboard-income-header"><div><div class="premium-panel-title">Renda passiva</div><div class="premium-panel-sub">Recebido no mês, média 12M e meta mensal</div></div><div class="premium-panel-badge">${esc(monthLabel)}</div></div>
       <div class="dashboard-income-grid"><div class="premium-metrics">
-        ${dashboardMetricCard('💵','Recebido no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida','#34d399','rgba(52,211,153,.14)')}
+        ${dashboardMetricCard('💵','Recebido no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'':'Cobertura desconhecida','#34d399','rgba(52,211,153,.14)')}
         ${dashboardMetricCard('📊','Média 12 meses',passiveIncomeValue(monthlyAvg),`Meses completos: ${income.completeMonthCount??0}/12`,'#60a5fa','rgba(96,165,250,.14)')}
         ${dashboardMetricCard('🎯','Meta mensal',target>0?fmt(target):'—',target>0?'Meta configurada na aba Metas':'Defina a meta para acompanhar progresso',target>0?'#60a5fa':'#94a3b8','rgba(96,165,250,.14)')}
         ${dashboardMetricCard('🧭','Falta para meta — média 12M',passiveIncomeValue(goalReached),!target?'Sem meta definida':goalReached===null?'Indisponível · exige 12 meses completos':goalReached>0?'Valor restante para atingir a meta':'Meta atingida',goalReached>0?'#fbbf24':goalReached===null?'#94a3b8':'#34d399',goalReached>0?'rgba(251,191,36,.14)':'rgba(52,211, 153,.14)')}
@@ -32779,8 +33380,10 @@ function assetActionMenuHtml(asset, isRF, context='default'){
     : `<button type="button" class="btn bgh asset-action" onclick='openAssetQuickMovement(${JSON.stringify(id)}, "venda")'>Vender</button>`;
   const quickActions=context==='desktop' ? `<span class="asset-quick-actions">${primary.replace('bsv asset-action','bsv asset-action asset-quick')}${secondary.replace('bgh asset-action','bgh asset-action asset-quick asset-quick-sell')}${isRF?'':`<button type="button" class="asset-icon-btn" aria-label="Editar ${esc(asset.ticker||asset.name||'ativo')}" title="Editar" onclick='edA(${JSON.stringify(id)})'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>`}</span>` : '';
   return `<div class="asset-actions asset-action-menu" data-asset-actions="${esc(id)}">${quickActions}
-    <button type="button" class="asset-action-trigger" aria-label="Mais ações para ${esc(asset.ticker||asset.name||'ativo')}" aria-haspopup="menu" aria-controls="${esc(menuId)}" aria-expanded="false" onclick='toggleAssetActionMenu(${JSON.stringify(menuId)}, event)'>⋯</button>
-    <div class="asset-action-menu-panel" id="${esc(menuId)}" role="menu" aria-label="Ações para ${esc(asset.ticker||asset.name||'ativo')}">
+
+      <button type="button" class="asset-action-trigger" aria-label="Mais ações para ${esc(asset.ticker||asset.name||'ativo')}" aria-haspopup="menu" aria-controls="${esc(menuId)}" aria-expanded="false" onclick='toggleAssetActionMenu(${JSON.stringify(menuId)}, event)'>⋯</button>
+
+      <div class="asset-action-menu-panel" id="${esc(menuId)}" role="menu" aria-label="Ações para ${esc(asset.ticker||asset.name||'ativo')}">
       <button type="button" role="menuitem" onclick='openAssetDetail(${JSON.stringify(id)})'>Detalhes</button>
       ${primary.replace('<button ', '<button role="menuitem" ')}
       ${secondary.replace('<button ', '<button role="menuitem" ')}
@@ -32843,7 +33446,7 @@ function rfMovementFromAssetsModal(){
   </div>`;
 }
 function ativos(){
-  const innerTab = ['analise','desempenho','renda-fixa'].includes(String(S.assetsInnerTab||'patrimonio')) ? String(S.assetsInnerTab) : 'patrimonio';
+  const innerTab = ['analise','desempenho','renda-fixa','alocacao'].includes(String(S.assetsInnerTab||'patrimonio')) ? String(S.assetsInnerTab) : 'patrimonio';
   const ativosCategoryIcon = type => ({
     'Ação': '📈',
     'FII': '🏢',
@@ -33272,13 +33875,14 @@ function ativos(){
   const coverageNote = unavailableAssetCount ? `<p class="assets-coverage-note" role="status">Leitura parcial: ${unavailableAssetCount} ativo${unavailableAssetCount !== 1 ? 's' : ''} sem valor atual disponível; totais e pesos podem estar incompletos.</p>` : '';
 
   const innerTabsHtml = `
-    <div class="asset-inner-tabs" role="tablist" aria-label="Sub-abas de Ativos">
-      <button type="button" class="asset-inner-tab ${innerTab === 'analise' ? 'on' : ''}" onclick="setAssetsInnerTab('analise')" role="tab" aria-selected="${innerTab === 'analise' ? 'true' : 'false'}">Análise</button>
-      <button type="button" class="asset-inner-tab ${innerTab === 'desempenho' ? 'on' : ''}" onclick="setAssetsInnerTab('desempenho')" role="tab" aria-selected="${innerTab === 'desempenho' ? 'true' : 'false'}">Desempenho</button>
-      <button type="button" class="asset-inner-tab ${innerTab === 'renda-fixa' ? 'on' : ''}" onclick="setAssetsInnerTab('renda-fixa')" role="tab" aria-selected="${innerTab === 'renda-fixa' ? 'true' : 'false'}">Renda Fixa</button>
-    </div>`;
+      <div class="asset-inner-tabs" role="tablist" aria-label="Sub-abas de Ativos">
+        <button type="button" class="asset-inner-tab ${innerTab === 'analise' ? 'on' : ''}" onclick="setAssetsInnerTab('analise')" role="tab" aria-selected="${innerTab === 'analise' ? 'true' : 'false'}">Análise</button>
+        <button type="button" class="asset-inner-tab ${innerTab === 'desempenho' ? 'on' : ''}" onclick="setAssetsInnerTab('desempenho')" role="tab" aria-selected="${innerTab === 'desempenho' ? 'true' : 'false'}">Desempenho</button>
+        <button type="button" class="asset-inner-tab ${innerTab === 'renda-fixa' ? 'on' : ''}" onclick="setAssetsInnerTab('renda-fixa')" role="tab" aria-selected="${innerTab === 'renda-fixa' ? 'true' : 'false'}">Renda Fixa</button>
+        <button type="button" class="asset-inner-tab ${innerTab === 'alocacao' ? 'on' : ''}" onclick="setAssetsInnerTab('alocacao')" role="tab" aria-selected="${innerTab === 'alocacao' ? 'true' : 'false'}">Alocação</button>
+      </div>`;
 
-  const panelHtml = innerTab === 'analise' ? analysis : innerTab === 'desempenho' ? assetPerformanceOverviewPanel() : innerTab === 'renda-fixa' ? `<div class="asset-inner-panel">${rendaFixaTab()}</div>` : '';
+  const panelHtml = innerTab === 'analise' ? analysis : innerTab === 'desempenho' ? assetPerformanceOverviewPanel() : innerTab === 'renda-fixa' ? `<div class="asset-inner-panel">${rendaFixaTab()}</div>` : innerTab === 'alocacao' ? `<div class="asset-inner-panel">${assetClassComparisonPanel()}</div>` : '';
   const modals = innerTab === 'patrimonio' ? rfMovementFromAssetsModal() : innerTab === 'renda-fixa' ? rfContextualHistoryModal() : '';
 
   return `<section class="assets-premium-shell" aria-labelledby="ativos-page-title">
@@ -33978,6 +34582,75 @@ function saveMetaProventosTarget(){
   S.divGoal=v;
   saveConfig();
   save(); render();
+}
+function passiveIncomeDownloadProjection(b64){
+  try {
+    const json = atob(b64);
+    const blob = new Blob([json], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'projecao-renda-passiva-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch(e) {
+    console.error('Download failed:', e);
+  }
+}
+function exportAssetClassComparison(){
+  if (typeof AssetClassComparison === 'undefined') return;
+  try {
+    const report = AssetClassComparison.generateComparisonReport(S.assets, S.goals);
+    const json = JSON.stringify(report, null, 2);
+    const blob = new Blob([json], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'comparativo-classe-ativos-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch(e) {
+    console.error('Export failed:', e);
+  }
+}
+function exportWealthGoals(){
+  if (typeof WealthGoalsTracking === 'undefined') return;
+  try {
+    const report = WealthGoalsTracking.generateWealthGoalReport({
+      assets: S.assets,
+      goals: S.goals,
+      monthlyContribution: Number(S.goals?.patrimonio?.aporte) || 0,
+      expectedReturn: 0.10,
+      volatility: 0.15,
+      projectionYears: 10
+    });
+    const json = JSON.stringify(report, null, 2);
+    const blob = new Blob([json], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'metas-patrimonio-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch(e) {
+    console.error('Export failed:', e);
+  }
+}
+function exportFinancialInsights(){
+  if (typeof FinancialInsights === 'undefined') return;
+  try {
+    const report = FinancialInsights.generateInsightsReport(S.assets, S.proventos, S.goals, S.movements);
+    const json = JSON.stringify(report, null, 2);
+    const blob = new Blob([json], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'insights-financeiros-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch(e) {
+    console.error('Export failed:', e);
+  }
 }
 function estimateGoalMonths(startValue,targetValue,monthlyAporte,annualVar){
   const target=Math.max(0,Number(targetValue)||0);
@@ -36263,6 +36936,7 @@ function divs2(showGoal=false,pageTitle='Dividendos e Proventos'){
 function dividendsLegacyTab(showGoal=false,pageTitle='Dividendos e Proventos'){
   const { mD, aD, avgDY, tC } = cx();
   const passiveGoal = passiveIncomeGoalStats();
+  const projCurrent=S.assets.reduce((s,a)=>s+(((Number(a.qty)||0)*(Number(a.current_price)||0)*(Number(a.dy)||0)/100)/12),0);
   const resumo = proventoResumo();
   const resumoTipos = proventoResumoTipos();
   const resumoMensalTipos = proventoResumoMensalTipos();
@@ -36882,7 +37556,13 @@ function metasTab(){
 
   ${passiveIncomeGoalBlock(passiveGoal, projCurrent)}
 
-    <details class="sec metas-goal-section" open style="margin-bottom:12px">
+    ${passiveIncomeProjectionEnhanced(passiveGoal, projCurrent, S.assets, S.proventos, S.goals)}
+
+      ${wealthGoalsPanel(S.assets, S.goals)}
+
+        ${financialInsightsPanel(S.assets, S.proventos, S.goals, S.movements)}
+
+        <details class="sec metas-goal-section" open style="margin-bottom:12px">
     <summary>
       <div>
         <h2 class="sec-title wave-b-heading">${waveBIcon('allocation')}<span>Distribuição da carteira</span></h2>

@@ -55,9 +55,35 @@ async function startLocalHttpServer(root, port = 0, { syntheticQa = true } = {})
         if (!head.test(html)) throw new Error('Synthetic QA runtime marker could not be injected.');
         content = Buffer.from(html.replace(head, match => `${match}\n<script>Object.defineProperty(window,'__LOCAL_QA_RUNTIME__',{value:'local-synthetic-v1',writable:false,configurable:false});</script>`), 'utf8');
       }
+      const CSP_HEADER = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' http://127.0.0.1:* ws://127.0.0.1:* https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://api.brapi.com.br https://fonts.googleapis.com https://fonts.gstatic.com; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
+
+      // Browsers enforce strict MIME checking (ex.: CSS exige text/css).
+      // MIME errado faz o Chromium descartar o arquivo intero silenciosamente.
+      const MIME_BY_EXT = {
+        '.html': 'text/html; charset=utf-8',
+        '.css': 'text/css; charset=utf-8',
+        '.js': 'text/javascript; charset=utf-8',
+        '.mjs': 'text/javascript; charset=utf-8',
+        '.json': 'application/json; charset=utf-8',
+        '.webmanifest': 'application/manifest+json; charset=utf-8',
+        '.svg': 'image/svg+xml',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.gif': 'image/gif',
+        '.ico': 'image/x-icon',
+        '.woff': 'font/woff',
+        '.woff2': 'font/woff2',
+        '.ttf': 'font/ttf',
+        '.txt': 'text/plain; charset=utf-8',
+        '.csv': 'text/csv; charset=utf-8',
+      };
+      const ext = path.extname(filePath).toLowerCase();
+      const contentType = MIME_BY_EXT[ext] || 'application/octet-stream';
+
       res.writeHead(200, {
-        'Content-Type': path.extname(filePath) === '.html' ? 'text/html; charset=utf-8' : 'text/javascript; charset=utf-8',
-        ...(syntheticQa && path.extname(filePath) === '.html' ? { 'Cache-Control': 'no-store' } : {}),
+        'Content-Type': contentType,
+        ...(syntheticQa && path.extname(filePath) === '.html' ? { 'Cache-Control': 'no-store', 'Content-Security-Policy': CSP_HEADER } : {}),
       });
       res.end(content);
     } catch {

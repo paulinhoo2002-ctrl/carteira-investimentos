@@ -370,6 +370,8 @@ it('ciclo sintético compra, venda total e recompra preserva o ledger e fecha a 
       const actionMenu = app.page.getByRole('menu', { name: `Ações para ${ticker}` });
       const actionsText = await actionMenu.innerText();
       for (const action of ['Comprar', 'Vender', 'Editar']) assert.ok(actionsText.includes(action), `card mobile deve oferecer ${action}`);
+      await app.page.keyboard.press('Escape');
+      assert.equal(await actionMenu.isVisible(), false, 'Escape deve fechar o menu antes da próxima interação');
       assertNoOutboundWrites(app.outboundRequests);
       await app.page.setViewportSize({ width: 1366, height: 768 });
     }
