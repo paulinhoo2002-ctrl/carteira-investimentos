@@ -533,7 +533,7 @@ test('Ativos mantém valor indisponível como desconhecido, nunca como zero', as
     assert.equal(values['% carteira'], '—', 'peso sem valor atual deve ficar indisponível');
     assert.equal(values['Valor total'], '—', 'valor total sem preço deve ficar indisponível');
     assert.deepEqual(
-      await runtime.page.locator('.assets-portfolio-summary strong').allInnerTexts(),
+      await runtime.page.locator('.assets-kpi-value').allInnerTexts(),
       ['—', '—', '—', '—'],
       'o resumo superior não pode apresentar totais como completos quando falta valor corrente'
     );
