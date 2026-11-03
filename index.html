@@ -37967,7 +37967,7 @@ function metasTab(){
           <div class="fl">Meta de patrimônio</div>
           <input id="mp-head-target" type="number" step="100" placeholder="ex: 500000" aria-label="Meta de patrimônio" value="${metaPatValor}" onkeydown="if(event.key==='Enter')saveMetaPatrimonioTarget()" onblur="saveMetaPatrimonioTarget()" style="min-height:44px;padding:8px 10px;font-size:14px">
           <div class="mu" style="font-size:11px">Enter ou clique fora para salvar.</div>
-          ${metaPatValor > 0 ? `<div class="btn bgh ds-button ds-button--secondary" style="margin-top:4px" onclick="event.stopPropagation(); document.getElementById('mp-head-target').value=''; saveMetaPatrimonioTarget();">${waveBIcon('attention')} Remover meta</div>` : ''}
+          ${metaPatValor > 0 ? `<button type="button" class="btn bgh ds-button ds-button--secondary" style="margin-top:4px" onclick="event.stopPropagation(); document.getElementById('mp-head-target').value=''; saveMetaPatrimonioTarget();">${waveBIcon('attention')} Remover meta</button>` : ''}
         </div>
         ${metaPatValor>0&&metaPatMetrics.hasCurrent?`<div class="goal-context-action-row"><button type="button" class="btn bgh ds-button ds-button--secondary goal-context-action" onclick="go('aportes')">Registrar aporte</button></div>`:''}
       </div>
