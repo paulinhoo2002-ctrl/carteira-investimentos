@@ -48,6 +48,7 @@ function makeHarness({ protectedQa = true } = {}) {
       removeItem: () => {}
     },
     document: { documentElement: { dataset: {} } },
+    isLocalTestMode: () => false,
     isProtectedReadOnlyQaBoot: () => protectedQa,
     isAuthoritativeLocalRecoveryBoot: () => false,
     markProtectedLocalMarkerMismatch: () => null,

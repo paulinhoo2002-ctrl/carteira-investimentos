@@ -53,6 +53,7 @@ function makeRfContext() {
     },
     fmt: null,
     esc: null,
+    cloneData: value => JSON.parse(JSON.stringify(value ?? null)),
     isRendaFixaAsset: (a) => !!a && a.type === 'Renda Fixa',
     fixedIncomeOfficialValues: (a) => ({
       applied: Number(a?.rf_applied_value ?? a?.rf_applied ?? 0) || 0,
@@ -72,7 +73,7 @@ function makeRfContext() {
     canEditFromThisTab: () => true,
     rememberScroll: () => {},
     withScrollPreserved: (fn) => fn(),
-    save: () => { counters.save += 1; },
+    save: () => { counters.save += 1; return true; },
     toast: (message, color) => { counters.toasts.push({ message, color }); },
     render: () => { counters.render += 1; },
     alert: (msg) => { counters.alerts.push(msg); },
@@ -114,6 +115,9 @@ function buildRfHarness() {
       'rfMovementNeedsBaseline',
       'rfMovementBaselineEvent',
       'saveRfMovimentacao',
+      'snapshotFinancialImportState',
+      'restoreFinancialImportState',
+      'persistFinancialImportState',
       'rfMovementModeOptionsHtml',
       'rfMovementEditorDomId',
       'rfMovementDraftForAsset',
@@ -402,7 +406,7 @@ test('EDITAR: clA fecha o modal (cancelar)', () => {
 
 test('EDITAR: tecla ESC fecha o modal (handler presente)', () => {
   const html = readIndexHtml();
-  assert.match(html, /addEventListener\('keydown',e=>\{ if\(e\.key==='Escape' && S\.showA && S\.editId\) clA\(\); \}\);/);
+  assert.match(html, /addEventListener\('keydown',e=>\{[^}]*e\.key==='Escape' && S\.showA && S\.editId\) clA\(\);[^}]*\}\);/);
 });
 
 test('COTACAO: refresh de cotacao nao fecha o modal de edicao', async () => {
@@ -491,6 +495,9 @@ function buildQuoteUiHarness() {
     window: { scrollX: 30, scrollY: 120, scrollTo: (opts) => scrollCalls.push(opts) },
     requestAnimationFrame: (fn) => { fn(); return 1; },
     scrollPreserveActive: () => false,
+    applyLocalReadonlyControlState: () => {},
+    renderPortfolioSearch: () => {},
+    maskSensitiveRenderedValues: () => {},
     syncBodyModalLock: () => {},
     withRenderCycleReportCache: (fn) => fn(),
     bind: () => {},

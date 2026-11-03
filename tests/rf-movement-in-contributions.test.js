@@ -84,6 +84,7 @@ function buildContext(initialState = {}) {
     },
     window: {},
     FinanceCore: {},
+    cloneData: value => JSON.parse(JSON.stringify(value ?? null)),
     normalizeType: (value, fallback = 'Ação') => String(value ?? fallback).trim() || 'Ação',
     metaTicker: () => ({ type: 'Ação', sector: '—' }),
     inputDateValue,
@@ -97,7 +98,7 @@ function buildContext(initialState = {}) {
     fmtP: (v) => `${Number(v) >= 0 ? '+' : ''}${Number(v).toFixed(2)}%`,
     canEditFromThisTab: () => true,
     rememberScroll: () => {},
-    save: () => { counters.save += 1; },
+    save: () => { counters.save += 1; return true; },
     render: () => { counters.render += 1; },
     toast: (message) => { counters.toast.push(message); },
     alert: () => { counters.alert += 1; },
@@ -105,7 +106,9 @@ function buildContext(initialState = {}) {
     requestAnimationFrame: (fn) => { fn(); return 1; },
     withScrollPreserved: (fn) => { fn(); },
     document: {
-      getElementById: (id) => elements[id] || null
+      getElementById: (id) => elements[id] || null,
+      addEventListener: () => {},
+      removeEventListener: () => {}
     },
     quickMovementDefaultDraft: (kind = 'compra') => ({
       kind, date: new Date().toISOString().slice(0, 10), ticker: '', assetId: '', assetName: '',
@@ -121,16 +124,21 @@ function buildContext(initialState = {}) {
     quickMovementSaleOptionsHtml: () => '',
     quickMovementSaleInfoHtml: () => '',
     quickMovementAssetSummaryHtml: () => '',
-    quickMovementPreviewHtml: () => ''
+    quickMovementPreviewHtml: () => '',
+    quickMovementAssetPickerOptionsHtml: () => ''
   };
 
   const blocks = [
+    ['function quickMovementEscape(e){', 'function closeQuickMovement(){'],
     ['function closeQuickMovement(){', 'function rfExistingAssetOptionsHtml(){'],
     ['function rfExistingAssetOptionsHtml(){', 'function setQuickMovementField(field, value){'],
     ['function quickMovementModal(){', 'function aporteMovementKind(a){'],
     ['function normalizeQuickMovementKind(value){', 'function quickMovementKindTone(kind){'],
     ['function isRendaFixaAsset(a){', 'function parseNum(v){'],
-    ['function rfMovementModeOptionsHtml(selected){', 'function rfEventEditorHtml(asset){']
+    ['function rfMovementModeOptionsHtml(selected){', 'function rfEventEditorHtml(asset){'],
+    ['function snapshotFinancialImportState(keys){', 'function restoreFinancialImportState(snapshot){'],
+    ['function restoreFinancialImportState(snapshot){', 'function persistFinancialImportState(snapshot){'],
+    ['function persistFinancialImportState(snapshot){', 'function save(){']
   ];
   blocks.forEach(([start, end], index) => {
     const block = extractFunctionBlock(INDEX_HTML, start, end);
