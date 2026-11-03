@@ -639,7 +639,7 @@ test('V289 final route matrix keeps Dashboard first-fold, mobile order and navig
     await applyV289VisualFixture(runtime.page, 'baseline');
     await setThemeAndRoute(runtime.page, 'dark', 'dashboard');
     const mobile = await runtime.page.evaluate(() => {
-      const selectors = ['.dashboard-page-heading', '.dashboard-executive-kpis .premium-metric:nth-child(1)', '.dashboard-executive-kpis .premium-metric:nth-child(2)', '.dashboard-executive-kpis .premium-metric:nth-child(3)', '.dashboard-evolution-card', '.dashboard-v3-allocation'];
+      const selectors = ['.dashboard-page-heading', '[data-testid="metric-patrimonio-atual"]', '[data-testid="metric-recebido-no-mes"]', '[data-testid="metric-resultado-da-posicao"]', '.dashboard-evolution-card', '.dashboard-v3-allocation'];
       return { positions: selectors.map(selector => document.querySelector(selector)?.getBoundingClientRect().top), tables: document.querySelectorAll('.premium-dashboard table').length };
     });
     assert.ok(mobile.positions.every(Number.isFinite), `mobile Dashboard essentials missing: ${mobile.positions}`);
