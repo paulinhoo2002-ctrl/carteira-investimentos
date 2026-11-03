@@ -15,7 +15,7 @@ test('Phase 3.2.4: tabela expandida permanece contida e com colunas financeiras 
   assert.match(source, /\.assets-premium-shell \.ag-table \.ts\{overflow-x:auto\}/);
   assert.match(source, /\.assets-premium-shell \.ag-mobile-list\{display:flex;flex-direction:column;gap:8px\}/);
   assert.match(source, /\.assets-premium-shell \.ag-table\{display:none!important\}/);
-  assert.match(source, /<th class="col-ticker">Ativo<\/th>/);
+  assert.match(source, /data-testid="col-ticker"/);
   assert.match(source, /<th class="num col-pm">Preço médio<\/th>\s*<th class="num col-atual">Preço atual \/ posição<\/th>/);
   assert.match(source, /<th class="col-invested">Investido<\/th>\s*<th class="num col-result">Resultado R\$<\/th>\s*<th class="num col-rentab">Rentabilidade<\/th>/);
   assert.match(source, /<th class="num col-total">Valor total<\/th>\s*<th class="num col-share">% carteira<\/th>/);
