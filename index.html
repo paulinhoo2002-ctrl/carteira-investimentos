@@ -34078,20 +34078,20 @@ function ativos(){
             </div>
           </div>
         </td>
-        <td>${esc(sector)}</td>
-        <td>${typeBadge}</td>
-        <td class="num">${qtyDisplay}</td>
-        <td class="num">${averagePriceDisplay}</td>
-        <td class="num">${currentPriceDisplay}</td>
-        <td class="num">${investedDisplay}</td>
-        <td class="num ${resultClass}">${resultMoneyDisplay}</td>
-        <td class="num ${returnPct == null ? '' : returnPct > 0 ? 'positive-text' : returnPct < 0 ? 'negative-text' : ''}">${returnDisplay}</td>
-        <td class="num">${positionValueDisplay}</td>
-        <td class="num">${shareDisplay}</td>
-        <td>${esc(sourceInfo)}</td>
-        <td class="num">${dyDisplay}</td>
-        <td class="num" title="Sem estimativa mensal validada">—</td>
-        <td>
+        <td class="col-sector">${esc(sector)}</td>
+        <td class="col-type">${typeBadge}</td>
+        <td class="num col-qty">${qtyDisplay}</td>
+        <td class="num col-pm">${averagePriceDisplay}</td>
+        <td class="num col-atual">${currentPriceDisplay}</td>
+        <td class="col-invested">${investedDisplay}</td>
+        <td class="num col-result ${resultClass}">${resultMoneyDisplay}</td>
+        <td class="num col-rentab ${returnPct == null ? '' : returnPct > 0 ? 'positive-text' : returnPct < 0 ? 'negative-text' : ''}">${returnDisplay}</td>
+        <td class="num col-total">${positionValueDisplay}</td>
+        <td class="num col-share">${shareDisplay}</td>
+        <td class="col-source">${esc(sourceInfo)}</td>
+        <td class="num col-dy">${dyDisplay}</td>
+        <td class="num col-estimate" title="Sem estimativa mensal validada">—</td>
+        <td class="col-actions">
           ${assetActionMenuHtml(a, isRF, 'desktop')}
         </td>
       </tr>`;
@@ -34258,21 +34258,21 @@ function ativos(){
         <table class="assets-table ag-table">
           <thead>
             <tr>
-              <th class="col-ticker" data-testid="col-ticker">Ativo</th>
-                            <th>Setor</th>
-                            <th>Tipo</th>
-              <th class="num">Quantidade</th>
-              <th class="num">Preço médio</th>
-              <th class="num">Preço atual / posição</th>
-              <th>Investido</th>
-              <th class="num">Resultado R$</th>
-              <th class="num">Rentabilidade</th>
-              <th class="num">Valor total</th>
-              <th class="num">% carteira</th>
-              <th>Fonte / atualização</th>
-              <th class="num">DY</th>
-              <th class="num">Estimativa mensal</th>
-              <th>Ações</th>
+                          <th class="col-ticker" data-testid="col-ticker">Ativo</th>
+                          <th class="col-sector">Setor</th>
+                          <th class="col-type">Tipo</th>
+                          <th class="num col-qty">Quantidade</th>
+                          <th class="num col-pm">Preço médio</th>
+                          <th class="num col-atual">Preço atual / posição</th>
+                          <th class="col-invested">Investido</th>
+                          <th class="num col-result">Resultado R$</th>
+                          <th class="num col-rentab">Rentabilidade</th>
+                          <th class="num col-total">Valor total</th>
+                          <th class="num col-share">% carteira</th>
+                          <th class="col-source">Fonte / atualização</th>
+                          <th class="num col-dy">DY</th>
+                          <th class="num col-estimate">Estimativa mensal</th>
+                          <th class="col-actions">Ações</th>
             </tr>
           </thead>
           <tbody>${rowsHtml}</tbody>
@@ -40124,26 +40124,26 @@ function updateRfAssetSummary(selectElement) {
   .assets-premium-shell .ag-table .ts{overflow-x:auto}
   .assets-premium-shell .ag-table table{width:100%;min-width:1280px;table-layout:auto}
   .assets-premium-shell .ag-table th,.assets-premium-shell .ag-table td{padding:8px 9px;white-space:nowrap;vertical-align:middle}
-  .assets-premium-shell .ag-table th:nth-child(1),.assets-premium-shell .ag-table td:nth-child(1){min-width:90px}
-  .assets-premium-shell .ag-table th:nth-child(2),.assets-premium-shell .ag-table td:nth-child(2){min-width:180px}
-  .assets-premium-shell .ag-table th:nth-child(3),.assets-premium-shell .ag-table td:nth-child(3){min-width:120px}
-  .assets-premium-shell .ag-table th:nth-child(4),.assets-premium-shell .ag-table td:nth-child(4){min-width:55px}
-  .assets-premium-shell .ag-table th:nth-child(5),.assets-premium-shell .ag-table td:nth-child(5){min-width:80px}
-  .assets-premium-shell .ag-table th:nth-child(6),.assets-premium-shell .ag-table td:nth-child(6){min-width:130px}
-  .assets-premium-shell .ag-table th:nth-child(7),.assets-premium-shell .ag-table td:nth-child(7){min-width:105px}
-  .assets-premium-shell .ag-table th:nth-child(8),.assets-premium-shell .ag-table td:nth-child(8){min-width:110px}
-  .assets-premium-shell .ag-table th:nth-child(9),.assets-premium-shell .ag-table td:nth-child(9){min-width:85px}
-  .assets-premium-shell .ag-table th:nth-child(10),.assets-premium-shell .ag-table td:nth-child(10){min-width:65px}
-  .assets-premium-shell .ag-table th:nth-child(11),.assets-premium-shell .ag-table td:nth-child(11){min-width:110px}
-  .assets-premium-shell .ag-table th:nth-child(12),.assets-premium-shell .ag-table td:nth-child(12){min-width:85px}
-  .assets-premium-shell .ag-table th:nth-child(13),.assets-premium-shell .ag-table td:nth-child(13){min-width:120px}
+  .assets-premium-shell .ag-table th.col-ticker,.assets-premium-shell .ag-table td.col-ticker{min-width:90px}
+  .assets-premium-shell .ag-table th.col-sector,.assets-premium-shell .ag-table td.col-sector{min-width:180px}
+  .assets-premium-shell .ag-table th.col-type,.assets-premium-shell .ag-table td.col-type{min-width:120px}
+  .assets-premium-shell .ag-table th.col-qty,.assets-premium-shell .ag-table td.col-qty{min-width:55px}
+  .assets-premium-shell .ag-table th.col-pm,.assets-premium-shell .ag-table td.col-pm{min-width:80px}
+  .assets-premium-shell .ag-table th.col-atual,.assets-premium-shell .ag-table td.col-atual{min-width:130px}
+  .assets-premium-shell .ag-table th.col-invested,.assets-premium-shell .ag-table td.col-invested{min-width:105px}
+  .assets-premium-shell .ag-table th.col-result,.assets-premium-shell .ag-table td.col-result{min-width:110px}
+  .assets-premium-shell .ag-table th.col-rentab,.assets-premium-shell .ag-table td.col-rentab{min-width:85px}
+  .assets-premium-shell .ag-table th.col-total,.assets-premium-shell .ag-table td.col-total{min-width:65px}
+  .assets-premium-shell .ag-table th.col-share,.assets-premium-shell .ag-table td.col-share{min-width:110px}
+  .assets-premium-shell .ag-table th.col-source,.assets-premium-shell .ag-table td.col-source{min-width:85px}
+  .assets-premium-shell .ag-table th.col-dy,.assets-premium-shell .ag-table td.col-dy{min-width:120px}
   .assets-premium-shell .asset-group-table-name{font-weight:700;color:var(--text);line-height:1.2;margin-bottom:4px;white-space:nowrap}
   .assets-premium-shell .ag-table table{min-width:1080px}
   .assets-premium-shell .ag-table th,.assets-premium-shell .ag-table td{padding-left:7px;padding-right:7px}
-  .assets-premium-shell .ag-table th:nth-child(2),.assets-premium-shell .ag-table td:nth-child(2){min-width:72px}
-  .assets-premium-shell .ag-table th:nth-child(10),.assets-premium-shell .ag-table td:nth-child(10){min-width:92px}
-  .assets-premium-shell .ag-table th:nth-child(11),.assets-premium-shell .ag-table td:nth-child(11){min-width:78px}
-  .assets-premium-shell .ag-table th:last-child,.assets-premium-shell .ag-table td:last-child{min-width:238px;width:238px}
+  .assets-premium-shell .ag-table th.col-sector,.assets-premium-shell .ag-table td.col-sector{min-width:72px}
+  .assets-premium-shell .ag-table th.col-total,.assets-premium-shell .ag-table td.col-total{min-width:92px}
+  .assets-premium-shell .ag-table th.col-share,.assets-premium-shell .ag-table td.col-share{min-width:78px}
+  .assets-premium-shell .ag-table th.col-actions,.assets-premium-shell .ag-table td.col-actions{min-width:238px;width:238px}
 }
 @media (max-width:767px){
   .assets-premium-shell .ag-table{display:none!important}
@@ -40947,11 +40947,11 @@ html[data-theme="light"] .premium-dividends-3 .div-premium-head .btn.bp:hover:no
 @media (min-width:1100px){
   #ativosAccordion table.ag-table{--x:0}
   #ativosAccordion table.ag-table{min-width:0 !important;width:100% !important;table-layout:auto !important}
-  #ativosAccordion table.ag-table th:nth-child(3),#ativosAccordion table.ag-table td:nth-child(3),
-  #ativosAccordion table.ag-table th:nth-child(12),#ativosAccordion table.ag-table td:nth-child(12),
-  #ativosAccordion table.ag-table th:nth-child(14),#ativosAccordion table.ag-table td:nth-child(14){display:none !important}
+  #ativosAccordion table.ag-table th.col-type,#ativosAccordion table.ag-table td.col-type,
+  #ativosAccordion table.ag-table th.col-source,#ativosAccordion table.ag-table td.col-source,
+  #ativosAccordion table.ag-table th.col-estimate,#ativosAccordion table.ag-table td.col-estimate{display:none !important}
   #ativosAccordion table.ag-table th,#ativosAccordion table.ag-table td{padding:8px 6px !important;white-space:nowrap;overflow:visible;text-overflow:clip}
-  #ativosAccordion table.ag-table th:last-child,#ativosAccordion table.ag-table td:last-child{width:auto;min-width:0}
+  #ativosAccordion table.ag-table th.col-actions,#ativosAccordion table.ag-table td.col-actions{width:auto;min-width:0}
   #ativosAccordion table.ag-table .asset-actions{min-width:0;gap:6px;justify-content:flex-end;flex-wrap:nowrap}
   #ativosAccordion table.ag-table .asset-quick-actions{display:inline-flex;gap:4px}
   #ativosAccordion table.ag-table .asset-action.asset-quick{min-height:34px !important;height:34px !important;min-width:0 !important;padding:4px 9px !important;font-size:12px}
@@ -40962,8 +40962,8 @@ html[data-theme="light"] .premium-dividends-3 .div-premium-head .btn.bp:hover:no
   #ativosAccordion table.ag-table td{font-size:12.5px}
 }
 @media (min-width:1100px) and (max-width:1499px){
-  #ativosAccordion table.ag-table th:nth-child(2),#ativosAccordion table.ag-table td:nth-child(2),
-  #ativosAccordion table.ag-table th:nth-child(13),#ativosAccordion table.ag-table td:nth-child(13){display:none !important}
+  #ativosAccordion table.ag-table th.col-sector,#ativosAccordion table.ag-table td.col-sector,
+  #ativosAccordion table.ag-table th.col-dy,#ativosAccordion table.ag-table td.col-dy{display:none !important}
 }
 
 /* ===== Visual premium v2 (aprovado: azul-marinho escuro + roxo). Só tokens e camada de apresentação. ===== */
@@ -41030,15 +41030,15 @@ html[data-theme="light"] .aporte-kind.renda-fixa{color:#1d4ed8 !important}
 /* Ativos em tablet (768-1099px): tabela enxuta, sem rolagem lateral, com Comprar/Vender */
 @media (min-width:768px) and (max-width:1099px){
   #ativosAccordion table.ag-table{min-width:0 !important;width:100% !important;table-layout:auto !important}
-  #ativosAccordion table.ag-table th:nth-child(2),#ativosAccordion table.ag-table td:nth-child(2),
-  #ativosAccordion table.ag-table th:nth-child(3),#ativosAccordion table.ag-table td:nth-child(3),
-  #ativosAccordion table.ag-table th:nth-child(5),#ativosAccordion table.ag-table td:nth-child(5),
-  #ativosAccordion table.ag-table th:nth-child(7),#ativosAccordion table.ag-table td:nth-child(7),
-  #ativosAccordion table.ag-table th:nth-child(10),#ativosAccordion table.ag-table td:nth-child(10),
-  #ativosAccordion table.ag-table th:nth-child(11),#ativosAccordion table.ag-table td:nth-child(11),
-  #ativosAccordion table.ag-table th:nth-child(12),#ativosAccordion table.ag-table td:nth-child(12),
-  #ativosAccordion table.ag-table th:nth-child(13),#ativosAccordion table.ag-table td:nth-child(13),
-  #ativosAccordion table.ag-table th:nth-child(14),#ativosAccordion table.ag-table td:nth-child(14){display:none !important}
+  #ativosAccordion table.ag-table th.col-sector,#ativosAccordion table.ag-table td.col-sector,
+  #ativosAccordion table.ag-table th.col-type,#ativosAccordion table.ag-table td.col-type,
+  #ativosAccordion table.ag-table th.col-pm,#ativosAccordion table.ag-table td.col-pm,
+  #ativosAccordion table.ag-table th.col-invested,#ativosAccordion table.ag-table td.col-invested,
+  #ativosAccordion table.ag-table th.col-total,#ativosAccordion table.ag-table td.col-total,
+  #ativosAccordion table.ag-table th.col-share,#ativosAccordion table.ag-table td.col-share,
+  #ativosAccordion table.ag-table th.col-source,#ativosAccordion table.ag-table td.col-source,
+  #ativosAccordion table.ag-table th.col-dy,#ativosAccordion table.ag-table td.col-dy,
+  #ativosAccordion table.ag-table th.col-estimate,#ativosAccordion table.ag-table td.col-estimate{display:none !important}
   #ativosAccordion table.ag-table th,#ativosAccordion table.ag-table td{width:auto !important;min-width:0 !important;max-width:none !important;padding:8px 6px !important;white-space:nowrap;overflow:visible;text-overflow:clip}
   #ativosAccordion table.ag-table th{white-space:normal;line-height:1.2;font-size:11px}
   #ativosAccordion table.ag-table .asset-actions{min-width:0;gap:6px;justify-content:flex-end;flex-wrap:nowrap}
@@ -41238,10 +41238,10 @@ html[data-theme="light"] #ativosAccordion table.ag-table .asset-action.asset-qui
 .asset-icon-btn:hover,.asset-icon-btn:focus-visible{background:var(--surface-2);color:var(--text);border-color:var(--accent)}
 @media (min-width:768px){#ativosAccordion table.ag-table .asset-icon-btn{display:inline-flex}}
 @media (min-width:1800px){
-  #ativosAccordion table.ag-table th:nth-child(2),#ativosAccordion table.ag-table td:nth-child(2),
-  #ativosAccordion table.ag-table th:nth-child(3),#ativosAccordion table.ag-table td:nth-child(3),
-  #ativosAccordion table.ag-table th:nth-child(13),#ativosAccordion table.ag-table td:nth-child(13),
-  #ativosAccordion table.ag-table th:nth-child(14),#ativosAccordion table.ag-table td:nth-child(14){display:table-cell !important}
+  #ativosAccordion table.ag-table th.col-sector,#ativosAccordion table.ag-table td.col-sector,
+  #ativosAccordion table.ag-table th.col-type,#ativosAccordion table.ag-table td.col-type,
+  #ativosAccordion table.ag-table th.col-dy,#ativosAccordion table.ag-table td.col-dy,
+  #ativosAccordion table.ag-table th.col-estimate,#ativosAccordion table.ag-table td.col-estimate{display:table-cell !important}
 }
 </style>
 </body>

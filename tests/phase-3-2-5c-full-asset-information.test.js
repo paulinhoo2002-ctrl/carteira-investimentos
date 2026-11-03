@@ -6,11 +6,11 @@ const test = require('node:test');
 const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
 test('Phase 3.2.5C: tabela agrupada preserva todas as colunas historicas no desktop', () => {
-  assert.match(source, /<th>Setor<\/th>/);
-  assert.match(source, /<th class="num">Preço médio<\/th>\s*<th class="num">Preço atual \/ posição<\/th>/);
-  assert.match(source, /<th>Investido<\/th>\s*<th class="num">Resultado R\$<\/th>/);
-  assert.match(source, /<th class="num">Valor total<\/th>\s*<th class="num">% carteira<\/th>/);
-  assert.match(source, /<th class="num">DY<\/th>\s*<th class="num">Estimativa mensal<\/th>\s*<th>Ações<\/th>/);
+  assert.match(source, /<th class="[^"]*">Setor<\/th>/);
+  assert.match(source, /<th class="num[^"]*">Preço médio<\/th>\s*<th class="num[^"]*">Preço atual \/ posição<\/th>/);
+  assert.match(source, /<th class="[^"]*">Investido<\/th>\s*<th class="num[^"]*">Resultado R\$<\/th>/);
+  assert.match(source, /<th class="num[^"]*">Valor total<\/th>\s*<th class="num[^"]*">% carteira<\/th>/);
+  assert.match(source, /<th class="num[^"]*">DY<\/th>\s*<th class="num[^"]*">Estimativa mensal<\/th>\s*<th class="[^"]*">Ações<\/th>/);
   assert.match(source, /ag-table \.tw table\{[\s\S]*?min-width:1580px/);
   assert.match(source, /ag-table \.tw table th:nth-child\(3\),[\s\S]*?display:table-cell/);
 });
