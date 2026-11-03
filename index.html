@@ -32616,7 +32616,9 @@ function waveBIcon(name){
 }
 function dashboardMetricCard(icon,label,value,note,tone='#edf3ff',glow='rgba(96,165,250,.12)',tip=''){
   const tipAttr=tip?` title="${esc(tip)}"`:'';
-  return `<div class="premium-metric" style="--metric-color:${tone};--metric-glow:${glow}"${tipAttr}>
+  const testidMap={'Patrimônio atual':'patrimonio-atual','Recebido no mês':'recebido-no-mes','Resultado da posição':'resultado-da-posicao'};
+  const testid=testidMap[label]?` data-testid="metric-${testidMap[label]}"`:'';
+  return `<div class="premium-metric"${testid} style="--metric-color:${tone};--metric-glow:${glow}"${tipAttr}>
     <div class="premium-metric-top"><div class="premium-metric-icon">${icon}</div><div class="premium-metric-label">${esc(label)}</div></div>
     <div class="premium-metric-value">${esc(value)}</div>
     <div class="premium-metric-note">${esc(note)}</div>

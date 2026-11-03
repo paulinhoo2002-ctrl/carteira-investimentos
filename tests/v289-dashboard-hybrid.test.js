@@ -117,7 +117,7 @@ test('Dashboard HYBRID V2 - mobile 390x844 independent order', async () => {
     await page.waitForSelector('.premium-dashboard', { state: 'visible', timeout: 5000 });
 
     const positions = await page.evaluate(() => {
-      const selectors = ['.dashboard-page-heading', '.dashboard-executive-kpis .premium-metric:nth-child(1)', '.dashboard-executive-kpis .premium-metric:nth-child(2)', '.dashboard-executive-kpis .premium-metric:nth-child(3)', '.dashboard-evolution-card', '.dashboard-v3-allocation'];
+      const selectors = ['.dashboard-page-heading', '[data-testid="metric-patrimonio-atual"]', '[data-testid="metric-recebido-no-mes"]', '[data-testid="metric-resultado-da-posicao"]', '.dashboard-evolution-card', '.dashboard-v3-allocation'];
       return selectors.map(selector => document.querySelector(selector)?.getBoundingClientRect().top);
     });
     assert.ok(positions.every(Number.isFinite), 'Todos os blocos essenciais devem estar presentes');
