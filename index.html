@@ -9096,7 +9096,7 @@ document.write([
 ].join(''));})();
 </script>
 <script>
-// M941-M943: xlsx (269KB na rede, 26% da carga fria) carregado SOB DEMANDA — usado
+// M1022-M1025: xlsx (269KB na rede, 26% da carga fria) carregado SOB DEMANDA — usado
 // apenas nos imports de B3/nota. Eager ficou somente o trio do Firebase.
 window.ensureXLSX=()=>{ if(window.__XLSX_PROMISE__) return window.__XLSX_PROMISE__;
   window.__XLSX_PROMISE__=new Promise((resolve,reject)=>{ if(typeof XLSX!=='undefined') return resolve(XLSX);
@@ -18401,12 +18401,11 @@ document.getElementById('b3-file').addEventListener('change',async e=>{
     let parsed;
     if(importMode){
       if(isPdf){
-        alert('A Fase 1 experimental do B3 aceita apenas XLSX/XLS/CSV. PDF continua fora desta prévia segura.');
-        e.target.value='';
-        return;
-      }
-      if(typeof XLSX==='undefined'){ alert('Biblioteca de Excel não carregou. Verifique sua internet e tente novamente.'); return; }
-      const wb=isCsv
+              alert('A Fase 1 experimental do B3 aceita apenas XLSX/XLS/CSV. PDF continua fora desta prévia segura.');
+              e.target.value='';
+              return;
+            }
+            const wb=isCsv
         ? XLSX.read(await file.text(),{type:'string'})
         : XLSX.read(await file.arrayBuffer(),{type:'array'});
       if(importMode==='negotiation-preview'){
@@ -18476,8 +18475,7 @@ document.getElementById('nota-file').addEventListener('change',async e=>{
   const file=e.target.files[0]; if(!file) return;
   if(typeof XLSX==='undefined'){ try{ await ensureXLSX(); }catch(err){ debugError(err); alert('Não foi possível carregar o leitor de planilhas. Verifique sua conexão e tente novamente.'); e.target.value=''; return; } }
   try{
-    if(typeof XLSX==='undefined'){ alert('Biblioteca de Excel não carregou. Verifique sua internet e tente novamente.'); return; }
-    const isCsv=/\.csv$/i.test(file.name) || String(file.type||'').includes('csv');
+      const isCsv=/\.csv$/i.test(file.name) || String(file.type||'').includes('csv');
     const wb=isCsv
       ? XLSX.read(await file.text(),{type:'string'})
       : XLSX.read(await file.arrayBuffer(),{type:'array'});
