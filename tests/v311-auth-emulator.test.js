@@ -278,7 +278,12 @@ test('V311: unavailable Auth and Firestore emulators fail closed without product
 test('V311: localhost query flags cannot bypass auth on a non-loopback origin', async () => {
   const app = await newPage({ hostname: 'qa-non-loopback.invalid', query: `${QUERY}&testMode=1&skipAuth=1` });
   try {
-    await app.page.waitForFunction(() => FB.authResolved === true && FB.access.loading === false && document.body.innerText.includes('Entre com Google para continuar'), null, { timeout: 20000 });
+    try {
+      await app.page.waitForFunction(() => FB.authResolved === true && FB.access.loading === false && document.body.innerText.includes('Entre com Google para continuar'), null, { timeout: 20000 });
+    } catch (error) {
+      const diag = await app.page.evaluate(() => ({ firebase: typeof window.firebase, FBdefined: typeof FB !== 'undefined', ready: typeof FB !== 'undefined' && FB.ready, authResolved: typeof FB !== 'undefined' && FB.authResolved, hostname: location.hostname, href: location.href, body: document.body.innerText.slice(0, 240) })).catch(() => ({ pageUnavailable: true }));
+      throw new Error(`${error.message}; diag=${JSON.stringify(diag)}; pageErrors=${JSON.stringify(app.pageErrors)}; consoleErrors=${JSON.stringify(app.consoleErrors)}; requests=${JSON.stringify(app.requests.map(r => r.url))}`);
+    }
     const state = await app.page.evaluate(() => ({
       testMode: window.__LOCAL_TEST_MODE__,
       emulatorMode: window.__LOCAL_AUTH_EMULATOR_MODE__,
