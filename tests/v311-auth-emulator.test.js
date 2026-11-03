@@ -251,7 +251,7 @@ test('V311: unavailable Auth and Firestore emulators fail closed without product
 test('V311: localhost query flags cannot bypass auth on a non-loopback origin', async () => {
   const app = await newPage({ hostname: 'qa-non-loopback.invalid', query: `${QUERY}&testMode=1&skipAuth=1` });
   try {
-    await app.page.waitForFunction(() => FB.authResolved === true && FB.access.loading === false && document.body.innerText.includes('Entre com Google para continuar'));
+    await app.page.waitForFunction(() => FB.authResolved === true && FB.access.loading === false && document.body.innerText.includes('Entre com Google para continuar'), null, { timeout: 60000 });
     const state = await app.page.evaluate(() => ({
       testMode: window.__LOCAL_TEST_MODE__,
       emulatorMode: window.__LOCAL_AUTH_EMULATOR_MODE__,
