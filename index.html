@@ -30322,12 +30322,12 @@ function app(){
     </div>
   </div>
   ${isLocalTestMode()?`
-  <div class="test-mode-banner" aria-label="Prévia com dados sintéticos">
-    <div class="test-mode-banner-heading">
-      <div class="test-mode-banner-title">TESTE LOCAL${isLocalTestReadOnlyMode()?' · SOMENTE LEITURA':''}</div>
-      ${isLocalTestReadOnlyMode()?'<span class="test-mode-readonly-status" role="status">🔒 Ações financeiras bloqueadas</span>':'<button class="btn bgh" onclick="restoreLocalTestData()" style="min-height:44px;padding:0 12px;border-radius:10px;font-size:12px;font-weight:800;flex-shrink:0">Restaurar dados de teste</button>'}
+  <div class="test-mode-banner" style="margin:10px 0 2px;padding:10px 12px;border:1px solid rgba(251,191,36,.28);border-radius:14px;background:linear-gradient(180deg,rgba(251,191,36,.14),rgba(251,191,36,.08));display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)">
+    <div style="min-width:0">
+      <div class="test-mode-banner-title" style="font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--warning)">TESTE LOCAL${isLocalTestReadOnlyMode()?' · SOMENTE LEITURA':''}</div>
+      <div class="test-mode-banner-text" role="status" style="font-size:12px;line-height:1.45;color:var(--text)">Dados sintéticos em memória. Sem Firebase, sincronização, importação/exportação ou persistência financeira.</div>
     </div>
-    <div class="test-mode-banner-text">Dados sintéticos em memória. Sem Firebase, sincronização, importação/exportação ou persistência financeira.</div>
+    ${isLocalTestReadOnlyMode()?'<span class="test-mode-readonly-status" role="status">Necessita revisão antes da confirmação; ações bloqueadas.</span>':'<button class="btn bgh" onclick="restoreLocalTestData()" style="min-height:44px;padding:0 12px;border-radius:10px;font-size:12px;font-weight:800;flex-shrink:0">Restaurar dados de teste</button>'}
   </div>`:''}
   ${editLockBanner()}
   ${desktopTabs()}
@@ -33959,12 +33959,28 @@ function ativos(){
   const portfolioReturn = portfolioResult != null && Number.isFinite(assetKpiReturn) ? assetKpiReturn : null;
   const portfolioResultTone = portfolioResult == null || portfolioResult === 0 ? '' : portfolioResult > 0 ? 'positive-text' : 'negative-text';
   const portfolioReturnTone = portfolioReturn == null || portfolioReturn === 0 ? '' : portfolioReturn > 0 ? 'positive-text' : 'negative-text';
-  const assetPortfolioSummaryHtml = `<section class="assets-portfolio-summary" aria-label="Resumo da carteira">
-    <div><span>Total investido</span><strong>${assetSummaryInvested == null ? '—' : fmt(assetSummaryInvested)}</strong><small>Capital aplicado na carteira</small></div>
-    <div><span>Valor atual</span><strong>${assetSummaryCurrent == null ? '—' : fmt(assetSummaryCurrent)}</strong><small>Valor estimado das posições</small></div>
-    <div><span>Lucro/Prejuízo</span><strong class="${portfolioResultTone}">${portfolioResult == null ? '—' : `${portfolioResult > 0 ? '+' : ''}${fmt(portfolioResult)}`}</strong><small>Diferença entre atual e investido</small></div>
-    <div><span>Rentabilidade</span><strong class="${portfolioReturnTone}">${portfolioReturn == null ? '—' : fmtP(portfolioReturn)}</strong><small>Resultado sobre o valor investido</small></div>
-  </section>`;
+  const kpiCardsHtml = `<div class="assets-kpi-grid">
+    <div class="assets-kpi-card">
+      <span class="assets-kpi-label">TOTAL INVESTIDO</span>
+      <span class="assets-kpi-value">${assetSummaryInvested == null ? '—' : fmt(assetSummaryInvested)}</span>
+      <span class="assets-kpi-sub">Capital aplicado na carteira</span>
+    </div>
+    <div class="assets-kpi-card">
+      <span class="assets-kpi-label">VALOR ATUAL</span>
+      <span class="assets-kpi-value">${assetSummaryCurrent == null ? '—' : fmt(assetSummaryCurrent)}</span>
+      <span class="assets-kpi-sub">Valor estimado das posições</span>
+    </div>
+    <div class="assets-kpi-card">
+      <span class="assets-kpi-label">LUCRO/PREJUÍZO</span>
+      <span class="assets-kpi-value ${portfolioResultTone}">${portfolioResult == null ? '—' : `${portfolioResult > 0 ? '+' : ''}${fmt(portfolioResult)}`}</span>
+      <span class="assets-kpi-sub">Diferença entre atual e investido</span>
+    </div>
+    <div class="assets-kpi-card">
+      <span class="assets-kpi-label">RENTABILIDADE</span>
+      <span class="assets-kpi-value ${portfolioReturnTone}">${portfolioReturn == null ? '—' : fmtP(portfolioReturn)}</span>
+      <span class="assets-kpi-sub">Resultado sobre o valor investido</span>
+    </div>
+  </div>`;
 
   // Metas de alocação por classe (mesma fonte usada em Rebalancear), somente leitura aqui.
   const assetsAllocationGoalMap = Object.fromEntries(allocationGoalItems().map(item => [item.type, Number(item.pct) || 0]));
@@ -34301,7 +34317,7 @@ function ativos(){
         <button class="btn bp" onclick="openQuickMovement('compra')">+ Novo Ativo</button>
       </div>
     </div>
-    ${assetPortfolioSummaryHtml}
+    ${kpiCardsHtml}
     ${innerTabsHtml}
     ${assetClassTabsHtml}
     ${assetControls}
