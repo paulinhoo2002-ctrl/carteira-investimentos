@@ -11777,6 +11777,7 @@ function initFirebase(){
       render();
     }, error=>{
       debugWarn('Falha na sessão de autenticação:', error);
+      window.__V311_DEBUG_AUTH_ERROR__='onAuthStateChanged:'+String(error&&(error.code||error.message)||error);
       authSessionGuard.begin(null);
       stopCloudSync(false);
       clearRealStateInMemory();
@@ -11793,6 +11794,7 @@ function initFirebase(){
     }
   }catch(e){
     debugWarn('Firebase indisponível:', e);
+    window.__V311_DEBUG_AUTH_ERROR__='initFirebase-catch:'+String(e&&(e.code||e.message)||e)+' stack='+String(e&&e.stack||'').slice(0,400);
     FB.ready=false;
     FB.accountMode='AUTH_FAILURE';
     FB.authResolved=true;
