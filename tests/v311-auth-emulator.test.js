@@ -46,6 +46,33 @@ async function markEmailVerified(email, idToken) {
 
 async function newPage({ query = QUERY, hostname = '127.0.0.1', viewport = VIEWPORTS[1], invalidSession = false, unavailableEmulators = false } = {}) {
   const context = await browser.newContext({ viewport });
+  if (hostname !== '127.0.0.1') {
+    // CI's Chromium build does not honor --host-resolver-rules, so DNS for a
+    // fake non-loopback hostname never resolves there (local sandbox Chromium
+    // does honor it, masking the gap). Proxy at the Playwright network-interception
+    // layer instead: this fires before any real DNS lookup, so it works
+    // identically on every Chromium build. The app's own JS is what must see
+    // location.hostname !== 127.0.0.1 and refuse emulators; this only has to
+    // deliver the document/assets under that fake hostname.
+    const port = new URL(harness.url).port;
+    await context.route(`http://${hostname}:${port}/**`, async (route) => {
+      const target = new URL(route.request().url());
+      target.hostname = '127.0.0.1';
+      try {
+        const upstream = await fetch(target.toString(), {
+          method: route.request().method(),
+          headers: route.request().headers(),
+          body: ['GET', 'HEAD'].includes(route.request().method()) ? undefined : (route.request().postDataBuffer() ?? undefined),
+        });
+        const body = Buffer.from(await upstream.arrayBuffer());
+        const headers = {};
+        upstream.headers.forEach((value, key) => { if (!/^(content-encoding|transfer-encoding|content-length)$/i.test(key)) headers[key] = value; });
+        await route.fulfill({ status: upstream.status, headers, body });
+      } catch (e) {
+        await route.abort();
+      }
+    });
+  }
   if(invalidSession) await context.addInitScript(() => { if(location.origin.startsWith('http://127.0.0.1:')) localStorage.setItem('firebase:authUser:demo-api-key:[DEFAULT]', '{invalid-session'); });
   const page = await context.newPage();
   const requests = [];
@@ -113,7 +140,7 @@ function firebaseDataRequests(app) {
 
 before(async () => {
   harness = await startLocalHttpServer(path.join(__dirname, '..'));
-  browser = await chromium.launch({ executablePath: CHROME, headless: true, args: ['--host-resolver-rules=MAP qa-non-loopback.invalid 127.0.0.1'] });
+  browser = await chromium.launch({ executablePath: CHROME, headless: true });
 });
 
 after(async () => {
@@ -251,7 +278,7 @@ test('V311: unavailable Auth and Firestore emulators fail closed without product
 test('V311: localhost query flags cannot bypass auth on a non-loopback origin', async () => {
   const app = await newPage({ hostname: 'qa-non-loopback.invalid', query: `${QUERY}&testMode=1&skipAuth=1` });
   try {
-    await app.page.waitForFunction(() => FB.authResolved === true && FB.access.loading === false && document.body.innerText.includes('Entre com Google para continuar'), null, { timeout: 60000 });
+    await app.page.waitForFunction(() => FB.authResolved === true && FB.access.loading === false && document.body.innerText.includes('Entre com Google para continuar'), null, { timeout: 20000 });
     const state = await app.page.evaluate(() => ({
       testMode: window.__LOCAL_TEST_MODE__,
       emulatorMode: window.__LOCAL_AUTH_EMULATOR_MODE__,
