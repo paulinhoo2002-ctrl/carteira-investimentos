@@ -11648,7 +11648,7 @@ function initFirebase(){
     }
     const emulatorMode=isLocalAuthEmulatorMode();
         if(window.__LOCAL_AUTH_EMULATOR_MODE__===true && !emulatorMode) throw new Error('Auth emulator mode is loopback-only.');
-        const appConfig = (emulatorMode || testMode)
+        const appConfig = (emulatorMode || isLocalTestMode())
           ? {apiKey: 'demo-api-key', authDomain: 'localhost', projectId: 'demo-carteira-qa-emulator'}
           : firebaseConfig;
     FB.app=firebase.initializeApp(appConfig);
@@ -11777,7 +11777,6 @@ function initFirebase(){
       render();
     }, error=>{
       debugWarn('Falha na sessão de autenticação:', error);
-      window.__V311_DEBUG_AUTH_ERROR__='onAuthStateChanged:'+String(error&&(error.code||error.message)||error);
       authSessionGuard.begin(null);
       stopCloudSync(false);
       clearRealStateInMemory();
@@ -11794,7 +11793,6 @@ function initFirebase(){
     }
   }catch(e){
     debugWarn('Firebase indisponível:', e);
-    window.__V311_DEBUG_AUTH_ERROR__='initFirebase-catch:'+String(e&&(e.code||e.message)||e)+' stack='+String(e&&e.stack||'').slice(0,400);
     FB.ready=false;
     FB.accountMode='AUTH_FAILURE';
     FB.authResolved=true;
