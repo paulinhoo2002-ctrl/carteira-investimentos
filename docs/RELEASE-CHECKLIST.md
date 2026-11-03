@@ -41,3 +41,15 @@
 - [x] M789: atualização única da PR #536 preparada (push de e49cb7f sobre 8cfb99b, fast-forward) — impacto CI: V249 selector fix + testes de backup ampliados dentro do job existente (~+segundos); impacto Vercel: NENHUM (guard de preview ativo; merge não autorizado).
 
 Regras de segurança mantidas: backup sem senha NÃO é criptografado (declarado na UI e no procedimento); SHA-256 detecta corrupção acidental, NÃO substitui autenticação contra adulteração deliberada (AES-GCM do modo protegido sim); política owner-only intacta.
+
+## Registro da versão oficial — 2026-10-24 (M903)
+
+- PRODUÇÃO: main@44831125b3221376fb8eeb41a2e17d6911299b05 (merge da PR #537 em 2026-10-24T12:00:49Z; auto-deploy Production 12:01 READY; domínio carteira-investimentos-delta.vercel.app; HTTPS 200; marker phase4i-runtime-v2).
+- CONTEÚDO: base premium abc8cf4 (PR #536: owner-only rules certificadas + premium + backup sem senha) + PR #537 (CTA dashboard vazio, ESC protegido no modal, títulos dinâmicos por rota).
+- CI da versão: run 40090182272 — Build and test / V289 / Auth+Firestore emulator = 3/3 SUCCESS no head d0ee947 (conteúdo do merge).
+- Regras Firebase: owner-only LIVE (deploy M831; regras idênticas ao candidato certificado 10/10).
+- Rollback: deployment anterior retido = abc8cf4 (24/10 01:18); anterior a ele = 8d1b770.
+- Smoke anônimo pós-publicação (4483112): PASS — 390+1366: gate de login apenas, zero R$, zero painéis, zero erros console; título estático pré-login (correto: rotas inacessíveis anônimo).
+- As 3 melhorias confirmadas VIVAS no HTML servido (dashboard-empty-cta, quickMovementEscape, routeTitleMap).
+- QA autenticado da 4483112: pendente de 1 login do proprietário na janela QA (títulos por rota + ESC ao vivo + views); evidência sintética local completa (bateria 2074/2074 + probes browser).
+- Backups: protegido real ÍNTEGRO + redundante; recuperação real NOT_CERTIFIED (Fase 2 do roadmap).

@@ -2,7 +2,7 @@
   'use strict';
 
   const APP_BUILD_ID = 'phase4i-runtime-v2';
-  const SW_CACHE = 'carteira-investimentos-v250.1';
+  const SW_CACHE = 'carteira-investimentos-v250.3';
   const STATUS_ID = 'v250-runtime-status';
   const WRITE_HANDLER_PATTERN = /(?:^|[.(])(?:save|saveConfig|uploadLocalToCloud|confirmBackupImport|applyBackupData|add[A-Z]|delete[A-Z]|remove[A-Z]|sync[A-Z])/;
   const WRITE_TEXT_PATTERN = /\b(?:salvar|registrar|comprar|vender|excluir|remover|aplicar|confirmar restauração|sincronizar)\b/i;

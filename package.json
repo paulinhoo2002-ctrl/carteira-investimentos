@@ -1,13 +1,16 @@
 {
   "name": "carteira-investimentos",
-  "version": "1.0.0",
+  "version": "1.4.0",
   "private": true,
   "description": "Carteira de investimentos com controle de ativos, aportes, dividendos, metas e sincronizacao Firebase.",
+  "engines": {
+    "node": ">=22.14.0"
+  },
   "scripts": {
     "build": "node -e \"const fs=require('fs'); const files=['index.html','manifest.json','sw.js','v250-runtime.js','v250-offline-session.js']; for (const f of files) { if (!fs.existsSync(f)) { throw new Error('Missing file: ' + f); } } console.log('Build OK: static app validated.');\"",
     "dev:modern": "vite --config modern/vite.config.ts",
     "build:modern": "vite build --config modern/vite.config.ts",
-    "test:modern": "node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/modern-assets-readonly-page.test.js tests/modern-fixed-income-readonly-page.test.js tests/modern-income-readonly-page.test.js tests/modern-contributions-explainable-page.test.js tests/legacy-assets-active-wallet-host.test.js tests/readonly-report-session-context.test.js tests/readonly-report-session-history.test.js tests/readonly-contract-architecture.test.js tests/readonly-reports-data-contract.test.js tests/modern-fixed-income-fixed-rate-engine.test.js tests/modern-fixed-income-movement-model.test.js tests/modern-fixed-income-legacy-rfevents-adapter.test.js tests/modern-fixed-income-fixed-rate-position.test.js tests/modern-fixed-income-legacy-fixed-rate-position.test.js tests/modern-fixed-income-readonly-projection.test.js tests/modern-fixed-income-readonly-valuation.test.js tests/modern-fixed-income-rate-parser.test.js tests/modern-fixed-income-weekdays.test.js tests/modern-fixed-income-supplement-builder.test.js tests/modern-fixed-income-vertical-integration.test.js tests/modern-fixed-income-asset-identity.test.js tests/modern-fixed-income-cdi-contract-parser.test.js tests/modern-fixed-income-cdi-rate-engine.test.js tests/modern-fixed-income-cdi-daily-factor-provider.test.js tests/modern-fixed-income-ipca-index-diagnostics.test.js tests/modern-fixed-income-financial-asof.test.js tests/modern-fixed-income-asof-host-path.test.js tests/v262-legacy-fixed-income-diagnostics.test.js tests/modern-shell-navigation.test.js tests/modern-overview-page.test.js tests/modern-dashboard-shared-components.test.js tests/modern-returns-page.test.js tests/modern-net-worth-page.test.js tests/modern-rebalance-page.test.js tests/modern-goals-page.test.js tests/modern-goals-contract.test.js tests/modern-goals-bridge-adapter.test.js tests/modern-goals-source.test.js tests/modern-goals-runtime.test.js tests/modern-goals-viewmodel.test.js tests/modern-goals-page-readonly.test.js",
+    "test:modern": "node --experimental-strip-types --test tests/modern-base.test.js tests/modern-host.test.js tests/modern-host-source.test.js tests/modern-reports-bridge.test.js tests/modern-reports-integration.test.js tests/modern-reports-refresh.test.js tests/modern-reports-refresh.test.js tests/modern-assets-readonly-page.test.js tests/modern-fixed-income-readonly-page.test.js tests/modern-income-readonly-page.test.js tests/modern-contributions-explainable-page.test.js tests/legacy-assets-active-wallet-host.test.js tests/readonly-report-session-context.test.js tests/readonly-report-session-history.test.js tests/readonly-contract-architecture.test.js tests/readonly-reports-data-contract.test.js tests/modern-fixed-income-fixed-rate-engine.test.js tests/modern-fixed-income-movement-model.test.js tests/modern-fixed-income-legacy-rfevents-adapter.test.js tests/modern-fixed-income-fixed-rate-position.test.js tests/modern-fixed-income-legacy-fixed-rate-position.test.js tests/modern-fixed-income-readonly-projection.test.js tests/modern-fixed-income-readonly-valuation.test.js tests/modern-fixed-income-rate-parser.test.js tests/modern-fixed-income-weekdays.test.js tests/modern-fixed-income-supplement-builder.test.js tests/modern-fixed-income-vertical-integration.test.js tests/modern-fixed-income-asset-identity.test.js tests/modern-fixed-income-cdi-contract-parser.test.js tests/modern-fixed-income-cdi-rate-engine.test.js tests/modern-fixed-income-cdi-daily-factor-provider.test.js tests/modern-fixed-income-ipca-index-diagnostics.test.js tests/modern-fixed-income-financial-asof.test.js tests/modern-fixed-income-asof-host-path.test.js tests/v262-legacy-fixed-income-diagnostics.test.js tests/modern-shell-navigation.test.js tests/modern-overview-page.test.js tests/modern-dashboard-shared-components.test.js tests/modern-returns-page.test.js tests/modern-net-worth-page.test.js tests/modern-rebalance-page.test.js tests/modern-goals-page.test.js tests/modern-goals-contract.test.js tests/modern-goals-bridge-adapter.test.js",
     "test:import-center": "node --test tests/import-center-core.test.js tests/v245-import-center-2.test.js",
     "test:v330": "node --test tests/v330-brokerage-note-reconciliation.test.js",
     "test:v330:browser": "node --test tests/v330-browser-qa.test.js",
@@ -50,7 +53,10 @@
     "test:functional-e2e": "node --test tests/v317-financial-action-e2e.test.js tests/m567-functional-coverage.e2e.test.js tests/m568-provento-edit.e2e.test.js tests/a11y-functional.test.js",
     "test:auth-access-emulator": "firebase emulators:exec --config firebase.auth-demo-emulator.json --only auth,firestore --project demo-auth-demo-phase2 \"node --test tests/auth-access-security.test.js tests/auth-access-realtime.test.js\"",
     "test:m594-real-rules-emulator": "firebase emulators:exec --config firebase.m594-real-rules.emulator.json --only auth,firestore --project demo-m594-real-rules \"node --test tests/m594-real-rules-matrix.test.js\"",
-    "test:zero-cost-guards": "node --test tests/zero-cost-guards.test.js"
+    "test:zero-cost-guards": "node --test tests/zero-cost-guards.test.js",
+    "audit": "npm audit --audit-level=high",
+    "audit:ci": "npm audit --omit=dev --audit-level=high --json > audit-result.json && node -e \"const fs=require('fs'); const data=JSON.parse(fs.readFileSync('audit-result.json','utf8')); if(data.metadata.vulnerabilities.high > 0 || data.metadata.vulnerabilities.critical > 0) { console.error('High/Critical vulnerabilities found'); process.exit(1); }\"",
+    "check:lock": "npm ls --omit=dev --json && echo package-lock.json valid"
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -58,12 +64,20 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
+    "@semantic-release/changelog": "^7.0.0",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/git": "^11.0.1",
+    "@semantic-release/github": "^12.0.10",
+    "@semantic-release/npm": "^13.2.0",
+    "@semantic-release/release-notes-generator": "^14.1.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
     "axe-core": "^4.13.0",
+    "glob": "^13.0.6",
     "playwright": "^1.64.0",
     "playwright-core": "^1.63.0",
+    "semantic-release": "^25.0.9",
     "typescript": "^5.6.3",
     "vite": "^6.4.3",
     "websocket": "^1.0.35"
