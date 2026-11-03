@@ -8974,11 +8974,22 @@ summary:focus-visible,
 <script>
 (()=>{if(window.__LOCAL_TEST_MODE__) return;
 document.write([
-  '<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" integrity="sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw" crossorigin="anonymous"><\/script>',
   '<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"><\/script>',
   '<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"><\/script>',
   '<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"><\/script>'
 ].join(''));})();
+</script>
+<script>
+// M1022-M1025: xlsx (269KB na rede, 26% da carga fria) carregado SOB DEMANDA — usado
+// apenas nos imports de B3/nota. Eager ficou somente o trio do Firebase.
+window.ensureXLSX=()=>{ if(window.__XLSX_PROMISE__) return window.__XLSX_PROMISE__;
+  window.__XLSX_PROMISE__=new Promise((resolve,reject)=>{ if(typeof XLSX!=='undefined') return resolve(XLSX);
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s.integrity='sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw'; s.crossOrigin='anonymous';
+    s.onload=()=>resolve(XLSX); s.onerror=()=>{ window.__XLSX_PROMISE__=null; reject(new Error('XLSX_LOAD_FAILED')); };
+    document.head.appendChild(s); });
+  return window.__XLSX_PROMISE__; };
 </script>
 <script src="finance-core.js"></script>
 <script src="persistence-core.js"></script>
@@ -18225,6 +18236,7 @@ function b3MovementReviewModal(){
 }
 document.getElementById('b3-file').addEventListener('change',async e=>{
   const file=e.target.files[0]; if(!file) return;
+  if(typeof XLSX==='undefined'){ try{ await ensureXLSX(); }catch(err){ debugError(err); alert('Não foi possível carregar o leitor de planilhas. Verifique sua conexão e tente novamente.'); e.target.value=''; return; } }
   try{
     const importMode=String(S.b3ImportMode||'');
     S.b3ImportMode=null;
@@ -18235,12 +18247,11 @@ document.getElementById('b3-file').addEventListener('change',async e=>{
     let parsed;
     if(importMode){
       if(isPdf){
-        alert('A Fase 1 experimental do B3 aceita apenas XLSX/XLS/CSV. PDF continua fora desta prévia segura.');
-        e.target.value='';
-        return;
-      }
-      if(typeof XLSX==='undefined'){ alert('Biblioteca de Excel não carregou. Verifique sua internet e tente novamente.'); return; }
-      const wb=isCsv
+              alert('A Fase 1 experimental do B3 aceita apenas XLSX/XLS/CSV. PDF continua fora desta prévia segura.');
+              e.target.value='';
+              return;
+            }
+            const wb=isCsv
         ? XLSX.read(await file.text(),{type:'string'})
         : XLSX.read(await file.arrayBuffer(),{type:'array'});
       if(importMode==='negotiation-preview'){
@@ -18308,9 +18319,9 @@ document.getElementById('b3-file').addEventListener('change',async e=>{
 });
 document.getElementById('nota-file').addEventListener('change',async e=>{
   const file=e.target.files[0]; if(!file) return;
+  if(typeof XLSX==='undefined'){ try{ await ensureXLSX(); }catch(err){ debugError(err); alert('Não foi possível carregar o leitor de planilhas. Verifique sua conexão e tente novamente.'); e.target.value=''; return; } }
   try{
-    if(typeof XLSX==='undefined'){ alert('Biblioteca de Excel não carregou. Verifique sua internet e tente novamente.'); return; }
-    const isCsv=/\.csv$/i.test(file.name) || String(file.type||'').includes('csv');
+      const isCsv=/\.csv$/i.test(file.name) || String(file.type||'').includes('csv');
     const wb=isCsv
       ? XLSX.read(await file.text(),{type:'string'})
       : XLSX.read(await file.arrayBuffer(),{type:'array'});
