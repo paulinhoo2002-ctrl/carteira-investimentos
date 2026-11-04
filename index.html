@@ -33475,13 +33475,6 @@ function dashboardUpcomingDividendsPanel(){
   return `<section class="home-upcoming" aria-label="Próximos recebimentos">${head}<div class="home-upcoming-grid">${cards}</div></section>`;
 }
 function dashboardExecutiveKPIs(data, showTotalStatus=true){
-  // Compat: chamadas antigas passam showTotalStatus como primeiro argumento
-  // (assinatura original de package2ExecutivePanel). Se data é booleano, trata
-  // como showTotalStatus e usa data padrão.
-  if (typeof data === 'boolean') {
-    showTotalStatus = data;
-    data = undefined;
-  }
   const p=data?.portfolio||cx();
   const totalCurrent=Number(p.tC)||0;
   const totalApplied=Number(p.tI)||0;
