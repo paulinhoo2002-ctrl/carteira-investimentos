@@ -27,6 +27,14 @@ function makeContext(overrides = {}) {
     dashboardMetricCard(icon, label, value, note, tone, glow) {
       return `<div class="premium-metric" data-label="${label}" data-value="${value}" data-note="${note}" data-tone="${tone}"></div>`;
     },
+    cx() { return { tC: 0, tI: 0, tG: 0, tGP: 0, appliedComplete: true }; },
+    dashboardCurrentValueAvailability: () => ({ state: 'AVAILABLE', note: 'Disponível' }),
+    passiveIncomeMonthKey: () => '2026-10',
+    passiveIncomeMonthSummary: () => ({ month: '2026-10', total: null, coverage: 'UNKNOWN' }),
+    passiveIncomeValue: () => '—',
+    fmtP: value => `${value}%`,
+    dashboardHasEconomicCertification: () => false,
+    dashboardEconomicResultStatus: () => '<div>Resultado total: Em consolidação</div>',
     ...(overrides.globals || {})
   };
   return context;
@@ -36,7 +44,7 @@ function renderPanel(overrides, showTotalStatus = true) {
   const snippet = extractSnippet('function package2FiniteNumber(', 'function dashboardEvolutionPanel(data){');
   const context = makeContext(overrides);
   vm.createContext(context);
-  vm.runInContext(snippet + '\nglobalThis.render=package2ExecutivePanel', context);
+  vm.runInContext(snippet + '\nglobalThis.render=dashboardExecutiveKPIs', context);
   return context.render(showTotalStatus);
 }
 
@@ -92,10 +100,14 @@ test('package2 total card is omitted when the dashboard status strip carries the
 
 test('package2 panel renders nothing when summary absent (first-fold preserved)', () => {
   const html = renderPanel({ package2: null });
-  assert.equal(html, '');
+  // Base KPI cards always render
+  assert.match(html, /Patrimônio atual/);
+  assert.match(html, /Recebido no mês/);
+  assert.match(html, /Resultado da posição/);
   // no certified numbers leak
   assert.doesNotMatch(html, /10337/);
   assert.doesNotMatch(html, /27108/);
+  assert.doesNotMatch(html, /data-package2="present"/);
 });
 
 test('package2 panel hides values in hidden-value mode', () => {
@@ -109,13 +121,19 @@ test('package2 panel hides values in hidden-value mode', () => {
 
 test('package2 panel renders nothing for malformed summary (no empty cards)', () => {
   const html = renderPanel({ package2: { current_result_summary: {}, income_summary: {} } });
-  assert.equal(html, '');
-  assert.doesNotMatch(html, /R\$ \d/);
+  // Base KPI cards always render (dashboard not suppressed)
+  assert.match(html, /Patrimônio atual/);
+  assert.match(html, /Recebido no mês/);
+  assert.match(html, /Resultado da posição/);
+  // Package2-specific cards absent when aggregates are empty
+  assert.doesNotMatch(html, /Resultado certificado da RV/);
+  assert.doesNotMatch(html, /Renda recebida/);
+  assert.doesNotMatch(html, /data-package2="present"/);
 });
 
 test('dashboard wires the package2 panel after executive KPIs', () => {
   const html = fs.readFileSync(path.join(repoRoot, 'index.html'), 'utf8');
-  assert.match(html, /\$\{executiveKPIs\(data\)\}\s*\r?\n\s*\$\{package2ExecutivePanel\(!dashboardHasEconomicCertification\(data\?\.portfolioEconomicResult\)\)\}/);
+  assert.match(html, /\$\{dashboardExecutiveKPIs\(data, !dashboardHasEconomicCertification\(data\?\.portfolioEconomicResult\)\)\}/);
 });
 
 test('cloud snapshot captures package2_v2 read-only into FB', () => {

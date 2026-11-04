@@ -9,8 +9,8 @@ const vm = require('node:vm');
 const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
 function renderExecutiveKpis({ availability, appliedComplete, totalCurrent = 0, totalApplied = 0 } = {}) {
-  const start = source.indexOf('function executiveKPIs(data){');
-  const end = source.indexOf('\nfunction package2ExecutivePanel(', start);
+  const start = source.indexOf('function dashboardExecutiveKPIs(data, showTotalStatus=true){');
+  const end = source.indexOf('\nfunction dashboardEvolutionPanel(', start);
   const cardStart = source.indexOf('function dashboardMetricCard(');
   const cardEnd = source.indexOf('\nfunction dashboardRadarCard(', cardStart);
   assert.ok(start >= 0 && end > start, 'executive KPI renderer exists');
@@ -34,7 +34,7 @@ function renderExecutiveKpis({ availability, appliedComplete, totalCurrent = 0, 
     esc: value => String(value),
     cx: () => ({ tC: totalCurrent, tI: totalApplied, tG: 0, tGP: 0, appliedComplete }),
   });
-  vm.runInContext(`${source.slice(cardStart, cardEnd)}\n${source.slice(start, end)}\nglobalThis.render = executiveKPIs;`, context);
+  vm.runInContext(`${source.slice(cardStart, cardEnd)}\n${source.slice(start, end)}\nglobalThis.render = dashboardExecutiveKPIs;`, context);
   return context.render({
     portfolio: { tC: totalCurrent, tI: totalApplied, tG: 0, tGP: 0, appliedComplete },
     recent: { month: '2026-10', total: null, coverage: 'UNKNOWN' },
