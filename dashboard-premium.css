@@ -939,13 +939,6 @@ html[data-theme="dark"] .news-tag.macro {
   padding: 20px;
 }
 
-/* Asset mobile cards container */
-.asset-mobile-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 8px 0;
-}
 
 /* Dividendos page mobile actions */
 .div-premium-canon-actions {
