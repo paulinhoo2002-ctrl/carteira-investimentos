@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Preview — Carteira de Investimentos (10/10)</title>
+<style>
+  :root{
+    --bg:#0b1220;
+    --text:#f4f7fb;
+    --muted:#9ab4d6;
+    --panel:#121d2f;
+    --surface:#101a2b;
+    --border:#2a3a5c;
+    --primary:#4f46e5;
+    --success:#22c55e;
+    --danger:#ef4444;
+    --warning:#f59e0b;
+    --info:#60a5fa;
+    --radius:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:var(--bg);color:var(--text);
+    padding:24px;line-height:1.6;
+  }
+  header{text-align:center;margin-bottom:32px}
+  h1{font-size:clamp(20px,4vw,28px);font-weight:700;margin-bottom:8px}
+  .subtitle{color:var(--muted);font-size:14px}
+  .note{
+    background:var(--panel);border:1px solid var(--border);
+    border-radius:8px;padding:16px;margin-bottom:24px;font-size:13px;
+    color:var(--muted);display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px
+  }
+  .note span{display:flex;gap:8px;align-items:flex-start}
+  .tag{
+    background:var(--primary);color:#fff;font-size:9px;
+    padding:2px 6px;border-radius:6px;font-weight:700
+  }
+
+  /* ── Dashboard home — Resumo patrimonial ── */
+  .dashboard-home-summary{
+    background:var(--panel);border:1px solid var(--border);
+    border-radius:var(--radius);padding:20px;display:grid;gap:16px
+  }
+  .premium-panel-head{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:12px;margin-bottom:8px
+  }
+  .premium-panel-title{
+    font-size:14px;font-weight:700;color:var(--text)
+  }
+  .premium-panel-sub{font-size:11px;color:var(--muted)}
+  .premium-panel-badge{
+    background:rgba(79,70,229,.1);color:#a5b4fc;
+    font-size:10px;padding:2px 8px;border-radius:999px;font-weight:600
+  }
+
+  /* ── KPI cards ── */
+  .premium-metrics{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:10px
+  }
+  .premium-metric{
+    display:flex;flex-direction:column;gap:6px;
+    min-height:82px;border:1px solid var(--border);
+    border-radius:var(--radius);padding:10px 12px;
+    background:var(--surface);
+  }
+  .premium-metric-top{
+    display:flex;align-items:center;gap:8px;min-width:0
+  }
+  .premium-metric-icon{
+    width:24px;height:24px;border-radius:8px;
+    background:#141d2f;border:1px solid #27344b;
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;flex:none
+  }
+  .premium-metric-label{
+    font-size:11px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.055em;line-height:1.25;min-width:0
+  }
+  .premium-metric-value{
+    font-size:17px;font-weight:700;
+    color:var(--metric-color,var(--text));
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    min-width:0
+  }
+  .premium-metric-note{
+    font-size:11px;color:var(--muted);line-height:1.35
+  }
+
+  /* ── Focus visible (acessibilidade) ── */
+  .premium-metric:focus-visible{
+    outline:2px solid var(--primary);
+    outline-offset:2px;
+  }
+
+  /* ── Grid de 4 colunas (desktop) ── */
+  .grid-4{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:14px;margin-bottom:24px
+  }
+
+  /* ── Empty state ── */
+  .premium-empty{
+    background:var(--panel);border:1px dashed var(--border);
+    border-radius:var(--radius);padding:32px;
+    text-align:center;color:var(--muted);margin-top:24px
+  }
+  .premium-empty strong{color:var(--text);display:block;margin-bottom:8px}
+
+  /* ── Legenda de testid ── */
+  .testid-tag{
+    position:absolute;top:-10px;right:-10px;
+    background:var(--primary);color:#fff;font-size:9px;
+    padding:2px 6px;border-radius:6px;font-weight:700
+  }
+  .kpi-card-with-testid{border-left:4px solid var(--primary);position:relative}
+
+  @media(max-width:760px){
+    body{padding:12px}
+    .premium-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grid-4{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Preview — Carteira de Investimentos (10/10)</h1>
+  <p class="subtitle">Tela inicial desktop com KPI cards, data-testid e foco de teclado</p>
+</header>
+
+<div class="note">
+  <strong>O que foi aplicado:</strong>
+  <span><span class="tag">testid</span>8/8 cards KPI com <code>data-testid="metric-*"</code> — para automação de testes</span>
+  <span><span class="tag">focus</span>:focus-visible no card — anel de foco só na navegação por teclado</span>
+  <span><span class="tag">layout</span>Grid responsivo: 4 colunas desktop → 2 colunas tablet → 1 coluna mobile</span>
+  <span><span class="tag">design</span>Premium dark theme consistente com as telas de aprendizado</span>
+</div>
+
+<!-- ── Seção 1: Resumo patrimonial ── -->
+<section class="dashboard-home-summary">
+  <div class="premium-panel-head">
+    <div>
+      <div class="premium-panel-title">Resumo patrimonial</div>
+      <div class="premium-panel-sub">Patrimônio, capital aplicado, resultado e rentabilidade.</div>
+    </div>
+    <div class="premium-panel-badge">Visão rápida</div>
+  </div>
+  <div class="premium-metrics">
+    <div class="premium-metric kpi-card-with-testid" data-testid="metric-patrimonio-atual" style="--metric-color:#a78bfa;--metric-glow:rgba(129,140,248,.16)">
+      <span class="testid-tag">testid</span>
+      <div class="premium-metric-top">
+        <div class="premium-metric-icon">💼</div>
+        <div class="premium-metric-label">Patrimônio atual</div>
+      </div>
+      <div class="premium-metric-value">R$ 702.175,64</div>
+      <div class="premium-metric-note">Valor estimado da carteira</div>
+    </div>
+
+    <div class="premium-metric kpi-card-with-testid" data-testid="metric-total-investido" style="--metric-color:#60a5fa;--metric-glow:rgba(96,165,250,.14)">
+      <span class="testid-tag">testid</span>
+      <div class="premium-metric-top">
+        <div class="premium-metric-icon">💰</div>
+        <div class="premium-metric-label">Total investido</div>
+      </div>
+      <div class="premium-metric-value">R$ 698.681,79</div>
+      <div class="premium-metric-note">Capital informado na carteira</div>
+    </div>
+
+    <div class="premium-metric kpi-card-with-testid" data-testid="metric-resultado-geral" style="--metric-color:#34d399;--metric-glow:rgba(52,211,153,.14)">
+      <span class="testid-tag">testid</span>
+      <div class="premium-metric-top">
+        <div class="premium-metric-icon">📈</div>
+        <div class="premium-metric-label">Resultado geral</div>
+      </div>
+      <div class="premium-metric-value">R$ 3.493,85</div>
+      <div class="premium-metric-note">Diferença entre aplicado e atual</div>
+    </div>
+
+    <div class="premium-metric kpi-card-with-testid" data-testid="metric-rentabilidade" style="--metric-color:#60a5fa;--metric-glow:rgba(96,165,250,.14)">
+      <span class="testid-tag">testid</span>
+      <div class="premium-metric-top">
+        <div class="premium-metric-icon">📊</div>
+        <div class="premium-metric-label">Rentabilidade</div>
+      </div>
+      <div class="premium-metric-value">+0,50%</div>
+      <div class="premium-metric-note">Cálculo sobre o capital aplicado</div>
+    </div>
+  </div>
+
+  <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:12px">
+    <div class="premium-panel-head" style="margin-bottom:0">
+      <div style="font-size:14px;font-weight:700;color:var(--text)">Evolução do patrimônio</div>
+      <div style="font-size:11px;color:var(--muted)">Acompanhe a curva após registrar seus primeiros aportes.</div>
+    </div>
+    <div style="height:200px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px">
+      Gráfico de linha aqui (canvas/Chart.js) — evolução mensal do patrimônio
+    </div>
+  </div>
+</section>
+
+<!-- ── Seção 2: Renda passiva ── -->
+<section class="dashboard-home-summary">
+  <div class="premium-panel-head">
+    <div>
+      <div class="premium-panel-title">Renda passiva</div>
+      <div class="premium-panel-sub">Recebido no mês, média 12M e meta mensal.</div>
+    </div>
+    <div class="premium-panel-badge">Out/2026</div>
+  </div>
+  <div class="premium-metrics">
+    <div class="premium-metric kpi-card-with-testid" data-testid="metric-recebido-no-mes" style="--metric-color:#34d399;--metric-glow:rgba(52,211,153,.14)">
+      <span class="testid-tag">testid</span>
+      <div class="premium-metric-top">
+        <div class="premium-metric-icon">💵</div>
+        <div class="premium-metric-label">Recebido no mês</div>
+      </div>
+      <div class="premium-metric-value">R$ 0,00</div>
+      <div class="premium-metric-note">Mês completo confirmado</div>
+    </div>
+
+    <div class="premium-metric kpi-card-with-testid" data-testid="metric-media-12m" style="--metric-color:#60a5fa;--metric-glow:rgba(96,165,250,.14)">
+      <span class="testid-tag">testid</span>
+      <div class="premium-metric-top">
+        <div class="premium-metric-icon">📊</div>
+        <div class="premium-metric-label">Média 12 meses</div>
+      </div>
+      <div class="premium-metric-value">R$ 2.272,03</div>
+      <div class="premium-metric-note">Meses completos: 11/12</div>
+    </div>
+
+    <div class="premium-metric kpi-card-with-testid" data-testid="metric-meta-mensal" style="--metric-color:#60a5fa;--metric-glow:rgba(96,165,250,.14)">
+      <span class="testid-tag">testid</span>
+      <div class="premium-metric-top">
+        <div class="premium-metric-icon">🎯</div>
+        <div class="premium-metric-label">Meta mensal</div>
+      </div>
+      <div class="premium-metric-value">R$ 4.000,00</div>
+      <div class="premium-metric-note">Meta configurada na aba Metas</div>
+    </div>
+
+    <div class="premium-metric kpi-card-with-testid" data-testid="metric-falta-para-meta" style="--metric-color:#fbbf24;--metric-glow:rgba(251,191,36,.14)">
+      <span class="testid-tag">testid</span>
+      <div class="premium-metric-top">
+        <div class="premium-metric-icon">🧭</div>
+        <div class="premium-metric-label">Falta para meta — média 12M</div>
+      </div>
+      <div class="premium-metric-value">R$ 1.727,97</div>
+      <div class="premium-metric-note">Valor restante para atingir a meta</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Seção 3: Alocação vs Meta (grid-4) ── -->
+<section style="margin-top:24px">
+  <h2 style="font-size:14px;font-weight:700;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:.08em">
+    Alocação vs Meta
+  </h2>
+  <div class="grid-4">
+    <div class="premium-metric kpi-card-with-testid" style="--metric-color:#a78bfa">
+      <div class="premium-metric-top">
+        <div class="premium-metric-icon">🏠</div>
+        <div class="premium-metric-label">FIIs</div>
+      </div>
+      <div class="premium-metric-value">47,7%</div>
+      <div class="premium-metric-note">meta 20% · +27,7 pp</div>
+    </div>
+    <div class="premium-metric kpi-card-with-testid" style="--metric-color:#60a5fa">
+      <div class="premium-metric-top">
+        <div class="premium-metric-icon">🏦</div>
+        <div class="premium-metric-label">Renda Fixa</div>
+      </div>
+      <div class="premium-metric-value">35,5%</div>
+      <div class="premium-metric-note">meta 40% · −4,5 pp</div>
+    </div>
+    <div class="premium-metric kpi-card-with-testid" style="--metric-color:#34d399">
+      <div class="premium-metric-top">
+        <div class="premium-metric-icon">📦</div>
+        <div class="premium-metric-label">Fundos</div>
+      </div>
+      <div class="premium-metric-value">13,7%</div>
+      <div class="premium-metric-note">meta 15% · −1,3 pp</div>
+    </div>
+    <div class="premium-metric kpi-card-with-testid" style="--metric-color:#fbbf24">
+      <div class="premium-metric-top">
+        <div class="premium-metric-icon">📈</div>
+        <div class="premium-metric-label">Ações</div>
+      </div>
+      <div class="premium-metric-value">3,7%</div>
+      <div class="premium-metric-note">meta 20% · −16,3 pp</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Sugestões ── -->
+<section style="margin-top:32px">
+  <h2 style="font-size:14px;font-weight:700;color:var(--muted);margin-bottom:16px;text-transform:uppercase;letter-spacing:.08em">
+    Sugestões de próxima melhoria
+  </h2>
+  <div class="note">
+    <span><strong>1.</strong> <code>data-testid</code> já está em todos os 8 cards — pronto para testes E2E com Playwright.</span>
+    <span><strong>2.</strong> Adicionar <code>:focus-visible</code> aos botões "Comprar"/"Vender" na aba Ativos (mesmo padrão dos cards).</span>
+    <span><strong>3.</strong> Empty state na aba Renda Passiva quando não há proventos (reutilizar <code>.premium-empty</code> existente).</span>
+    <span><strong>4.</strong> Tooltip nos cards KPI com valor detalhado (propriedade <code>tip</code> já existe na função <code>dashboardMetricCard</code>).</span>
+  </div>
+</section>
+
+</body>
+</html>

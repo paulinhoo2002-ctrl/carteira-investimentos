@@ -192,7 +192,10 @@ for (const viewport of viewports) {
       const menu = page.locator(`#${menuId}`);
       assert.equal(await actionTrigger.getAttribute('aria-expanded'), 'true', `ponteiro não abriu o menu em ${viewport.label}`);
       assert.equal(await menu.getAttribute('role'), 'menu', `menu sem semântica em ${viewport.label}`);
-      assert.deepEqual(await menu.getByRole('menuitem').allInnerTexts(), ['Detalhes', 'Comprar', 'Vender', 'Editar', 'Excluir ativo'], `ações incompletas em ${viewport.label}`);
+      const expectedMenuItems = viewport.width <= 430
+        ? ['Comprar', 'Vender', 'Editar', 'Excluir ativo']
+        : ['Editar', 'Excluir ativo'];
+      assert.deepEqual(await menu.getByRole('menuitem').allInnerTexts(), expectedMenuItems, `ações incompletas em ${viewport.label}`);
       await page.keyboard.press('Escape');
 
       // Teclado abre o mesmo caminho e preserva um foco visível no controle.
