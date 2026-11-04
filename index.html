@@ -30989,10 +30989,6 @@ function dashboardHomeSummaryPanel(data){
 }
 function dashboardPassiveIncomePanel(data){
   const income=data?.income||passiveIncomeGoalStats();
-  const hasData = income?.hasData ?? false;
-  if(!hasData){
-    return `<div class="premium-empty" role="status">Sem proventos cadastrados. Registre recebimentos na aba Dividendos para acompanhar a renda passiva.</div>`;
-  }
   const target=Number(income.target)||0;
   const monthlyAvg=income.monthlyAvg;
   const averageComplete=income.monthlyAverageStatus==='COMPLETE';
@@ -33530,10 +33526,6 @@ function dashboardEvolutionPanel(data){
 }
 function dashboardIncomePanel(data){
   const income=data?.income||passiveIncomeGoalStats();
-  const hasData = income?.hasData ?? false;
-  if(!hasData){
-    return `<div class="premium-empty" role="status">Sem proventos cadastrados. Registre recebimentos na aba Dividendos para acompanhar a renda passiva.</div>`;
-  }
   const target=Number(income.target)||0;
   const monthlyAvg=income.monthlyAvg;
   const averageComplete=income.monthlyAverageStatus==='COMPLETE';
