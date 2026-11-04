@@ -37,6 +37,11 @@ const flowSource = [
   extractFunctionSource('setQuickMovementField', 'function quickMovementModal'),
   extractFunctionSource('saveQuickMovement', 'function isRendaFixaAsset'),
 ].join('\n');
+const persistenceHelpers = [
+  extractFunctionSource('snapshotFinancialImportState', 'function restoreFinancialImportState'),
+  extractFunctionSource('restoreFinancialImportState', 'function persistFinancialImportState'),
+  extractFunctionSource('persistFinancialImportState', 'function save'),
+].join('\n');
 
 const metaStart = indexHtml.indexOf('const META=');
 const metaEnd = indexHtml.indexOf('// ── DY automático', metaStart);
@@ -71,7 +76,7 @@ function makeContext(overrides = {}) {
     canEditFromThisTab: () => true,
     toast: () => {},
     quickMovementBuildAporteFromFields: () => ({ reg: { id: 'r1', ticker: 'PETR4', type: 'Ação', sector: 'Petróleo' } }),
-    save: () => {},
+    save: () => true,
     learnTickerMeta: () => {},
     syncAssetsFromAportes: () => {},
     fetchQuotes: () => {},
@@ -79,8 +84,11 @@ function makeContext(overrides = {}) {
     alert: () => {},
     setTimeout: (fn) => { fn(); },
     console,
+    cloneData: value => JSON.parse(JSON.stringify(value ?? null)),
+    quickMovementKindLabel: (kind) => String(kind || ''),
+    fmt: (v) => String(v),
   };
-  vm.runInNewContext(`${indexHtml.slice(metaStart, metaEnd)}\n${metadataSource}\n${flowSource}\nthis.open=openQuickMovement; this.set=setQuickMovementField; this.close=closeQuickMovement; this.saveM=saveQuickMovement;`, context);
+  vm.runInNewContext(`${indexHtml.slice(metaStart, metaEnd)}\n${metadataSource}\n${persistenceHelpers}\n${flowSource}\nthis.open=openQuickMovement; this.set=setQuickMovementField; this.close=closeQuickMovement; this.saveM=saveQuickMovement;`, context);
   return context;
 }
 

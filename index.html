@@ -424,6 +424,10 @@ html[data-theme="light"] .dashboard-history-disclosure-body{background:var(--sur
 .dashboard-master-secondary .perf-card{height:100%}
 .dashboard-master-primary .dashboard-home-income .premium-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
 .dashboard-master-primary .dashboard-home-income .premium-metric{min-height:82px}
+.dashboard-master-primary .premium-metric:focus-visible{
+  outline:2px solid var(--primary);
+  outline-offset:2px;
+}
 @media(min-width:1181px){
   .dashboard-master-primary{grid-template-columns:minmax(0,1fr) minmax(0,1.35fr) minmax(0,1fr)}
   .dashboard-master-primary{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}
@@ -2796,6 +2800,13 @@ html[data-theme="light"] .reports-premium-shell .reports-filter button.on{backgr
 .passive-goal-card.warn .passive-goal-value{color:#fbbf24}
 .passive-goal-card.danger .passive-goal-value{color:#f87171}
 .passive-goal-card.muted .passive-goal-value{color:#94a3b8}
+.passive-goal-card .progress-bar{height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;margin-top:4px}
+.passive-goal-card .progress-bar-fill{height:100%;border-radius:3px;transition:width .3s ease}
+.passive-goal-card.ok .progress-bar-fill{background:#34d399}
+.passive-goal-card.info .progress-bar-fill{background:#60a5fa}
+.passive-goal-card.warn .progress-bar-fill{background:#fbbf24}
+.passive-goal-card.danger .progress-bar-fill{background:#f87171}
+.passive-goal-card.muted .progress-bar-fill{background:#94a3b8}
 .passive-goal-progress{background:linear-gradient(180deg,rgba(11,16,32,.96),rgba(9,12,21,.98));border:1px solid #182033;border-radius:14px;padding:12px}
 .passive-goal-progress-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .passive-goal-progress-title{font-size:12px;font-weight:800;color:#edf3ff}
@@ -6539,7 +6550,19 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     }
 
     /* Premium Table (Desktop) */
-        .assets-premium-table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-inline:contain;border:1px solid var(--border);border-radius:12px;background:var(--panel)}
+        .assets-premium-table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-inline:contain;border:1px solid var(--border);border-radius:12px;background:var(--panel);position:relative}
+        .assets-premium-table-wrap::after {
+          content: 'mais colunas →';
+          display: block;
+          text-align: center;
+          font-size: 11px;
+          color: var(--muted);
+          padding: 8px;
+          border-top: 1px dashed var(--border);
+          background: var(--panel-2);
+        }
+        .assets-premium-table-wrap.has-hidden-cols::after { display: block; }
+        .assets-premium-table-wrap:not(.has-hidden-cols)::after { display: none; }
         .assets-premium-table{width:100%;border-collapse:collapse;font-size:12px;min-width:980px}
         .assets-premium-table thead{position:sticky;top:0;z-index:5}
         .assets-premium-table th{padding:10px 12px;text-align:left;color:var(--muted);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.06em;background:var(--panel);border-bottom:1px solid var(--border);white-space:nowrap}
@@ -7117,6 +7140,25 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   }
   .chart-tab.active { background: var(--warning); color: #0a0e1a; }
   .chart-container { position: relative; height: 260px; }
+  .chart-container .chart-fallback {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 20px;
+    text-align: center;
+  }
+  .chart-container .chart-fallback-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+    opacity: 0.4;
+  }
+  .chart-container .chart-fallback-text { margin-bottom: 4px; font-weight: 600; color: var(--text); }
+  .chart-container .chart-fallback-sub { font-size: 11px; opacity: 0.7; }
 
   /* V328 PATRIMONIO GRID */
   .patrimonio-grid {
@@ -32614,15 +32656,30 @@ function waveBIcon(name){
   if(name==='readonly') return `<span class="wave-b-icon ds-icon-container" aria-hidden="true"><svg viewBox="0 0 20 20">${paths.shield}</svg></span>`;
   return dashboardMetricIcon(map[name]||name).replace('dashboard-metric-glyph','wave-b-icon ds-icon-container');
 }
-function dashboardMetricCard(icon,label,value,note,tone='#edf3ff',glow='rgba(96,165,250,.12)',tip=''){
+function dashboardMetricCard(icon,label,value,note,tone='#edf3ff',glow='rgba(96,165,250,.12)',tip='',dataState=''){
   const tipAttr=tip?` title="${esc(tip)}"`:'';
-  const testidMap={'Patrimônio atual':'patrimonio-atual','Recebido no mês':'recebido-no-mes','Resultado da posição':'resultado-da-posicao'};
+  const testidMap={
+  'Patrimônio atual':'patrimonio-atual',
+  'Total investido':'total-investido',
+  'Resultado geral':'resultado-geral',
+  'Resultado da posição':'resultado-da-posicao',
+  'Rentabilidade':'rentabilidade',
+  'Recebido no mês':'recebido-no-mes',
+  'Média 12 meses':'media-12m',
+  'Meta mensal':'meta-mensal',
+  'Falta para meta — média 12M':'falta-para-meta'
+  };
   const testid=testidMap[label]?` data-testid="metric-${testidMap[label]}"`:'';
+  const stateBadge = dataState ? `<span class="data-state-badge state-${dataState}"><span class="state-icon" aria-hidden="true"></span><span class="state-label">${esc(dataStateLabel(dataState))}</span></span>` : '';
   return `<div class="premium-metric"${testid} style="--metric-color:${tone};--metric-glow:${glow}"${tipAttr}>
-    <div class="premium-metric-top"><div class="premium-metric-icon">${icon}</div><div class="premium-metric-label">${esc(label)}</div></div>
+    <div class="premium-metric-top"><div class="premium-metric-icon">${icon}</div><div class="premium-metric-label">${esc(label)}</div>${stateBadge}</div>
     <div class="premium-metric-value">${esc(value)}</div>
     <div class="premium-metric-note">${esc(note)}</div>
   </div>`;
+}
+function dataStateLabel(state){
+  const map={fresh:'Atualizado',stale:'Desatualizado',partial:'Parcial',unavailable:'Indisponível',demo:'Demo'};
+  return map[state]||state;
 }
 function dashboardRadarCard(title,rows,formatter,empty){
   const body=rows.length ? rows.map(row=>`<div class="premium-radar-item"><span class="premium-radar-ticker">${esc(row.ticker||'—')}</span><span class="premium-radar-value">${formatter(row)}</span></div>`).join('') : `<div class="premium-empty">${esc(empty)}</div>`;
@@ -33482,10 +33539,10 @@ function dashboardIncomePanel(data){
     <div class="dashboard-income-card">
       <div class="dashboard-income-header"><div><div class="premium-panel-title">Renda passiva</div><div class="premium-panel-sub">Recebido no mês, média 12M e meta mensal</div></div><div class="premium-panel-badge">${esc(monthLabel)}</div></div>
       <div class="dashboard-income-grid"><div class="premium-metrics">
-        ${dashboardMetricCard('💵','Recebido no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'':'Cobertura desconhecida','#34d399','rgba(52,211,153,.14)')}
-        ${dashboardMetricCard('📊','Média 12 meses',passiveIncomeValue(monthlyAvg),`Meses completos: ${income.completeMonthCount??0}/12`,'#60a5fa','rgba(96,165,250,.14)')}
-        ${dashboardMetricCard('🎯','Meta mensal',target>0?fmt(target):'—',target>0?'Meta configurada na aba Metas':'Defina a meta para acompanhar progresso',target>0?'#60a5fa':'#94a3b8','rgba(96,165,250,.14)')}
-        ${dashboardMetricCard('🧭','Falta para meta — média 12M',passiveIncomeValue(goalReached),!target?'Sem meta definida':goalReached===null?'Indisponível · exige 12 meses completos':goalReached>0?'Valor restante para atingir a meta':'Meta atingida',goalReached>0?'#fbbf24':goalReached===null?'#94a3b8':'#34d399',goalReached>0?'rgba(251,191,36,.14)':'rgba(52,211, 153,.14)')}
+        ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'':'Cobertura desconhecida','#34d399','rgba(52,211,153,.14)')}
+        ${dashboardMetricCard(dashboardMetricIcon('bars'),'Média 12 meses',passiveIncomeValue(monthlyAvg),`Meses completos: ${income.completeMonthCount??0}/12`,'#60a5fa','rgba(96,165,250,.14)')}
+        ${dashboardMetricCard(dashboardMetricIcon('target'),'Meta mensal',target>0?fmt(target):'—',target>0?'Meta configurada na aba Metas':'Defina a meta para acompanhar progresso',target>0?'#60a5fa':'#94a3b8','rgba(96,165,250,.14)')}
+        ${dashboardMetricCard(dashboardMetricIcon('flag'),'Falta para meta — média 12M',passiveIncomeValue(goalReached),!target?'Sem meta definida':goalReached===null?'Indisponível · exige 12 meses completos':goalReached>0?'Valor restante para atingir a meta':'Meta atingida',goalReached>0?'#fbbf24':goalReached===null?'#94a3b8':'#34d399',goalReached>0?'rgba(251,191,36,.14)':'rgba(52,211, 153,.14)')}
       </div></div>
     </div>
   `;
