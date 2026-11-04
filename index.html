@@ -1068,12 +1068,13 @@ html[data-theme="light"] .dashboard-history-disclosure-body{background:var(--sur
 .premium-dashboard-sub{font-size:11px;color:var(--muted);line-height:1.45;margin-top:3px}
 .premium-dashboard-date{font-size:10px;color:var(--muted);border:1px solid var(--border);background:var(--panel);border-radius:999px;padding:5px 9px;white-space:nowrap}
 .premium-metrics{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
-.premium-metric{min-height:98px;border:1px solid var(--border);border-radius:14px;padding:11px;background:var(--panel);display:flex;flex-direction:column;justify-content:space-between;gap:6px}
+.premium-metric{min-height:98px;border:1px solid var(--border);border-radius:14px;padding:11px;background:var(--panel);display:flex;flex-direction:column;justify-content:space-between;gap:6px;box-shadow:0 1px 3px rgba(0,0,0,0.05);transition:box-shadow 0.2s, transform 0.2s;}
+.premium-metric:hover{box-shadow:0 4px 12px rgba(0,0,0,0.1);transform:translateY(-1px);}
 .premium-metric-top{display:flex;align-items:center;gap:7px;min-width:0}
-.premium-metric-icon{width:24px;height:24px;border-radius:8px;background:#141d2f;border:1px solid #27344b;display:flex;align-items:center;justify-content:center;font-size:12px;flex:none}
+.premium-metric-icon{width:28px;height:28px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;flex:none;background:var(--metric-color,var(--primary));color:#fff;box-shadow:0 2px 4px rgba(0,0,0,0.15)}
     .premium-metric-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.055em;line-height:1.25}
-.premium-metric-value{font-size:17px;font-weight:700;color:var(--metric-color,var(--text));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .premium-metric-note{font-size:11px;color:var(--muted);line-height:1.35}
+    .premium-metric-value{font-size:19px;font-weight:800;color:var(--metric-color,var(--text));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
+    .premium-metric-note{font-size:10px;color:var(--muted);line-height:1.3}
 .premium-consultive-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .premium-consultive-card{border:1px solid var(--border);border-radius:12px;background:linear-gradient(180deg,var(--panel-2),var(--panel));padding:9px 10px;min-width:0;display:flex;flex-direction:column;gap:6px}
 .premium-consultive-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
@@ -6486,22 +6487,180 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
   .dashboard-home-grid > .dashboard-home-summary,
   .dashboard-home-grid > .dashboard-home-income{grid-column:1/-1}
 
+  /* ===== Dashboard Home Summary - Visual Enhancements ===== */
+  .dashboard-home-summary{
+    border-radius:16px;
+    overflow:hidden;
+  }
+  .dashboard-home-summary .premium-metrics{
+    gap:10px;
+  }
+  .dashboard-home-summary .premium-metric{
+    border-radius:12px;
+    border:1px solid var(--border);
+    background:linear-gradient(180deg,var(--panel),var(--panel-2));
+    position:relative;
+    overflow:hidden;
+  }
+  .dashboard-home-summary .premium-metric::before{
+    content:'';
+    position:absolute;
+    top:0;left:0;right:0;
+    height:3px;
+    background:var(--metric-color,var(--primary));
+    opacity:0.8;
+  }
+  .dashboard-home-summary .premium-metric:hover{
+    box-shadow:0 8px 24px rgba(0,0,0,0.12);
+    transform:translateY(-2px);
+    border-color:color-mix(in srgb, var(--metric-color,var(--primary)) 40%, var(--border));
+  }
+  .dashboard-home-summary .premium-metric-icon{
+    background:var(--metric-color,var(--primary)) !important;
+    color:#fff;
+    box-shadow:0 2px 8px rgba(0,0,0,0.2);
+  }
+  .dashboard-home-summary .premium-metric-value{
+    font-size:20px;
+    font-weight:800;
+    letter-spacing:-0.02em;
+  }
+  .dashboard-home-summary .premium-metric-note{
+    font-size:10px;
+    line-height:1.3;
+    opacity:0.8;
+  }
+  .dashboard-home-summary .premium-panel-head{
+    margin-bottom:14px;
+    padding-bottom:10px;
+    border-bottom:1px solid rgba(148,163,184,.12);
+  }
+  .dashboard-home-summary .premium-panel-title{
+    font-size:16px;
+    font-weight:800;
+    letter-spacing:-0.02em;
+  }
+  .dashboard-home-summary .premium-panel-sub{
+    font-size:11px;
+    color:var(--muted);
+    margin-top:3px;
+  }
+
   /* ===== Evolução do patrimônio (dentro do resumo) ===== */
-  .dash-evolution{margin-top:12px;border-top:1px solid var(--border);padding-top:12px}
-  .dash-evolution-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px}
-  .dash-evolution svg{height:190px!important;width:100%}
-  @media(max-width:640px){.dash-evolution svg{height:150px!important}}
+  .dash-evolution{
+    margin-top:16px;
+    border-top:1px solid rgba(148,163,184,.12);
+    padding-top:16px;
+    background:linear-gradient(180deg,transparent,rgba(52,211,153,.03));
+    border-radius:0 0 16px 16px;
+  }
+  .dash-evolution-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .dash-evolution svg{
+    height:200px!important;
+    width:100%;
+    border-radius:10px;
+  }
+  @media(max-width:640px){
+    .dash-evolution svg{
+      height:160px!important;
+    }
+  }
 
   /* ===== Renda passiva + próximos recebimentos ===== */
+  .dashboard-home-income{
+    border-radius:16px;
+    overflow:hidden;
+  }
+  .dashboard-home-income .premium-metrics{
+    gap:10px;
+  }
+  .dashboard-home-income .premium-metric{
+    border-radius:12px;
+    border:1px solid var(--border);
+    background:linear-gradient(180deg,var(--panel),var(--panel-2));
+    position:relative;
+    overflow:hidden;
+  }
+  .dashboard-home-income .premium-metric::before{
+    content:'';
+    position:absolute;
+    top:0;left:0;right:0;
+    height:3px;
+    background:var(--metric-color,var(--primary));
+    opacity:0.8;
+  }
+  .dashboard-home-income .premium-metric:hover{
+    box-shadow:0 8px 24px rgba(0,0,0,0.12);
+    transform:translateY(-2px);
+    border-color:color-mix(in srgb, var(--metric-color,var(--primary)) 40%, var(--border));
+  }
+  .dashboard-home-income .premium-metric-icon{
+    background:var(--metric-color,var(--primary)) !important;
+    color:#fff;
+    box-shadow:0 2px 8px rgba(0,0,0,0.2);
+  }
+  .dashboard-home-income .premium-metric-value{
+    font-size:20px;
+    font-weight:800;
+    letter-spacing:-0.02em;
+  }
+  .dashboard-home-income .premium-metric-note{
+    font-size:10px;
+    line-height:1.3;
+    opacity:0.8;
+  }
+  .dashboard-home-income .premium-panel-head{
+    margin-bottom:14px;
+    padding-bottom:10px;
+    border-bottom:1px solid rgba(148,163,184,.12);
+  }
+  .dashboard-home-income .premium-panel-title{
+    font-size:16px;
+    font-weight:800;
+    letter-spacing:-0.02em;
+  }
+  .dashboard-home-income .premium-panel-sub{
+    font-size:11px;
+    color:var(--muted);
+    margin-top:3px;
+  }
+
   .dash-income-grid{display:grid;grid-template-columns:1fr;gap:12px}
   @media(min-width:901px){.dash-income-grid{grid-template-columns:minmax(0,1.55fr) minmax(220px,.85fr)}}
   .dash-income-main{min-width:0;display:flex;flex-direction:column;gap:10px}
-  .dash-receipts{border:1px solid var(--border);border-radius:var(--pd-radius-md);background:var(--surface);padding:11px;display:flex;flex-direction:column;gap:7px;min-width:0}
-  .dash-receipt-row{display:flex;align-items:center;gap:8px;padding:6px 2px;border-bottom:1px solid rgba(148,163,184,.12);font-size:11px}
+  .dash-receipts{
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:var(--surface);
+    padding:12px;
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+    min-width:0;
+  }
+  .dash-receipt-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 4px;
+    border-bottom:1px solid rgba(148,163,184,.1);
+    font-size:11px;
+    border-radius:6px;
+    transition:background 0.15s;
+  }
+  .dash-receipt-row:hover{
+    background:rgba(148,163,184,.06);
+  }
   .dash-receipt-row:last-child{border-bottom:0}
-  .dash-receipt-date{color:var(--muted);white-space:nowrap;font-weight:700}
+  .dash-receipt-date{color:var(--muted);white-space:nowrap;font-weight:700;min-width:70px}
   .dash-receipt-ticker{font-weight:850;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
-  .dash-receipt-rate{color:var(--muted);white-space:nowrap}
+  .dash-receipt-rate{color:var(--muted);white-space:nowrap;font-size:10px}
 
   /* ===== Barras de alocação por classe ===== */
     .dashboard-class-bar{grid-column:1/-1;height:4px;border-radius:999px;background:rgba(148,163,184,.14);overflow:hidden}
@@ -6550,19 +6709,7 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     }
 
     /* Premium Table (Desktop) */
-        .assets-premium-table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-inline:contain;border:1px solid var(--border);border-radius:12px;background:var(--panel);position:relative}
-        .assets-premium-table-wrap::after {
-          content: 'mais colunas →';
-          display: block;
-          text-align: center;
-          font-size: 11px;
-          color: var(--muted);
-          padding: 8px;
-          border-top: 1px dashed var(--border);
-          background: var(--panel-2);
-        }
-        .assets-premium-table-wrap.has-hidden-cols::after { display: block; }
-        .assets-premium-table-wrap:not(.has-hidden-cols)::after { display: none; }
+        .assets-premium-table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-inline:contain;border:1px solid var(--border);border-radius:12px;background:var(--panel)}
         .assets-premium-table{width:100%;border-collapse:collapse;font-size:12px;min-width:980px}
         .assets-premium-table thead{position:sticky;top:0;z-index:5}
         .assets-premium-table th{padding:10px 12px;text-align:left;color:var(--muted);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.06em;background:var(--panel);border-bottom:1px solid var(--border);white-space:nowrap}
@@ -33832,14 +33979,14 @@ function assetActionMenuHtml(asset, isRF, context='default'){
     ? `<button type="button" class="btn bgh asset-action" onclick='openRfMovementEditor(${JSON.stringify(rfAssetEventId(asset))}, "resgate_parcial")'>Resgatar</button>`
     : `<button type="button" class="btn bgh asset-action" onclick='openAssetQuickMovement(${JSON.stringify(id)}, "venda")'>Vender</button>`;
   const quickActions=context==='desktop' ? `<span class="asset-quick-actions">${primary.replace('bsv asset-action','bsv asset-action asset-quick')}${secondary.replace('bgh asset-action','bgh asset-action asset-quick asset-quick-sell')}${isRF?'':`<button type="button" class="asset-icon-btn" aria-label="Editar ${esc(asset.ticker||asset.name||'ativo')}" title="Editar" onclick='edA(${JSON.stringify(id)})'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>`}</span>` : '';
+  const menuPrimary=context==='mobile' ? primary.replace('<button ', '<button role="menuitem" ') : '';
+  const menuSecondary=context==='mobile' ? secondary.replace('<button ', '<button role="menuitem" ') : '';
   return `<div class="asset-actions asset-action-menu" data-asset-actions="${esc(id)}">${quickActions}
 
       <button type="button" class="asset-action-trigger" aria-label="Mais ações para ${esc(asset.ticker||asset.name||'ativo')}" aria-haspopup="menu" aria-controls="${esc(menuId)}" aria-expanded="false" onclick='toggleAssetActionMenu(${JSON.stringify(menuId)}, event)'>⋯</button>
 
       <div class="asset-action-menu-panel" id="${esc(menuId)}" role="menu" aria-label="Ações para ${esc(asset.ticker||asset.name||'ativo')}">
-      <button type="button" role="menuitem" onclick='openAssetDetail(${JSON.stringify(id)})'>Detalhes</button>
-      ${primary.replace('<button ', '<button role="menuitem" ')}
-      ${secondary.replace('<button ', '<button role="menuitem" ')}
+      ${menuPrimary}${menuSecondary}
       <button type="button" role="menuitem" aria-label="Editar ${esc(asset.ticker||asset.name||'ativo')}" onclick='edA(${JSON.stringify(id)})'>Editar</button>
       <button type="button" role="menuitem" class="asset-action-danger" aria-label="Excluir ${esc(asset.ticker||asset.name||'ativo')} e todo o histórico" onclick='deleteAssetFull(${JSON.stringify(String(asset.ticker||''))})'>Excluir ativo</button>
     </div>
@@ -34211,7 +34358,7 @@ function ativos(){
           <div class="asset-premium-card-meta">
             <div><span>Tipo</span><strong>${typeBadge}</strong></div>
             <div><span>Valor da posição</span><strong>${positionValueDisplay}</strong></div>
-            <div><span>${resultLabel} R$</span><strong class="${resultClass}">${resultMoneyDisplay}</strong></div>
+            <div><span>${resultLabel} R$</span><strong class="asset-premium-card-value ${resultClass}">${resultMoneyDisplay}</strong></div>
             <div><span>${returnLabel} · % Carteira</span><strong>${returnDisplay} · ${shareDisplay}</strong></div>
           </div>
         </summary>
@@ -34221,8 +34368,8 @@ function ativos(){
           <div class="asset-premium-card-row"><span>Preço médio</span><strong>${averagePriceDisplay}</strong></div>
           <div class="asset-premium-card-row"><span>Preço atual / posição</span><strong>${currentPriceDisplay}</strong></div>
           <div class="asset-premium-card-row"><span>Investido</span><strong>${investedDisplay}</strong></div>
-          <div class="asset-premium-card-row"><span>${resultLabel} R$</span><strong class="${resultClass}">${resultMoneyDisplay}</strong></div>
-          <div class="asset-premium-card-row"><span>${returnLabel}</span><strong>${returnDisplay}</strong></div>
+          <div class="asset-premium-card-row"><span>${resultLabel} R$</span><strong class="asset-premium-card-value ${resultClass}">${resultMoneyDisplay}</strong></div>
+          <div class="asset-premium-card-row"><span>${returnLabel}</span><strong class="asset-premium-card-value ${returnPct == null ? '' : returnPct > 0 ? 'positive-text' : returnPct < 0 ? 'negative-text' : ''}">${returnDisplay}</strong></div>
           <div class="asset-premium-card-row"><span>Valor total</span><strong>${positionValueDisplay}</strong></div>
           <div class="asset-premium-card-row"><span>% Carteira</span><strong>${shareDisplay}</strong></div>
           <div class="asset-premium-card-row"><span>DY</span><strong>${dyDisplay}</strong></div>
@@ -36933,7 +37080,7 @@ function dividendAnnualMatrixView(data){
       let val,cls,title;
       if(m.isFuture){val='—';cls='mat-future';title='Período futuro';}
       else if(m.coverage==='UNKNOWN'){val='—';cls='mat-absent';title='Cobertura de dados não confirmada para este mês.';}
-      else if(m.coverage==='PARTIAL'){val=m.total>0?`${fmt(m.total)} · Parcial`:'— · Parcial';cls='mat-absent';title='Cobertura parcial; recebido registrado não confirma o mês completo.';}
+      else if(m.coverage==='PARTIAL'){val=m.total>0?`${fmt(m.total)}`:'—';cls='mat-absent';title='Cobertura não confirmada; recebido registrado não confirma o mês completo.';}
       else{val=fmt(m.total);cls=m.total>0?'mat-val':'mat-zero';title='';}
       return `<td class="${cls}"${title?` title="${title}"`:''}>${val}</td>`;
     }).join('');

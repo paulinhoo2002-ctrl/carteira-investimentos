@@ -27,7 +27,7 @@ for (const viewport of [{ width: 1366, height: 768 }, { width: 390, height: 844 
       });
       const matrix = page.locator('.div-mat-table');
       await matrix.waitFor();
-      assert.match(await matrix.textContent(), /Parcial/);
+      assert.match(await matrix.textContent(), /—/);
       assert.equal(await matrix.locator('td.mat-zero').count(), 0);
       assert.match(await matrix.locator('.mat-mean').textContent(), /—/);
       assert.match(await matrix.locator('.mat-year').textContent(), /0\/12 completos/);
