@@ -30947,6 +30947,10 @@ function dashboardHomeSummaryPanel(data){
 }
 function dashboardPassiveIncomePanel(data){
   const income=data?.income||passiveIncomeGoalStats();
+  const hasData = income?.hasData ?? false;
+  if(!hasData){
+    return `<div class="premium-empty" role="status">Sem proventos cadastrados. Registre recebimentos na aba Dividendos para acompanhar a renda passiva.</div>`;
+  }
   const target=Number(income.target)||0;
   const monthlyAvg=income.monthlyAvg;
   const averageComplete=income.monthlyAverageStatus==='COMPLETE';
@@ -33470,6 +33474,10 @@ function dashboardEvolutionPanel(data){
 }
 function dashboardIncomePanel(data){
   const income=data?.income||passiveIncomeGoalStats();
+  const hasData = income?.hasData ?? false;
+  if(!hasData){
+    return `<div class="premium-empty" role="status">Sem proventos cadastrados. Registre recebimentos na aba Dividendos para acompanhar a renda passiva.</div>`;
+  }
   const target=Number(income.target)||0;
   const monthlyAvg=income.monthlyAvg;
   const averageComplete=income.monthlyAverageStatus==='COMPLETE';
@@ -33482,10 +33490,10 @@ function dashboardIncomePanel(data){
     <div class="dashboard-income-card">
       <div class="dashboard-income-header"><div><div class="premium-panel-title">Renda passiva</div><div class="premium-panel-sub">Recebido no mês, média 12M e meta mensal</div></div><div class="premium-panel-badge">${esc(monthLabel)}</div></div>
       <div class="dashboard-income-grid"><div class="premium-metrics">
-        ${dashboardMetricCard('💵','Recebido no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'':'Cobertura desconhecida','#34d399','rgba(52,211,153,.14)')}
-        ${dashboardMetricCard('📊','Média 12 meses',passiveIncomeValue(monthlyAvg),`Meses completos: ${income.completeMonthCount??0}/12`,'#60a5fa','rgba(96,165,250,.14)')}
-        ${dashboardMetricCard('🎯','Meta mensal',target>0?fmt(target):'—',target>0?'Meta configurada na aba Metas':'Defina a meta para acompanhar progresso',target>0?'#60a5fa':'#94a3b8','rgba(96,165,250,.14)')}
-        ${dashboardMetricCard('🧭','Falta para meta — média 12M',passiveIncomeValue(goalReached),!target?'Sem meta definida':goalReached===null?'Indisponível · exige 12 meses completos':goalReached>0?'Valor restante para atingir a meta':'Meta atingida',goalReached>0?'#fbbf24':goalReached===null?'#94a3b8':'#34d399',goalReached>0?'rgba(251,191,36,.14)':'rgba(52,211, 153,.14)')}
+        ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'':'Cobertura desconhecida','#34d399','rgba(52,211,153,.14)')}
+        ${dashboardMetricCard(dashboardMetricIcon('bars'),'Média 12 meses',passiveIncomeValue(monthlyAvg),`Meses completos: ${income.completeMonthCount??0}/12`,'#60a5fa','rgba(96,165,250,.14)')}
+        ${dashboardMetricCard(dashboardMetricIcon('target'),'Meta mensal',target>0?fmt(target):'—',target>0?'Meta configurada na aba Metas':'Defina a meta para acompanhar progresso',target>0?'#60a5fa':'#94a3b8','rgba(96,165,250,.14)')}
+        ${dashboardMetricCard(dashboardMetricIcon('flag'),'Falta para meta — média 12M',passiveIncomeValue(goalReached),!target?'Sem meta definida':goalReached===null?'Indisponível · exige 12 meses completos':goalReached>0?'Valor restante para atingir a meta':'Meta atingida',goalReached>0?'#fbbf24':goalReached===null?'#94a3b8':'#34d399',goalReached>0?'rgba(251,191,36,.14)':'rgba(52,211, 153,.14)')}
       </div></div>
     </div>
   `;
