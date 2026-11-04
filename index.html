@@ -33904,7 +33904,7 @@ function assetActionMenuHtml(asset, isRF, context='default'){
 
       <div class="asset-action-menu-panel" id="${esc(menuId)}" role="menu" aria-label="Ações para ${esc(asset.ticker||asset.name||'ativo')}">
       ${menuPrimary}${menuSecondary}
-      <button type="button" role="menuitem" aria-label="Editar ${esc(asset.ticker||asset.name||'ativo')}" onclick='edA(${JSON.stringify(id)})'>Editar</button>
+      ${context==='desktop' && !isRF ? '' : `<button type="button" role="menuitem" aria-label="Editar ${esc(asset.ticker||asset.name||'ativo')}" onclick='edA(${JSON.stringify(id)})'>Editar</button>`}
       <button type="button" role="menuitem" class="asset-action-danger" aria-label="Excluir ${esc(asset.ticker||asset.name||'ativo')} e todo o histórico" onclick='deleteAssetFull(${JSON.stringify(String(asset.ticker||''))})'>Excluir ativo</button>
     </div>
   </div>`;
