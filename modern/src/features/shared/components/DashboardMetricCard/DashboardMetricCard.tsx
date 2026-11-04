@@ -19,7 +19,7 @@ export function DashboardMetricCard({
   children,
 }: DashboardMetricCardProps) {
   return (
-    <article className={`dashboard-metric-card dashboard-metric-card--${size} dashboard-metric-card--${variant}`}>
+    <article className={`dashboard-metric-card dashboard-metric-card--${size} dashboard-metric-card--${variant}`} data-testid="dashboard-metric-card">
       <p className="dashboard-metric-card__label">{label}</p>
       <p className="dashboard-metric-card__value">{value}</p>
       {trend && (

@@ -424,6 +424,10 @@ html[data-theme="light"] .dashboard-history-disclosure-body{background:var(--sur
 .dashboard-master-secondary .perf-card{height:100%}
 .dashboard-master-primary .dashboard-home-income .premium-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
 .dashboard-master-primary .dashboard-home-income .premium-metric{min-height:82px}
+.dashboard-master-primary .premium-metric:focus-visible{
+  outline:2px solid var(--primary);
+  outline-offset:2px;
+}
 @media(min-width:1181px){
   .dashboard-master-primary{grid-template-columns:minmax(0,1fr) minmax(0,1.35fr) minmax(0,1fr)}
   .dashboard-master-primary{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}
@@ -32620,7 +32624,16 @@ function waveBIcon(name){
 }
 function dashboardMetricCard(icon,label,value,note,tone='#edf3ff',glow='rgba(96,165,250,.12)',tip=''){
   const tipAttr=tip?` title="${esc(tip)}"`:'';
-  const testidMap={'Patrimônio atual':'patrimonio-atual','Recebido no mês':'recebido-no-mes','Resultado da posição':'resultado-da-posicao'};
+  const testidMap={
+  'Patrimônio atual':'patrimonio-atual',
+  'Total investido':'total-investido',
+  'Resultado geral':'resultado-geral',
+  'Rentabilidade':'rentabilidade',
+  'Recebido no mês':'recebido-no-mes',
+  'Média 12 meses':'media-12m',
+  'Meta mensal':'meta-mensal',
+  'Falta para meta — média 12M':'falta-para-meta'
+};
   const testid=testidMap[label]?` data-testid="metric-${testidMap[label]}"`:'';
   return `<div class="premium-metric"${testid} style="--metric-color:${tone};--metric-glow:${glow}"${tipAttr}>
     <div class="premium-metric-top"><div class="premium-metric-icon">${icon}</div><div class="premium-metric-label">${esc(label)}</div></div>
