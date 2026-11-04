@@ -45,7 +45,7 @@ function renderPanel(overrides, showTotalStatus = true) {
   const context = makeContext(overrides);
   vm.createContext(context);
   vm.runInContext(snippet + '\nglobalThis.render=dashboardExecutiveKPIs', context);
-  return context.render(showTotalStatus);
+  return context.render(undefined, showTotalStatus);
 }
 
 // The certified payload (mirrors package2_v2 income/result summaries)
