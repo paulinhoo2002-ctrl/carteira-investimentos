@@ -76,6 +76,7 @@ test('Package2 fallback keeps one consolidation label; certified subset uses the
   const context = vm.createContext({
     S: { hideValues: false, proventos: [], rfEvents: [] },
     FB: { package2: { current_result_summary: { rv_total: 1 }, income_summary: { y2026_total: 1 } } },
+    cx: () => ({ assets: [], quotes: {} }),
     dashboardCurrentValueAvailability: () => ({ state: 'AVAILABLE', note: 'Disponível' }),
     passiveIncomeMonthKey: () => '2026-10',
     passiveIncomeMonthSummary: () => ({ month: '2026-10', total: null, coverage: 'UNKNOWN' }),
@@ -100,7 +101,7 @@ test('null Package2 aggregates stay unknown and do not suppress dashboard consol
   assert.notEqual(panelStart, -1);
   const panelContext = vm.createContext({
     S: { hideValues: false }, FB: { package2: summary },
-    cx: () => ({ tC: 0, tI: 0, tG: 0, tGP: 0, appliedComplete: true }),
+    cx: () => ({ assets: [], quotes: {} }),
     dashboardCurrentValueAvailability: () => ({ state: 'AVAILABLE', note: 'Disponível' }),
     passiveIncomeMonthKey: () => '2026-10',
     passiveIncomeMonthSummary: () => ({ month: '2026-10', total: null, coverage: 'UNKNOWN' }),
@@ -123,6 +124,7 @@ test('null Package2 aggregates stay unknown and do not suppress dashboard consol
   const dashboardEnd = source.indexOf('\nfunction dashboardEvolutionPanel(', dashboardStart);
   const dashboardContext = vm.createContext({
     S: { hideValues: false, proventos: [], rfEvents: [] }, FB: { package2: summary },
+    cx: () => ({ assets: [], quotes: {} }),
     dashboardCurrentValueAvailability: () => ({ state: 'AVAILABLE', note: 'Disponível' }),
     passiveIncomeMonthKey: () => '2026-10',
     passiveIncomeMonthSummary: () => ({ month: '2026-10', total: null, coverage: 'UNKNOWN' }),
