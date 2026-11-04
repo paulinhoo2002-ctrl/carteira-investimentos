@@ -31298,7 +31298,7 @@ function dashboardHighlightsRows(kind='high', classFilter='all'){
   // PR fix/assets-highlights-and-rf-result: a Home deve usar a mesma
   // fonte canônica da aba Análise (assetAnalysisRows) — único pipeline
   // de "maiores altas/baixas". Mantém o shape de saída esperado por
-  // dashboardHomeHighlightsPanel() (ticker, type, sector, result,
+  // renderColumn() (ticker, type, sector, result,
   // resultPct, hasPerformanceData) com mapeamento trivial a partir de
   // {ticker, type, sector, profit, pct, applied, current, hasPerformanceData}.
   // O limite de quantidade é responsabilidade do chamador (Home usa .slice(0,3);
@@ -31383,33 +31383,6 @@ function dashboardHomeHighsLowsPanel(){
       ${renderColumn('high','Maiores altas','Nenhum ativo positivo com dados suficientes.')}
       ${renderColumn('low','Maiores baixas','Nenhum ativo negativo com dados suficientes.')}
     </div>
-  </div>`;
-}
-function dashboardHomeHighlightsPanel(data){
-  const insights = Array.isArray(data?.insights) ? data.insights.slice(0, 3) : [];
-  const supportedRoutes = new Set(['dashboard','ativos','aportes','metas','dividendos','rentabilidade','ajudar','relatorios','ia','auditoria','renda-fixa','desempenho','irpf','settings']);
-  if (insights.length === 0) {
-    return `<div class="dashboard-highlight-panels"><div class="premium-empty">Nenhum ponto prioritário identificado na base atual.</div></div>`;
-  }
-  if (insights.length === 1) {
-    const item = insights[0];
-    const route = String(item?.relatedRoute || '').trim();
-    const actionLabel = String(item?.actionLabel || '').trim();
-    const severity = `<div class="premium-exec-value ${item.severity==='IMPORTANT'?'rd':item.severity==='ATTENTION'?'am':'gn'}">${item.severity==='IMPORTANT'?'Importante':item.severity==='ATTENTION'?'Atenção':'Info'}</div>`;
-    const content = `<div class="premium-exec-left"><div class="premium-exec-title">${esc(item.title)}</div><div class="premium-exec-sub">${esc(item.description)}</div></div>${severity}`;
-    return supportedRoutes.has(route) && actionLabel
-      ? `<div class="dashboard-highlight-panels"><button class="premium-exec-row dashboard-insight-action premium-consultive-card" type="button" aria-label="${esc(actionLabel)}: ${esc(item.title)}" onclick="go('${esc(route)}')">${content}</button></div>`
-      : `<div class="dashboard-highlight-panels"><section class="premium-consultive-card">${content}</section></div>`;
-  }
-  return `<div class="dashboard-highlight-panels">
-    <section class="premium-consultive-card">
-      <div class="premium-consultive-card-head">
-        <div class="premium-consultive-card-title">${insights.length} prioridades identificadas</div>
-        <div class="premium-consultive-card-status warn">Atenção</div>
-      </div>
-      <div class="premium-consultive-card-text">Principais: ${insights.slice(0,3).map(i => esc(i.title)).join(', ')}</div>
-      <div class="premium-consultive-card-action"><button class="btn bgh" onclick="go('ia')">Ver todos os insights</button></div>
-    </section>
   </div>`;
 }
 function dashboardHomeCompositionPanel(data){
@@ -33501,55 +33474,6 @@ function dashboardUpcomingDividendsPanel(){
     return `<article class="home-upcoming-card"><div class="home-upcoming-date" aria-hidden="true"><strong>${String(d.getDate()).padStart(2,'0')}</strong><span>${monthShort[d.getMonth()]}</span></div><div class="home-upcoming-main"><div class="home-upcoming-ticker">${esc(row.ticker)}</div><div class="home-upcoming-type">${esc(row.type||'Provento')}</div></div><div class="home-upcoming-value">${fmt(row.value)}</div></article>`;
   }).join('');
   return `<section class="home-upcoming" aria-label="Próximos recebimentos">${head}<div class="home-upcoming-grid">${cards}</div></section>`;
-}
-function dashboardPlainSummary(data){
-  // Tela inicial em linguagem simples: 3 respostas (quanto tenho, quanto ganhei/perdi, o que fazer agora).
-  // Usa os mesmos critérios de disponibilidade dos cartões executivos: valor desconhecido nunca vira zero.
-  const p=data?.portfolio||cx();
-  const hasAssets=Array.isArray(S.assets)&&S.assets.length>0;
-  const availability=dashboardCurrentValueAvailability();
-  const totalCurrent=Number(p.tC)||0;
-  const totalApplied=Number(p.tI)||0;
-  const currentKnown=hasAssets&&!['UNKNOWN','PARTIAL','NO_DATA'].includes(availability.state);
-  const amountValid=typeof p.tG==='number'&&Number.isFinite(p.tG);
-  const resultKnown=currentKnown&&amountValid&&p.appliedComplete!==false;
-  const hidden=!!S.hideValues;
-  const money=v=>hidden?'R$ ••••':fmt(v);
-  const holdText=currentKnown?money(totalCurrent):'Ainda não dá para calcular';
-  const holdNote=currentKnown?(totalApplied>0?`Você investiu ${money(totalApplied)}`:'Valor atual das suas posições'):(hasAssets?(availability.note||'Faltam cotações ou dados para somar tudo.'):'Cadastre seu primeiro ativo para começar.');
-  let resText='Sem resultado ainda';
-  let resNote=hasAssets?'Faltam dados para comparar com o que você investiu.':'O resultado aparece depois do primeiro ativo.';
-  let resTone='neutral';
-  if(resultKnown){
-    const abs=money(Math.abs(p.tG));
-    const pct=(!hidden&&typeof p.tGP==='number'&&Number.isFinite(p.tGP)&&totalApplied>0)?` (${fmtP(Math.abs(p.tGP))})`:'';
-    if(p.tG>0){ resText=`${abs} acima do investido${pct}`; resTone='up'; resNote='Valor atual menos o capital que você cadastrou.'; }
-    else if(p.tG<0){ resText=`${abs} abaixo do investido${pct}`; resTone='down'; resNote='Valor atual menos o capital que você cadastrou.'; }
-    else { resText='Igual ao que você investiu'; resNote='Valor atual igual ao capital cadastrado.'; }
-  }
-  const topImportantInsight=(Array.isArray(data?.insights)?data.insights:[]).map(i=>({...i,relatedRoute:/^[a-z-]+$/.test(String(i?.relatedRoute||''))?i.relatedRoute:'ia'})).find(i=>i.severity==='IMPORTANT')||null;
-  let next={title:'Nada urgente agora',note:'Suas posições estão com dados suficientes. Volte quando fizer um aporte ou venda.',label:'Ver ativos',action:"go('ativos')"};
-  if(!hasAssets) next={title:'Cadastre seu primeiro ativo',note:'Comece por uma ação, FII ou título de renda fixa.',label:'Cadastrar ativo',action:"go('ativos')"};
-  else if(!currentKnown) next={title:'Complete os dados da carteira',note:'Alguns valores estão faltando, por isso o total ainda não aparece.',label:'Ver o que falta',action:"go('confiabilidade')"};
-  else if(topImportantInsight) next={title:topImportantInsight.title,note:topImportantInsight.description,label:topImportantInsight.actionLabel||'Ver detalhes',action:`go('${topImportantInsight.relatedRoute}')`};
-  else if(backupReminderMessage()) next={title:'Faça um backup dos seus dados',note:backupReminderMessage()+' Guarde o arquivo fora do computador, por exemplo no Google Drive.',label:'Exportar backup',action:'openBackupCenter()'};
-  else if(availability.state==='STALE') next={title:'Cotações desatualizadas',note:availability.note||'Atualize as cotações para ver valores do dia.',label:'Ver ativos',action:"go('ativos')"};
-  const monthKey=passiveIncomeMonthKey(new Date());
-  const recent=data?.recent?.month===monthKey?data.recent:passiveIncomeMonthSummary(monthKey);
-  const recvNote=recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Cobertura parcial':'Cobertura desconhecida';
-  const pctText=(resultKnown&&!hidden&&typeof p.tGP==='number'&&Number.isFinite(p.tGP)&&totalApplied>0)?fmtP(p.tGP):'';
-  const signed=resultKnown?assetSignedMoneyText(p.tG):'—';
-  const arrow=resTone==='up'?'▲':resTone==='down'?'▼':'●';
-  const tile=(icon,label,value,note,tone)=>`<div class="home-tile tone-${tone||'neutral'}"><span class="home-tile-icon">${dashboardMetricIcon(icon)}</span><div><span class="home-tile-label">${esc(label)}</span><strong class="home-tile-value">${esc(value)}</strong><span class="home-tile-note">${esc(note)}</span></div></div>`;
-  return `<section class="home-status" aria-label="Como está sua carteira hoje">
-    <div class="home-hero tone-${resTone}">
-      <span class="home-status-q">Quanto eu tenho hoje?</span>
-      <strong class="home-hero-value">${holdText}</strong>
-      <span class="home-hero-chip tone-${resTone}"><b aria-hidden="true">${arrow}</b> ${resText}</span>
-      <span class="home-status-n">${esc(holdNote)} · ${esc(resNote)}</span>
-    </div>
-    <div class="home-status-card home-status-next"><span class="home-status-q">O que fazer agora?</span><strong class="home-status-a">${esc(next.title)}</strong><span class="home-status-n">${esc(next.note)}</span><button type="button" class="btn bp" onclick="${next.action}">${esc(next.label)}</button></div>
-  </section>`;
 }
 function executiveKPIs(data){
   const p=data?.portfolio||cx();

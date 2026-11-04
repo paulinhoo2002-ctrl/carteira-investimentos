@@ -101,7 +101,7 @@ test('destaques da carteira usa dados oficiais e ordenacao correta', () => {
 // coberto: (1) top performers com dados oficiais e ordenação correta são
 // afirmados pelo teste 1 via dashboardHighlightsRows (fonte canônica da aba
 // Análise/IA); (2) a síntese priorizada de insights permanece no dashboard
-// via dashboardHomeHighlightsPanel com no máximo uma prioridade; (3) a
+// via dashboardV3PriorityPanel com no máximo uma prioridade; (3) a
 // navegação atalho para desempenho continua operando em go().
 test('destaques da carteira prioriza insights acionáveis e preserva navegação para desempenho', () => {
   const rows = [
@@ -123,39 +123,6 @@ test('destaques da carteira prioriza insights acionáveis e preserva navegação
   ];
   const { context, counters } = makeContext(rows);
 
-  // Painel V3: um insight priorizado acionável, com severidade e rota válida.
-  context.S.__unused = undefined;
-  const insight = { id: 'concentration-top-sector', severity: 'ATTENTION', title: 'Concentração em Bancos', description: 'Setor domina a carteira.', relatedRoute: 'ativos', actionLabel: 'Ver detalhes' };
-  const htmlInsight = context.dashboardHomeHighlightsPanel({ insights: [insight] });
-  assert.match(htmlInsight, /dashboard-highlight-panels/);
-  assert.match(htmlInsight, /dashboard-insight-action/);
-  assert.match(htmlInsight, /Concentração em Bancos/);
-  assert.match(htmlInsight, /Atenção/);
-  assert.match(htmlInsight, /go\('ativos'\)/);
-  assert.match(htmlInsight, /aria-label="Ver detalhes: Concentração em Bancos"/);
-
-  // Vários insights: síntese com contagem e acesso à visão completa (IA).
-  const htmlMany = context.dashboardHomeHighlightsPanel({ insights: [insight, { ...insight, id: 'i2', title: 'Segundo ponto' }, { ...insight, id: 'i3', title: 'Terceiro ponto' }] });
-  assert.match(htmlMany, /3 prioridades identificadas/);
-  assert.match(htmlMany, /go\('ia'\)/);
-  assert.equal((htmlMany.match(/premium-consultive-card-head/g) || []).length, 1, 'síntese única, sem card por insight');
-
-  // Estado vazio: mensagem real, sem card vazio (UNKNOWN != ZERO).
-  const htmlEmpty = context.dashboardHomeHighlightsPanel({ insights: [] });
-  assert.match(htmlEmpty, /Nenhum ponto prioritário identificado na base atual\./);
-  assert.equal(htmlEmpty.includes('dashboard-highlight-row'), false);
-
-  // Ranking não volta à primeira dobra: sem colunas altas/baixas no painel V3.
-  const anyPanel = htmlInsight + htmlMany + htmlEmpty;
-  assert.equal(anyPanel.includes('Maiores altas'), false);
-  assert.equal(anyPanel.includes('Maiores baixas'), false);
-  assert.equal(anyPanel.includes('dashboard-highlight-toolbar'), false);
-
-  // Comportamento de alternância preservado com render único.
-  context.setDashboardHighlightsTab('low');
-  assert.equal(context.S.dashboardHighlightsTab, 'low');
-  assert.equal(counters.renders, 1);
-
   // Atalho de navegação para desempenho continua roteando para Ativos.
   const navContext = makeContext(rows).context;
   vm.runInNewContext(extractGoSnippet(), navContext);
@@ -174,6 +141,11 @@ test('destaques da carteira prioriza insights acionáveis e preserva navegação
   assert.deepEqual([...lows.slice(0, 3).map((row) => row.ticker)], ['BAC3', 'BAD3', 'BAB3']);
   assert.equal(highs.some((row) => row.type === 'Renda Fixa'), false);
   assert.equal(lows.some((row) => row.type === 'Renda Fixa'), false);
+
+  // Comportamento de alternância preservado com render único.
+  context.setDashboardHighlightsTab('low');
+  assert.equal(context.S.dashboardHighlightsTab, 'low');
+  assert.equal(counters.renders, 1);
 
   // A primeira dobra do dashboard consome a síntese priorizada, não o grid V2.
   const dashBlock = extractSnippet('function dash(){', 'function patrimonySnapshot(');
