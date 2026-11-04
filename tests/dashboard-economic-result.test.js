@@ -71,7 +71,7 @@ test('dashboard detects only complete totals or certified numeric subsets for du
 
 test('Package2 fallback keeps one consolidation label; certified subset uses the dashboard status strip', () => {
   const start = source.indexOf('function dashboardHasEconomicCertification(');
-  const end = source.indexOf('\nfunction package2ExecutivePanel(', start);
+  const end = source.indexOf('\nfunction dashboardEvolutionPanel(', start);
   assert.notEqual(start, -1);
   const context = vm.createContext({
     S: { hideValues: false, proventos: [], rfEvents: [] },
@@ -86,7 +86,7 @@ test('Package2 fallback keeps one consolidation label; certified subset uses the
     dashboardMetricCard: (_icon, label, value) => `${label}|${value}`,
     dashboardMetricIcon: () => '',
   });
-  vm.runInContext(`${source.slice(start, end)};globalThis.render=executiveKPIs;`, context);
+  vm.runInContext(`${source.slice(start, end)};globalThis.render=dashboardExecutiveKPIs;`, context);
   const fallback = context.render({ portfolio: { tC: 0, tI: 0, tG: 0, tGP: 0, appliedComplete: true }, portfolioEconomicResult: { status: 'PARTIAL' } });
   assert.doesNotMatch(fallback, /Resultado total: Em consolidação/);
   const certified = context.render({ portfolio: { tC: 0, tI: 0, tG: 0, tGP: 0, appliedComplete: true }, portfolioEconomicResult: { status: 'PARTIAL', certifiedAssets: ['rf-1'], certifiedEconomicResult: 12 } });
@@ -100,14 +100,27 @@ test('null Package2 aggregates stay unknown and do not suppress dashboard consol
   assert.notEqual(panelStart, -1);
   const panelContext = vm.createContext({
     S: { hideValues: false }, FB: { package2: summary },
+    cx: () => ({ tC: 0, tI: 0, tG: 0, tGP: 0, appliedComplete: true }),
+    dashboardCurrentValueAvailability: () => ({ state: 'AVAILABLE', note: 'Disponível' }),
+    passiveIncomeMonthKey: () => '2026-10',
+    passiveIncomeMonthSummary: () => ({ month: '2026-10', total: null, coverage: 'UNKNOWN' }),
+    passiveIncomeValue: () => '—',
+    fmtP: value => `${value}%`, fmt: value => `R$ ${value}`,
+    dashboardHasEconomicCertification: () => false,
+    dashboardEconomicResultStatus: () => '<div>Resultado total: Em consolidação</div>',
     dashboardMetricCard: (_icon, label, value) => `${label}|${value}`,
     dashboardMetricIcon: () => '', assetSignedMoneyText: value => `R$ ${value}`,
   });
-  vm.runInContext(`${source.slice(panelStart, panelEnd)};globalThis.render=package2ExecutivePanel;`, panelContext);
-  assert.equal(panelContext.render(), '');
+  vm.runInContext(`${source.slice(panelStart, panelEnd)};globalThis.render=dashboardExecutiveKPIs;`, panelContext);
+  const html = panelContext.render();
+  assert.match(html, /Patrimônio atual/);
+  assert.match(html, /Recebido no mês/);
+  assert.match(html, /Resultado da posição/);
+  assert.doesNotMatch(html, /Resultado certificado da RV/);
+  assert.doesNotMatch(html, /Renda recebida/);
 
   const dashboardStart = source.indexOf('function dashboardHasEconomicCertification(');
-  const dashboardEnd = source.indexOf('\nfunction package2ExecutivePanel(', dashboardStart);
+  const dashboardEnd = source.indexOf('\nfunction dashboardEvolutionPanel(', dashboardStart);
   const dashboardContext = vm.createContext({
     S: { hideValues: false, proventos: [], rfEvents: [] }, FB: { package2: summary },
     dashboardCurrentValueAvailability: () => ({ state: 'AVAILABLE', note: 'Disponível' }),
@@ -120,7 +133,7 @@ test('null Package2 aggregates stay unknown and do not suppress dashboard consol
     dashboardMetricCard: (_icon, label, value) => `${label}|${value}`,
     dashboardMetricIcon: () => '',
   });
-  vm.runInContext(`${source.slice(dashboardStart, dashboardEnd)};globalThis.render=executiveKPIs;`, dashboardContext);
+  vm.runInContext(`${source.slice(dashboardStart, dashboardEnd)};globalThis.render=dashboardExecutiveKPIs;`, dashboardContext);
   const dashboard = dashboardContext.render({
     portfolio: { tC: 0, tI: 0, tG: 0, tGP: 0, appliedComplete: true },
     portfolioEconomicResult: { status: 'PARTIAL' },

@@ -203,7 +203,7 @@ test('Dashboard does not certify result when any applied basis is missing', () =
 });
 
 test('Dashboard labels result unavailable when applied coverage is incomplete', () => {
-  const dashboardSource = section('function package2FiniteNumber(value){', 'function package2ExecutivePanel(');
+  const dashboardSource = section('function package2FiniteNumber(value){', 'function dashboardEvolutionPanel(');
   const context = {
     S: { hideValues: false },
     dashboardCurrentValueAvailability() { return { state: 'AVAILABLE', note: 'Valores atuais informados' }; },
@@ -216,7 +216,7 @@ test('Dashboard labels result unavailable when applied coverage is incomplete', 
     dashboardMetricCard(_icon, label, value, note) { return `${label}|${value}|${note}`; },
     dashboardMetricIcon() { return ''; },
   };
-  vm.runInNewContext(`${dashboardSource};globalThis.api=executiveKPIs;`, context);
+  vm.runInNewContext(`${dashboardSource};globalThis.api=dashboardExecutiveKPIs;`, context);
   const html = context.api({ portfolio: { tI: 0, tC: 100, tG: 100, tGP: 100, appliedComplete: false } });
   assert.match(html, /Resultado da posição\|—/);
   assert.match(html, /Base aplicada parcial ou indisponível/);

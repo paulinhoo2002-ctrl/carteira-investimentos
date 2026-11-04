@@ -33258,8 +33258,7 @@ function dash(){
           <span class="canon-last-update" aria-live="polite">Atualizado ${dashMeta} · ${data.analysis.length} ativos</span>
         </div>
       </div>
-      ${executiveKPIs(data)}
-            ${package2ExecutivePanel(!dashboardHasEconomicCertification(data?.portfolioEconomicResult))}
+      ${dashboardExecutiveKPIs(data, !dashboardHasEconomicCertification(data?.portfolioEconomicResult))}
 ${!S.assets.length ? `<div class="dashboard-empty-cta" role="region" aria-label="Primeiros passos">
         <p class="mu" style="margin:0">Sua carteira está vazia. Cadastre um ativo ou importe um arquivo da sua corretora para começar.</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
@@ -33475,7 +33474,14 @@ function dashboardUpcomingDividendsPanel(){
   }).join('');
   return `<section class="home-upcoming" aria-label="Próximos recebimentos">${head}<div class="home-upcoming-grid">${cards}</div></section>`;
 }
-function executiveKPIs(data){
+function dashboardExecutiveKPIs(data, showTotalStatus=true){
+  // Compat: chamadas antigas passam showTotalStatus como primeiro argumento
+  // (assinatura original de package2ExecutivePanel). Se data é booleano, trata
+  // como showTotalStatus e usa data padrão.
+  if (typeof data === 'boolean') {
+    showTotalStatus = data;
+    data = undefined;
+  }
   const p=data?.portfolio||cx();
   const totalCurrent=Number(p.tC)||0;
   const totalApplied=Number(p.tI)||0;
@@ -33503,61 +33509,55 @@ function executiveKPIs(data){
   const patrimonyContext=(['UNKNOWN','PARTIAL','STALE','NO_DATA'].includes(availability.state)||(availability.state==='AVAILABLE'&&totalCurrent===0))&&patrimonyNote!==investedContext
     ? `${investedContext} · ${patrimonyNote}`
     : investedContext;
-  const incomeAvailable=(S.proventos||[]).length>0 || (S.rfEvents||[]).length>0;
+
   const package2Summary=typeof FB!=='undefined'?FB?.package2:null;
   const hasPackage2Summary=package2HasRenderableSummary(package2Summary);
   const totalResultStatus=hasPackage2Summary&&!dashboardHasEconomicCertification(data?.portfolioEconomicResult)
     ?''
     :dashboardEconomicResultStatus(data?.portfolioEconomicResult);
 
+  let package2Cards='';
+  let hasPackage2Cards=false;
+  if(package2Summary){
+    const hidden=!!S.hideValues;
+    const rs=package2Summary.current_result_summary||{};
+    const income=package2Summary.income_summary||{};
+    const hasResult=package2FiniteNumber(rs.rv_total);
+    const hasIncome=package2FiniteNumber(income.y2026_total);
+    if(hasResult||hasIncome){
+      const rvTotal=hasResult?Number(rs.rv_total):Number.NaN;
+      const rvValid=hasResult&&Number.isFinite(rvTotal);
+      const coverage=package2FiniteNumber(rs.coverage_ratio)?Number(rs.coverage_ratio):Number.NaN;
+      const coveragePct=Number.isFinite(coverage)?`${(coverage*100).toFixed(2).replace('.',',')}`:'—';
+      const fullScope=String(rs.coverage_status||'').toUpperCase()==='FULL_CERTIFIED_SCOPE';
+      const gainTone=!rvValid||rvTotal===0?'var(--semantic-official)':rvTotal>0?'var(--success)':'var(--danger)';
+      const gainGlow=!rvValid||rvTotal===0?'var(--semantic-official-bg)':rvTotal>0?'rgba(16,185,129,.14)':'rgba(248,113,113,.14)';
+      const gainValue=rvValid&&!hidden?assetSignedMoneyText(rvTotal):'—';
+      const gainScope=fullScope?'COMPLETA':'PARCIAL';
+      const gainNote=rvValid?`${package2KnownCount(rs.rv_certified_count)} posições certificadas · cobertura ${coveragePct}% · ${gainScope}`:'Base indisponível';
+      const y2026=hasIncome?Number(income.y2026_total):Number.NaN;
+      const incomeValid=hasIncome&&Number.isFinite(y2026);
+      const incomeValue=incomeValid&&!hidden?assetSignedMoneyText(y2026):'—';
+      const incomeNote=incomeValid?`Recebidos em 2026 · ${package2KnownCount(income.y2026_events)} eventos`:'Base indisponível';
+      const incomeTone=incomeValid&&y2026>0?'var(--success)':incomeValid&&y2026<0?'var(--danger)':'var(--semantic-official)';
+      const incomeGlow=incomeTone==='var(--success)'?'rgba(16,185,129,.14)':incomeTone==='var(--danger)'?'rgba(248,113,113,.14)':'var(--semantic-official-bg)';
+      package2Cards=`
+      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado certificado da RV',gainValue,`${gainNote} · valor indicativo, não é lucro realizado`,gainTone,gainGlow)}
+      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Renda recebida',incomeValue,incomeNote,incomeTone,incomeGlow)}
+      ${showTotalStatus?dashboardMetricCard(dashboardMetricIcon('info'),'Resultado total','Em consolidação','Combinação de escopos ainda não certificada','var(--semantic-official)','var(--semantic-official-bg)'):''}`;
+      hasPackage2Cards=true;
+    }
+  }
+
   return `
     ${totalResultStatus}
-    <div class="dashboard-executive-kpis">
+    <div class="dashboard-executive-kpis${hasPackage2Cards?' package2-kpis':''}"${hasPackage2Cards?' data-package2="present"':''}>
       ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',patrimonyValue,patrimonyContext,'var(--semantic-official)','var(--semantic-official-bg)',`${patrimonyContext} · Data-base financeira não informada`)}
       ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'':'Cobertura desconhecida','var(--success)','rgba(16,185,129,.14)',recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'':'Cobertura desconhecida')}
       ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado da posição',resultValue,resultAvailable?'Sobre capital cadastrado':resultNote,resultTone,resultGlow,resultNote)}
+      ${package2Cards}
     </div>
   `;
-}
-function package2ExecutivePanel(showTotalStatus=true){
-  const p2=(typeof FB!=='undefined'&&FB)||{};
-  const summary=p2.package2||null;
-  const hidden=!!S.hideValues;
-  if(!summary){
-    // package2_v2 absent (QA synthetic, pre-write, or unauthenticated): render
-    // nothing so the first-fold contract of the classic dashboard is preserved.
-    // The panel appears only for the authenticated owner once package2_v2 exists.
-    return '';
-  }
-  const rs=summary.current_result_summary||{};
-  const income=summary.income_summary||{};
-  // Minimum shape guard: at least one certified aggregate must be present,
-  // otherwise degrade to nothing (never render empty/fake cards).
-  const hasResult=package2FiniteNumber(rs.rv_total);
-  const hasIncome=package2FiniteNumber(income.y2026_total);
-  if(!hasResult&&!hasIncome) return '';
-  const rvTotal=hasResult?Number(rs.rv_total):Number.NaN;
-  const rvValid=hasResult&&Number.isFinite(rvTotal);
-  const coverage=package2FiniteNumber(rs.coverage_ratio)?Number(rs.coverage_ratio):Number.NaN;
-  const coveragePct=Number.isFinite(coverage)?`${(coverage*100).toFixed(2).replace('.',',')}`:'—';
-  const fullScope=String(rs.coverage_status||'').toUpperCase()==='FULL_CERTIFIED_SCOPE';
-  const gainTone=!rvValid||rvTotal===0?'#94a3b8':rvTotal>0?'#34d399':'#f87171';
-  const gainGlow=!rvValid||rvTotal===0?'rgba(148,163,184,.12)':rvTotal>0?'rgba(52,211,153,.14)':'rgba(248,113,113,.14)';
-  const gainValue=rvValid&&!hidden?assetSignedMoneyText(rvTotal):'—';
-  const gainScope=fullScope?'COMPLETA':'PARCIAL';
-  const gainNote=rvValid?`${package2KnownCount(rs.rv_certified_count)} posições certificadas · cobertura ${coveragePct}% · ${gainScope}`:'Base indisponível';
-  const y2026=hasIncome?Number(income.y2026_total):Number.NaN;
-  const incomeValid=hasIncome&&Number.isFinite(y2026);
-  const incomeValue=incomeValid&&!hidden?assetSignedMoneyText(y2026):'—';
-  const incomeNote=incomeValid?`Recebidos em 2026 · ${package2KnownCount(income.y2026_events)} eventos`:'Base indisponível';
-  const incomeTone=incomeValid&&y2026>0?'#10b981':incomeValid&&y2026<0?'#f87171':'#94a3b8';
-  const incomeGlow=incomeTone==='#10b981'?'rgba(16,185,129,.14)':incomeTone==='#f87171'?'rgba(248,113,113,.14)':'rgba(148,163,184,.12)';
-  return `
-    <div class="dashboard-executive-kpis package2-kpis" data-package2="present">
-      ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado certificado da RV',gainValue,`${gainNote} · valor indicativo, não é lucro realizado`,gainTone,gainGlow)}
-      ${dashboardMetricCard(dashboardMetricIcon('cash'),'Renda recebida',incomeValue,incomeNote,incomeTone,incomeGlow)}
-      ${showTotalStatus?dashboardMetricCard(dashboardMetricIcon('info'),'Resultado total','Em consolidação','Combinação de escopos ainda não certificada','#94a3b8','rgba(148,163,184,.12)'):''}
-    </div>`;
 }
 function dashboardEvolutionPanel(data){
   const snapshot=patrimonySnapshot(Number(S.dashPeriod)||12);
