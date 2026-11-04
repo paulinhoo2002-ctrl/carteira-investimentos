@@ -24,7 +24,8 @@ test('complete empty month alone permits confirmed zero; unknown/partial never d
   const html = ctx.dividendAnnualMatrixView(rows);
   assert.match(html, /R\$\s*0,00/);
   assert.match(html, /Cobertura de dados não confirmada/);
-  assert.match(html, /Parcial/);
+  // "Parcial" removido conforme solicitação do usuário - não deve mais aparecer na matriz de dividendos
+  assert.doesNotMatch(html, /Parcial/);
   const invalid = ctx.dividendAnnualMatrixData([{ monthKey: key(1), value: null, state: 'PAID' }], { [key(1)]: complete })[0];
   assert.equal(invalid.months[0].coverage, 'PARTIAL');
   assert.equal(invalid.months[0].total, null, 'Valor ausente não permite zero nem cobertura completa');
