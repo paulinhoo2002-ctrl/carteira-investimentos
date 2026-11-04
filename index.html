@@ -32788,7 +32788,8 @@ function dashboardMetricCard(icon,label,value,note,tone='#edf3ff',glow='rgba(96,
   'Recebido no mês':'recebido-no-mes',
   'Média 12 meses':'media-12m',
   'Meta mensal':'meta-mensal',
-  'Falta para meta — média 12M':'falta-para-meta'
+  'Falta para meta — média 12M':'falta-para-meta',
+  'Variação diária':'variacao-diaria'
   };
   const testid=testidMap[label]?` data-testid="metric-${testidMap[label]}"`:'';
   const stateBadge = dataState ? `<span class="data-state-badge state-${dataState}"><span class="state-icon" aria-hidden="true"></span><span class="state-label">${esc(dataStateLabel(dataState))}</span></span>` : '';
@@ -33549,9 +33550,40 @@ function dashboardExecutiveKPIs(data, showTotalStatus=true){
       ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',patrimonyValue,patrimonyContext,'var(--semantic-official)','var(--semantic-official-bg)',`${patrimonyContext} · Data-base financeira não informada`)}
       ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'':'Cobertura desconhecida','var(--success)','rgba(16,185,129,.14)',recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'':'Cobertura desconhecida')}
       ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado da posição',resultValue,resultAvailable?'Sobre capital cadastrado':resultNote,resultTone,resultGlow,resultNote)}
+      ${dashboardDailyVariation(data)}
       ${package2Cards}
     </div>
   `;
+}
+function dashboardDailyVariation(data){
+  const S=data?.S||cx();
+  const assets=Array.isArray(S.assets)?S.assets:[];
+  if(!S.quotes) return '';
+  const withQuote=assets.filter(a=>{
+    const ticker=String(a.ticker||'').toUpperCase();
+    const q=S.quotes[ticker];
+    return Number(a.qty||0)>0 && q && Number.isFinite(Number(q.change));
+  });
+  if(withQuote.length===0) return '';
+  const totalDelta=withQuote.reduce((sum,a)=>{
+    const ticker=String(a.ticker||'').toUpperCase();
+    const q=S.quotes[ticker];
+    const price=Number(q?.price??a?.current_price??0);
+    return sum+Number(a.qty||0)*price*(Number(q.change)/100);
+  },0);
+  const totalValueWithQuote=withQuote.reduce((sum,a)=>{
+    const ticker=String(a.ticker||'').toUpperCase();
+    const q=S.quotes[ticker];
+    const price=Number(q?.price??a?.current_price??0);
+    return sum+Number(a.qty||0)*price;
+  },0);
+  const pct=totalValueWithQuote>0?(totalDelta/totalValueWithQuote*100):0;
+  const tone=pct>0?'var(--success)':pct<0?'var(--danger)':'var(--semantic-official)';
+  const glow=pct>0?'rgba(16,185,129,.14)':pct<0?'rgba(248,113,113,.14)':'var(--semantic-official-bg)';
+  const value=assetSignedMoneyText(totalDelta);
+  const sign=pct>0?'+':pct<0?'-':'';
+  const note=`${withQuote.length} ativo(s) com cotação · ${sign}${Math.abs(pct).toFixed(2)}%`;
+  return dashboardMetricCard(dashboardMetricIcon('trend'),'Variação diária',value,note,tone,glow);
 }
 function dashboardEvolutionPanel(data){
   const snapshot=patrimonySnapshot(Number(S.dashPeriod)||12);

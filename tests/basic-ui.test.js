@@ -473,6 +473,7 @@ test('Dashboard position result label stays distinct from portfolio total', () =
   const cards = [];
   const renderKpis = vm.runInNewContext(`${source}\ndashboardExecutiveKPIs`, {
     S: { proventos: [], rfEvents: [], hideValues: false },
+    cx: () => ({ assets: [], quotes: {} }),
     dashboardCurrentValueAvailability: () => ({ state: 'AVAILABLE', note: 'Valores atuais informados' }),
 
       package2HasRenderableSummary: () => false,

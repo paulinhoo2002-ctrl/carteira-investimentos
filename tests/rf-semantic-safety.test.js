@@ -206,6 +206,7 @@ test('Dashboard labels result unavailable when applied coverage is incomplete', 
   const dashboardSource = section('function package2FiniteNumber(value){', 'function dashboardEvolutionPanel(');
   const context = {
     S: { hideValues: false },
+    cx: () => context.S,
     dashboardCurrentValueAvailability() { return { state: 'AVAILABLE', note: 'Valores atuais informados' }; },
     passiveIncomeMonthKey() { return '2026-10'; },
     passiveIncomeMonthSummary() { return { month: '2026-10', total: null, coverage: 'UNKNOWN' }; },
