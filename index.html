@@ -33556,7 +33556,7 @@ function dashboardExecutiveKPIs(data, showTotalStatus=true){
   `;
 }
 function dashboardDailyVariation(data){
-  const S=data?.S||cx();
+  const S=globalThis.S;
   const assets=Array.isArray(S.assets)?S.assets:[];
   if(!S.quotes) return '';
   const withQuote=assets.filter(a=>{
