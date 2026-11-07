@@ -331,10 +331,10 @@ test('V330 daily-use visual evidence captures premium screens with synthetic dat
         for (const label of ['Recebido', 'Média mensal', 'Último mês', 'Projeção anual', 'Histórico mensal', 'Evolução da renda', 'Top ativos', 'Resumo por ano']) {
           assert.ok(dividendText.includes(label.toLocaleLowerCase('pt-BR')), `Dividendos overview is missing ${label}`);
         }
-        const currentMonthKpi = await runtime.page.locator('.dividend-executive-kpi').nth(0).innerText();
+        const currentMonthKpi = await runtime.page.locator('.fp-kpi-strip-item').nth(0).innerText();
         assert.match(currentMonthKpi, /Recebido este mês/i, 'primary Dividendos KPI must identify the current calendar month');
         assert.match(currentMonthKpi, /—/, 'a month without complete evidence must remain unavailable');
-        const received12MonthsKpi = await runtime.page.locator('.dividend-executive-kpi').nth(1).innerText();
+        const received12MonthsKpi = await runtime.page.locator('.fp-kpi-strip-item').nth(1).innerText();
         assert.match(received12MonthsKpi, /Recebido nos últimos 12 meses/i, 'Dividendos must expose received income over the rolling 12-month period');
         assert.match(received12MonthsKpi, /R\$\s*19,37/, 'synthetic paid receipt in the known 12-month period must be included once');
       }

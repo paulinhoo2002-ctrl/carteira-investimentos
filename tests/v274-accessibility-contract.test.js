@@ -60,12 +60,17 @@ test('Dashboard light theme gives gain/loss cards readable surfaces and semantic
 });
 
 test('Dashboard light theme raises muted text contrast on its own surfaces', () => {
+  // Contrato V15: o contraste vem dos tokens FP (as regras legadas com !important foram removidas).
   assert.match(html, /html\[data-theme="light"\] \.canon-dashboard\{--canon-muted:#405267\}/);
-  assert.match(html, /html\[data-theme="light"\] \.canon-dashboard \.dashboard-receipts-header \.premium-panel-sub,[\s\S]*?\.canon-dashboard \.dash-receipt-date,[\s\S]*?\.canon-dashboard \.dash-receipt-rate\{color:#405267!important\}/);
-  assert.match(html, /html\[data-theme="light"\] \.canon-dashboard \.dashboard-highlight-column\{[\s\S]*?background:#fff!important;[\s\S]*?color:#13202b!important/);
-  assert.match(html, /html\[data-theme="light"\] \.canon-dashboard \.dashboard-highlight-row \.premium-exec-sub,[\s\S]*?\.canon-dashboard \.dashboard-highlight-row \.dashboard-highlight-details{color:#405267!important}/);
-  assert.match(html, /html\[data-theme="light"\] \.canon-dashboard \.dashboard-evolution-card \.premium-panel-title\{color:#f1f5f9!important\}/);
-  assert.match(html, /html\[data-theme="light"\] \.canon-dashboard \.dashboard-patrimony-chart text\{fill:#cbd5e1!important\}/);
+  const block = html.slice(html.indexOf('<style id="fp-design-system">'));
+  const light = block.slice(block.indexOf('html[data-theme="light"]{'), block.indexOf('}', block.indexOf('html[data-theme="light"]{')));
+  const token = name => { const m = light.match(new RegExp('--' + name + ':(#[0-9a-fA-F]{6})')); assert.ok(m, 'token ausente: ' + name); return m[1]; };
+  const lum = hex => { const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const surfaces = ['fp-canvas', 'fp-surface', 'fp-raised', 'fp-subtle'].map(token);
+  for (const name of ['fp-text', 'fp-text-2', 'fp-text-3', 'fp-pos', 'fp-neg', 'fp-warn', 'fp-info', 'fp-accent-text']) {
+    for (const surface of surfaces) assert.ok(ratio(token(name), surface) >= 4.5, name + ' sobre ' + surface + ' tem contraste ' + ratio(token(name), surface).toFixed(2) + ' (< 4.5)');
+  }
 });
 
 test('V274 scrollable financial regions are keyboard-focusable, named and visibly focused', () => {

@@ -469,9 +469,9 @@ test('Dashboard explains partial history on demand without filling missing chart
   assert.deepEqual(Array.from(chartInput.labels), ['Jan/26', 'Fev/26', 'Mar/26']);
 });
 test('Dashboard position result label stays distinct from portfolio total', () => {
-  const source = extractSnippet('function dashboardExecutiveKPIs(data, showTotalStatus=true){', 'function dashboardEvolutionPanel(');
+  const source = extractSnippet('function dashboardPositionResult(data){', 'function dashboardEvolutionPanel(');
   const cards = [];
-  const renderKpis = vm.runInNewContext(`${source}\ndashboardExecutiveKPIs`, {
+  const renderKpis = vm.runInNewContext(`${source}\ndashboardPerformancePanel`, {
     S: { proventos: [], rfEvents: [], hideValues: false },
     cx: () => ({ assets: [], quotes: {} }),
     dashboardCurrentValueAvailability: () => ({ state: 'AVAILABLE', note: 'Valores atuais informados' }),
@@ -497,7 +497,7 @@ test('Dashboard position result label stays distinct from portfolio total', () =
   assert.ok(cards.some(card => card.label === 'Resultado da posição'));
 });
 test('Dashboard exibe card Variação diária quando ativos têm quote com change', () => {
-  const source = extractSnippet('function dashboardExecutiveKPIs(data, showTotalStatus=true){', 'function dashboardEvolutionPanel(');
+  const source = extractSnippet('function dashboardPositionResult(data){', 'function dashboardEvolutionPanel(');
   const cards = [];
   const S = {
     assets: [
@@ -512,7 +512,7 @@ test('Dashboard exibe card Variação diária quando ativos têm quote com chang
     proventos: [],
     rfEvents: []
   };
-  const renderKpis = vm.runInNewContext(`${source}\ndashboardExecutiveKPIs`, {
+  const renderKpis = vm.runInNewContext(`${source}\ndashboardPerformancePanel`, {
     S,
     cx: () => ({ assets: [], quotes: {} }),
     dashboardCurrentValueAvailability: () => ({ state: 'AVAILABLE', note: 'Valores atuais informados' }),

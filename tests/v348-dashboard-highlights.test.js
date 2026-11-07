@@ -17,7 +17,8 @@ test('V348: dash() renders the highs/lows panel between priority and quick actio
   const panelIdx = dashFn.indexOf('${dashboardHomeHighsLowsPanel');
   const actionsIdx = dashFn.indexOf('${dashboardQuickActions()}');
   assert.ok(priorityIdx >= 0 && actionsIdx >= 0, 'priority/quick anchors missing');
-  assert.ok(panelIdx > priorityIdx && panelIdx < actionsIdx, 'highlights panel must sit between priority panel and quick actions');
+  // Contrato V15: altas/baixas aparecem antes de dividendos/lançamentos; insights (prioridade) vem depois e antes dos atalhos.
+  assert.ok(panelIdx >= 0 && panelIdx < priorityIdx && priorityIdx < actionsIdx, 'highlights panel must precede priority panel and quick actions');
 });
 
 test('V348: panel renders two columns of five from the canonical source with class filter chips', () => {

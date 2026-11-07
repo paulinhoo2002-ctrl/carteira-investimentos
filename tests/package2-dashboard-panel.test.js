@@ -44,7 +44,7 @@ function renderPanel(overrides, showTotalStatus = true) {
   const snippet = extractSnippet('function package2FiniteNumber(', 'function dashboardEvolutionPanel(data){');
   const context = makeContext(overrides);
   vm.createContext(context);
-  vm.runInContext(snippet + '\nglobalThis.render=dashboardExecutiveKPIs', context);
+  vm.runInContext(snippet + '\nglobalThis.render=(data, show)=>dashboardExecutiveKPIs(data, show)+dashboardPerformancePanel(data)', context);
   return context.render(undefined, showTotalStatus);
 }
 

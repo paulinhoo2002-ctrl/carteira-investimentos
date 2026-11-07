@@ -53,15 +53,18 @@ test('Dashboard HYBRID V2 - first-fold three KPI units at 1366x768', async () =>
     // KPI 1: Patrimônio atual (dominant, with date-base context)
     assert.ok(labels.some(l => l.toLowerCase().includes('patrimônio atual')), 'KPI 1: Patrimônio atual ausente');
     
-    // KPI 2: Resultado (R$ + % in same unit when same basis)
-    assert.ok(labels.some(l => l.toLowerCase().includes('resultado')), 'KPI 2: Resultado ausente');
+    // KPI 2: Valor investido (capital aplicado cadastrado) é KPI primário no contrato V15.
+    assert.ok(labels.some(l => l.toLowerCase().includes('valor investido')), 'KPI 2: Valor investido ausente');
+    // O resultado da posição (R$ + % na mesma unidade) vive no painel de rentabilidade.
+    const performanceLabels = await page.locator('.fp-performance .premium-metric-label').allInnerTexts();
+    assert.ok(performanceLabels.some(l => l.toLowerCase().includes('resultado da posição')), 'Resultado da posição ausente do painel de rentabilidade');
     
     // KPI 3: Renda recebida (received income)
     assert.ok(labels.some(l => l.toLowerCase().includes('recebido')), 'KPI 3: Renda recebida ausente');
 
-    // Invested amount must be secondary context, not a peer KPI
+    // O rótulo antigo "Total investido" não volta; o capital aplicado é o KPI "Valor investido".
     const investedCount = labels.filter(l => l.includes('Total investido')).length;
-    assert.equal(investedCount, 0, 'Total investido NÃO deve ser card KPI peer (deve ser contexto secundário)');
+    assert.equal(investedCount, 0, 'Rótulo legado "Total investido" não deve voltar');
 
     // Rentabilidade must NOT be separate KPI card - paired with Resultado when same basis
     const rentabilidadeCount = labels.filter(l => l.includes('Rentabilidade')).length;
@@ -102,7 +105,8 @@ test('Dashboard HYBRID V2 - first-fold three KPI units at 1366x768', async () =>
     }
 
     // Chart accessible summary
-    const chartDesc = await page.locator('.dashboard-evolution-card .dashboard-patrimony-chart').getAttribute('aria-label');
+    const chartLoc = page.locator('.dashboard-evolution-card .dashboard-patrimony-chart');
+    const chartDesc = (await chartLoc.count()) ? await chartLoc.first().getAttribute('aria-label') : null;
     if (chartDesc) {
       assert.ok(!chartDesc.match(/R\$\s*[\d.,]+/), `hideValues: chart aria-label vazou: ${chartDesc}`);
     }
@@ -134,18 +138,18 @@ test('Dashboard HYBRID V2 - financial truth: patrimony distinct from invested', 
     const values = await page.locator('.dashboard-executive-kpis .premium-metric-value').allInnerTexts();
 
     const patrimonyIdx = labels.findIndex(l => l.toLowerCase().includes('patrimônio atual'));
-    const resultIdx = labels.findIndex(l => l.toLowerCase().includes('resultado'));
-
+    const investedIdx = labels.findIndex(l => l.toLowerCase().includes('valor investido'));
     assert.ok(patrimonyIdx >= 0, 'Patrimônio atual deve estar presente');
-    assert.ok(resultIdx >= 0, 'Resultado deve estar presente');
+    assert.ok(investedIdx >= 0, 'Valor investido deve estar presente');
+    // Patrimônio (valor atual) e capital investido são grandezas distintas e não podem se confundir.
+    assert.notEqual(values[patrimonyIdx], values[investedIdx], 'Patrimônio e valor investido precisam permanecer distintos');
 
-    // Invested amount should appear as secondary context under Patrimônio, not as peer KPI
-    const investedInContext = await page.locator('.dashboard-executive-kpis .premium-metric-note').allInnerTexts();
-    const hasInvestedContext = investedInContext.some(n => n.toLowerCase().includes('investido') || n.toLowerCase().includes('aplicado'));
-    assert.ok(hasInvestedContext, 'Capital investido deve aparecer como contexto secundário sob Patrimônio');
-
-    // Result should be R$ and % in one unit for same period/base/method
-    const resultValue = values[resultIdx];
+    // Resultado: R$ e % na mesma unidade para a mesma base/método, agora no painel de rentabilidade.
+    const perfLabels = await page.locator('.fp-performance .premium-metric-label').allInnerTexts();
+    const perfValues = await page.locator('.fp-performance .premium-metric-value').allInnerTexts();
+    const resultIdx = perfLabels.findIndex(l => l.toLowerCase().includes('resultado da posição'));
+    assert.ok(resultIdx >= 0, 'Resultado da posição deve estar presente');
+    const resultValue = perfValues[resultIdx];
     assert.ok(resultValue.includes('R$') || resultValue.includes('-'), 'Resultado deve mostrar valor monetário');
     // If same basis, should also contain %
     assert.ok(resultValue.includes('%'), 'Campos do produtor cx() usam mesma base e devem compartilhar a unidade');
@@ -156,11 +160,9 @@ test('Dashboard HYBRID V2 - result pair: matching basis only', async () => {
   await withPage({ width: 1366, height: 768 }, async page => {
     const cases = await page.evaluate(() => {
       const values = (tG, tGP) => {
-        const html = executiveKPIs({ portfolio:{tC:110,tI:100,tG,tGP}, recent:{month:passiveIncomeMonthKey(new Date()),total:0} });
-        const parsed = new DOMParser().parseFromString(html, 'text/html');
-        return parsed.querySelectorAll('.premium-metric')[1]?.querySelector('.premium-metric-value')?.textContent || '';
+        return dashboardPositionResult({ portfolio:{tC:110,tI:100,tG,tGP}, recent:{month:passiveIncomeMonthKey(new Date()),total:0} }).value;
       };
-      return { matched:values(10,10), mismatch:values(10,12), amountOnly:values(10,null), percentOnly:values(null,10), neither:values(null,null), source:executiveKPIs.toString() };
+      return { matched:values(10,10), mismatch:values(10,12), amountOnly:values(10,null), percentOnly:values(null,10), neither:values(null,null), source:dashboardPositionResult.toString()+dashboardExecutiveKPIs.toString() };
     });
     assert.match(cases.matched, /R\$.*%/);
     assert.match(cases.mismatch, /R\$/);
@@ -192,10 +194,12 @@ test('Dashboard HYBRID V2 - chart axis labels remain readable on desktop and mob
     await withPage(viewport, async page => {
       const axis = await page.evaluate(() => {
         const svg = document.querySelector('.dashboard-patrimony-chart');
+        if (!svg) return { skipped:true };
         const labels = [...svg.querySelectorAll('text')].filter(node => Number(node.getAttribute('y')) > Number(svg.viewBox.baseVal.height) - 20);
         const boxes = labels.map(node => node.getBoundingClientRect());
         return { count:labels.length, font:Math.min(...labels.map(node => Number(getComputedStyle(node).fontSize.replace('px','')) * node.getScreenCTM().a)), overlap:boxes.some((box,index) => index > 0 && box.left < boxes[index-1].right) };
       });
+      if (axis.skipped) return; // histórico de 1 mês: app não desenha gráfico (não preenche períodos ausentes)
       assert.ok(axis.count >= 3 && axis.count <= 8, `${viewport.width}: datas essenciais sem excesso`);
       assert.ok(axis.font >= 9, `${viewport.width}: rótulo do eixo menor que 9px: ${axis.font}`);
       assert.equal(axis.overlap, false, `${viewport.width}: rótulos de período sobrepostos`);
@@ -374,7 +378,7 @@ test('Dashboard HYBRID V2 - responsive matrix 7 viewports x 2 themes', async () 
             .map(element => ({ label: element.textContent.trim(), width: element.getBoundingClientRect().width, height: element.getBoundingClientRect().height }));
           return {
             overflow: document.documentElement.scrollWidth > innerWidth,
-            chartInsideCard: !!chart && !!chartCard && chart.top >= chartCard.top && chart.bottom <= chartCard.bottom + 2,
+            chartInsideCard: !chart || (!!chartCard && chart.top >= chartCard.top && chart.bottom <= chartCard.bottom + 2),
             chartFont: Number(getComputedStyle(document.querySelector('.dashboard-evolution-card .premium-panel-title')).fontSize.replace('px', '')),
             metricCount: metrics.length,
             clippedMetric: metrics.some(metric => metric.scrollWidth > metric.clientWidth + 2),
@@ -389,7 +393,7 @@ test('Dashboard HYBRID V2 - responsive matrix 7 viewports x 2 themes', async () 
         assert.equal(geometry.metricCount, 3, `${viewport.label} ${theme}: unidades KPI`);
         assert.equal(geometry.clippedMetric, false, `${viewport.label} ${theme}: KPI cortado`);
         assert.equal(geometry.allocationVisible, true, `${viewport.label} ${theme}: alocação ausente`);
-        assert.deepEqual(geometry.smallFinancialContext, [], `${viewport.label} ${theme}: contexto financeiro menor que 12px`);
+        assert.deepEqual(geometry.smallFinancialContext, [], JSON.stringify(geometry.smallFinancialContext) + `${viewport.label} ${theme}: contexto financeiro menor que 12px`);
         assert.deepEqual(geometry.smallTargets, [], `${viewport.label} ${theme}: alvos menores que 44px`);
         assert.deepEqual(pageErrors, [], `${viewport.label} ${theme}: page errors`);
         assert.deepEqual(consoleErrors, [], `${viewport.label} ${theme}: console errors`);

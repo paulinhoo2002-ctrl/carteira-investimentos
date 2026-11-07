@@ -86,5 +86,5 @@ test('assets result cells preserve positive, negative and neutral semantics', ()
   assert.match(source, /\.assets-premium-table \.result-indicator\.pos\{color:var\(--success\)\}/);
   assert.match(source, /\.assets-premium-table \.result-indicator\.neg\{color:var\(--danger\)\}/);
   assert.match(source, /\.assets-premium-table \.result-indicator\.neutral\{color:var\(--muted\)\}/);
-  assert.match(source, /result > 0 \? 'pos' : result < 0 \? 'neg' : 'neutral'/);
+  assert.match(source, /result\s*>\s*0 \? 'pos' : result\s*<\s*0 \? 'neg' : 'neutral'/);
 });

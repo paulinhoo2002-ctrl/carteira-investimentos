@@ -76,7 +76,8 @@ for (const viewport of viewports) {
           return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) > 0 && box.width > 0 && box.height > 0;
         };
         const kpisRoot = document.querySelector('.dashboard-executive-kpis');
-        const cards = [...(kpisRoot ? kpisRoot.querySelectorAll('.premium-metric') : [])].map(card => {
+        const performanceRoot = document.querySelector('.fp-performance');
+        const readCards = root => [...(root ? root.querySelectorAll('.premium-metric') : [])].map(card => {
           const value = card.querySelector('.premium-metric-value');
           const cardBox = card.getBoundingClientRect();
           const valueBox = value ? value.getBoundingClientRect() : null;
@@ -93,10 +94,13 @@ for (const viewport of viewports) {
             valueClientHeight: value?.clientHeight || 0,
           };
         });
+        const cards = readCards(kpisRoot);
+        const performanceCards = readCards(performanceRoot);
         return {
           kpisRootExists: !!kpisRoot,
           primaryKpiCount: cards.length,
           cards,
+          performanceCards,
           investedPeerCount: cards.filter(card => /^Total investido$/i.test(card.label)).length,
           overflow: document.documentElement.scrollWidth > window.innerWidth,
           buttons: [...document.querySelectorAll('.dashboard-analytical-primary button, .dashboard-executive-kpis button')]
@@ -112,7 +116,7 @@ for (const viewport of viewports) {
       assert.ok(snapshot.primaryKpiCount >= 1 && snapshot.primaryKpiCount <= PRIMARY_KPI_UNITS_MAX,
         `unidades primárias de KPI (${snapshot.primaryKpiCount}) excedem o máximo ${PRIMARY_KPI_UNITS_MAX} em ${viewport.label}`);
 
-      const findCard = label => snapshot.cards.find(card => card.label === label);
+      const findCard = label => snapshot.cards.find(card => card.label === label || card.label.startsWith(label + ' '));
 
       // 3. Patrimônio atual é unidade primária, visível e com valor.
       const patrimony = findCard('Patrimônio atual');
@@ -123,19 +127,21 @@ for (const viewport of viewports) {
       // 4-5. Capital investido permanece visível DENTRO da unidade Patrimônio,
       // com rótulo semântico explícito ("Investido R$ ..."), distinto do valor
       // patrimonial — preservando a distinção financeira do teste antigo.
-      assert.match(patrimony.note, /Investido\s+R\$/i,
-        `capital investido precisa estar visível e rotulado dentro da unidade Patrimônio em ${viewport.label} (nota: "${patrimony.note}")`);
-      assert.ok(patrimony.value !== patrimony.note, `valor patrimonial e capital investido precisam permanecer distintos em ${viewport.label}`);
+      const invested = findCard('Valor investido');
+      assert.ok(invested, `KPI primário "Valor investido" precisa existir em ${viewport.label}`);
+      assert.equal(invested.visible, true, `"Valor investido" não está visível em ${viewport.label}`);
+      assert.notEqual(patrimony.value, invested.value, `valor patrimonial e capital investido precisam permanecer distintos em ${viewport.label}`);
+      assert.match(invested.note, /capital|aplicad/i, `"Valor investido" precisa explicar que é capital aplicado em ${viewport.label} (nota: "${invested.note}")`);
 
-      // 6. Capital investido NÃO é um quarto KPI peer (estrutura pré-V3 proibida).
+      // 6. O rótulo legado "Total investido" não volta como KPI peer.
       assert.equal(snapshot.investedPeerCount, 0,
-        `"Total investido" não pode voltar como KPI peer em ${viewport.label}; pertence ao contexto da unidade Patrimônio`);
+        `"Total investido" não pode voltar como KPI peer em ${viewport.label}`);
 
       // 7. Resultado permanece unidade primária própria, com R$ e % na mesma
       // unidade quando compatíveis (o antigo "Resultado geral" + "Rentabilidade"
       // peer não podem voltar, mas as duas medidas continuam visíveis).
-      const resultado = findCard('Resultado');
-      assert.ok(resultado, `KPI primário "Resultado" precisa existir em ${viewport.label}`);
+      const resultado = snapshot.performanceCards.find(card => card.label.startsWith('Resultado'));
+      assert.ok(resultado, `"Resultado da posição" precisa existir no painel de rentabilidade em ${viewport.label}`);
       assert.equal(resultado.visible, true, `"Resultado" não está visível em ${viewport.label}`);
       assert.ok(resultado.value.length > 0, `"Resultado" não tem valor em ${viewport.label}`);
       assert.match(resultado.value, /R\$/, `"Resultado" precisa exibir medida em R$ em ${viewport.label}`);
