@@ -135,3 +135,13 @@ Nenhum stash, worktree ou arquivo de terceiros foi modificado. Nenhum patch foi 
 - `docs/ai/FASE1_AUDITORIA_EQUIVALENCIA.md` (este documento)
 - `tests/fase1a-financial-equivalence.test.js` (24 testes: 21 passam, 3 `todo` = F-03, F-05, F-06; 0 falham)
 - Fora do Git: `output/fase1/work/` (diff completo, JSONs de comparação, scripts).
+
+## 11. Atualização — Lote B (F-03 e F-04 corrigidos; local, sem commit)
+
+- **F-03 corrigido**: `dashboardDailyVariation` usa `fechamento anterior = preço/(1+change/100)`; variação em R$ = `qtd × (preço − fechamento anterior)`; % = Σ variação / Σ base anterior. Fixture rica: **antes R$ 224,15 / +0,36% → depois R$ 219,76 / +0,35%** (7 ativos). Semântica confirmada: Yahoo (`regularMarketChangePercent` sobre o fechamento anterior, em pontos percentuais; o proxy `api/yahoo-quote.js` calcula `(preço−fechamento anterior)/fechamento anterior×100` quando preenche) e exemplo oficial da brapi (PETR4: 41,18 / −0,58 / −1,39%, que `price×c/(100+c)` reproduz e `price×c/100` não).
+- **F-04 corrigido**: `quoteDailyChangePercent(q, price)` nos dois pontos de ingestão (Yahoo e brapi). Ausente, `null`, `''`, não numérico, `≤ −100` e preço que não pareia com `regularMarketPrice` viram `null`; zero informado continua `0`. O preço válido continua sendo gravado e alimenta o patrimônio. O cartão exclui posições sem variação válida e informa cobertura ("N de M ativo(s) com variação do dia", selo "Parcial" e dica "não representa necessariamente toda a carteira"); sem nenhuma válida mostra "—".
+- **Sem persistência/migração**: `S.quotes` não faz parte do payload salvo; `finance-core.js`, `persistence-core.js`, `sw.js`, `manifest.json`, `firestore.rules`, `modern/src` e `api/yahoo-quote.js` sem diff.
+- **Diferença intencional em relação à auditoria**: apenas o valor/legenda do cartão "Variação diária". `cx()` e todas as telas comparadas seguem idênticos à main (suíte da fase 1a).
+- **Novos achados (não corrigidos, fora do escopo do Lote B)**:
+  - **F-10**: a CSP (`index.html` e `vercel.json`) libera `https://api.brapi.com.br`, mas o código chama `https://brapi.dev/...`; o fallback brapi é bloqueado pelo navegador (observado no console). Pré-existente.
+  - **F-11**: `api/yahoo-quote.js:115` devolve `regularMarketChangePercent = 0` quando o fechamento anterior é desconhecido no fallback chart v8 (`|| 0`). O cliente não consegue distinguir esse zero de um zero verdadeiro; corrigir exige alterar a função serverless (deploy, fora de autorização).

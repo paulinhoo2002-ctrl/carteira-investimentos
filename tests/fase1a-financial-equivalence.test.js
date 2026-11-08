@@ -256,19 +256,15 @@ const impliedDaily = () => {
   return { implemented, implementedPct: implemented / implementedBase * 100, prevDelta, prevPct: prevDelta / prevBase * 100 };
 };
 
-test('Fase 1a - Variação diária (V20) corresponde à definição implementada: Σ qtd × preço × variação%', () => {
+// F-03 corrigido no Lote B: a variação diária agora usa o fechamento anterior (preço/(1+c/100)).
+// Diferença intencional em relação à V20 auditada: R$ 224,15 / +0,36% -> R$ 219,76 / +0,35%.
+test('Fase 1a (atualizado no Lote B) - Variação diária corresponde ao fechamento anterior (price/(1+c))', () => {
   const card = v20.rich.cards.find(item => item.label === 'Variação diária');
   assert.ok(card, 'cartão Variação diária ausente');
-  const { implemented } = impliedDaily();
-  const shown = Number(card.value.replace(/[^\d,-]/g, '').replace(',', '.').replace(/^\+?/, ''));
-  assert.ok(Math.abs(Math.abs(shown) - Math.abs(implemented)) < 0.01, `exibido ${card.value}, esperado ${implemented.toFixed(2)}`);
-});
-
-test('Fase 1a - Variação diária (V20) corresponde ao fechamento anterior (price/(1+c))', { todo: 'F-03: usa price×c/100; o correto sobre o fechamento anterior é price×c/(100+c)' }, () => {
-  const card = v20.rich.cards.find(item => item.label === 'Variação diária');
-  const { prevDelta } = impliedDaily();
-  const shown = Number(card.value.replace(/[^\d,-]/g, '').replace(',', '.'));
-  assert.ok(Math.abs(Math.abs(shown) - Math.abs(prevDelta)) < 0.01, `exibido ${card.value}, esperado ${prevDelta.toFixed(2)}`);
+  const { prevDelta, implemented } = impliedDaily();
+  const shown = Number(card.value.replace(/[^\d,]/g, '').replace(',', '.'));
+  assert.ok(Math.abs(shown - Math.abs(prevDelta)) < 0.01, `exibido ${card.value}, esperado ${prevDelta.toFixed(2)}`);
+  assert.ok(Math.abs(shown - Math.abs(implemented)) > 1, 'não pode voltar à fórmula antiga (price×c/100)');
 });
 
 test('Fase 1a - quantidade fracionária mantém a precisão da main (3 casas)', { todo: 'F-05: fmtN arredonda a 2 casas; a main usava toLocaleString (3 casas) na tabela "Qtd"' }, () => {

@@ -25904,6 +25904,20 @@ async function fetchQuotesYahoo(tickers){
   const j=await r.json();
   return Array.isArray(j.results)?j.results:[];
 }
+// Variação diária informada pela fonte, em pontos percentuais sobre o fechamento anterior
+// (ex.: 1,82 = +1,82%). Ausente, inválida ou fora do par preço/percentual => null (nunca 0).
+// Zero informado pela fonte continua 0. O percentual vale para regularMarketPrice; se o preço
+// armazenado veio de outro campo (pré/pós-mercado, fechamento anterior), o par é inconsistente.
+function quoteDailyChangePercent(q,price){
+  const raw=q?.regularMarketChangePercent;
+  if(typeof raw!=='number'&&typeof raw!=='string') return null;
+  if(typeof raw==='string'&&raw.trim()==='') return null;
+  const value=Number(raw);
+  if(!Number.isFinite(value)||value<=-100) return null;
+  const regular=Number(q?.regularMarketPrice);
+  if(!Number.isFinite(regular)||regular<=0||price!==regular) return null;
+  return value;
+}
 function quoteProviderTimeMs(q){
   const raw = Number(q?.regularMarketTime ?? q?.postMarketTime ?? q?.preMarketTime ?? q?.marketTime ?? q?.timestamp ?? 0);
   return Number.isFinite(raw) && raw > 0 ? raw * 1000 : 0;
@@ -25972,7 +25986,7 @@ async function fetchQuotes(manual=false){
         a.quoteLastKnownGood=false;
         S.quotes[ticker]={
           price,
-          change:Number(q.regularMarketChangePercent)||0,
+          change:quoteDailyChangePercent(q,price),
           flash:prev>0?(price>prev?'up':price<prev?'down':''):''
         };
         atualizados++;
@@ -26033,7 +26047,7 @@ async function fetchQuotes(manual=false){
               a.quoteFallbackUsed=true;
               a.quoteLastKnownGood=false;
               if(providerTimeMs>0) a.quoteMarketTime=new Date(providerTimeMs).toISOString();
-              S.quotes[sym]={price,change:Number(q.regularMarketChangePercent)||0,flash:prev>0?(price>prev?'up':price<prev?'down':''):''};
+              S.quotes[sym]={price,change:quoteDailyChangePercent(q,price),flash:prev>0?(price>prev?'up':price<prev?'down':''):''};
               atualizados++;
             }else{
               a.quoteStatus=a.current_price>0?'STALE':'UNKNOWN';
@@ -33305,7 +33319,7 @@ function dashboardPositionResult(data){
 }
 function dashboardPerformancePanel(data){
   const result=dashboardPositionResult(data);
-  const daily=dashboardDailyVariation(data)||dashboardMetricCard('','Variação diária','—','Sem cotação do dia nas posições','var(--fp-text)','transparent');
+  const daily=dashboardDailyVariation(data)||dashboardMetricCard('','Variação diária','—','Sem variação do dia disponível nas posições','var(--fp-text)','transparent');
   const package2Summary=typeof FB!=='undefined'?FB?.package2:null;
   const status=package2HasRenderableSummary(package2Summary)&&!dashboardHasEconomicCertification(data?.portfolioEconomicResult)?'':dashboardEconomicResultStatus(data?.portfolioEconomicResult);
   return `<section class="fp-performance" aria-label="Rentabilidade da carteira">
@@ -33383,31 +33397,36 @@ function dashboardExecutiveKPIs(data, showTotalStatus=true){
 function dashboardDailyVariation(data){
   const assets=Array.isArray(S.assets)?S.assets:[];
   if(!S.quotes) return '';
-  const withQuote=assets.filter(a=>{
-    const ticker=String(a.ticker||'').toUpperCase();
-    const q=S.quotes[ticker];
-    return Number(a.qty||0)>0 && q && Number.isFinite(Number(q.change));
+  // `change` = percentual (em pontos) informado pela fonte sobre o fechamento anterior; logo
+  // fechamento anterior = preço/(1+change/100) e variação em R$ = qtd × (preço − fechamento anterior).
+  // change ausente/inválido (null) nunca vira 0: a posição fica fora do cálculo e da cobertura.
+  const eligible=assets.filter(a=>Number(a?.qty)>0&&(typeof isMarketQuoteEligibleAsset!=='function'||isMarketQuoteEligibleAsset(a)));
+  let totalDelta=0,totalPrevious=0,valid=0;
+  eligible.forEach(a=>{
+    const q=S.quotes[String(a.ticker||'').toUpperCase()];
+    const price=typeof q?.price==='number'?q.price:NaN;
+    const change=typeof q?.change==='number'?q.change:NaN;
+    const qty=Number(a.qty);
+    if(!(Number.isFinite(price)&&price>0)||!Number.isFinite(change)||change<=-100||!Number.isFinite(qty)) return;
+    const previous=price/(1+change/100);
+    totalDelta+=qty*(price-previous);
+    totalPrevious+=qty*previous;
+    valid++;
   });
-  if(withQuote.length===0) return '';
-  const totalDelta=withQuote.reduce((sum,a)=>{
-    const ticker=String(a.ticker||'').toUpperCase();
-    const q=S.quotes[ticker];
-    const price=Number(q?.price??a?.current_price??0);
-    return sum+Number(a.qty||0)*price*(Number(q.change)/100);
-  },0);
-  const totalValueWithQuote=withQuote.reduce((sum,a)=>{
-    const ticker=String(a.ticker||'').toUpperCase();
-    const q=S.quotes[ticker];
-    const price=Number(q?.price??a?.current_price??0);
-    return sum+Number(a.qty||0)*price;
-  },0);
-  const pct=totalValueWithQuote>0?(totalDelta/totalValueWithQuote*100):0;
-  const tone=S.hideValues?'var(--fp-text)':pct>0?'var(--success)':pct<0?'var(--danger)':'var(--fp-text)';
+  if(valid===0) return '';
+  const pct=totalPrevious>0?totalDelta/totalPrevious*100:0;
+  const pctRounded=Number(pct.toFixed(2));
+  const total=eligible.length;
+  const partial=valid<total;
+  const tone=S.hideValues?'var(--fp-text)':pctRounded>0?'var(--success)':pctRounded<0?'var(--danger)':'var(--fp-text)';
   const glow='transparent';
   const value=assetSignedMoneyText(totalDelta);
-  const sign=pct>0?'+':pct<0?'-':'';
-  const note=S.hideValues?'Valores protegidos':`${withQuote.length} ativo(s) com cotação · ${sign}${Math.abs(pct).toFixed(2).replace('.',',')}%`;
-  return dashboardMetricCard(dashboardMetricIcon('trend'),'Variação diária',value,note,tone,glow);
+  const sign=pctRounded>0?'+':pctRounded<0?'-':'';
+  const pctText=`${sign}${Math.abs(pctRounded).toFixed(2).replace('.',',')}%`;
+  const coverage=partial?`${valid} de ${total} ativo(s) com variação do dia`:`${valid} ativo(s) com cotação`;
+  const note=S.hideValues?(partial?'Valores protegidos · cobertura parcial':'Valores protegidos'):`${coverage} · ${pctText}`;
+  const tip=partial?'Parcial: considera apenas as posições com variação do dia informada pela fonte; não representa necessariamente toda a carteira.':'';
+  return dashboardMetricCard(dashboardMetricIcon('trend'),'Variação diária',value,note,tone,glow,tip,partial?'partial':'');
 }
 function dashboardEvolutionPanel(data){
   const snapshot=patrimonySnapshot(Number(S.dashPeriod)||12);
