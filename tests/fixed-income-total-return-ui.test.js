@@ -102,7 +102,7 @@ test('hide-values masks rendered currency, percentages, and holding quantities w
   assert.match(note,/•••• cotas x R\$ •••• \(\+••••%\)/);
   assert.doesNotMatch(note,/12|9,34|8,50/);
   assert.equal(helpers.withVisibleValues(()=>helpers.fmtN(12.5)),'12,5');
-  assert.equal(helpers.withVisibleValues(()=>helpers.fmtP(8.5)),'+8.50%');
+  assert.equal(helpers.withVisibleValues(()=>helpers.fmtP(8.5)),'+8,50%'); // F-09: percentual exibido em pt-BR
   const cardStart=source.indexOf('function aporteHistoryCard(row){');
   const cardEnd=source.indexOf('function aportesPagination(',cardStart);
   assert.notEqual(cardStart,-1);

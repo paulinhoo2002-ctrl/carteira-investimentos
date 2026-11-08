@@ -145,3 +145,11 @@ Nenhum stash, worktree ou arquivo de terceiros foi modificado. Nenhum patch foi 
 - **Novos achados (não corrigidos, fora do escopo do Lote B)**:
   - **F-10**: a CSP (`index.html` e `vercel.json`) libera `https://api.brapi.com.br`, mas o código chama `https://brapi.dev/...`; o fallback brapi é bloqueado pelo navegador (observado no console). Pré-existente.
   - **F-11**: `api/yahoo-quote.js:115` devolve `regularMarketChangePercent = 0` quando o fechamento anterior é desconhecido no fallback chart v8 (`|| 0`). O cliente não consegue distinguir esse zero de um zero verdadeiro; corrigir exige alterar a função serverless (deploy, fora de autorização).
+
+## 12. Atualização — Lote C (local, sem commit)
+
+Estado dos achados F-01, F-02, F-05, F-06, F-08, F-09, F-10 e F-11, os novos F-12 e F-13, as diferenças intencionais, a validação (zoom real, matriz, privacidade, varredura de UI) e a automação (`npm run verify`, `npm run verify:full`, golden hermético) estão em `docs/ai/FASE1_HANDOFF.md`. O teste ao vivo contra `origin/main` (`npm run test:fase1a-baseline`) agora trata como diferenças intencionais: F-01 (Total investido em Ativos/parcial), F-09 (vírgula nos percentuais), F-03 (variação diária) e a precisão de quantidade (F-05); seus `todo` F-05 e F-06 viraram testes normais.
+
+### Pendências financeiras bloqueantes (registradas antes dos commits do Lote C)
+
+F-12 (`|| 0.10` trata zero como ausente no Monte Carlo de renda passiva) e F-13 (`Math.random() === 0` produz `Infinity`) **continuam abertos** e precisam ser resolvidos, com teste e decisão explícita sobre a metodologia, antes da versão final. Detalhes e testes `todo` em `docs/ai/FASE1_HANDOFF.md`.

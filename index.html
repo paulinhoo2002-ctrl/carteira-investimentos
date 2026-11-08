@@ -18380,7 +18380,7 @@ const withVisibleValues = fn => {
   try{ return fn(); }
   finally{ valueVisibilityDepth--; }
 };
-const fmtP = v => S.hideValues&&valueVisibilityDepth===0?'••••':`${v>=0?'+':''}${v.toFixed(2)}%`;
+const fmtP = v => S.hideValues&&valueVisibilityDepth===0?'••••':`${v>=0?'+':''}${v.toFixed(2).replace('.',',')}%`;
 const fmtN = v => S.hideValues&&valueVisibilityDepth===0?'••••':Number(v||0).toLocaleString('pt-BR',{maximumFractionDigits:2});
 // Quantidade exibida (apenas apresentação; o valor armazenado não muda): pt-BR, até 4 casas sem zeros à direita
 // (cripto: até 8). Valor desconhecido nunca vira 0.
@@ -21464,7 +21464,7 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
     <summary>
       <div>
         <div class="sec-title">Meta de Renda Passiva</div>
-        <div class="sec-meta">${hasGoal && avgProg ? `${fmt(stats.monthlyAvg)} média 12M / ${fmt(stats.target)} · ${avgProg.prog.toFixed(1)}% · falta ${fmt(stats.missing)}/mês` : hasGoal ? `Progresso indisponível · cobertura confirmada ${stats.completeMonthCount}/12 meses` : 'Configure a meta mensal para acompanhar o progresso da renda passiva.'}</div>
+        <div class="sec-meta">${hasGoal && avgProg ? `${fmt(stats.monthlyAvg)} média 12M / ${fmt(stats.target)} · ${avgProg.prog.toFixed(1).replace('.',',')}% · falta ${fmt(stats.missing)}/mês` : hasGoal ? `Progresso indisponível · cobertura confirmada ${stats.completeMonthCount}/12 meses` : 'Configure a meta mensal para acompanhar o progresso da renda passiva.'}</div>
       </div>
       <div class="sec-meta">Abrir</div>
     </summary>
@@ -21475,7 +21475,7 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
             <div class="st">Meta de Renda Passiva</div>
             <div class="mu" style="font-size:11px;margin-top:2px">Meta mensal lida da aba <strong class="fp-strong">Metas</strong> e calculada com base nos proventos já gravados em <strong class="fp-strong">S.proventos</strong>.</div>
           </div>
-          <div class="passive-goal-badge ds-badge ${topTone}">${hasGoal ? (avgProg ? `${avgProg.prog.toFixed(1)}% da meta` : `Cobertura ${stats.completeMonthCount}/12`) : 'Sem meta'}</div>
+          <div class="passive-goal-badge ds-badge ${topTone}">${hasGoal ? (avgProg ? `${avgProg.prog.toFixed(1).replace('.',',')}% da meta` : `Cobertura ${stats.completeMonthCount}/12`) : 'Sem meta'}</div>
         </div>
         <div class="mu" style="font-size:11px;margin:0 0 2px;line-height:1.35">${esc(guidance)}</div>
         ${!hasGoal ? `<div class="passive-goal-empty">
@@ -21492,9 +21492,9 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
             <div class="passive-goal-sub">${hasGoal ? 'Meta cadastrada na aba Metas' : 'Defina sua meta de renda passiva'}</div>
           </div>
           ${passiveIncomeMetricCard({tone:stats.monthlyAverageStatus==='COMPLETE' ? 'ok' : 'muted', kicker:'Renda real média 12M', value:passiveIncomeValue(stats.monthlyAvg), sub:`Meses completos: ${stats.completeMonthCount}/12`})}
-          ${(() => { const monthOverMonth=passiveIncomeMonthOverMonth({currentTotal:stats.currentMonthTotal, previousTotal:stats.previousMonthTotal}); const momTone=monthOverMonth.status!=='COMPLETE' ? 'muted' : monthOverMonth.direction==='up' ? 'ok' : monthOverMonth.direction==='down' ? 'danger' : 'info'; const momValue=monthOverMonth.status!=='COMPLETE' ? 'Indisponível' : `${monthOverMonth.delta>=0?'+':''}${fmt(monthOverMonth.delta)}`; const momSub=monthOverMonth.status!=='COMPLETE' ? 'Recebimento de um dos meses ainda sem valor confirmado' : monthOverMonth.deltaPercent===null ? 'Mês anterior sem recebimento (zero confirmado)' : `${monthOverMonth.deltaPercent>=0?'+':''}${monthOverMonth.deltaPercent.toFixed(1)}% vs mês anterior · valores recebidos`; return passiveIncomeMetricCard({tone:momTone, kicker:'Mês atual vs anterior', value:momValue, sub:momSub}); })()}
+          ${(() => { const monthOverMonth=passiveIncomeMonthOverMonth({currentTotal:stats.currentMonthTotal, previousTotal:stats.previousMonthTotal}); const momTone=monthOverMonth.status!=='COMPLETE' ? 'muted' : monthOverMonth.direction==='up' ? 'ok' : monthOverMonth.direction==='down' ? 'danger' : 'info'; const momValue=monthOverMonth.status!=='COMPLETE' ? 'Indisponível' : `${monthOverMonth.delta>=0?'+':''}${fmt(monthOverMonth.delta)}`; const momSub=monthOverMonth.status!=='COMPLETE' ? 'Recebimento de um dos meses ainda sem valor confirmado' : monthOverMonth.deltaPercent===null ? 'Mês anterior sem recebimento (zero confirmado)' : `${monthOverMonth.deltaPercent>=0?'+':''}${monthOverMonth.deltaPercent.toFixed(1).replace('.',',')}% vs mês anterior · valores recebidos`; return passiveIncomeMetricCard({tone:momTone, kicker:'Mês atual vs anterior', value:momValue, sub:momSub}); })()}
           ${passiveIncomeMetricCard({tone:projectedMonthly>0 ? 'info' : 'muted', kicker:'Renda projetada/mês', value:projectedLabel, sub:projectedMonthly>0 ? 'Estimativa da carteira' : 'Sem ativos suficientes para projetar'})}
-          ${hasGoal ? passiveIncomeProgressCard({tone:avgTone, kicker:'Progresso pela média real 12M', value:avgProg?`${avgProg.prog.toFixed(1)}%`:'Indisponível', sub:avgProg?`Faltam ${fmt(avgProg.falta)}/mês para atingir a meta pela média real.`:`Cobertura insuficiente · ${stats.completeMonthCount}/12 meses completos`, percent:avgProg?.prog??0, barColor:avgTone==='ok'?'#34d399':avgTone==='info'?'#60a5fa':avgTone==='warn'?'#fbbf24':'#94a3b8'}) : ''}
+          ${hasGoal ? passiveIncomeProgressCard({tone:avgTone, kicker:'Progresso pela média real 12M', value:avgProg?`${avgProg.prog.toFixed(1).replace('.',',')}%`:'Indisponível', sub:avgProg?`Faltam ${fmt(avgProg.falta)}/mês para atingir a meta pela média real.`:`Cobertura insuficiente · ${stats.completeMonthCount}/12 meses completos`, percent:avgProg?.prog??0, barColor:avgTone==='ok'?'#34d399':avgTone==='info'?'#60a5fa':avgTone==='warn'?'#fbbf24':'#94a3b8'}) : ''}
           ${hasGoal ? passiveIncomeMetricCard({tone:avgTone, kicker:'Quanto falta pela média real', value:passiveIncomeValue(avgProg?.falta), sub:'Comparação disponível somente com 12 meses completos'}) : ''}
         </div>
         ${hasGoal ? `
@@ -21510,7 +21510,7 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
             <div class="mu" style="font-size:11px;line-height:1.45;margin-bottom:8px">A média real usa proventos já recebidos nos últimos 12 meses. A renda projetada é uma estimativa da carteira atual.</div>
             <div class="passive-goal-grid secondary">
               ${passiveIncomeMetricCard({tone:stats.hasData ? 'ok' : 'muted', kicker:'Projeção anualizada real', value:annualLabel, sub:'Média mensal real × 12'})}
-              ${passiveIncomeProgressCard({tone:projTone, kicker:'Progresso pela renda projetada/mês', value:`${projProg.prog.toFixed(1)}%`, sub:`Estimativa: faltam ${fmt(projProg.falta)}/mês para atingir a meta.`, percent:projProg.prog, barColor:projTone==='ok'?'#34d399':projTone==='info'?'#60a5fa':projTone==='warn'?'#fbbf24':'#f87171'})}
+              ${passiveIncomeProgressCard({tone:projTone, kicker:'Progresso pela renda projetada/mês', value:`${projProg.prog.toFixed(1).replace('.',',')}%`, sub:`Estimativa: faltam ${fmt(projProg.falta)}/mês para atingir a meta.`, percent:projProg.prog, barColor:projTone==='ok'?'#34d399':projTone==='info'?'#60a5fa':projTone==='warn'?'#fbbf24':'#f87171'})}
               ${passiveIncomeMetricCard({tone:projTone, kicker:'Quanto falta pela renda projetada', value:fmt(projProg.falta), sub:'Comparação entre meta e estimativa da carteira'})}
             </div>
           </div>
@@ -21547,7 +21547,7 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
               if (v >= 1e3) return (v / 1e3).toFixed(1) + ' K';
               return v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             };
-            const formatPct = (v) => v ? v.toFixed(2) + '%' : '—';
+            const formatPct = (v) => v ? v.toFixed(2).replace('.',',') + '%' : '—';
 
             return `
             <details class="sec metas-goal-section" style="margin-top:8px;margin-bottom:0">
@@ -21567,16 +21567,16 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
                   <div class="passive-goal-card info">
                     <div class="passive-goal-kicker">Carteira Atual</div>
                     <div class="passive-goal-value">${formatMoney(portfolio.totalValue)}</div>
-                    <div class="passive-goal-sub">Renda mensal: ${formatMoney(portfolio.monthlyIncome)} · DY: ${portfolio.avgDY.toFixed(2)}%</div>
+                    <div class="passive-goal-sub">Renda mensal: ${formatMoney(portfolio.monthlyIncome)} · DY: ${portfolio.avgDY.toFixed(2).replace('.',',')}%</div>
                   </div>
                   <div class="passive-goal-card ${goalTrack.progressPercent >= 100 ? 'ok' : goalTrack.progressPercent >= 50 ? 'info' : 'warn'}">
                     <div class="passive-goal-kicker">Meta Mensal</div>
                     <div class="passive-goal-value">${formatMoney(goalTrack.targetMonthly)}</div>
-                    <div class="passive-goal-sub">Progresso: ${goalTrack.progressPercent.toFixed(1)}% · Falta: ${formatMoney(goalTrack.gap)}</div>
+                    <div class="passive-goal-sub">Progresso: ${goalTrack.progressPercent.toFixed(1).replace('.',',')}% · Falta: ${formatMoney(goalTrack.gap)}</div>
                   </div>
                   <div class="passive-goal-card info">
                     <div class="passive-goal-kicker">CAGR Dividendos</div>
-                    <div class="passive-goal-value">${cagr.annualGrowth.toFixed(2)}%</div>
+                    <div class="passive-goal-value">${cagr.annualGrowth.toFixed(2).replace('.',',')}%</div>
                     <div class="passive-goal-sub">Períodos: ${cagr.periods} · Confiança: ${cagr.confidence}</div>
                   </div>
                 </div>
@@ -21602,7 +21602,7 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
                 <div class="passive-goal-grid main" style="margin-bottom:12px">
                   <div class="passive-goal-card muted">
                     <div class="passive-goal-kicker">Monte Carlo (10a)</div>
-                    <div class="passive-goal-value">${mc.probabilitySuccess.toFixed(1)}%</div>
+                    <div class="passive-goal-value">${mc.probabilitySuccess.toFixed(1).replace('.',',')}%</div>
                     <div class="passive-goal-sub">Prob. atingir ${formatMoney(mc.targetValue)} · Mediana: ${formatMoney(mc.percentiles.p50)}</div>
                   </div>
                   <div class="passive-goal-card muted">
@@ -21771,7 +21771,7 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
                           </div>
                           <div class="passive-goal-card ${progress ? progress.status : 'muted'}" style="border-left-color:${progress ? statusColors[progress.status] : 'var(--muted)'}">
                             <div class="passive-goal-kicker">Progresso</div>
-                            <div class="passive-goal-value">${progress ? progress.progressPercent.toFixed(1) + '%' : '—'}</div>
+                            <div class="passive-goal-value">${progress ? progress.progressPercent.toFixed(1).replace('.',',') + '%' : '—'}</div>
                             <div class="passive-goal-sub">${progress ? statusLabels[progress.status] : 'Sem meta'} · Falta: ${progress ? formatMoney(progress.remaining) : '—'}</div>
                           </div>
                           <div class="passive-goal-card info">
@@ -21784,7 +21784,7 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
                         <div class="passive-goal-grid main" style="margin-bottom:12px">
                           <div class="passive-goal-card ok">
                             <div class="passive-goal-kicker">Prob. Sucesso (MC)</div>
-                            <div class="passive-goal-value">${mc.probability.toFixed(1)}%</div>
+                            <div class="passive-goal-value">${mc.probability.toFixed(1).replace('.',',')}%</div>
                             <div class="passive-goal-sub">Mediana: ${formatMoney(mc.percentiles.p50)} · P90: ${formatMoney(mc.percentiles.p90)}</div>
                           </div>
                           <div class="passive-goal-card warn">
@@ -21833,8 +21833,8 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
                           </summary>
                           <div class="sec-body">
                             <div class="passive-goal-grid main">
-                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Retorno Esperado</div><div class="passive-goal-value">${(report.assumptions.expectedReturn * 100).toFixed(1)}% a.a.</div></div>
-                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Volatilidade</div><div class="passive-goal-value">${(report.assumptions.volatility * 100).toFixed(1)}% a.a.</div></div>
+                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Retorno Esperado</div><div class="passive-goal-value">${(report.assumptions.expectedReturn * 100).toFixed(1).replace('.',',')}% a.a.</div></div>
+                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Volatilidade</div><div class="passive-goal-value">${(report.assumptions.volatility * 100).toFixed(1).replace('.',',')}% a.a.</div></div>
                               <div class="passive-goal-card muted"><div class="passive-goal-kicker">Aporte Mensal</div><div class="passive-goal-value">${formatMoney(report.assumptions.monthlyContribution)}</div></div>
                               <div class="passive-goal-card muted"><div class="passive-goal-kicker">Horizonte</div><div class="passive-goal-value">${report.assumptions.projectionYears} anos</div></div>
                               <div class="passive-goal-card muted"><div class="passive-goal-kicker">Simulações</div><div class="passive-goal-value">${report.monteCarlo.simulations}</div></div>
@@ -21963,11 +21963,11 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
                                           </summary>
                                           <div class="sec-body">
                                             <div class="passive-goal-grid main">
-                                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Concentração Máx.</div><div class="passive-goal-value">${health.metrics.concentration.toFixed(2)}%</div></div>
+                                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Concentração Máx.</div><div class="passive-goal-value">${health.metrics.concentration.toFixed(2).replace('.',',')}%</div></div>
                                               <div class="passive-goal-card muted"><div class="passive-goal-kicker">Classes de Ativos</div><div class="passive-goal-value">${health.metrics.diversificationClasses}</div></div>
                                               <div class="passive-goal-card muted"><div class="passive-goal-kicker">Ativos sem Cotação</div><div class="passive-goal-value">${health.metrics.staleAssets}</div></div>
                                               <div class="passive-goal-card muted"><div class="passive-goal-kicker">Proventos Recentes</div><div class="passive-goal-value">${health.metrics.recentProventos}</div></div>
-                                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Desvio Alocação</div><div class="passive-goal-value">${health.metrics.allocationDeviation ? health.metrics.allocationDeviation.toFixed(1) + '%' : '—'}</div></div>
+                                              <div class="passive-goal-card muted"><div class="passive-goal-kicker">Desvio Alocação</div><div class="passive-goal-value">${health.metrics.allocationDeviation ? health.metrics.allocationDeviation.toFixed(1).replace('.',',') + '%' : '—'}</div></div>
                                             </div>
                                           </div>
                                         </details>
@@ -26814,7 +26814,7 @@ function assetRankingRowHtml(row, index){
   const signal=assetContributionSignal(row);
   const profitClass=row.pct==null ? '' : row.pct>0 ? 'good' : row.pct<0 ? 'neg' : 'pos';
   const currentTxt=row.current>0 ? fmt(row.current) : '—';
-  const shareTxt=row.share!=null ? `${row.share.toFixed(1)}%` : '—';
+  const shareTxt=row.share!=null ? `${row.share.toFixed(1).replace('.',',')}%` : '—';
   const pctTxt=row.pct!=null ? fmtP(row.pct) : '—';
   return `<div class="analysis-ranking-row">
     <div class="analysis-ranking-main">
@@ -26915,11 +26915,11 @@ function assetInsightRowHtml(row, mode){
   const signal=assetContributionSignal(row);
   const signalLabels={'Evitar aumentar por concentração':'Concentração elevada','Pode estudar aporte':'Desempenho negativo · baixa participação','Acompanhar':'Desempenho positivo · baixa participação','Aguardar':'Participação relevante na carteira'};
   if(mode==='position'){
-    return `<div class="asset-insight-row"><div class="asset-insight-main"><div class="asset-insight-title">${esc(row.ticker)}</div><div class="asset-insight-sub">${esc(row.type)} · ${row.share!=null?row.share.toFixed(1)+'% da carteira':'participação indisponível'}</div></div><div class="asset-insight-value bl">${fmt(row.current)}</div></div>`;
+    return `<div class="asset-insight-row"><div class="asset-insight-main"><div class="asset-insight-title">${esc(row.ticker)}</div><div class="asset-insight-sub">${esc(row.type)} · ${row.share!=null?row.share.toFixed(1).replace('.',',')+'% da carteira':'participação indisponível'}</div></div><div class="asset-insight-value bl">${fmt(row.current)}</div></div>`;
   }
   if(mode==='concentration'){
     const alert=assetConcentrationAlert(row.share);
-    return `<div class="asset-insight-row"><div class="asset-insight-main"><div class="asset-insight-title">${esc(row.ticker)}</div><div class="asset-insight-sub">${esc(alert.label)} · ${fmt(row.current)}</div></div><div class="asset-insight-value am">${row.share!=null?row.share.toFixed(1)+'%':'—'}</div></div>`;
+    return `<div class="asset-insight-row"><div class="asset-insight-main"><div class="asset-insight-title">${esc(row.ticker)}</div><div class="asset-insight-sub">${esc(alert.label)} · ${fmt(row.current)}</div></div><div class="asset-insight-value am">${row.share!=null?row.share.toFixed(1).replace('.',',')+'%':'—'}</div></div>`;
   }
   if(mode==='incomplete'){
     return `<div class="asset-insight-row"><div class="asset-insight-main"><div class="asset-insight-title">${esc(row.ticker||'Ativo sem código')}</div><div class="asset-insight-sub">${esc(row.type)} · base insuficiente para comparação de desempenho</div></div><div class="asset-insight-value mu">Dados insuficientes</div></div>`;
@@ -26968,7 +26968,7 @@ function assetAnalysisBlock(rowsInput){
       ${assetPremiumSection('Dados incompletos','Ativos que pedem revisão de base.',incomplete.length,incomplete.length?incomplete.map(r=>assetInsightRowHtml(r,'incomplete')).join(''):'<div class="asset-premium-empty">Todos os ativos possuem dados suficientes.</div>','muted')}
     </div>
     <div class="asset-premium-grid compact asset-analysis-sector-grid">
-      ${assetPremiumSection('Exposição por setor','Distribuição do valor atual por setor informado.',sectors.length,sectors.length?sectors.map(row=>`<div class="asset-insight-row"><div class="asset-insight-main"><div class="asset-insight-title">${esc(row.sector)}</div><div class="asset-insight-sub">Valor atual · leitura de concentração</div></div><div class="asset-insight-value bl">${row.share.toFixed(1)}%</div></div>`).join(''):'<div class="asset-premium-empty">Nenhum setor informado nos ativos atuais.</div>','info')}
+      ${assetPremiumSection('Exposição por setor','Distribuição do valor atual por setor informado.',sectors.length,sectors.length?sectors.map(row=>`<div class="asset-insight-row"><div class="asset-insight-main"><div class="asset-insight-title">${esc(row.sector)}</div><div class="asset-insight-sub">Valor atual · leitura de concentração</div></div><div class="asset-insight-value bl">${row.share.toFixed(1).replace('.',',')}%</div></div>`).join(''):'<div class="asset-premium-empty">Nenhum setor informado nos ativos atuais.</div>','info')}
     </div>
   </div>`;
 }
@@ -27077,7 +27077,7 @@ function assetPerformanceOverviewRowHtml(row, compact=false){
   const appliedText=Number.isFinite(row.applied) ? fmt(row.applied) : '—';
   const resultText=Number.isFinite(row.result) ? fmt(row.result) : '—';
   const resultPctText=Number.isFinite(row.resultPct) ? fmtP(row.resultPct) : '—';
-  const shareText=Number.isFinite(row.share) ? row.share.toFixed(1)+'%' : '—';
+  const shareText=Number.isFinite(row.share) ? row.share.toFixed(1).replace('.',',')+'%' : '—';
   const subLine=`${esc(row.type)}${row.sector && row.sector !== '—' ? ` · ${esc(row.sector)}` : ''}`;
   const sourceLine=Number.isFinite(row.current) || Number.isFinite(row.applied)
     ? `Aplicado ${appliedText} · Atual ${currentText}`
@@ -27263,16 +27263,16 @@ function assetPerformanceOverviewPanel(){
               <div class="alloc-card-head" style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
                 <span style="font-size:20px">${c.icon}</span>
                 <div class="alloc-card-name" style="font-weight:700;color:${c.color}">${c.name}</div>
-                <div class="alloc-card-alloc" style="margin-left:auto;font-weight:700;color:var(--text)">${c.allocation.toFixed(1)}%</div>
+                <div class="alloc-card-alloc" style="margin-left:auto;font-weight:700;color:var(--text)">${c.allocation.toFixed(1).replace('.',',')}%</div>
               </div>
               <div class="alloc-card-metrics" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
                 <div><div class="mu">Valor</div><div class="st">${formatMoney(c.totalValue)}</div></div>
                 <div><div class="mu">Investido</div><div class="st">${formatMoney(c.totalInvested)}</div></div>
-                <div><div class="mu">Resultado</div><div class="st ${c.gainLoss>=0?'gn':'rd'}">${c.gainLoss>=0?'+':''}${formatMoney(c.gainLoss)} (${c.gainLossPct.toFixed(2)}%)</div></div>
+                <div><div class="mu">Resultado</div><div class="st ${c.gainLoss>=0?'gn':'rd'}">${c.gainLoss>=0?'+':''}${formatMoney(c.gainLoss)} (${c.gainLossPct.toFixed(2).replace('.',',')}%)</div></div>
                 <div><div class="mu">Dividendos/ano</div><div class="st">${formatMoney(c.totalDividends)}</div></div>
-                <div><div class="mu">DY médio</div><div class="st">${c.avgDY.toFixed(2)}%</div></div>
-                <div><div class="mu">Yield on Cost</div><div class="st">${c.yieldOnCost.toFixed(2)}%</div></div>
-                <div><div class="mu">Rent. média</div><div class="st ${c.avgPL>=0?'gn':'rd'}">${c.avgPL>=0?'+':''}${c.avgPL.toFixed(2)}%</div></div>
+                <div><div class="mu">DY médio</div><div class="st">${c.avgDY.toFixed(2).replace('.',',')}%</div></div>
+                <div><div class="mu">Yield on Cost</div><div class="st">${c.yieldOnCost.toFixed(2).replace('.',',')}%</div></div>
+                <div><div class="mu">Rent. média</div><div class="st ${c.avgPL>=0?'gn':'rd'}">${c.avgPL>=0?'+':''}${c.avgPL.toFixed(2).replace('.',',')}%</div></div>
                 <div><div class="mu">Ativos</div><div class="st">${c.count}</div></div>
               </div>
             </div>
@@ -27290,7 +27290,7 @@ function assetPerformanceOverviewPanel(){
                 <summary style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);cursor:pointer">
                   <span style="font-size:20px">${c.icon}</span>
                   <div class="st" style="color:${c.color}">${c.name}</div>
-                  <div class="mu" style="margin-left:auto">${c.allocation.toFixed(1)}% · ${formatMoney(c.totalValue)}</div>
+                  <div class="mu" style="margin-left:auto">${c.allocation.toFixed(1).replace('.',',')}% · ${formatMoney(c.totalValue)}</div>
                 </summary>
                 <div class="sec-body">
                   <div class="ts" tabindex="0" style="overflow-x:auto">
@@ -27305,11 +27305,11 @@ function assetPerformanceOverviewPanel(){
                             <td class="num">${formatQuantity(a.qty, a.type)}</td>
                             <td class="num">${formatMoney(a.price)}</td>
                             <td class="num">${formatMoney(a.avgPrice)}</td>
-                            <td class="num">${a.dy.toFixed(2)}%</td>
+                            <td class="num">${a.dy.toFixed(2).replace('.',',')}%</td>
                             <td class="num">${formatMoney(a.value)}</td>
                             <td class="num">${formatMoney(a.invested)}</td>
                             <td class="num ${a.pl>=0?'gn':'rd'}">${a.pl>=0?'+':''}${formatMoney(a.value - a.invested)}</td>
-                            <td class="num ${a.pl>=0?'gn':'rd'}">${a.pl>=0?'+':''}${a.pl.toFixed(2)}%</td>
+                            <td class="num ${a.pl>=0?'gn':'rd'}">${a.pl>=0?'+':''}${a.pl.toFixed(2).replace('.',',')}%</td>
                             <td class="num">${formatMoney(a.annualDiv)}</td>
                           </tr>
                         `).join('')}
@@ -29787,7 +29787,7 @@ function reportsTab(){
     return `<div class="reports-evolution-bar-wrap"><div class="reports-evolution-value">${value?fmt(value):'—'}</div><div class="reports-evolution-bar" style="height:${height}%" title="${esc(row.label)}: ${fmt(value)}"></div><div class="reports-evolution-label">${esc(row.label)}</div></div>`;
   }).join('');
   const evolutionSummary=patrimony.months.slice(-6).map(row=>`<li><span>${esc(row.label)}</span><strong>${Number(row.cumulative)>0?fmt(row.cumulative):'—'}</strong></li>`).join('');
-  const allocationList=allocationRows.length?allocationRows.slice(0,6).map((row,index)=>`<div class="reports-data-row"><span><i class="reports-dot reports-dot-${index%6}"></i>${esc(row.type)}</span><strong>${fmt(row.value)} <small>${row.share.toFixed(1)}%</small></strong></div>`).join(''):'<div class="reports-empty">Cadastre ativos para visualizar a distribuição.</div>';
+  const allocationList=allocationRows.length?allocationRows.slice(0,6).map((row,index)=>`<div class="reports-data-row"><span><i class="reports-dot reports-dot-${index%6}"></i>${esc(row.type)}</span><strong>${fmt(row.value)} <small>${row.share.toFixed(1).replace('.',',')}%</small></strong></div>`).join(''):'<div class="reports-empty">Cadastre ativos para visualizar a distribuição.</div>';
   const exportCards=[
     reportExportCard('🗂️','Carteira completa','Resumo, ativos, proventos, renda fixa, patrimônio, metas e auditoria.','complete',['csv','json','pdf']),
     reportExportCard('💼','Ativos','Posições, preços, valores aplicados, valores atuais e resultados.','assets',['csv','json','pdf']),
@@ -29805,7 +29805,7 @@ function reportsTab(){
       </section>` : '';
   const auditTone=data.auditCount?'warn':'ok';
   const intelligenceStatus=intelligence?.sections?.performance?.status==='AVAILABLE'?'Disponível':intelligence?.sections?.performance?.status==='TRACKING_STARTED'?'Coletando histórico':'Indisponível';
-  const intelligenceCoverage=intelligence?.coverage?.value===null?'Cobertura não informada':`${intelligence.coverage.value.toFixed(0)}% das posições deste recorte têm valor atual informado`;
+  const intelligenceCoverage=intelligence?.coverage?.value===null?'Cobertura não informada':`${intelligence.coverage.value.toFixed(0).replace('.',',')}% das posições deste recorte têm valor atual informado`;
   const operationalReadiness=intelligence?.readiness;
   const healthStateLabel=status=>({AVAILABLE:'Disponível',PARTIAL:'Parcial',UNAVAILABLE:'Indisponível',TRACKING_STARTED:'Coletando histórico'}[status]||'UNKNOWN');
   const healthTiles=operationalReadiness?[
@@ -29846,7 +29846,7 @@ function reportsTab(){
       <div class="reports-executive-summary-grid">
         <div><span>Situação atual</span><strong>${fmt(data.portfolio.tC)}</strong><small>${data.assetsCount} ativos acompanhados</small></div>
         <div><span>Evolução</span><strong class="reports-${resultTone}">${fmt(data.portfolio.tG)}</strong><small>${fmtP(data.portfolio.tGP)} sobre o aplicado</small></div>
-        <div><span>Concentração</span><strong>${allocationRows.length?esc(allocationRows[0].type):'—'}</strong><small>${allocationRows.length?`${allocationRows[0].share.toFixed(1)}% da carteira`:'Sem distribuição disponível'}</small></div>
+        <div><span>Concentração</span><strong>${allocationRows.length?esc(allocationRows[0].type):'—'}</strong><small>${allocationRows.length?`${allocationRows[0].share.toFixed(1).replace('.',',')}% da carteira`:'Sem distribuição disponível'}</small></div>
         <div><span>Renda registrada</span><strong>${fmt(data.incomePeriodTotal)}</strong><small>Recebido no período selecionado</small></div>
       </div>
     </section></details>
@@ -30562,7 +30562,7 @@ function prudentContributionAnalysis(){
     if(idealGap>0){score+=Math.min(16,idealGap*1.6);criteria.push(`abaixo do peso ideal em ${idealGap.toFixed(1)} p.p.`);}
     if(typeTarget>0 && typeGap>0){score+=Math.min(15,typeGap*1.2);criteria.push(`${row.type} abaixo da meta em ${typeGap.toFixed(1)} p.p.`);}
     else if(typeTarget>0 && typeGap<0){score-=Math.min(14,Math.abs(typeGap));criteria.push(`${row.type} acima da meta em ${Math.abs(typeGap).toFixed(1)} p.p.`);}
-    if(dy>0){score+=Math.min(5,dy*.45);criteria.push(`DY ${dy.toFixed(2)}% como apoio`);}
+    if(dy>0){score+=Math.min(5,dy*.45);criteria.push(`DY ${dy.toFixed(2).replace('.',',')}% como apoio`);}
 
     return {...row,asset,signal,valid:true,score,criteria,ideal,typeGap};
   });
@@ -30798,7 +30798,7 @@ function portfolioInsightsSnapshot(source=null){
   if(concentration){
     add({
       id:'concentration-top-asset',category:'concentration',severity:'INFO',title:'Maior concentração',
-      description:`${concentration.ticker||'Ativo'} representa ${Number(concentration.share).toFixed(1)}% da carteira.`,
+      description:`${concentration.ticker||'Ativo'} representa ${Number(concentration.share).toFixed(1).replace('.',',')}% da carteira.`,
       evidence:{ticker:concentration.ticker||'',share:Number(concentration.share),value:Number(concentration.current)||0},
       relatedRoute:'ativos',actionLabel:'Ver Ativos'
     });
@@ -30807,7 +30807,7 @@ function portfolioInsightsSnapshot(source=null){
   if(dominantClass){
     add({
       id:'concentration-dominant-class',category:'concentration',severity:'INFO',title:'Classe dominante',
-      description:`${dominantClass.type} concentra ${Number(dominantClass.share||0).toFixed(1)}% do patrimônio atual.`,
+      description:`${dominantClass.type} concentra ${Number(dominantClass.share||0).toFixed(1).replace('.',',')}% do patrimônio atual.`,
       evidence:{type:dominantClass.type,value:Number(dominantClass.value)||0,share:Number(dominantClass.share)||0},
       relatedRoute:'ativos',actionLabel:'Ver composição'
     });
@@ -30816,7 +30816,7 @@ function portfolioInsightsSnapshot(source=null){
   if(dominantSector){
     add({
       id:'concentration-top-sector',category:'concentration',severity:'INFO',title:'Maior concentração setorial',
-      description:`${dominantSector.sector} representa ${Number(dominantSector.share).toFixed(1)}% da carteira por valor atual.`,
+      description:`${dominantSector.sector} representa ${Number(dominantSector.share).toFixed(1).replace('.',',')}% da carteira por valor atual.`,
       evidence:{sector:dominantSector.sector,share:Number(dominantSector.share),value:Number(dominantSector.current)||0},
       relatedRoute:'ativos',actionLabel:'Ver composição por setor'
     });
@@ -30988,8 +30988,8 @@ function financialGoalsBar(metrics,label,tone){
     : !metrics?.hasTarget
       ? 'Meta nao configurada'
       : metrics.reached
-        ? `Meta atingida, ${(Number(metrics.percent)||0).toFixed(1)}% alcancado`
-        : `${(Number(metrics.percent)||0).toFixed(1)}% alcancado`;
+        ? `Meta atingida, ${(Number(metrics.percent)||0).toFixed(1).replace('.',',')}% alcancado`
+        : `${(Number(metrics.percent)||0).toFixed(1).replace('.',',')}% alcancado`;
   const valueNow=metrics?.hasTarget && metrics?.hasCurrent ? ` aria-valuenow="${Math.max(0, Math.min(100, Number(metrics.barPercent)||0)).toFixed(1)}"` : '';
   return `<div class="dbt financial-goal-progress" role="progressbar" aria-label="${esc(label)}" aria-valuemin="0" aria-valuemax="100"${valueNow} aria-valuetext="${esc(text)}"><div class="dbf" style="width:${width}%;background:${financialGoalsBarColor(tone)}"></div></div>`;
 }
@@ -31014,7 +31014,7 @@ function dashboardFinancialGoalsPanel(data){
     : patrimonyMetrics.reached
       ? 'Meta atingida'
       : patrimonyMetrics.hasTarget
-        ? `${(Number(patrimonyMetrics.percent)||0).toFixed(1)}% alcançado`
+        ? `${(Number(patrimonyMetrics.percent)||0).toFixed(1).replace('.',',')}% alcançado`
         : 'Meta não configurada';
   const patrimonyGap=!patrimonyMetrics.hasCurrent
     ? 'Revise os valores e cotações cadastrados para acompanhar esta meta.'
@@ -31029,7 +31029,7 @@ function dashboardFinancialGoalsPanel(data){
     : incomeMetrics.reached
     ? 'Meta atingida'
     : incomeMetrics.hasTarget
-      ? `${(Number(incomeMetrics.percent)||0).toFixed(1)}% alcançado`
+      ? `${(Number(incomeMetrics.percent)||0).toFixed(1).replace('.',',')}% alcançado`
       : 'Meta não configurada';
   const incomeGap=!incomeMetrics.hasCurrent
     ? 'Progresso indisponível sem cobertura completa do mês'
@@ -31045,7 +31045,7 @@ function dashboardFinancialGoalsPanel(data){
   const currentMonthCount=Number(goals.currentIncomeCount)||0;
   const trendLabel=latestMonth ? `${latestMonth.label} · ${latestMonth.count} lançamento(s)` : 'Sem base real para tendência';
   const trendDetail=latestMonth && previousMonth
-    ? `${latestMonth.diff >= 0 ? '+' : '-'}${fmt(Math.abs(latestMonth.diff||0))}${Number.isFinite(latestMonth.diffPct) ? ` (${latestMonth.diffPct >= 0 ? '+' : ''}${latestMonth.diffPct.toFixed(1)}%)` : ''} vs ${previousMonth.label}`
+    ? `${latestMonth.diff >= 0 ? '+' : '-'}${fmt(Math.abs(latestMonth.diff||0))}${Number.isFinite(latestMonth.diffPct) ? ` (${latestMonth.diffPct >= 0 ? '+' : ''}${latestMonth.diffPct.toFixed(1).replace('.',',')}%)` : ''} vs ${previousMonth.label}`
     : 'Sem comparação oficial anterior';
   const incomeAverage=passiveIncomeValue(incomeStats.monthlyAvg);
   const incomeBestMonth=incomeHistorySummary.best ? `${incomeHistorySummary.best.label} · ${fmt(incomeHistorySummary.best.total)}` : '—';
@@ -31207,7 +31207,7 @@ function dashboardHomeCompositionPanel(data){
             <div class="dashboard-class-title"><span class="dashboard-class-dot" style="background:${palette[idx%palette.length]}"></span>${esc(row.type)}</div>
           </div>
           <div class="dashboard-class-value">${fmt(Number(row.value)||0)}</div>
-          <div class="dashboard-class-share">${pct.toFixed(1)}%</div>
+          <div class="dashboard-class-share">${pct.toFixed(1).replace('.',',')}%</div>
           <div class="dashboard-class-bar" role="presentation"><i style="width:${Math.max(2,Math.min(100,pct)).toFixed(1)}%;background:${palette[idx%palette.length]}"></i></div>
         </div>`;
       }).join('')
@@ -31258,12 +31258,12 @@ function dashboardHomeAttentionPanel(data){
       <div class="premium-panel-badge">${incomplete>0?`${incomplete} dados incompletos`:'Carteira em dia'}</div>
     </div>
     <div class="premium-consultive-grid">
-      ${dashboardConsultiveCard('Maior posição',top1?`${Number(top1.share).toFixed(1)}%`:'—',top1?`${esc(top1.ticker)} · ${fmt(top1.current)}`:'Sem base suficiente',top1?`Top 3: ${esc(top3Text)}`:'Revisar a carteira para leitura mais confiável',top1&&Number(top1.share)>20?'warn':'ok',top1&&typeof dashboardAssetByTicker==='function'&&dashboardAssetByTicker(top1.ticker)?dashboardInlineAction('dashboardOpenAssetByTicker',top1.ticker,'Abrir ativo'):'')}
+      ${dashboardConsultiveCard('Maior posição',top1?`${Number(top1.share).toFixed(1).replace('.',',')}%`:'—',top1?`${esc(top1.ticker)} · ${fmt(top1.current)}`:'Sem base suficiente',top1?`Top 3: ${esc(top3Text)}`:'Revisar a carteira para leitura mais confiável',top1&&Number(top1.share)>20?'warn':'ok',top1&&typeof dashboardAssetByTicker==='function'&&dashboardAssetByTicker(top1.ticker)?dashboardInlineAction('dashboardOpenAssetByTicker',top1.ticker,'Abrir ativo'):'')}
       ${dashboardConsultiveCard('Maiores altas',positives.length?`${positives.length} ativos`:'—',positiveText,positives.length?'Ativos em destaque no momento':'Sem ganho relevante','ok')}
       ${dashboardConsultiveCard('Maiores baixas',negatives.length?`${negatives.length} ativos`:'—',negativeText,negatives.length?'Ativos com pior desempenho':'Sem perda relevante',negatives.length?'danger':'muted')}
     </div>
     <div class="premium-exec-list" style="margin-top:8px">
-      <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Concentração do Top 3</div><div class="premium-exec-sub">${top3.length?`${top3Share.toFixed(1)}% da carteira`:'Sem dados suficientes'}</div></div><div class="premium-exec-value">${top3.length?top3.map(row=>row.ticker).join(' · '):'—'}</div></div>
+      <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Concentração do Top 3</div><div class="premium-exec-sub">${top3.length?`${top3Share.toFixed(1).replace('.',',')}% da carteira`:'Sem dados suficientes'}</div></div><div class="premium-exec-value">${top3.length?top3.map(row=>row.ticker).join(' · '):'—'}</div></div>
       <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Renda fixa incompleta</div><div class="premium-exec-sub">Ativos sem valor atual explícito</div></div><div class="premium-exec-value">${fixedMissing>0?fixedMissing:'OK'}</div></div>
     </div>
   </div>`;
@@ -31302,19 +31302,19 @@ function dashboardPortfolioReading(data){
     },
     {
       title:'Maior concentração',
-      value:top1 ? `${top1.ticker} · ${Number(top1.share).toFixed(1)}%` : 'Dados insuficientes',
+      value:top1 ? `${top1.ticker} · ${Number(top1.share).toFixed(1).replace('.',',')}%` : 'Dados insuficientes',
       sub:top1 ? (Number(top1.share)>20 ? 'Atenção ao peso.' : 'Peso saudável.') : 'Sem base suficiente.',
       tone:top1 && Number(top1.share)>20 ? 'warn' : top1 ? 'ok' : 'muted'
     },
     {
       title:'Top 3 posições',
-      value:top3.length ? `${top3Share.toFixed(1)}%` : '—',
+      value:top3.length ? `${top3Share.toFixed(1).replace('.',',')}%` : '—',
       sub:top3.length ? top3.map(r=>r.ticker).join(' · ') : 'Sem dados suficientes.',
       tone:top3Share>55 ? 'warn' : 'ok'
     },
     {
       title:'Renda fixa',
-      value:portfolioTotal>0 ? `${fixedShare.toFixed(1)}%` : '—',
+      value:portfolioTotal>0 ? `${fixedShare.toFixed(1).replace('.',',')}%` : '—',
       sub:portfolioTotal>0 ? `Aplicado: ${fmt(fixedTotal)}` : 'Sem base suficiente.',
       tone:portfolioTotal>0 && fixedShare>45 ? 'warn' : 'ok'
     },
@@ -31337,9 +31337,9 @@ function dashboardPortfolioReading(data){
         <div class="premium-compact-summary-meta">clique para abrir</div>
       </summary>
       <div class="premium-compact-body">
-        <div class="premium-compact-line"><div class="premium-compact-line-label">Concentração</div><div class="premium-compact-line-value">${top1 ? `${top1.ticker} · ${Number(top1.share).toFixed(1)}%` : 'Sem base'}</div></div>
-        <div class="premium-compact-line"><div class="premium-compact-line-label">Top 3</div><div class="premium-compact-line-value">${top3.length ? `${top3Share.toFixed(1)}%` : '—'}</div></div>
-        <div class="premium-compact-line"><div class="premium-compact-line-label">Renda fixa</div><div class="premium-compact-line-value">${portfolioTotal>0 ? `${fixedShare.toFixed(1)}%` : '—'}</div></div>
+        <div class="premium-compact-line"><div class="premium-compact-line-label">Concentração</div><div class="premium-compact-line-value">${top1 ? `${top1.ticker} · ${Number(top1.share).toFixed(1).replace('.',',')}%` : 'Sem base'}</div></div>
+        <div class="premium-compact-line"><div class="premium-compact-line-label">Top 3</div><div class="premium-compact-line-value">${top3.length ? `${top3Share.toFixed(1).replace('.',',')}%` : '—'}</div></div>
+        <div class="premium-compact-line"><div class="premium-compact-line-label">Renda fixa</div><div class="premium-compact-line-value">${portfolioTotal>0 ? `${fixedShare.toFixed(1).replace('.',',')}%` : '—'}</div></div>
       </div>
     </details>
   </div>`;
@@ -31398,14 +31398,14 @@ function dashboardAttentionRadar(data){
   const cards=[
     {
       title:'Concentração',
-      status:top1 ? `${Number(top1.share).toFixed(1)}%` : 'Dados insuficientes',
+      status:top1 ? `${Number(top1.share).toFixed(1).replace('.',',')}%` : 'Dados insuficientes',
       tone:top1 && Number(top1.share)>30 ? 'danger' : top1 && Number(top1.share)>20 ? 'warn' : top1 ? 'ok' : 'muted',
       text:top1 ? `${top1.ticker} lidera a carteira.` : 'Sem base suficiente para medir o peso do líder.',
       action:top1 ? (Number(top1.share)>20 ? 'Atenção antes de novos aportes.' : 'Peso saudável.') : 'Completar dados ajuda.'
     },
     {
       title:'Renda passiva',
-      status:target>0 && averageComplete ? `${((monthlyAvg/target)*100).toFixed(1)}%` : target>0?'Indisponível':'Sem meta',
+      status:target>0 && averageComplete ? `${((monthlyAvg/target)*100).toFixed(1).replace('.',',')}%` : target>0?'Indisponível':'Sem meta',
       tone:target>0 && !averageComplete?'muted':target>0 && monthlyAvg<target ? 'warn' : 'ok',
       text:target>0 ? (averageComplete?`Média de ${fmt(monthlyAvg)} frente à meta de ${fmt(target)}.`:`Cobertura confirmada insuficiente para comparar com a meta de ${fmt(target)}.`) : 'Defina a meta mensal para medir progresso.',
       action:target>0 && averageComplete && monthlyAvg<target ? 'Acompanhar evolução mensal.' : averageComplete?'Meta acompanhada.':'Aguardando cobertura completa.'
@@ -31426,7 +31426,7 @@ function dashboardAttentionRadar(data){
     },
     {
       title:'Renda fixa',
-      status:fixedMissing>0 ? `${fixedMissing} pend.` : `${fixedShare.toFixed(1)}%`,
+      status:fixedMissing>0 ? `${fixedMissing} pend.` : `${fixedShare.toFixed(1).replace('.',',')}%`,
       tone:fixedMissing>0 ? 'warn' : fixedShare>45 ? 'warn' : 'ok',
       text:fixedMissing>0 ? 'Há títulos de renda fixa sem valor atual explícito.' : 'Participação de renda fixa calculada pela posição atual.',
       action:fixedMissing>0 ? 'Completar valor atual ou líquido.' : 'Acompanhar vencimentos.'
@@ -31457,7 +31457,7 @@ function dashboardIncomeSnapshot(data){
     <div class="premium-exec-list">
       <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Total recebido</div><div class="premium-exec-sub">${launches} lançamento${launches===1?'':'s'} no período · ${esc(data.recent.coverage||'UNKNOWN')}</div></div><div class="premium-exec-value gn">${passiveIncomeValue(data.recent.total)}</div></div>
       <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Melhor pagador</div><div class="premium-exec-sub">${best?best.count||0:'—'} lançamento${best&&best.count===1?'':'s'} no período</div></div><div class="premium-exec-value">${best?`${best.ticker||best.key||'—'} · ${fmt(best.total||0)}`:'Sem dados'}</div></div>
-      <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Meta</div><div class="premium-exec-sub">${target>0 && goalPct!==null?`${goalPct.toFixed(1)}% da meta`:target>0?'Cobertura 12M incompleta':'Sem meta definida'}</div></div><div class="premium-exec-value ${target>0 && goalPct!==null && goalPct>=100?'gn':'am'}">${target>0?passiveIncomeValue(monthlyAvg):'—'}</div></div>
+      <div class="premium-exec-row"><div class="premium-exec-left"><div class="premium-exec-title">Meta</div><div class="premium-exec-sub">${target>0 && goalPct!==null?`${goalPct.toFixed(1).replace('.',',')}% da meta`:target>0?'Cobertura 12M incompleta':'Sem meta definida'}</div></div><div class="premium-exec-value ${target>0 && goalPct!==null && goalPct>=100?'gn':'am'}">${target>0?passiveIncomeValue(monthlyAvg):'—'}</div></div>
     </div>
     <div class="premium-panel-actions"><button class="btn bgh" onclick="go('dividendos')">Ver dividendos</button></div>
   </div>`;
@@ -32303,13 +32303,13 @@ function rendaFixaTab(){
       <div class="premium-rf-review-groups">${reviewCount ? reviewQueue : '<div class="premium-rf-review-empty ds-empty-state" style="padding:14px 15px">Nenhum ponto de conferência encontrado.</div>'}</div>
     </section>`;
 
-  const distributionRows=(rows,label)=>rows.length ? rows.map(row=>`<div class="premium-rf-distribution-row"><span class="premium-rf-distribution-label">${esc(row[label])}</span><span class="premium-rf-distribution-value">${fmt(row.value)} · ${row.share.toFixed(1)}%</span></div>`).join('') : '<div class="premium-rf-empty">Dados insuficientes para distribuir.</div>';
+  const distributionRows=(rows,label)=>rows.length ? rows.map(row=>`<div class="premium-rf-distribution-row"><span class="premium-rf-distribution-label">${esc(row[label])}</span><span class="premium-rf-distribution-value">${fmt(row.value)} · ${row.share.toFixed(1).replace('.',',')}%</span></div>`).join('') : '<div class="premium-rf-empty">Dados insuficientes para distribuir.</div>';
 
   const typeRows=data.typeRows.length ? data.typeRows.map(row=>`
     <div class="premium-income-row">
       <div class="premium-row-main">
         <div class="premium-row-title">${esc(row.type)}</div>
-        <div class="premium-row-sub">${row.count} título${row.count===1?'':'s'} · ${row.share.toFixed(1)}% da renda fixa</div>
+        <div class="premium-row-sub">${row.count} título${row.count===1?'':'s'} · ${row.share.toFixed(1).replace('.',',')}% da renda fixa</div>
       </div>
       <div class="premium-row-value">${fmt(row.value)}</div>
     </div>`).join('') : '<div class="rf-empty">Nenhum título de renda fixa cadastrado.</div>';
@@ -32318,7 +32318,7 @@ function rendaFixaTab(){
     <div class="premium-income-row">
       <div class="premium-row-main">
         <div class="premium-row-title">${esc(row.bucket)}</div>
-        <div class="premium-row-sub">${row.count} título${row.count===1?'':'s'} · ${row.share.toFixed(1)}% da renda fixa</div>
+        <div class="premium-row-sub">${row.count} título${row.count===1?'':'s'} · ${row.share.toFixed(1).replace('.',',')}% da renda fixa</div>
       </div>
       <div class="premium-row-value">${fmt(row.value)}</div>
     </div>`).join('') : '<div class="rf-empty">Sem vencimentos cadastrados.</div>';
@@ -32686,7 +32686,7 @@ function dashLegacy(){
   const perfRows=(items,maxAbs,kind)=>items.length
     ? items.map(a=>{
         const pct=a.changePct||0;
-        const pctTxt=`${pct>0?'+':''}${pct.toFixed(1)}%`;
+        const pctTxt=`${pct>0?'+':''}${pct.toFixed(1).replace('.',',')}%`;
         const barW=Math.max(8,Math.min(100,(Math.abs(pct)/maxAbs)*100));
         const pm=`${fmt(a.avg)}`;
         const atual=`${fmt(a.cur)}`;
@@ -32756,7 +32756,7 @@ function dashLegacy(){
       </div>
       <div class="dash-value">
         <div class="cv bl">${fmtP(tGP)}</div>
-        <div class="cs">${avgDY.toFixed(2)}% DY médio · ${S.assets.length} ativos</div>
+        <div class="cs">${avgDY.toFixed(2).replace('.',',')}% DY médio · ${S.assets.length} ativos</div>
       </div>
       <div class="dash-foot">Retorno e eficiência.</div>
     </div>
@@ -32997,7 +32997,7 @@ function renderAssetRow(a, totalCart) {
   const positionValueDisplay = displayCurrentValue == null ? '—' : fmt(displayCurrentValue);
   const resultMoneyDisplay = result == null ? '—' : `${resultPrefix2}${fmt(result)}`;
   const returnDisplay = returnPct == null ? '—' : fmtP(returnPct);
-  const shareDisplay = share == null ? '—' : `${share.toFixed(2)}%`;
+  const shareDisplay = share == null ? '—' : `${share.toFixed(2).replace('.',',')}%`;
   
   const type = normalizeType(a.type || metaTicker(a.ticker).type || 'Ação', 'Ação');
   const typeBadge = `<span class="asset-type type-${String(type).toLowerCase().replace('ç','c').replace('ã','a')}">${esc(type)}</span>`;
@@ -33006,7 +33006,7 @@ function renderAssetRow(a, totalCart) {
   const dyDisplay = hasDy ? fmtP(Number(a.dy)) : '—';
   const hasTarget = hasOwnFiniteNumber(a, ['target_price', 'alvo']);
   const targetDisplay = hasTarget ? fmt(Number(a.target_price || a.alvo)) : '—';
-  const idealPct = hasOwnFiniteNumber(a, ['ideal_pct', 'idealPct']) ? `${Number(a.ideal_pct || a.idealPct).toFixed(1)}%` : '—';
+  const idealPct = hasOwnFiniteNumber(a, ['ideal_pct', 'idealPct']) ? `${Number(a.ideal_pct || a.idealPct).toFixed(1).replace('.',',')}%` : '—';
   const divMonth = hasOwnFiniteNumber(a, ['div_month', 'divMonth']) ? fmt(Number(a.div_month || a.divMonth)) : '—';
   
   const tickerVar = '—';
@@ -33578,7 +33578,7 @@ function patrimonioTab(){
       </div>
       <div class="patrimonio-top-asset-value">
         <div class="patrimonio-top-asset-amount">${fmt(asset.currentValue)}</div>
-        <div class="patrimonio-top-asset-perc ${resultTone}">${share.toFixed(1)}% do exibido · ${asset.pct===null?'resultado indisponível':`${asset.result>=0?'+':''}${fmtP(asset.pct)}`}</div>
+        <div class="patrimonio-top-asset-perc ${resultTone}">${share.toFixed(1).replace('.',',')}% do exibido · ${asset.pct===null?'resultado indisponível':fmtP(asset.pct)}</div>
       </div>
       <div class="patrimonio-top-asset-bar-wrap"><div class="patrimonio-top-asset-bar" style="width:${barWidth.toFixed(1)}%"></div></div>
     </div>`;
@@ -33641,11 +33641,11 @@ function patrimonioTab(){
           </div>
         </div>
         <div class="patrimony-composition-stats">
-          <div class="patrimony-composition-stat"><div class="patrimony-composition-label">Aportes no patrimônio</div><div class="patrimony-composition-value pu">${appliedShare.toFixed(1)}%</div></div>
+          <div class="patrimony-composition-stat"><div class="patrimony-composition-label">Aportes no patrimônio</div><div class="patrimony-composition-value pu">${appliedShare.toFixed(1).replace('.',',')}%</div></div>
           <div class="patrimony-composition-stat"><div class="patrimony-composition-label">${tG>=0?'Ganho no patrimônio':'Perda sobre patrimônio'}</div><div class="patrimony-composition-value ${resultTone}">${fmtP(resultShare)}</div></div>
           <div class="patrimony-composition-stat"><div class="patrimony-composition-label">Resultado acumulado</div><div class="patrimony-composition-value ${resultTone}">${fmt(tG)}</div></div>
         </div>
-        <div class="patrimony-composition-text">${tG>0?`O patrimônio atual combina capital aportado com ${fmt(tG)} de valorização. Aproximadamente ${positiveResultShare.toFixed(1)}% do valor atual representa ganho de capital.`:tG<0?`O patrimônio é formado pelos aportes, mas uma perda de ${fmt(Math.abs(tG))} reduziu o valor atual. O crescimento depende principalmente de novos aportes enquanto essa diferença permanecer.`:'O patrimônio atual está praticamente igual ao capital aplicado; neste momento, o crescimento vem principalmente dos aportes.'}</div>`:`<div class="premium-empty">Composição indisponível: valores correntes ou base aplicada incompletos.</div>`}
+        <div class="patrimony-composition-text">${tG>0?`O patrimônio atual combina capital aportado com ${fmt(tG)} de valorização. Aproximadamente ${positiveResultShare.toFixed(1).replace('.',',')}% do valor atual representa ganho de capital.`:tG<0?`O patrimônio é formado pelos aportes, mas uma perda de ${fmt(Math.abs(tG))} reduziu o valor atual. O crescimento depende principalmente de novos aportes enquanto essa diferença permanecer.`:'O patrimônio atual está praticamente igual ao capital aplicado; neste momento, o crescimento vem principalmente dos aportes.'}</div>`:`<div class="premium-empty">Composição indisponível: valores correntes ou base aplicada incompletos.</div>`}
       </div>
       <div class="patrimonio-panel patrimonio-panel-insights">
               <div class="patrimonio-panel-head"><div><h2 class="patrimonio-panel-title">Registros do período</h2><div class="patrimonio-panel-sub">Aportes registrados em ${monthsWithData} de ${totalMonths} meses (${movementPct}% com movimento registrado); valuation histórico não disponível.</div></div><div class="patrimonio-panel-badge">${data.count} meses</div></div>
@@ -34074,7 +34074,7 @@ function ativos(){
       const positionValueDisplay = displayCurrentValue == null ? '—' : fmt(displayCurrentValue);
       const resultMoneyDisplay = result == null ? '—' : `${resultPrefix2}${fmt(result)}`;
       const returnDisplay = returnPct == null ? '—' : fmtP(returnPct);
-      const shareDisplay = share == null ? '—' : `${share.toFixed(2)}%`;
+      const shareDisplay = share == null ? '—' : `${share.toFixed(2).replace('.',',')}%`;
 
       const typeBadge = `<span class="asset-type type-${String(type).toLowerCase().replace('ç','c').replace('ã','a')}">${esc(type)}</span>`;
       const sector = String(a.sector || metaTicker(a.ticker).sector || '').trim() || '—';
@@ -34085,11 +34085,11 @@ function ativos(){
       const dyDisplay = hasDy ? fmtP(Number(a.dy)) : '—';
       const hasTarget = hasOwnFiniteNumber(a, ['target_price', 'alvo']);
       const targetDisplay = hasTarget ? fmt(Number(a.target_price || a.alvo)) : '—';
-      const idealPct = hasOwnFiniteNumber(a, ['ideal_pct', 'idealPct']) ? `${Number(a.ideal_pct || a.idealPct).toFixed(1)}%` : '—';
+      const idealPct = hasOwnFiniteNumber(a, ['ideal_pct', 'idealPct']) ? `${Number(a.ideal_pct || a.idealPct).toFixed(1).replace('.',',')}%` : '—';
       const divMonth = hasOwnFiniteNumber(a, ['div_month', 'divMonth']) ? fmt(Number(a.div_month || a.divMonth)) : '—';
 
       // Ticker variation
-      const tickerVar = analysisRow?.variation ? `${analysisRow.variation > 0 ? '+' : ''}${analysisRow.variation.toFixed(2)}%` : '—';
+      const tickerVar = analysisRow?.variation ? `${analysisRow.variation > 0 ? '+' : ''}${analysisRow.variation.toFixed(2).replace('.',',')}%` : '—';
       const tickerVarClass = analysisRow?.variation > 0 ? 'positive-text' : analysisRow?.variation < 0 ? 'negative-text' : '';
 
       return `<tr data-id="${esc(a.id)}" class="asset-premium-card">
@@ -34158,7 +34158,7 @@ function ativos(){
       const positionValueDisplay = displayCurrentValue == null ? '—' : fmt(displayCurrentValue);
       const resultMoneyDisplay = result == null ? '—' : `${resultPrefix2}${fmt(result)}`;
       const returnDisplay = returnPct == null ? '—' : fmtP(returnPct);
-      const shareDisplay = share == null ? '—' : `${share.toFixed(2)}%`;
+      const shareDisplay = share == null ? '—' : `${share.toFixed(2).replace('.',',')}%`;
 
       const typeBadge = `<span class="asset-type type-${String(type).toLowerCase().replace('ç','c').replace('ã','a')}">${esc(type)}</span>`;
       const sector = String(a.sector || metaTicker(a.ticker).sector || '').trim() || '—';
@@ -34206,7 +34206,7 @@ function ativos(){
         <div class="acc-icon" style="background: ${type === 'Ação' ? 'rgba(59, 130, 246, 0.15)' : type === 'FII' ? 'rgba(139, 92, 246, 0.15)' : type === 'ETF' ? 'rgba(245, 197, 66, 0.15)' : type === 'Renda Fixa' ? 'rgba(16, 185, 129, 0.15)' : type === 'BDR' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(168, 85, 247, 0.15)'}; color: ${type === 'Ação' ? 'var(--info)' : type === 'FII' ? 'var(--ds-info)' : type === 'ETF' ? 'var(--warning)' : type === 'Renda Fixa' ? 'var(--success)' : type === 'BDR' ? 'var(--warning)' : 'var(--accent)'}">${icon}</div>
         <div>
           <div class="acc-name">${esc(type)}</div>
-          <div class="acc-sub">${type === 'Renda Fixa' ? `${typeCount} título${typeCount !== 1 ? 's' : ''}` : `${typeCount} ativo${typeCount !== 1 ? 's' : ''}`}${typeTotalValue == null || S.hideValues ? '' : ` • ${fmt(typeTotalValue)}`}${typeWeight == null || S.hideValues ? '' : ` • ${typeWeight.toFixed(1)}% da carteira`} ${reviewFilterActive ? ' · filtrados' : ''}</div>
+          <div class="acc-sub">${type === 'Renda Fixa' ? `${typeCount} título${typeCount !== 1 ? 's' : ''}` : `${typeCount} ativo${typeCount !== 1 ? 's' : ''}`}${typeTotalValue == null || S.hideValues ? '' : ` • ${fmt(typeTotalValue)}`}${typeWeight == null || S.hideValues ? '' : ` • ${typeWeight.toFixed(1).replace('.',',')}% da carteira`} ${reviewFilterActive ? ' · filtrados' : ''}</div>
         </div>
       </div>
       <div>
@@ -34226,8 +34226,8 @@ function ativos(){
         <div class="acc-metric-value ${returnTone}">${typeReturn == null ? '—' : fmtP(typeReturn)}</div>
       </div>
       <div>
-        <div class="acc-metric-label ag-k">Peso <span class="acc-metric-sub-label">· Meta ${typeGoalPct == null ? '—' : `${typeGoalPct.toFixed(1)}%`}</span></div>
-        <div class="acc-metric-value">${typeWeight == null ? '—' : `${typeWeight.toFixed(2)}%`}${typeGoalGap == null ? '' : ` <span class="acc-metric-goal-gap ${typeGoalGap>0?'above':typeGoalGap<0?'below':''}">(${typeGoalGap>=0?'+':''}${typeGoalGap.toFixed(1)} p.p.)</span>`}</div>
+        <div class="acc-metric-label ag-k">Peso <span class="acc-metric-sub-label">· Meta ${typeGoalPct == null ? '—' : `${typeGoalPct.toFixed(1).replace('.',',')}%`}</span></div>
+        <div class="acc-metric-value">${typeWeight == null ? '—' : `${typeWeight.toFixed(2).replace('.',',')}%`}${typeGoalGap == null ? '' : ` <span class="acc-metric-goal-gap ${typeGoalGap>0?'above':typeGoalGap<0?'below':''}">(${typeGoalGap>=0?'+':''}${typeGoalGap.toFixed(1)} p.p.)</span>`}</div>
       </div>
       <span class="acc-toggle" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
     `;
@@ -34259,7 +34259,7 @@ function ativos(){
           <div class="rf-category-metric"><small>Atual</small><b>${Number.isFinite(current)?fmt(current):'—'}</b></div>
           <div class="rf-category-metric ${pClass}"><small>Resultado da posição</small><b>${Number.isFinite(profit)?assetSignedMoneyText(profit):'—'}</b></div>
           <div class="rf-category-metric ${rClass}"><small>Rentab. da posição</small><b>${Number.isFinite(rentab)?fmtP(rentab):'—'}</b></div>
-          <div class="rf-category-metric"><small>% carteira</small><b>${share==null?'—':share.toFixed(1)+'%'}</b></div>
+          <div class="rf-category-metric"><small>% carteira</small><b>${share==null?'—':share.toFixed(1).replace('.',',')+'%'}</b></div>
           <div>${assetActionMenuHtml(a, true, `group-rf-${a.id}`)}</div>
         </div>`;
       }).join('');
@@ -35505,7 +35505,7 @@ function allocationGoalModal(){
         <span style="width:10px;height:10px;border-radius:3px;background:${color};flex:none"></span>
         <div style="min-width:0">
           <div style="font-weight:700;color:#e2eaf6;font-size:13px;line-height:1.1">${esc(it.type)}</div>
-          <div class="mu" style="font-size:12px;line-height:1.35">${total>0 ? `Atual: ${actualPct.toFixed(1)}% · Diferença: ${diff>=0?'+':''}${diff.toFixed(1)}%` : 'Sem posições para comparar ainda'}</div>
+          <div class="mu" style="font-size:12px;line-height:1.35">${total>0 ? `Atual: ${actualPct.toFixed(1).replace('.',',')}% · Diferença: ${diff>=0?'+':''}${diff.toFixed(1).replace('.',',')}%` : 'Sem posições para comparar ainda'}</div>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:5px;justify-content:flex-end">
@@ -35518,7 +35518,7 @@ function allocationGoalModal(){
   }).join('');
   const donutStyle = `width:184px;height:184px;border-radius:50%;background:${chart};position:relative;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px #1e2a3d`;
     const center = `<div style="width:104px;height:104px;border-radius:50%;background:#0d111e;border:1px solid #1e2a3d;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center">
-        <div style="font-size:20px;font-weight:800;color:#e2eaf6;line-height:1">${totalTarget.toFixed(0)}%</div>
+        <div style="font-size:20px;font-weight:800;color:#e2eaf6;line-height:1">${totalTarget.toFixed(0).replace('.',',')}%</div>
         <div class="mu" style="font-size:12px;line-height:1.3">objetivo total</div>
       </div>`;
     return `<div class="note-overlay" onclick="if(event.target===this) closeAllocationGoal()" role="dialog" aria-modal="true" aria-label="Distribuição da carteira">
@@ -35529,7 +35529,7 @@ function allocationGoalModal(){
             <h3>Distribuição da carteira</h3>
             <p>Defina a porcentagem ideal por categoria para manter sua carteira equilibrada.</p>
           </div>
-          <div class="note-pill">${totalTarget.toFixed(0)}% total</div>
+          <div class="note-pill">${totalTarget.toFixed(0).replace('.',',')}% total</div>
         </div>
       </div>
       <div class="sec-body" style="display:grid;grid-template-columns:200px 1fr;gap:12px;align-items:start;overflow:auto;min-height:0">
@@ -35557,7 +35557,7 @@ function allocationGoalModal(){
                 <div class="sec-title">Total configurado</div>
                 <div class="sec-meta">A soma ideal deve fechar em 100%.</div>
               </div>
-              <div style="font-size:16px;font-weight:800;color:${Math.abs(totalTarget-100)<0.05?'#34d399':'#fbbf24'}">${totalTarget.toFixed(1)}%</div>
+              <div style="font-size:16px;font-weight:800;color:${Math.abs(totalTarget-100)<0.05?'#34d399':'#fbbf24'}">${totalTarget.toFixed(1).replace('.',',')}%</div>
             </div>
           </div>
         </div>
@@ -36005,7 +36005,7 @@ function dividendAssetSummary(rows){
 function dividendDataQualityPanel(rows){
   const quality=globalThis.V210IncomeQuality?.dividendQuality?.(rows)||{count:0,assetCount:0,sourceCount:0,typeCount:0,unknownTickerCount:0,top3Share:0,topAssets:[]};
   const top=quality.topAssets?.length ? quality.topAssets.map(([ticker,value])=>`${esc(ticker)} ${fmt(value)}`).join(' · ') : 'Sem concentração calculável';
-  return `<section class="premium-panel dividend-quality-panel" aria-labelledby="dividend-quality-title"><div class="premium-panel-head"><div><div class="premium-panel-title" id="dividend-quality-title">Qualidade da leitura</div><div class="premium-panel-sub">Indicadores descritivos do ledger filtrado; não são uma recomendação.</div></div><span class="div-premium-status neutral">${quality.count} eventos</span></div><div class="dividend-quality-grid"><div><strong>${quality.assetCount}</strong><span>ativos pagadores</span></div><div><strong>${quality.sourceCount}</strong><span>origens observadas</span></div><div><strong>${quality.typeCount}</strong><span>tipos identificados</span></div><div><strong>${quality.unknownTickerCount}</strong><span>sem ticker</span></div></div><p class="dividend-quality-note">Top 3 pagadores: <strong>${quality.top3Share.toFixed(1)}%</strong> do período · ${top}</p></section>`;
+  return `<section class="premium-panel dividend-quality-panel" aria-labelledby="dividend-quality-title"><div class="premium-panel-head"><div><div class="premium-panel-title" id="dividend-quality-title">Qualidade da leitura</div><div class="premium-panel-sub">Indicadores descritivos do ledger filtrado; não são uma recomendação.</div></div><span class="div-premium-status neutral">${quality.count} eventos</span></div><div class="dividend-quality-grid"><div><strong>${quality.assetCount}</strong><span>ativos pagadores</span></div><div><strong>${quality.sourceCount}</strong><span>origens observadas</span></div><div><strong>${quality.typeCount}</strong><span>tipos identificados</span></div><div><strong>${quality.unknownTickerCount}</strong><span>sem ticker</span></div></div><p class="dividend-quality-note">Top 3 pagadores: <strong>${quality.top3Share.toFixed(1).replace('.',',')}%</strong> do período · ${top}</p></section>`;
 }
 function dividendTimelineSummary(rows){
   const stats=passiveIncomeGoalStats();
@@ -36093,9 +36093,9 @@ function dividendsByAssetView(rows){
     return `<details class="div-asset-group">
       <summary style="--asset-share:${Math.max(8,Math.min(100,share)).toFixed(1)}%" title="${esc([group.ticker, group.name, fmt(group.total), group.count, share.toFixed(1)].join(' · '))}" aria-label="${esc(`${group.ticker || group.name || 'Ativo'} · ${fmt(group.total)} · ${group.count} lançamento(s)`)}">
         <div class="div-asset-rank">#${index+1}</div>
-        <div><div class="div-asset-name">${esc(group.ticker)}</div><div class="div-asset-sub">${esc(group.name)} · ${share.toFixed(1)}% do total</div></div>
+        <div><div class="div-asset-name">${esc(group.ticker)}</div><div class="div-asset-sub">${esc(group.name)} · ${share.toFixed(1).replace('.',',')}% do total</div></div>
         <div class="div-asset-stat"><span>Recebido</span><strong>${fmt(group.total)}</strong></div>
-        <div class="div-asset-stat"><span>%</span><strong>${share.toFixed(1)}%</strong></div>
+        <div class="div-asset-stat"><span>%</span><strong>${share.toFixed(1).replace('.',',')}%</strong></div>
         <div class="div-asset-bar-wrap"><div class="div-asset-bar" style="width:${barWidth.toFixed(1)}%"></div></div>
       </summary>
       <div class="ag-body">${dividendRecentList(group.rows,4)}</div>
@@ -36240,7 +36240,7 @@ function dividendMonthlyHistoryComparisonText(row){
   const diffAbs=Math.abs(row.diff);
   const diffLabel=`${row.diff>=0?'+':'-'}${fmt(diffAbs)}`;
   if(!(row.diffPct>0 || row.diffPct<0)) return diffLabel;
-  return `${diffLabel} (${row.diffPct>=0?'+':''}${row.diffPct.toFixed(1)}%)`;
+  return `${diffLabel} (${row.diffPct>=0?'+':''}${row.diffPct.toFixed(1).replace('.',',')}%)`;
 }
 function dividendMonthlyHistoryToggleMonth(monthKey){
   const raw=String(monthKey||'').trim();
@@ -36982,7 +36982,7 @@ function dividendSummaryCards(){
   return `<div class="div-premium-metrics">
     <div class="div-premium-metric"><div class="div-premium-metric-label">Recebido este mês</div><div class="div-premium-metric-value good">${current.total===null?'—':fmt(current.total)}</div><div class="div-premium-metric-sub">${current.coverage==='COMPLETE'?'Cobertura completa confirmada':current.coverage==='PARTIAL'?'Recebido registrado · cobertura parcial':'Cobertura desconhecida'}</div></div>
     <div class="div-premium-metric"><div class="div-premium-metric-label">Total últimos 12 meses</div><div class="div-premium-metric-value good">${passiveIncomeValue(stats.total12)}</div><div class="div-premium-metric-sub">Cobertura confirmada: ${complete.length}/12 meses · média ${passiveIncomeValue(stats.monthlyAvg)} · projeção ${passiveIncomeValue(stats.annualProjection)}</div></div>
-    <div class="div-premium-metric"><div class="div-premium-metric-label">Meta mensal</div><div class="div-premium-metric-value">${stats.target>0?fmt(stats.target):'—'}</div><div class="div-premium-metric-sub">${stats.target>0 && current.coverage==='COMPLETE'?`${((current.total/stats.target)*100).toFixed(1)}% do mês completo vs meta`:current.coverage==='PARTIAL'?'Subtotal recebido · cobertura parcial, sem comparação com a meta':'Lida da aba Metas · recebido indisponível'}</div></div>
+    <div class="div-premium-metric"><div class="div-premium-metric-label">Meta mensal</div><div class="div-premium-metric-value">${stats.target>0?fmt(stats.target):'—'}</div><div class="div-premium-metric-sub">${stats.target>0 && current.coverage==='COMPLETE'?`${((current.total/stats.target)*100).toFixed(1).replace('.',',')}% do mês completo vs meta`:current.coverage==='PARTIAL'?'Subtotal recebido · cobertura parcial, sem comparação com a meta':'Lida da aba Metas · recebido indisponível'}</div></div>
     <div class="div-premium-metric"><div class="div-premium-metric-label">Revisão</div><div class="div-premium-metric-value ${reviewPending?'warn':'good'}">${reviewPending}</div><div class="div-premium-metric-sub">${reviewNote}</div>${reviewPending?`<div style="margin-top:8px"><button class="btn bgh" style="min-height:30px;padding:6px 10px;font-size:11px" onclick="setDividendViewMode('review')">Ver revisão</button></div>`:''}</div>
     </div>`;
 }
@@ -37045,7 +37045,7 @@ function dividendDistributionRow(month, maxVal){
   const pct=maxVal>0?Math.max(0.5,Math.min(100,month.total/maxVal*100)):0;
   const isZero=month.total===0;
   const cls='div-dist-fill'+(isZero?' empty':'');
-  const width=pct>0?`${pct.toFixed(1)}%`:maxVal===0?'100%':'0%';
+  const width=pct>0?`${pct.toFixed(1).replace('.',',')}%`:maxVal===0?'100%':'0%';
   const valCls='div-dist-value'+(isZero?' zero':'');
   const valueLabel=month.coverage!=='COMPLETE'?(month.total>0?`${fmt(month.total)} · Parcial`:'— · Parcial'):fmt(month.total);
   return `<div class="div-dist-row"><div class="div-dist-month">${esc(label)}</div><div class="div-dist-track"><div class="${cls}" style="width:${width}"></div></div><div class="${valCls}">${valueLabel}</div></div>`;
@@ -37250,7 +37250,7 @@ function canonDividendYearSummary(rows){
         <span class="canon-year-sum-year">${g.year}</span>
         <span class="canon-year-sum-track"><i style="width:${Math.max(2,Math.min(100,share)).toFixed(1)}%;background:${yearColors[ordered.indexOf(g)%yearColors.length]}"></i></span>
         <span class="canon-year-sum-val">${fmt(g.total)}</span>
-        <span class="canon-year-sum-count">${share.toFixed(1)}% · ${g.count} lançamento(s)</span>
+        <span class="canon-year-sum-count">${share.toFixed(1).replace('.',',')}% · ${g.count} lançamento(s)</span>
       </div>`;
     }).join('')}</div>
   </div>`;
@@ -37280,8 +37280,8 @@ function v253DividendIntelligencePanel(rows){
     </div>
     <div class="v253-income-grid">
       <div class="v253-income-card"><h3>Renda mensal</h3><p class="v253-income-note">Valores recebidos por mês · período coberto</p><div class="v253-month-list">${list(months,row=>`<div class="v253-month-row"><span>${esc(row.month)}</span><i><b style="width:${Math.max(2,Math.min(100,model.monthly.total?row.paidTotal/model.monthly.total*100:0)).toFixed(1)}%"></b></i><strong>${money(row.paidTotal)}</strong></div>`,'Sem pagamentos pagos no período.')}</div></div>
-      <div class="v253-income-card"><h3>Quem mais gerou renda</h3><p class="v253-income-note">Contribuição histórica do período coberto</p><div class="v253-ranked-list">${list(topAssets,row=>`<div><span>${esc(row.name)}</span><strong>${money(row.paidIncome)}</strong><small>${(row.shareOfCoveredIncome*100).toFixed(1)}%</small></div>`,'Sem contribuição classificável.')}</div></div>
-      <div class="v253-income-card"><h3>Por classe</h3><p class="v253-income-note">Sem recomendação; apenas composição observada</p><div class="v253-ranked-list">${list(topClasses,row=>`<div><span>${esc(row.name)}</span><strong>${money(row.paidIncome)}</strong><small>${(row.shareOfCoveredIncome*100).toFixed(1)}%</small></div>`,'Classe indisponível.')}</div></div>
+      <div class="v253-income-card"><h3>Quem mais gerou renda</h3><p class="v253-income-note">Contribuição histórica do período coberto</p><div class="v253-ranked-list">${list(topAssets,row=>`<div><span>${esc(row.name)}</span><strong>${money(row.paidIncome)}</strong><small>${(row.shareOfCoveredIncome*100).toFixed(1).replace('.',',')}%</small></div>`,'Sem contribuição classificável.')}</div></div>
+      <div class="v253-income-card"><h3>Por classe</h3><p class="v253-income-note">Sem recomendação; apenas composição observada</p><div class="v253-ranked-list">${list(topClasses,row=>`<div><span>${esc(row.name)}</span><strong>${money(row.paidIncome)}</strong><small>${(row.shareOfCoveredIncome*100).toFixed(1).replace('.',',')}%</small></div>`,'Classe indisponível.')}</div></div>
       <div class="v253-income-card"><h3>Calendário de renda</h3><p class="v253-income-note">Data, status e valor do ledger; anunciados não são recebimentos</p><div class="v253-ranked-list">${list(calendar,row=>`<div><span>${esc(row.ticker)} · ${esc(row.type)}</span><strong>${row.date?brDate(row.date):'Data indisponível'}</strong><small>${row.state}${row.state==='PAID'?` · ${money(row.value)}`:''}</small></div>`,'Nenhum evento de renda disponível.')}</div></div>
     </div>
   </section>`;
@@ -37471,12 +37471,12 @@ function dividendsLegacyTab(showGoal=false,pageTitle='Dividendos e Proventos'){
         <td style="font-weight:700;color:#e2eaf6">${esc(a.ticker)}</td>
         <td>${esc(a.type)}</td><td>${a.qty}</td>
         <td>${fmt(Number(a.current_price))}</td>
-        <td class="am" style="font-weight:600">${Number(a.dy||0).toFixed(2)}%</td>
+        <td class="am" style="font-weight:600">${Number(a.dy||0).toFixed(2).replace('.',',')}%</td>
         <td class="am" style="font-weight:700">${fmt(dm)}</td>
         <td>${fmt(dm*12)}</td>
         <td><div style="display:flex;align-items:center;gap:7px">
           <div class="bwr"><div class="bfr" style="width:${Math.min(pct,100).toFixed(0)}%"></div></div>
-          <span class="mu" style="font-size:11px">${pct.toFixed(1)}%</span>
+          <span class="mu" style="font-size:11px">${pct.toFixed(1).replace('.',',')}%</span>
         </div></td>
       </tr>`;
     }).join('');
@@ -37533,7 +37533,7 @@ function dividendsLegacyTab(showGoal=false,pageTitle='Dividendos e Proventos'){
                         <td>
                           <div style="display:flex;align-items:center;gap:8px">
                             <div class="bwr" style="width:120px"><div class="bfr" style="width:${Math.min(100,pct).toFixed(0)}%;background:#34d399"></div></div>
-                            <span class="mu" style="font-size:11px">${pct.toFixed(1)}%</span>
+                            <span class="mu" style="font-size:11px">${pct.toFixed(1).replace('.',',')}%</span>
                           </div>
                         </td>
                       </tr>`;
@@ -37923,7 +37923,7 @@ function metasTab(){
   const metaPatStatus=goalStatusPresentation(metaPatMetrics,metaPatValor>0);
   const metaPatTime=metaPatMetrics.hasCurrent?estimateGoalMonths(metaPatMetrics.current,metaPatValor,metaPatAporte,metaPatVar):null;
   const metaPatPrimaryProgress=metaPatMetrics.hasCurrent&&metaPatMetrics.hasTarget
-    ? '<div class="metas-primary-goal-progress"><div><span>Progresso registrado</span><strong>'+metaPatMetrics.percent.toFixed(1)+'%</strong></div><div class="metas-primary-goal-track"><span style="width:'+Math.min(100,metaPatMetrics.barPercent)+'%"></span></div><small>Simulação de prazo: '+formatGoalMonths(metaPatTime)+'. Premissas não garantem resultado.</small></div>'
+    ? '<div class="metas-primary-goal-progress"><div><span>Progresso registrado</span><strong>'+metaPatMetrics.percent.toFixed(1).replace('.',',')+'%</strong></div><div class="metas-primary-goal-track"><span style="width:'+Math.min(100,metaPatMetrics.barPercent)+'%"></span></div><small>Simulação de prazo: '+formatGoalMonths(metaPatTime)+'. Premissas não garantem resultado.</small></div>'
     : '<p class="metas-primary-goal-unavailable">'+esc(metaPatStatus.detail)+'</p>';
   const passiveGoal=passiveIncomeGoalStats();
   const metaProStatus=passiveGoal?.monthlyAverageStatus==='COMPLETE'
@@ -37944,17 +37944,17 @@ function metasTab(){
     const barWidth=Math.max(4, Math.min(100, Math.abs(diff)));
     return `<tr>
       <td style="font-weight:700;color:var(--text)"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${color};margin-right:8px;vertical-align:middle"></span>${esc(it.type)}</td>
-      <td>${target.toFixed(1)}%</td>
-      <td>${actual.toFixed(1)}%</td>
-      <td class="${diff>=0?'gn':'rd'}" style="font-weight:700">${diff>=0?'+':''}${diff.toFixed(1)}%</td>
+      <td>${target.toFixed(1).replace('.',',')}%</td>
+      <td>${actual.toFixed(1).replace('.',',')}%</td>
+      <td class="${diff>=0?'gn':'rd'}" style="font-weight:700">${diff>=0?'+':''}${diff.toFixed(1).replace('.',',')}%</td>
       <td><div class="bwr" style="width:110px"><div class="bfr" style="width:${barWidth}%;background:${diff>=0?'var(--success)':'var(--danger)'}"></div></div></td>
     </tr>`;
   }).join('');
 
-  const metaPatSummary=metaPatMetrics.hasTarget?(metaPatMetrics.hasCurrent?`${fmt(metaPatMetrics.current)} atual · ${metaPatMetrics.percent.toFixed(1)}% · Falta ${fmt(metaPatMetrics.missing)}`:'Meta definida · sem leitura atual'):'Meta patrimonial não configurada';
+  const metaPatSummary=metaPatMetrics.hasTarget?(metaPatMetrics.hasCurrent?`${fmt(metaPatMetrics.current)} atual · ${metaPatMetrics.percent.toFixed(1).replace('.',',')}% · Falta ${fmt(metaPatMetrics.missing)}`:'Meta definida · sem leitura atual'):'Meta patrimonial não configurada';
   const metaProSummary=passiveGoal?.hasTarget?`${passiveIncomeValue(passiveGoal.monthlyAvg)} média 12M · ${passiveGoal.monthlyAverageStatus==='COMPLETE'?`${fmtP(passiveGoal.percent)} · Falta ${passiveIncomeValue(passiveGoal.missing)}/mês`:`progresso indisponível · cobertura ${passiveGoal.completeMonthCount}/12`}`:'Meta de renda não configurada';
   const metaProjectionNote=metaPatMetrics.hasCurrent&&metaPatMetrics.hasTarget
-    ? `Prazo estimado com aporte mensal de ${fmt(metaPatAporte)} e variação anual de ${metaPatVar.toFixed(1)}%. É uma simulação baseada nas premissas cadastradas, não uma garantia de resultado.`
+    ? `Prazo estimado com aporte mensal de ${fmt(metaPatAporte)} e variação anual de ${metaPatVar.toFixed(1).replace('.',',')}%. É uma simulação baseada nas premissas cadastradas, não uma garantia de resultado.`
     : 'Simulação de prazo indisponível sem meta definida e leitura atual.';
 
   return`<div class="metas-shell">
@@ -37979,7 +37979,7 @@ function metasTab(){
   <div class="metas-kpi-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px">
     <div class="card al metas-kpi-card ds-kpi ds-kpi--warning" style="border-left-color:var(--warning)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('income')}<span>Renda projetada/mês</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--warning)">${goalSnapshot.hasPortfolioData?fmt(mD):'Indisponível'}</div><div class="metas-kpi-sub ds-kpi__context">Estimativa da carteira · não recebida</div></div>
     <div class="card al metas-kpi-card ds-kpi ds-kpi--positive" style="border-left-color:var(--success)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('trend')}<span>Projeção anual</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--success)">${goalSnapshot.hasPortfolioData?fmt(aD):'Indisponível'}</div><div class="metas-kpi-sub ds-kpi__context">Estimativa · não recebida</div></div>
-    <div class="card al metas-kpi-card ds-kpi ds-kpi--informational" style="border-left-color:var(--primary)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('percent')}<span>DY médio</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--primary)">${goalSnapshot.hasPortfolioData?avgDY.toFixed(2)+'%':'Indisponível'}</div></div>
+    <div class="card al metas-kpi-card ds-kpi ds-kpi--informational" style="border-left-color:var(--primary)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('percent')}<span>DY médio</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--primary)">${goalSnapshot.hasPortfolioData?avgDY.toFixed(2).replace('.',',')+'%':'Indisponível'}</div></div>
     <div class="card al metas-kpi-card ds-kpi" style="border-left-color:var(--primary)"><div class="metas-kpi-label ds-kpi__label wave-b-heading">${waveBIcon('wallet')}<span>Total da carteira</span></div><div class="metas-kpi-value ds-kpi__value" style="color:var(--text)">${goalSnapshot.hasPortfolioData?fmt(tC):'Indisponível'}</div></div>
   </div>
   </div></details>
@@ -38291,7 +38291,7 @@ function rentabilidadeTab(){
     },
   ];
   const concentrationNote=topAsset
-    ? `Concentração: top 3 com ${top3Share.toFixed(1)}% da carteira. Maior posição: ${topAsset.ticker} com ${fmt(topAsset.value)} (${normalizeType(topAsset.type||'Ação','Ação')}).`
+    ? `Concentração: top 3 com ${top3Share.toFixed(1).replace('.',',')}% da carteira. Maior posição: ${topAsset.ticker} com ${fmt(topAsset.value)} (${normalizeType(topAsset.type||'Ação','Ação')}).`
     : 'Concentração: sem posições ainda.';
 
   const chartData=certifiedHistory?(view.length?view:points):[];
@@ -38391,7 +38391,7 @@ function rentabilidadeTab(){
           <div class="rent-summary-chip-sub">${esc(item.sub)}</div>
         </div>`).join('')}
     </div>
-    <div class="rent-context-note"><span class="mu rent-context-text">${topAsset ? `Concentração: top 3 ${top3Share.toFixed(1)}% · Maior posição: ${topAsset.ticker} (${normalizeType(topAsset.type||'Ação','Ação')}).` : 'Concentração: sem posições ainda.'}</span>${topAssetAction}</div>
+    <div class="rent-context-note"><span class="mu rent-context-text">${topAsset ? `Concentração: top 3 ${top3Share.toFixed(1).replace('.',',')}% · Maior posição: ${topAsset.ticker} (${normalizeType(topAsset.type||'Ação','Ação')}).` : 'Concentração: sem posições ainda.'}</span>${topAssetAction}</div>
   </section>
 
   <details class="rent-secondary-disclosure">
@@ -38400,7 +38400,7 @@ function rentabilidadeTab(){
     <div class="rent-secondary-grid">
     <section class="card rent-distribution-panel" aria-label="Distribuição atual da carteira">
       <div class="sh"><div><div class="st">Distribuição por tipo de ativo</div><div class="mu">Composição atual usando o snapshot oficial da carteira.</div></div></div>
-      ${distributionRows.length ? `<div class="rent-distribution-list">${distributionRows.map(([label,value],idx)=>{const pct=allocationSnapshot.total>0?(Number(value)/allocationSnapshot.total)*100:0;return `<div class="rent-distribution-row"><div class="rent-distribution-head"><span><i class="rent-distribution-dot" style="background:${ALLOC_COLORS[idx%ALLOC_COLORS.length]}"></i>${esc(label)}</span><strong>${pct.toFixed(1)}% · ${fmt(value)}</strong></div><div class="rent-distribution-track"><span style="width:${Math.max(4,pct).toFixed(1)}%;background:${ALLOC_COLORS[idx%ALLOC_COLORS.length]}"></span></div></div>`}).join('')}</div>` : '<div class="evo-empty">Nenhuma posição disponível para distribuir.</div>'}
+      ${distributionRows.length ? `<div class="rent-distribution-list">${distributionRows.map(([label,value],idx)=>{const pct=allocationSnapshot.total>0?(Number(value)/allocationSnapshot.total)*100:0;return `<div class="rent-distribution-row"><div class="rent-distribution-head"><span><i class="rent-distribution-dot" style="background:${ALLOC_COLORS[idx%ALLOC_COLORS.length]}"></i>${esc(label)}</span><strong>${pct.toFixed(1).replace('.',',')}% · ${fmt(value)}</strong></div><div class="rent-distribution-track"><span style="width:${Math.max(4,pct).toFixed(1)}%;background:${ALLOC_COLORS[idx%ALLOC_COLORS.length]}"></span></div></div>`}).join('')}</div>` : '<div class="evo-empty">Nenhuma posição disponível para distribuir.</div>'}
     </section>
     <section class="card rent-analysis-note" aria-label="Leitura analítica da rentabilidade">
       <div class="sh"><div><div class="st">Leitura analítica</div><div class="mu">Contexto para interpretar o retorno exibido.</div></div></div>
@@ -38482,7 +38482,7 @@ function rebalanceScenarioComparisonPanel(){
   const values=Array.isArray(state.values)?state.values.slice(0,3):[];
   const scenarios=rebalanceScenarioComparison(values);
   const inputs=values.map((value,index)=>`<div class="rebalance-scenario-input"><label for="reb-scenario-${index}">Cenário ${index+1}</label><input id="reb-scenario-${index}" type="number" min="0.01" step="0.01" value="${Number.isFinite(Number(value))?Number(value):''}" aria-label="Valor do cenário ${index+1}"></div>`).join('');
-  const cards=scenarios.map((scenario,index)=>`<article class="rebalance-scenario-card"><div class="rebalance-scenario-card-head"><div class="rebalance-scenario-card-title">Cenário ${index+1}</div><div class="rebalance-scenario-card-amount">${fmt(scenario.amount)}</div></div><div class="rebalance-scenario-summary"><div><span>Distribuído</span><strong>${fmt(scenario.distributedTotal)}</strong></div><div><span>Restante</span><strong>${fmt(scenario.unallocated)}</strong></div><div><span>Classes com aporte</span><strong>${scenario.rows.filter(row=>Number(row.allocation)>0).length}</strong></div><div><span>Base de peso</span><strong>${scenario.weightSource==='target-gap'?'desvio':scenario.weightSource==='target-allocation'?'meta':scenario.weightSource==='current-allocation'?'atual':'equilibrada'}</strong></div></div><div class="rebalance-scenario-class-list">${scenario.rows.map(row=>`<div class="rebalance-scenario-class"><span>${esc(row.type)} · futuro ${row.projectedPct.toFixed(1)}%</span><strong>${fmt(row.allocation)}</strong></div>`).join('')}</div></article>`).join('');
+  const cards=scenarios.map((scenario,index)=>`<article class="rebalance-scenario-card"><div class="rebalance-scenario-card-head"><div class="rebalance-scenario-card-title">Cenário ${index+1}</div><div class="rebalance-scenario-card-amount">${fmt(scenario.amount)}</div></div><div class="rebalance-scenario-summary"><div><span>Distribuído</span><strong>${fmt(scenario.distributedTotal)}</strong></div><div><span>Restante</span><strong>${fmt(scenario.unallocated)}</strong></div><div><span>Classes com aporte</span><strong>${scenario.rows.filter(row=>Number(row.allocation)>0).length}</strong></div><div><span>Base de peso</span><strong>${scenario.weightSource==='target-gap'?'desvio':scenario.weightSource==='target-allocation'?'meta':scenario.weightSource==='current-allocation'?'atual':'equilibrada'}</strong></div></div><div class="rebalance-scenario-class-list">${scenario.rows.map(row=>`<div class="rebalance-scenario-class"><span>${esc(row.type)} · futuro ${row.projectedPct.toFixed(1).replace('.',',')}%</span><strong>${fmt(row.allocation)}</strong></div>`).join('')}</div></article>`).join('');
   return `<section class="rebalance-scenario-panel" aria-labelledby="rebalance-scenario-title"><div class="rebalance-scenario-head"><div><div class="rebalance-scenario-title" id="rebalance-scenario-title">Comparar cenários de aporte</div><div class="rebalance-scenario-sub">Simulação lado a lado usando a mesma distribuição oficial. Nada é executado ou gravado.</div></div><button type="button" class="btn bgh" onclick="closeRebalanceScenarioComparison()">Fechar</button></div><div class="rebalance-scenario-inputs">${inputs}</div><div class="rebalance-scenario-actions"><button type="button" class="btn bp" onclick="runRebalanceScenarioComparison()">Comparar valores</button>${values.length<3?'<button type="button" class="btn bgh" onclick="addRebalanceScenario()">Adicionar cenário</button>':''}${state.error?`<span class="rebalance-scenario-note" role="alert">${esc(state.error)}</span>`:''}</div>${cards?`<div class="rebalance-scenario-results">${cards}</div>`:'<div class="rebalance-scenario-empty">Informe pelo menos dois valores maiores que zero para comparar.</div>'}<div class="rebalance-scenario-note">Os cenários são apenas informativos: não representam recomendação, prioridade de mercado nem alteração da carteira.</div></section>`;
 }
 function ajudarTab(){
@@ -38523,8 +38523,8 @@ function ajudarTab(){
           const targetLeft=Math.min(100,Math.max(0,r.target));
           return `<div class="rebalance-alloc-item rebalance-alloc-row">
             <div class="rebalance-alloc-class">${esc(r.type)}</div>
-            <div class="rebalance-alloc-pct ${pctClass}">${r.current.toFixed(1)}%</div>
-            <div class="rebalance-alloc-pct">${r.target.toFixed(1)}%</div>
+            <div class="rebalance-alloc-pct ${pctClass}">${r.current.toFixed(1).replace('.',',')}%</div>
+            <div class="rebalance-alloc-pct">${r.target.toFixed(1).replace('.',',')}%</div>
             <div class="rebalance-alloc-diff ${diffClass}">${r.diff>=0?'+':''}${r.diff.toFixed(1)} p.p.</div>
             <div class="rebalance-alloc-bar-wrap"><div class="rebalance-alloc-bar current" style="width:${barWidth.toFixed(1)}%"></div><div class="rebalance-alloc-bar target" style="left:${targetLeft.toFixed(1)}%"></div></div>
           </div>`;
@@ -38587,11 +38587,11 @@ function calcRebalance(){
   }
   const studyRows=distribution.rows.map(row=>{
     const currentClass=row.gapPct>0?'above':row.gapPct<0?'below':'';
-    const currentLabel=row.currentPct.toFixed(1)+'%';
-    const targetLabel=row.targetPct.toFixed(1)+'%';
+    const currentLabel=row.currentPct.toFixed(1).replace('.',',')+'%';
+    const targetLabel=row.targetPct.toFixed(1).replace('.',',')+'%';
     const gapLabel=`${row.gapPct>=0?'+':''}${row.gapPct.toFixed(1)} p.p.`;
     const gapMeaning=row.gapPct>0?'Acima da meta':row.gapPct<0?'Abaixo da meta':'Na meta';
-    const projectedLabel=row.projectedPct.toFixed(1)+'%';
+    const projectedLabel=row.projectedPct.toFixed(1).replace('.',',')+'%';
     return `<div class="rebalance-study-row">
       <div class="rebalance-study-asset">
         <div class="rebalance-study-ticker">${esc(row.ticker)}</div>
@@ -38613,7 +38613,7 @@ function calcRebalance(){
   const suggestionHtml=suggestionGroups.length?`<section class="rebalance-asset-suggestions" aria-labelledby="rebalance-asset-suggestions-title">
     <div class="rebalance-study-title" id="rebalance-asset-suggestions-title">Sugestões por ativo</div>
     <div class="rebalance-study-sub">Detalhamento do aporte por ativos abaixo da meta, sem sugerir vendas.</div>${detailNote}
-    ${suggestionGroups.map(group=>`<div class="rebalance-asset-group"><strong>${esc(group.type)}</strong>${group.suggestions.map(item=>`<div class="rebalance-asset-suggestion"><span><b>${esc(item.ticker)}</b><small>${item.currentPct.toFixed(1)}% atual · ${item.target.toFixed(1)}% meta</small></span><strong>${fmt(item.amount)}</strong></div>`).join('')}</div>`).join('')}
+    ${suggestionGroups.map(group=>`<div class="rebalance-asset-group"><strong>${esc(group.type)}</strong>${group.suggestions.map(item=>`<div class="rebalance-asset-suggestion"><span><b>${esc(item.ticker)}</b><small>${item.currentPct.toFixed(1).replace('.',',')}% atual · ${item.target.toFixed(1).replace('.',',')}% meta</small></span><strong>${fmt(item.amount)}</strong></div>`).join('')}</div>`).join('')}
   </section>`:'<div class="rebalance-empty">Nenhum ativo abaixo da meta individual para detalhar este aporte.</div>';
   out.innerHTML=`${summary}
     <div class="rebalance-study">
@@ -38757,7 +38757,7 @@ function generateOverviewAnalysis(){
     summary:`Patrimônio atual ${fmt(total)} · Resultado ${fmt(profit)} · Rentabilidade ${fmtP(rentPct)}`,
     metrics:[
       {label:'Patrimônio aplicado', value:fmt(invested), note:'Base oficial da carteira'},
-      {label:'Patrimônio atual', value:fmt(total), note:dominant ? `Maior classe: ${dominant[0]} (${dominantShare.toFixed(1)}%)` : 'Sem concentração calculável'},
+      {label:'Patrimônio atual', value:fmt(total), note:dominant ? `Maior classe: ${dominant[0]} (${dominantShare.toFixed(1).replace('.',',')}%)` : 'Sem concentração calculável'},
       {label:'Ganho / perda', value:fmt(profit), note:profit>=0 ? 'Saldo positivo consolidado' : 'Saldo negativo consolidado'},
       {label:'Qualidade dos dados', value:quality.score!=null ? `${quality.score}/100` : '—', note:qualityLabel},
       {label:'Renda passiva 12M', value:aiFormatValue(income.monthlyAvg), note:income.target>0 ? `Meta ${fmt(income.target)}/mês` : 'Meta não configurada'},
@@ -38810,7 +38810,7 @@ function generateIncomeAnalysis(){
     ],
     positives: payers.slice(0,3).map(row=>`${row.ticker || row.key || '—'} · ${fmt(row.total || 0)} · ${row.count || 0} pagamento(s)`),
     warnings: [
-      topPayer ? `Maior pagador responde por ${topShare.toFixed(1)}% dos proventos 12M.` : 'Sem pagadores suficientes para avaliar concentração.',
+      topPayer ? `Maior pagador responde por ${topShare.toFixed(1).replace('.',',')}% dos proventos 12M.` : 'Sem pagadores suficientes para avaliar concentração.',
       stats.missing === null ? 'Progresso da meta indisponível por cobertura incompleta.' : stats.missing > 0 ? `Faltam ${fmt(stats.missing)}/mês para atingir a meta.` : 'Meta alcançada ou superada.',
     ],
     priority: stats.missing === null ? 'Confirmar cobertura mensal antes de avaliar o progresso da meta.' : stats.missing > 0 ? 'Reduzir distância da meta com renda recorrente e pulverização.' : 'Preservar regularidade e evitar concentração excessiva.',
@@ -38858,7 +38858,7 @@ function generateRebalanceAnalysis(){
       {label:'Classes comparadas', value:String(rows.length), note:'Atual x meta oficial'},
       {label:'Classes acima da meta', value:String(above.length), note:above.length ? above.map(r=>r.type).join(' · ') : 'Nenhuma'},
       {label:'Classes abaixo da meta', value:String(below.length), note:below.length ? below.map(r=>r.type).join(' · ') : 'Nenhuma'},
-      {label:'Maior desvio', value:worst ? `${worst.type} ${worst.diff>=0?'+':''}${worst.diff.toFixed(1)} p.p.` : '—', note:worst ? `Meta ${worst.target.toFixed(1)}% · Atual ${worst.current.toFixed(1)}%` : 'Sem base'},
+      {label:'Maior desvio', value:worst ? `${worst.type} ${worst.diff>=0?'+':''}${worst.diff.toFixed(1)} p.p.` : '—', note:worst ? `Meta ${worst.target.toFixed(1).replace('.',',')}% · Atual ${worst.current.toFixed(1).replace('.',',')}%` : 'Sem base'},
     ],
     positives: below.slice(0,3).map(r=>`${r.type} abaixo da meta em ${Math.abs(r.diff).toFixed(1)} p.p.`),
     warnings: above.slice(0,3).map(r=>`${r.type} acima da meta em ${r.diff.toFixed(1)} p.p.`),
@@ -38913,19 +38913,19 @@ function generateConcentrationAnalysis(){
   return {
     mode:'concentration',
     title:'Concentração',
-    summary:`Maior ativo ${topAsset ? `${topAsset.ticker} · ${aiFormatPct(topAsset.share)}` : '—'} · Top 5 ${top5Share.toFixed(1)}% da carteira`,
+    summary:`Maior ativo ${topAsset ? `${topAsset.ticker} · ${aiFormatPct(topAsset.share)}` : '—'} · Top 5 ${top5Share.toFixed(1).replace('.',',')}% da carteira`,
     metrics:[
       {label:'Maior ativo', value:topAsset ? `${topAsset.ticker} ${aiFormatPct(topAsset.share)}` : '—', note: topAsset ? `${topAsset.type} · ${topAsset.sector || 'Sem setor'}` : 'Sem base'},
-      {label:'Top 5 ativos', value:`${top5Share.toFixed(1)}%`, note:'Peso combinado da carteira'},
-      {label:'Concentração por classe', value:dominantClass ? dominantClass[0] : '—', note:dominantClass ? `${dominantClass[1].toFixed(1)}% da carteira` : 'Sem base'},
-      {label:'Concentração dos proventos', value:payoutRows[0] ? `${payoutRows[0].ticker || '—'}` : '—', note:payoutRows[0] ? `${payoutShare.toFixed(1)}% dos proventos` : 'Sem base'},
+      {label:'Top 5 ativos', value:`${top5Share.toFixed(1).replace('.',',')}%`, note:'Peso combinado da carteira'},
+      {label:'Concentração por classe', value:dominantClass ? dominantClass[0] : '—', note:dominantClass ? `${dominantClass[1].toFixed(1).replace('.',',')}% da carteira` : 'Sem base'},
+      {label:'Concentração dos proventos', value:payoutRows[0] ? `${payoutRows[0].ticker || '—'}` : '—', note:payoutRows[0] ? `${payoutShare.toFixed(1).replace('.',',')}% dos proventos` : 'Sem base'},
       {label:'Nível de atenção', value:level, note:topAsset ? `Referência: ${topAsset.share<=10 ? 'até 10%' : topAsset.share<=15 ? '10% a 15%' : 'acima de 15%'}` : 'Sem base'},
     ],
     positives: top5.slice(0,3).map(row=>`${row.ticker} · ${row.type} · ${aiFormatPct(row.share)}`),
     warnings: [
       topAsset ? `Maior posição em nível ${level.toLowerCase()}.` : 'Carteira sem base suficiente para medir concentração.',
       dominantSector ? `Setor dominante: ${dominantSector[0]}` : 'Sem setor dominante calculável.',
-      top5Text ? `Top 5 combinados: ${top5Share.toFixed(1)}%` : ''
+      top5Text ? `Top 5 combinados: ${top5Share.toFixed(1).replace('.',',')}%` : ''
     ].filter(Boolean),
     priority: topAsset ? `${topAsset.share>15 ? 'Concentração elevada em' : 'Acompanhar'} ${topAsset.ticker}.` : 'Sem base suficiente para concentração.',
     actions:[
