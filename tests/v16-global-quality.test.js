@@ -5,7 +5,7 @@ const { chromium } = require('playwright-core');
 const { startLocalHttpServer } = require('./local-http-server');
 const { applyRichFixture } = require('./helpers/fp-rich-fixture');
 
-const chrome = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+const chrome = require('./helpers/chrome-path').resolveChromePath();
 const ROUTES = ['dashboard', 'ativos', 'aportes', 'dividendos', 'rentabilidade', 'patrimonio', 'metas', 'renda-fixa', 'analise', 'ajudar', 'ia', 'settings', 'relatorios', 'irpf', 'auditoria', 'confiabilidade', 'importacao'];
 
 async function withApp(viewport, run) {

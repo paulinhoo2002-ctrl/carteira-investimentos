@@ -6,7 +6,7 @@ const { chromium } = require('playwright-core');
 const { startLocalHttpServer } = require('./local-http-server');
 const { applyRichFixture } = require('./helpers/fp-rich-fixture');
 
-const chrome = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+const chrome = require('./helpers/chrome-path').resolveChromePath();
 const axeSource = fs.readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
 
 // Estados que só existem após interação: tabela de Ativos aberta, modal de cadastro, formulário de edição e matriz anual.

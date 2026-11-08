@@ -6,7 +6,7 @@ const { chromium } = require('playwright-core');
 const { startLocalHttpServer } = require('./local-http-server');
 const { applyV17Fixture } = require('./helpers/v17-fin-fixture');
 
-const chrome = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+const chrome = require('./helpers/chrome-path').resolveChromePath();
 const axeSource = fs.readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
 const routes = ['patrimonio', 'metas', 'ajudar', 'analise', 'auditoria', 'settings'];
 

@@ -4,7 +4,7 @@ const test = require('node:test');
 const { chromium } = require('playwright-core');
 const { startLocalHttpServer } = require('./local-http-server');
 const { applyV289VisualFixture } = require('./helpers/v289-visual-fixtures');
-const chrome = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+const chrome = require('./helpers/chrome-path').resolveChromePath();
 
 async function withDashboard(run, viewport = { width: 1366, height: 768 }) {
   const harness = await startLocalHttpServer(path.join(__dirname, '..'));

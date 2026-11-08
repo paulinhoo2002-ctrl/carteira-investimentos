@@ -22,8 +22,7 @@ test('transaction list filters by kind and sorts most recent first (behavioral)'
   const { chromium } = require('playwright-core');
   const { startLocalHttpServer } = require('./local-http-server');
   const { applyRichFixture } = require('./helpers/fp-rich-fixture');
-  const chrome = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-  if (!require('node:fs').existsSync(chrome)) return;
+  const chrome = require('./helpers/chrome-path').resolveChromePath();
   const harness = await startLocalHttpServer(path.join(__dirname, '..'));
   const browser = await chromium.launch({ executablePath: chrome, headless: true });
   try {

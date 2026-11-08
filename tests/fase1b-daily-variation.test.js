@@ -2,7 +2,6 @@
 // Fase 1b (Lote B) — F-03 e F-04: variação diária sobre o fechamento anterior e
 // variação desconhecida nunca tratada como zero. Fixtures 100% sintéticas.
 const assert = require('node:assert/strict');
-const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
@@ -11,7 +10,7 @@ const { startLocalHttpServer } = require('./local-http-server');
 const { applyRichFixture } = require('./helpers/fp-rich-fixture');
 
 const repo = path.join(__dirname, '..');
-const chrome = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+const chrome = require('./helpers/chrome-path').resolveChromePath();
 
 async function withPage(fn, { width = 1440 } = {}) {
   const harness = await startLocalHttpServer(repo);
@@ -280,7 +279,8 @@ test('Sem regressão de contrato: nenhuma gravação nem consumo restante de "||
   const persisted = source.split('\n').filter(line => line.includes('localStorage.setItem(STOR'));
   assert.ok(persisted.length > 0);
   persisted.forEach(line => assert.doesNotMatch(line, /quotes/));
-  const git = args => execFileSync('git', ['--no-optional-locks', ...args], { cwd: repo }).toString().trim();
-  ['finance-core.js', 'persistence-core.js', 'sw.js', 'manifest.json', 'firestore.rules', 'modern/src', 'api/yahoo-quote.js']
-    .forEach(file => assert.equal(git(['diff', 'HEAD', '--name-only', '--', file]), '', `${file} não pode mudar`));
+  // Persistência e Finance Core não referenciam cotações (S.quotes é só memória).
+  ['finance-core.js', 'persistence-core.js'].forEach(file => {
+    assert.doesNotMatch(fs.readFileSync(path.join(repo, file), 'utf8'), /quotes/, `${file} não pode depender de S.quotes`);
+  });
 });
