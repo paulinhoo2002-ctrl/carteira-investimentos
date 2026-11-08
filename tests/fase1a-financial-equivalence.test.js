@@ -16,7 +16,7 @@ const { applyRichFixture } = require('./helpers/fp-rich-fixture');
 const { applyV17Fixture } = require('./helpers/v17-fin-fixture');
 
 const repo = path.join(__dirname, '..');
-const chrome = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+const chrome = require('./helpers/chrome-path').resolveChromePath();
 const git = args => execFileSync('git', ['--no-optional-locks', ...args], { cwd: repo, maxBuffer: 256 * 1024 * 1024 });
 
 const STABLE_ROUTES = ['ativos', 'aportes', 'analise', 'patrimonio', 'rentabilidade', 'renda-fixa', 'ajudar', 'relatorios', 'irpf', 'ia', 'confiabilidade'];
@@ -41,6 +41,8 @@ const tokens = text => {
   (text.match(/[+-]?\d+(?:[.,]\d+)?%/g) || []).forEach(x => out.push('%' + x.replace(',', '.')));
   return out.sort();
 };
+// F-09: o separador decimal dos percentuais mudou para vírgula (pt-BR); compara-se o valor numérico.
+const pct = text => String(text).replace(/(\d),(\d+)%/g, '$1.$2%');
 const valueAfter = (text, label) => {
   const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
   const index = lines.findIndex(line => line.toLowerCase() === label.toLowerCase());
@@ -92,7 +94,7 @@ async function collect(root) {
         })));
         state.fixtureAssets = await page.evaluate(() => JSON.parse(JSON.stringify(S.assets)));
         state.fixtureQuotes = await page.evaluate(() => JSON.parse(JSON.stringify(S.quotes)));
-        state.qty = await page.evaluate(() => [5, 30, 1.5, 0.12345, 1234.5678, 100.1234567].map(q => ({ q, locale: q.toLocaleString('pt-BR'), fmtN: fmtN(q) })));
+        state.qty = await page.evaluate(() => [5, 30, 1.5, 0.12345, 1234.5678, 100.1234567].map(q => ({ q, locale: q.toLocaleString('pt-BR'), fmtN: fmtN(q), formatQuantity: typeof formatQuantity === 'function' ? formatQuantity(q) : null })));
         await page.evaluate(() => go('dashboard'));
         await page.waitForTimeout(200);
         state.recent = await page.evaluate(() => [...document.querySelectorAll('.home-recent-row')].map(row => row.innerText.replace(/\s+/g, ' ').trim()));
@@ -156,13 +158,15 @@ for (const state of Object.keys(STATES)) {
       const a = byLabel(main[state], label);
       const b = byLabel(v20[state], label);
       assert.ok(a && b, `${label} ausente (${state})`);
-      assert.equal(b.value, a.value, `${label} (${state})`);
+      assert.equal(pct(b.value), pct(a.value), `${label} (${state})`);
     }
   });
 
   test(`Fase 1a - telas sem mudança numérica: valores monetários e percentuais idênticos (${state})`, () => {
     for (const route of STABLE_ROUTES) {
-      assert.deepEqual(tokens(v20[state].routes[route]), tokens(main[state].routes[route]), `${route} (${state})`);
+      // F-01 (intencional, Lote C): em Ativos/parcial o Total investido passa a aparecer.
+      const expected = [...tokens(main[state].routes[route]), ...(state === 'partial' && route === 'ativos' ? ['$95.982,00'] : [])].sort();
+      assert.deepEqual(tokens(v20[state].routes[route]), expected, `${route} (${state})`);
     }
   });
 }
@@ -179,8 +183,8 @@ test('Fase 1a - "Valor investido" do V20 equivale ao capital da main e declara b
 
 test('Fase 1a - Dividendos: matriz anual, resumo e ranking por ativo equivalem à main', () => {
   assert.equal(v20.rich.dividends.matrix, main.rich.dividends.matrix);
-  assert.equal(v20.rich.dividends.assetSummary, main.rich.dividends.assetSummary);
-  assert.equal(v20.rich.dividends.byAsset, main.rich.dividends.byAsset);
+  assert.equal(pct(v20.rich.dividends.assetSummary), pct(main.rich.dividends.assetSummary));
+  assert.equal(pct(v20.rich.dividends.byAsset), pct(main.rich.dividends.byAsset));
   const fromMain = [...main.rich.dividends.byAsset.matchAll(/#(\d+) (\S+) · ([\d.,]+)% do total Recebido (R\$ [\d.,]+)/g)]
     .slice(0, 5).map(m => ({ ticker: m[2], value: m[4], share: Number(m[3].replace(',', '.')) }));
   assert.equal(fromMain.length, 5);
@@ -220,7 +224,7 @@ test('Fase 1a - estado vazio: KPIs de Dividendos do topo mostram indisponível (
   }
 });
 
-test('Fase 1a - estado vazio: nenhum "R$ 0,00" com cobertura desconhecida em Dividendos', { todo: 'F-06: o bloco "Resumo de renda e cobertura" mostra YTD pago e 12M = R$ 0,00 junto de "Cobertura desconhecida" (já existia na main)' }, () => {
+test('Fase 1a (corrigido no Lote C, F-06) - estado vazio: nenhum "R$ 0,00" com cobertura desconhecida em Dividendos', () => {
   assert.doesNotMatch(v20.empty.routes.dividendos, /R\$\s?0,00/);
 });
 
@@ -267,8 +271,9 @@ test('Fase 1a (atualizado no Lote B) - Variação diária corresponde ao fechame
   assert.ok(Math.abs(shown - Math.abs(implemented)) > 1, 'não pode voltar à fórmula antiga (price×c/100)');
 });
 
-test('Fase 1a - quantidade fracionária mantém a precisão da main (3 casas)', { todo: 'F-05: fmtN arredonda a 2 casas; a main usava toLocaleString (3 casas) na tabela "Qtd"' }, () => {
-  v20.rich.qty.forEach(sample => assert.equal(sample.fmtN, sample.locale, `q=${sample.q}`));
+test('Fase 1a (corrigido no Lote C, F-05) - quantidade exibida nunca é menos precisa que na main (3 casas)', () => {
+  const parse = text => Number(String(text).replace(/\./g, '').replace(',', '.'));
+  v20.rich.qty.forEach(sample => assert.ok(Math.abs(parse(sample.formatQuantity) - sample.q) <= Math.abs(parse(sample.locale) - sample.q) + 1e-12, `q=${sample.q}: ${sample.formatQuantity} x ${sample.locale}`));
 });
 
 test('Fase 1a - quantidades inteiras têm o mesmo texto nos dois formatadores', () => {

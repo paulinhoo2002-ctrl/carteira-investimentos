@@ -532,10 +532,20 @@ test('Ativos mantém valor indisponível como desconhecido, nunca como zero', as
     assert.equal(values['Rentabilidade'], '—', 'rentabilidade sem valor atual deve ficar indisponível');
     assert.equal(values['% carteira'], '—', 'peso sem valor atual deve ficar indisponível');
     assert.equal(values['Valor total'], '—', 'valor total sem preço deve ficar indisponível');
+    // Regra de produto F-01 (aprovada): com capital aplicado completo, o "Total investido" é conhecido e
+    // aparece, mesmo com valor atual incompleto; valor atual, resultado e rentabilidade seguem indisponíveis.
+    const kpiValues = await runtime.page.locator('.assets-kpi-value').allInnerTexts();
+    const applied = await runtime.page.evaluate(() => ({ complete: cx().appliedComplete, total: cx().tI }));
+    assert.equal(applied.complete, true, 'o capital aplicado da fixture parcial é completo');
+    assert.equal(
+      kpiValues[0].replace(/\s/g, ' '),
+      new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(applied.total).replace(/\s/g, ' '),
+      'Total investido mostra o capital aplicado conhecido'
+    );
     assert.deepEqual(
-      await runtime.page.locator('.assets-kpi-value').allInnerTexts(),
-      ['—', '—', '—', '—'],
-      'o resumo superior não pode apresentar totais como completos quando falta valor corrente'
+      kpiValues.slice(1),
+      ['—', '—', '—'],
+      'valor atual, resultado e rentabilidade não podem ser apresentados como completos quando falta valor corrente'
     );
     const categoryMetrics = await runtime.page.locator('.assets-premium-shell details.ag[data-asset-group="FII"] .acc-metric-value').allInnerTexts();
     assert.deepEqual(categoryMetrics.slice(1), ['—', '—', '—', '—'], 'agregados da categoria incompleta não podem transformar valor ausente em perda ou peso zero');

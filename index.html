@@ -16874,7 +16874,7 @@ function b3ReviewModal(){
         </div>
         <div class="col-qty">
           <div class="mini">Qtd</div>
-          <div class="value">${fmtN(it.qty)}</div>
+          <div class="value">${formatQuantity(it.qty, it.type)}</div>
         </div>
         <div class="col-price">
           <div class="mini">Preço</div>
@@ -17302,7 +17302,7 @@ function rfPositionReviewModal(){
       <td><div class="asset-name" title="${esc(it.name)}">${esc(it.name)}</div></td>
       <td>${esc(it.type)}</td>
       <td>${esc(it.sector)}</td>
-      <td class="num">${fmtN(it.qty)}</td>
+      <td class="num">${formatQuantity(it.qty, it.type)}</td>
       <td class="num">${fmt(it.appliedValue)}</td>
       <td class="num">${fmt(it.marketValue)}</td>
       <td class="num">${fmt(it.avgPrice)}</td>
@@ -17624,7 +17624,7 @@ function b3ProventosReviewModal(){
       <td>${esc(it.eventType||'—')}</td>
       <td>${esc(it.category||'—')}</td>
       <td><div class="asset-name" title="${esc(it.institution)}">${esc(it.institution||'—')}</div></td>
-      <td class="num">${fmtN(it.qty)}</td>
+      <td class="num">${formatQuantity(it.qty, it.type)}</td>
       <td class="num">${fmt(it.unitPrice)}</td>
       <td class="num">${fmt(it.netValue)}</td>
       <td>${esc(it.destination||'—')}</td>
@@ -17646,7 +17646,7 @@ function b3ProventosReviewModal(){
         <div><div class="b3-preview-card-label">Valor líquido</div><div class="b3-preview-card-value">${fmt(it.netValue)}</div></div>
         <div><div class="b3-preview-card-label">Tipo</div><div class="b3-preview-card-value">${esc(it.eventType||'—')}</div></div>
         <div><div class="b3-preview-card-label">Destino</div><div class="b3-preview-card-value">${esc(it.destination||'—')}</div></div>
-        <div><div class="b3-preview-card-label">Quantidade</div><div class="b3-preview-card-value">${fmtN(it.qty)}</div></div>
+        <div><div class="b3-preview-card-label">Quantidade</div><div class="b3-preview-card-value">${formatQuantity(it.qty, it.type)}</div></div>
         <div><div class="b3-preview-card-label">Fonte</div><div class="b3-preview-card-value">${esc(it.institution||'B3')}</div></div>
       </div>
     </div>`;
@@ -18382,6 +18382,18 @@ const withVisibleValues = fn => {
 };
 const fmtP = v => S.hideValues&&valueVisibilityDepth===0?'••••':`${v>=0?'+':''}${v.toFixed(2)}%`;
 const fmtN = v => S.hideValues&&valueVisibilityDepth===0?'••••':Number(v||0).toLocaleString('pt-BR',{maximumFractionDigits:2});
+// Quantidade exibida (apenas apresentação; o valor armazenado não muda): pt-BR, até 4 casas sem zeros à direita
+// (cripto: até 8). Valor desconhecido nunca vira 0.
+const formatQuantity = (value, type) => {
+  if(S.hideValues&&valueVisibilityDepth===0) return '••••';
+  if(value===null||value===undefined||value==='') return '—';
+  const n=Number(value);
+  if(!Number.isFinite(n)) return '—';
+  const digits=/cripto|crypto/i.test(String(type||''))?8:4;
+  // Quantidade não nula nunca aparece como "0": abaixo da menor casa exibida mostra "<0,0001".
+  if(n!==0&&Math.abs(n)<Math.pow(10,-digits)) return `${n<0?'-':''}<${Math.pow(10,-digits).toLocaleString('pt-BR',{minimumFractionDigits:digits,maximumFractionDigits:digits})}`;
+  return n.toLocaleString('pt-BR',{maximumFractionDigits:digits});
+};
 const DEBUG = (() => {
   try{
     if(isLocalTestMode()) return false;
@@ -18861,7 +18873,7 @@ function quickMovementPreviewHtml(){
         </div>
         <div class="quick-movement-preview-stat">
           <div class="quick-movement-preview-label">Quantidade</div>
-          <div class="quick-movement-preview-value">${qty>0?fmtN(qty):'—'}</div>
+          <div class="quick-movement-preview-value">${qty>0?formatQuantity(qty):'—'}</div>
         </div>
         <div class="quick-movement-preview-stat">
           <div class="quick-movement-preview-label">Preço unitário</div>
@@ -20812,6 +20824,17 @@ function findDy(q){
     return 0;
   }
   return scan(q);
+}
+// Base aplicada informada para o ativo (mesma regra de appliedComplete em cx(); só leitura, não calcula valor).
+// Quantidade/preço médio ausentes não são zero: o ativo fica sem base aplicada.
+function assetAppliedBaseInformed(a){
+  if(isRendaFixaAsset(a)){
+    const state=rfValues(a).appliedState?.state;
+    return !!state&&!['missing','invalid'].includes(state);
+  }
+  const numeric=value=>value!=null&&String(value).trim()!==''&&Number.isFinite(Number(value));
+  const qty=Number(a?.qty);
+  return numeric(a?.qty)&&(qty===0||numeric(a?.avg_price));
 }
 function cx(){
   const tI=S.assets.reduce((s,a)=>s+assetAppliedValue(a),0);
@@ -27279,7 +27302,7 @@ function assetPerformanceOverviewPanel(){
                         ${c.assets.sort((a,b)=>b.value-a.value).map(a => `
                           <tr>
                             <td style="font-weight:600">${a.ticker}</td>
-                            <td class="num">${fmtN(a.qty)}</td>
+                            <td class="num">${formatQuantity(a.qty, a.type)}</td>
                             <td class="num">${formatMoney(a.price)}</td>
                             <td class="num">${formatMoney(a.avgPrice)}</td>
                             <td class="num">${a.dy.toFixed(2)}%</td>
@@ -32965,7 +32988,7 @@ function renderAssetRow(a, totalCart) {
   const yahooTime = '';
   
   const qty = Number(a.qty) || 0;
-  const qtyDisplay = isRF ? fmt(qty) : (S.hideValues&&valueVisibilityDepth===0 ? '••••' : (qty % 1 === 0 ? String(qty) : qty.toFixed(4)));
+  const qtyDisplay = isRF ? fmt(qty) : formatQuantity(qty, a.type);
   const averagePriceDisplay = avgPrice > 0 ? fmt(avgPrice) : '—';
   const currentPriceDisplay = isRF
     ? (displayCurrentValue == null ? '—' : fmt(displayCurrentValue))
@@ -33282,7 +33305,7 @@ function dashboardRecentTransactionsPanel(){
     const rawValue=a.totalValue??a.value??((Number.isFinite(qty)&&Number.isFinite(Number(a.price)))?Math.abs(qty)*Number(a.price):null);
     const value=Number(rawValue);
     const valueText=rawValue==null||rawValue===''||!Number.isFinite(value)?'—':fmt(Math.abs(value));
-    const qtyText=Number.isFinite(qty)&&a.qty!==''&&a.qty!=null?`${fmtN(Math.abs(qty))} un.`:'';
+    const qtyText=Number.isFinite(qty)&&a.qty!==''&&a.qty!=null?`${formatQuantity(Math.abs(qty), a.type)} un.`:'';
     return `<li class="home-recent-row" data-kind="${esc(kind)}"><span class="home-recent-date">${esc(date)}</span><strong class="home-recent-asset">${esc(name)}</strong><span class="home-recent-type">${esc(aporteMovementLabel(a))}</span><span class="home-recent-qty">${qtyText}</span><span class="home-recent-value">${valueText}</span></li>`;
   }).join('');
   return `<section class="home-recent" aria-label="Lançamentos recentes">${head}<ul class="home-recent-list">${items}</ul></section>`;
@@ -33349,6 +33372,7 @@ function dashboardExecutiveKPIs(data, showTotalStatus=true){
     : p.appliedComplete===false
       ? 'Capital informado parcialmente'
       : totalApplied>0?'Capital aplicado cadastrado':'Sem capital aplicado';
+  const investedPartial=investedKnown&&p.appliedComplete===false;
   const patrimonyNote=availability.state==='AVAILABLE'&&totalCurrent===0?'Valor conhecido: zero':availability.note;
 
   const package2Summary=typeof FB!=='undefined'?FB?.package2:null;
@@ -33388,7 +33412,7 @@ function dashboardExecutiveKPIs(data, showTotalStatus=true){
   return `
     <div class="dashboard-executive-kpis${hasPackage2Cards?' package2-kpis':''}"${hasPackage2Cards?' data-package2="present"':''}>
       ${dashboardMetricCard(dashboardMetricIcon('wallet'),'Patrimônio atual',patrimonyValue,patrimonyNote,'var(--fp-text)','transparent',`${patrimonyNote} · Data-base não uniforme`)}
-      ${dashboardMetricCard(dashboardMetricIcon('target'),'Valor investido',investedValue,investedNote,'var(--fp-text)','transparent')}
+      ${dashboardMetricCard(dashboardMetricIcon('target'),'Valor investido',investedValue,investedNote,'var(--fp-text)','transparent',investedPartial?'Parcial: soma apenas o capital aplicado informado; ativos sem base não entram.':'',investedPartial?'partial':'')}
       ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'Recebimentos registrados · cobertura parcial':'Cobertura desconhecida','var(--fp-text)','transparent')}
       ${package2Cards}
     </div>
@@ -33944,10 +33968,14 @@ function ativos(){
   // KPI Cards data
   const portfolioHasCompleteCurrentValues = S.assets.every(a => getAssetMetrics(a).displayCurrentValue != null);
   const portfolioTotal = portfolioHasCompleteCurrentValues ? (reviewFilterActive ? total : assetKpiCurrent) : null;
-  const assetPortfolioSummaryComplete = S.assets.length > 0 && consolidated.assets.length === S.assets.length
-    && consolidated.assets.every(row => row.invested != null)
-    && S.assets.every(asset => getAssetMetrics(asset).displayCurrentValue != null);
-  const assetSummaryInvested = assetPortfolioSummaryComplete && Number.isFinite(assetKpiApplied) ? assetKpiApplied : null;
+  // Capital aplicado conhecido não depende do valor atual: aparece sempre que todas as bases existem.
+  const assetInvestedMissing = S.assets.filter(asset => !assetAppliedBaseInformed(asset)).length;
+  const assetCurrentMissing = S.assets.filter(asset => getAssetMetrics(asset).displayCurrentValue == null).length;
+  const assetInvestedComplete = S.assets.length > 0 && consolidated.assets.length === S.assets.length
+    && consolidated.assets.every(row => row.invested != null) && assetInvestedMissing === 0;
+  const assetPortfolioSummaryComplete = assetInvestedComplete && assetCurrentMissing === 0;
+  const assetSummaryInvested = assetInvestedComplete && Number.isFinite(assetKpiApplied) ? assetKpiApplied : null;
+  const assetUnavailableReason = assetCurrentMissing > 0 ? 'valor atual incompleto' : 'capital aplicado incompleto';
   const assetSummaryCurrent = assetPortfolioSummaryComplete && portfolioTotal != null ? portfolioTotal : null;
   const portfolioResult = assetSummaryCurrent != null && Number.isFinite(assetKpiProfit) ? assetKpiProfit : null;
   const portfolioReturn = portfolioResult != null && Number.isFinite(assetKpiReturn) ? assetKpiReturn : null;
@@ -33957,22 +33985,22 @@ function ativos(){
     <div class="assets-kpi-card">
       <span class="assets-kpi-label">Total investido</span>
       <span class="assets-kpi-value">${assetSummaryInvested == null ? '—' : fmt(assetSummaryInvested)}</span>
-      <span class="assets-kpi-sub">Capital aplicado na carteira</span>
+      <span class="assets-kpi-sub">${assetSummaryInvested == null && S.assets.length ? `Capital aplicado indisponível em ${assetInvestedMissing} de ${S.assets.length} ativo(s)` : 'Capital aplicado na carteira'}</span>
     </div>
     <div class="assets-kpi-card">
       <span class="assets-kpi-label">Valor atual</span>
       <span class="assets-kpi-value">${assetSummaryCurrent == null ? '—' : fmt(assetSummaryCurrent)}</span>
-      <span class="assets-kpi-sub">Valor estimado das posições</span>
+      <span class="assets-kpi-sub">${assetSummaryCurrent == null && S.assets.length ? (assetCurrentMissing > 0 ? `Valor atual indisponível em ${assetCurrentMissing} de ${S.assets.length} ativo(s)` : 'Indisponível: capital aplicado incompleto') : 'Valor estimado das posições'}</span>
     </div>
     <div class="assets-kpi-card">
       <span class="assets-kpi-label">Lucro/prejuízo</span>
       <span class="assets-kpi-value ${portfolioResultTone}">${portfolioResult == null ? '—' : `${portfolioResult > 0 ? '+' : ''}${fmt(portfolioResult)}`}</span>
-      <span class="assets-kpi-sub">Diferença entre atual e investido</span>
+      <span class="assets-kpi-sub">${portfolioResult == null && S.assets.length ? `Indisponível: ${assetUnavailableReason}` : 'Diferença entre atual e investido'}</span>
     </div>
     <div class="assets-kpi-card">
       <span class="assets-kpi-label">Rentabilidade</span>
       <span class="assets-kpi-value ${portfolioReturnTone}">${portfolioReturn == null ? '—' : fmtP(portfolioReturn)}</span>
-      <span class="assets-kpi-sub">Resultado sobre o valor investido</span>
+      <span class="assets-kpi-sub">${portfolioReturn == null && S.assets.length ? `Indisponível: ${assetUnavailableReason}` : 'Resultado sobre o valor investido'}</span>
     </div>
   </div>`;
 
@@ -34037,7 +34065,7 @@ function ativos(){
       const yahooTime = analysisRow?.lastUpdate ? `<span class="yahoo-time">${esc(analysisRow.lastUpdate)}</span>` : '';
 
       const qty = Number(a.qty) || 0;
-      const qtyDisplay = isRF ? fmt(qty) : (S.hideValues&&valueVisibilityDepth===0 ? '••••' : (qty % 1 === 0 ? String(qty) : qty.toFixed(4)));
+      const qtyDisplay = isRF ? fmt(qty) : formatQuantity(qty, a.type);
       const averagePriceDisplay = avgPrice > 0 ? fmt(avgPrice) : '—';
       const currentPriceDisplay = isRF
         ? (displayCurrentValue == null ? '—' : fmt(displayCurrentValue))
@@ -34121,7 +34149,7 @@ function ativos(){
       const yahooBadge = analysisRow?.yahoo ? '<span class="yahoo-tag">YAHOO</span>' : '';
 
       const qty = Number(a.qty) || 0;
-      const qtyDisplay = isRF ? fmt(qty) : (S.hideValues&&valueVisibilityDepth===0 ? '••••' : (qty % 1 === 0 ? String(qty) : qty.toFixed(4)));
+      const qtyDisplay = isRF ? fmt(qty) : formatQuantity(qty, a.type);
       const averagePriceDisplay = avgPrice > 0 ? fmt(avgPrice) : '—';
       const currentPriceDisplay = isRF
         ? (displayCurrentValue == null ? '—' : fmt(displayCurrentValue))
@@ -34495,7 +34523,7 @@ function deleteMovementLaunch(id,sourceType){
   scheduleAutoProventosGratis('remove-aporte');
 }
 function aporteHistoryCard(row){
-  const quantity=row.qty>0 ? `${fmtN(row.qty)} un.` : 'Não se aplica';
+  const quantity=row.qty>0 ? `${formatQuantity(row.qty, row.type)} un.` : 'Não se aplica';
   const unit=row.price>0 ? fmt(row.price) : row.kind==='provento' ? 'Valor recebido' : 'Valor informado';
   const signedTotal=row.kind==='venda' || row.kind==='reserva-saida' ? `−${fmt(row.total)}` : row.kind==='outro' ? fmt(row.total) : `+${fmt(row.total)}`;
   const detail=[row.type,row.sector].filter(Boolean).join(' · ') || 'Sem classificação';
@@ -37238,11 +37266,15 @@ function v253DividendIntelligencePanel(rows){
   const months=(model.monthly?.rows||[]).slice(-12).reverse();
   const list=(items,render,empty)=>items.length?items.map(render).join(''):`<div class="v253-income-empty" role="status">${esc(empty)}</div>`;
   const coverageLabel={FULL_COVERAGE:'Cobertura completa',PARTIAL_COVERAGE:'Cobertura parcial',UNAVAILABLE:'Cobertura indisponível',UNKNOWN:'Cobertura desconhecida'}[model.monthly?.coverage]||'Cobertura desconhecida';
+  // Zero só é exibido como zero quando a cobertura é completa; senão é "sem registro" (desconhecido ≠ zero).
+  const coverageConfirmed=model.monthly?.coverage==='FULL_COVERAGE';
+  const paidMoney=value=>value==null?'—':(value===0&&!coverageConfirmed?'—':fmt(value));
+  const paidNote=(value,base)=>value===0&&!coverageConfirmed?`sem registros · ${esc(coverageLabel.toLowerCase())}`:base;
   return `<section class="v253-income-intelligence" aria-labelledby="v253-income-title">
     <div class="v253-income-head"><div><div class="premium-panel-title" id="v253-income-title">Inteligência de renda</div><div class="premium-panel-sub">Pagamentos registrados no ledger canônico; anunciados ficam fora do recebido.</div></div><span class="div-premium-status neutral">${esc(coverageLabel)}</span></div>
     <div class="v253-income-kpis" aria-label="Resumo da inteligência de renda">
-      <article><span>YTD pago</span><strong>${money(model.ytdPaidIncome)}</strong><small>somente PAID</small></article>
-      <article><span>Últimos 12 meses</span><strong>${money(model.ttmPaidIncome)}</strong><small>janela móvel · PAID</small></article>
+      <article><span>YTD pago</span><strong>${paidMoney(model.ytdPaidIncome)}</strong><small>${paidNote(model.ytdPaidIncome,'somente PAID')}</small></article>
+      <article><span>Últimos 12 meses</span><strong>${paidMoney(model.ttmPaidIncome)}</strong><small>${paidNote(model.ttmPaidIncome,'janela móvel · PAID')}</small></article>
       <article><span>Eventos pagos</span><strong>${model.paidEvents?.length||0}</strong><small>${esc(coverageLabel)}</small></article>
       <article><span>Anunciados</span><strong>${(model.calendar||[]).filter(row=>row.state==='ANNOUNCED').length}</strong><small>não somados à renda</small></article>
     </div>
