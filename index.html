@@ -30178,7 +30178,7 @@ function fpIncomeChart(rows){
     const tip=`${label(month)}/${String(month.year).slice(2)}: ${known?fmt(month.total):'sem registro'}${state==='current'?' · mês em andamento':''}`;
     return `<div class="fp-bar" data-state="${state}" data-tip="${esc(tip)}" style="--h:${pct.toFixed(1)}%"></div>`;
   }).join('');
-  const ticks=series.map((month,index)=>`<span>${index%every===0?`${label(month)}${month.month===1?`/${String(month.year).slice(2)}`:''}`:''}</span>`).join('');
+  const ticks=series.map((month,index)=>`<span${index%2?' class="fp-tick-alt"':''}>${index%every===0?`${label(month)}${month.month===1?`<i class="fp-tick-year">/${String(month.year).slice(2)}</i>`:''}`:''}</span>`).join('');
   const table=`<div class="fp-sr-only"><table><caption>Recebimentos registrados por mês</caption><thead><tr><th scope="col">Mês</th><th scope="col">Recebido</th></tr></thead><tbody>${series.map(month=>`<tr><td>${esc(month.key)}</td><td>${month.total!=null?fmt(month.total):'Sem registro'}</td></tr>`).join('')}</tbody></table></div>`;
   return wrap(`<div class="fp-bars" aria-hidden="true"><div class="fp-bars-y">${axis}</div><div class="fp-bars-plot">${bars}</div><div class="fp-bars-x">${ticks}</div></div>${table}<div class="fp-legend"><span><i></i>Recebido registrado</span>${series.some(month=>month.key===currentKey)?'<span><i data-state="current"></i>Mês em andamento (parcial)</span>':''}<span>Valores em R$</span></div>`);
 }
@@ -33027,7 +33027,7 @@ function dash(){
           <p class="dashboard-page-sub fp-page-sub">${dashGreeting} · resumo da sua carteira · ${esc(hoje)}</p>
         </div>
         <div class="dashboard-page-heading-meta canon-dash-meta fp-page-actions">
-          <span class="canon-last-update fp-updated" aria-live="polite">Atualizado ${dashMeta} · ${data.analysis.length} ativos</span>
+          ${dashboardPriorityChip(data)}<span class="canon-last-update fp-updated" aria-live="polite">Atualizado ${dashMeta} · ${data.analysis.length} ativos</span>
           <button type="button" class="btn bp" onclick="openQuickMovement('compra')">Novo lançamento</button>
         </div>
       </div>
@@ -33103,17 +33103,28 @@ function dashboardOpenAllocationClass(className){
 }
 
 function dashboardV3PriorityPanel(data){
-  const hasRecords=(S.assets||[]).length+(S.aportes||[]).length+(S.proventos||[]).length+(S.rfEvents||[]).length>0;
-  const items=(Array.isArray(data?.insights)?data.insights:[]).filter(item=>
-    ['ATTENTION','IMPORTANT'].includes(item.severity) && (item.id!=='data-quality-review'||hasRecords));
+  const items=dashboardPriorityItems(data);
   if(!items.length) return '';
   const top=items[0];
   const reason=top.id==='data-quality-review'?'Fontes e cobertura exigem conferência antes de interpretar o resultado.':top.description;
   const severity=top.severity==='IMPORTANT'?'Importante':'Atenção';
-  if(items.length===1) return `<aside class="dashboard-v3-priority" aria-label="Prioridade da carteira"><div><strong>${severity} · ${esc(top.title)}</strong><span>${esc(reason)}</span></div><button type="button" onclick="go('${esc(top.relatedRoute||'ia')}')">${esc(top.actionLabel||'Ver detalhes')}</button></aside>`;
-  return `<aside class="dashboard-v3-priority" aria-label="Prioridade da carteira"><div><strong>${severity} · ${esc(top.title)} <small>· ${items.length} pontos</small></strong><span>${esc(reason)}</span></div><button type="button" onclick="go('ia')">Ver Insights</button></aside>`;
+  const many=items.length>1;
+  const title=`${severity} · ${esc(top.title)}${many?` <small>· ${items.length} pontos</small>`:''}`;
+  const target=many?'ia':esc(top.relatedRoute||'ia');
+  const action=many?'Ver Insights':esc(top.actionLabel||'Ver detalhes');
+  return `<aside class="dashboard-v3-priority" id="dashboard-priority" aria-label="Prioridade da carteira"><div><strong>${title}</strong><span>${esc(reason)}</span></div><button type="button" onclick="go('${target}')">${action}</button></aside>`;
 }
 
+function dashboardPriorityItems(data){
+  const hasRecords=(S.assets||[]).length+(S.aportes||[]).length+(S.proventos||[]).length+(S.rfEvents||[]).length>0;
+  return (Array.isArray(data?.insights)?data.insights:[]).filter(item=>
+    ['ATTENTION','IMPORTANT'].includes(item.severity) && (item.id!=='data-quality-review'||hasRecords));
+}
+function dashboardPriorityChip(data){
+  const n=dashboardPriorityItems(data).length;
+  if(!n) return '';
+  return `<button type="button" class="dashboard-alert-chip" onclick="document.getElementById('dashboard-priority')?.scrollIntoView({behavior:'smooth',block:'center'})" aria-label="${n} ${n>1?'pontos':'ponto'} de atenção. Ir para o aviso">${n} ${n>1?'pontos':'ponto'} de atenção</button>`;
+}
 function dashboardQuickActions(){
   const actions=[
     ['ativos','Ativos','Posições e concentração','→'],
@@ -36837,20 +36848,21 @@ function dividendAnnualMatrixData(rows,coverage={}){
 }
 function dividendAnnualMatrixView(data){
   const monthNames=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const cellMoney=value=>String(fmt(value)).replace(/^R\$[\s\u00a0]*(?=\d)/,'');
   const thead=`<thead><tr><th>Ano</th>${monthNames.map((m,i)=>`<th scope="col">${m}</th>`).join('')}<th scope="col">Média</th><th scope="col">Total</th></tr></thead>`;
   const tbody=`<tbody>${data.map(row=>{
     const cells=row.months.map(m=>{
       let val,cls,title;
       if(m.isFuture){val='—';cls='mat-future';title='Período futuro';}
       else if(m.coverage==='UNKNOWN'){val='—';cls='mat-absent';title='Cobertura de dados não confirmada para este mês.';}
-      else if(m.coverage==='PARTIAL'){val=m.total>0?fmt(m.total):'—';cls='mat-absent';title='Cobertura não confirmada; recebido registrado não confirma o mês completo.';}
-      else{val=fmt(m.total);cls=m.total>0?'mat-val':'mat-zero';title='';}
+      else if(m.coverage==='PARTIAL'){val=m.total>0?cellMoney(m.total):'—';cls='mat-absent';title='Cobertura não confirmada; recebido registrado não confirma o mês completo.';}
+      else{val=cellMoney(m.total);cls=m.total>0?'mat-val':'mat-zero';title='';}
       return `<td class="${cls}"${title?` title="${title}"`:''}>${val}</td>`;
     }).join('');
     const meanCell=row.annualMean!==null?`<td class="mat-mean">${fmt(row.annualMean)}</td>`:'<td class="mat-mean">—</td>';
     return `<tr><td class="mat-year" title="Cobertura confirmada: ${row.completeCount}/12 meses">${row.year}<small> · ${row.completeCount}/12 completos</small></td>${cells}${meanCell}<td class="mat-total" title="Soma dos recebimentos registrados; cobertura mensal exibida separadamente">${row.annualTotal===null?'—':fmt(row.annualTotal)}</td></tr>`;
   }).join('')}</tbody>`;
-  return `<div class="div-mat-wrap"><div class="div-mat-scroll" tabindex="0" role="region" aria-label="Matriz anual de proventos com rolagem horizontal"><table class="div-mat-table">${thead}${tbody}</table></div></div>`;
+  return `<div class="div-mat-wrap"><div class="div-mat-scroll" tabindex="0" role="region" aria-label="Matriz anual de proventos com rolagem horizontal"><table class="div-mat-table">${thead}${tbody}</table></div><p class="div-mat-note">Valores mensais em R$; média e total com símbolo.</p></div>`;
 }
 function dividendAnnualMatrixToggleButton(){
   const view=String(S.dividendMonthlyHistoryView||'list');
@@ -42161,6 +42173,37 @@ html body #root :is(.v253-income-kpis span,.v253-income-kpis article span){font-
 html body .premium-dividends-3 .div-mat-scroll{background:linear-gradient(to right,var(--fp-surface) 30%,transparent) 0 0/40px 100% no-repeat local,linear-gradient(to left,var(--fp-surface) 30%,transparent) 100% 0/40px 100% no-repeat local,radial-gradient(farthest-side at 0 50%,rgba(0,0,0,.28),transparent) 0 0/12px 100% no-repeat scroll,radial-gradient(farthest-side at 100% 50%,rgba(0,0,0,.28),transparent) 100% 0/12px 100% no-repeat scroll}
 html body #root .import-center-step-mobile span{font-size:var(--fp-fs-meta)}
 html body #root .premium-dividends-3 .dividend-annual-summary,html body #root .dividend-annual-summary.premium-panel{background:var(--fp-surface);border:1px solid var(--fp-border);border-radius:var(--fp-r-lg);box-shadow:none;padding:var(--fp-pad)}
+
+/* ============ V20 — primeira impressão do Dashboard, Dividendos mobile e matriz anual ============ */
+/* chip de atenção no cabeçalho: aponta para o aviso sem mover o painel (contratos v348/v289 preservados) */
+html body .fp-dashboard .dashboard-alert-chip{display:inline-flex;align-items:center;gap:var(--fp-s2);min-height:32px;padding:0 var(--fp-s3);border:1px solid var(--fp-border);border-radius:var(--fp-r-pill);background:var(--fp-warn-soft);color:var(--fp-text);font:inherit;font-size:var(--fp-fs-meta);font-weight:600;cursor:pointer}
+html body .fp-dashboard .dashboard-alert-chip::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--fp-warn);flex:none}
+html body .fp-dashboard .dashboard-alert-chip:focus-visible{outline:2px solid var(--fp-accent);outline-offset:2px}
+html body .fp-dashboard .dashboard-v3-priority:target{outline:2px solid var(--fp-warn);outline-offset:2px}
+/* matriz anual: sem prefixo R$ nas células cabe em 1366px */
+html body .premium-dividends-3 .div-mat-note{margin:var(--fp-s2) 0 0;font-size:var(--fp-fs-meta);color:var(--fp-text-2)}
+@media (max-width:767px){
+  /* Dashboard: Patrimônio em destaque; investido e recebido lado a lado */
+  html body .fp-dashboard.canon-dashboard .dashboard-executive-kpis:not(.package2-kpis){grid-template-columns:repeat(2,minmax(0,1fr))}
+  html body .fp-dashboard.canon-dashboard .dashboard-executive-kpis:not(.package2-kpis) .premium-metric:first-child{grid-column:1/-1}
+  html body .fp-dashboard.canon-dashboard .dashboard-executive-kpis:not(.package2-kpis) .premium-metric:nth-child(3){border-left:1px solid var(--fp-border)}
+  html body .fp-dashboard.canon-dashboard .dashboard-executive-kpis .premium-metric:nth-child(n){padding:14px 16px}
+  html body .fp-dashboard.canon-dashboard .dashboard-executive-kpis:not(.package2-kpis) .premium-metric:nth-child(n+2) .premium-metric-value{font-size:20px}
+  html body .fp-dashboard .dashboard-page-heading-meta{gap:var(--fp-s2)}
+  /* Dividendos: gráfico sem rótulos sobrepostos (ano sai, meses alternados) */
+  html body .fp-bars-x .fp-tick-alt{visibility:hidden}
+  html body .fp-bars-x .fp-tick-year{display:none}
+}
+/* V20: cabeçalho mobile em uma faixa compacta */
+@media (max-width:767px){
+  html body .fp-dashboard .dashboard-page-heading-meta{display:flex;flex-wrap:wrap;align-items:center;overflow:visible;padding:0}
+  html body .fp-dashboard .dashboard-page-heading-meta .btn{order:1}
+  html body .fp-dashboard .dashboard-page-heading-meta .dashboard-alert-chip{order:2}
+  html body .fp-dashboard .dashboard-page-heading-meta .canon-last-update{order:3;flex:1 1 100%;min-width:0;margin:0;padding:0;text-align:left;white-space:normal}
+}
+/* V20: ano do gráfico em linha própria no desktop (sem encostar no mês seguinte) */
+html body .fp-bars-x .fp-tick-year{display:block;font-style:normal;line-height:1.2}
+@media (max-width:767px){html body .fp-bars-x .fp-tick-year{display:none}}
 </style>
 </body>
 </html>

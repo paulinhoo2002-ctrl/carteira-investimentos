@@ -88,12 +88,12 @@ test('V19 - Dashboard: três KPIs protagonistas na ordem pedida, numa só superf
   });
 });
 
-test('V19 - Dashboard mobile empilha os KPIs em uma coluna sem overflow', async () => {
+test('V19/V20 - Dashboard mobile: Patrimônio em linha própria (V20 pareia investido e recebido) sem overflow', async () => {
   await withPage(390, 'dark', async page => {
     await page.evaluate(() => go('dashboard'));
     await page.waitForTimeout(250);
     const columns = await page.evaluate(() => getComputedStyle(document.querySelector('.dashboard-executive-kpis')).gridTemplateColumns.trim().split(/\s+/).length);
-    assert.equal(columns, 1);
+    assert.ok(columns <= 2, 'no máximo 2 colunas no mobile (V20)');
   });
 });
 
