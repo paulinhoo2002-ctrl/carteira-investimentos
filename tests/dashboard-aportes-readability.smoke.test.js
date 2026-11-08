@@ -28,8 +28,10 @@ const viewports = [
   { width: 1920, height: 1080, label: '1920x1080' },
 ];
 
-const metricLabels = ['Patrimônio atual', 'Total investido', 'Resultado geral', 'Rentabilidade', 'Recebido no mês', 'Média 12 meses', 'Meta mensal'];
-const aporteLabels = ['Total aportado', 'Média mensal', 'Maior aporte', 'Meses com aportes'];
+// Contrato V15/V16: primeiro bloco = Patrimônio, Valor investido e Recebido; resultado no painel de rentabilidade.
+const metricLabels = ['Patrimônio atual', 'Valor investido', 'Recebido no mês', 'Resultado da posição'];
+// Resumo de aportes atual (6 indicadores): período, total, média, maior entrada e meses com aporte.
+const aporteLabels = ['Este mês', 'Este ano', 'Total investido em compras e aplicações', 'Média mensal', 'Maior entrada', 'Meses com aportes'];
 
 for (const viewport of viewports) {
   test(`Dashboard/Aportes readability - ${viewport.label}`, async () => {
@@ -48,7 +50,7 @@ for (const viewport of viewports) {
       page.on('requestfailed', request => requestFailures.push(`${request.url()} (${request.failure()?.errorText || 'unknown'})`));
       await page.goto(harness.url, { waitUntil: 'networkidle' });
       await page.evaluate(() => { restoreLocalTestData(); go('dashboard'); });
-      await page.waitForSelector('.dashboard-master-primary', { state: 'visible', timeout: 5000 });
+      await page.waitForSelector('.dashboard-executive-kpis', { state: 'visible', timeout: 5000 });
 
       const dashboard = await page.evaluate(labels => {
         const firstStyle = selector => getComputedStyle(document.querySelector(selector));

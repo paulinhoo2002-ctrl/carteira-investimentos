@@ -12,16 +12,16 @@ test('Phase 3.2.4: Ativos usa linhas de categoria em largura total no desktop', 
 });
 
 test('Phase 3.2.4: tabela expandida permanece contida e com colunas financeiras explícitas', () => {
-  assert.match(source, /\.assets-premium-shell \.ag-table \.ts\{overflow-x:auto\}/);
-  assert.match(source, /\.assets-premium-shell \.ag-mobile-list\{display:flex;flex-direction:column;gap:8px\}/);
-  assert.match(source, /\.assets-premium-shell \.ag-table\{display:none!important\}/);
+  // Contrato V16: rolagem contida no componente (.assets-table-wrap), cartões no mobile e colunas financeiras explícitas.
+  assert.match(source, /#ativosAccordion .assets-table-wrap\{overflow-x:auto/);
+  assert.match(source, /class="asset-mobile-cards"/);
   assert.match(source, /data-testid="col-ticker"/);
-  assert.match(source, /<th class="num col-pm">Preço médio<\/th>\s*<th class="num col-atual">Preço atual \/ posição<\/th>/);
-  assert.match(source, /<th class="col-invested">Investido<\/th>\s*<th class="num col-result">Resultado R\$<\/th>\s*<th class="num col-rentab">Rentabilidade<\/th>/);
-  assert.match(source, /<th class="num col-total">Valor total<\/th>\s*<th class="num col-share">% carteira<\/th>/);
-  assert.match(source, /<th class="num col-dy">DY<\/th>/);
-  assert.match(source, /<th class="col-actions">Ações<\/th>/);
-  assert.match(source, /data-asset-group="\$\{esc\(type\)\}"/);
+  assert.match(source, /<th class="num">Preço médio<\/th>\s*<th class="num">Preço atual \/ posição<\/th>/);
+  assert.match(source, /assetSortableHeader\(type,\'pm\',\'Investido\'\)[\s\S]*?assetSortableHeader\(type,\'result\',\'Resultado R\$\'\)[\s\S]*?assetSortableHeader\(type,\'rentability\',\'Rentabilidade\'\)/);
+  assert.match(source, /assetSortableHeader\(type,\'total\',\'Valor total\'\)[\s\S]*?assetSortableHeader\(type,\'share\',\'% carteira\'\)/);
+  assert.match(source, /assetSortableHeader\(type,\'dy\',\'DY\'\)/);
+  assert.match(source, /<th>Ações<\/th>/);
+  assert.match(source, /data-asset-group="\$\{esc\(type\)}"/);
 });
 
 test('Ativos Premium usa texto semântico nas colunas de identidade e valor total', () => {
