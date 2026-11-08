@@ -16,22 +16,11 @@ function resolveBrowser() {
   });
 }
 
+// O modo de teste exige o marcador de runtime QA injetado pelo servidor oficial (tests/local-http-server.js).
 async function startServer(rootDir) {
-  const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8' };
-  const server = http.createServer(async (req, res) => {
-    try {
-      const pathname = decodeURIComponent(new URL(req.url || '/', 'http://127.0.0.1').pathname);
-      const filePath = path.normalize(path.join(rootDir, pathname === '/' ? '/index.html' : pathname));
-      if (!filePath.startsWith(rootDir)) { res.writeHead(403); return res.end(); }
-      res.writeHead(200, { 'Content-Type': mime[path.extname(filePath).toLowerCase()] || 'text/plain' });
-      res.end(await fsp.readFile(filePath));
-    } catch (error) {
-      res.writeHead(error.code === 'ENOENT' ? 404 : 500);
-      res.end();
-    }
-  });
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  return { server, url: `http://127.0.0.1:${server.address().port}/index.html?testMode=1` };
+  const { startLocalHttpServer } = require('./local-http-server');
+  const harness = await startLocalHttpServer(rootDir);
+  return { server: harness.server, url: harness.url };
 }
 
 const viewports = [

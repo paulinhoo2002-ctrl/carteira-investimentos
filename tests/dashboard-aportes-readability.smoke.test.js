@@ -14,23 +14,11 @@ function resolveBrowser() {
   ].filter(Boolean).find(file => { try { fs.accessSync(file); return true; } catch { return false; } });
 }
 
+// O modo de teste exige o marcador de runtime QA injetado pelo servidor oficial (tests/local-http-server.js).
 async function startServer(rootDir) {
-  const server = http.createServer(async (req, res) => {
-    try {
-      const pathname = decodeURIComponent(new URL(req.url || '/', 'http://127.0.0.1').pathname);
-      const filePath = path.normalize(path.join(rootDir, pathname === '/' ? 'index.html' : pathname));
-      if (!filePath.startsWith(rootDir)) { res.writeHead(403); res.end(); return; }
-      const content = await fsp.readFile(filePath);
-      const types = { '.html': 'text/html', '.js': 'text/javascript', '.json': 'application/json' };
-      res.writeHead(200, { 'Content-Type': `${types[path.extname(filePath)] || 'text/plain'}; charset=utf-8` });
-      res.end(content);
-    } catch (error) {
-      res.writeHead(error.code === 'ENOENT' ? 404 : 500);
-      res.end();
-    }
-  });
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  return { server, url: `http://127.0.0.1:${server.address().port}/index.html?testMode=1` };
+  const { startLocalHttpServer } = require('./local-http-server');
+  const harness = await startLocalHttpServer(rootDir);
+  return { server: harness.server, url: harness.url };
 }
 
 const viewports = [
