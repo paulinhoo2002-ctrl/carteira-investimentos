@@ -25190,7 +25190,7 @@ function v257DataQualityCenter(model){
   const cards=[['Pendências abertas',model.summary.open,''],['Revisão necessária',model.summary.needsReview,'warning'],['Críticos',model.summary.critical,'critical'],['Informativos',model.summary.informational,'info'],['Sem writes',model.writeCount,'']].map(([label,value,tone])=>`<article class="${tone}"><span>${esc(label)}</span><strong>${esc(String(value))}</strong></article>`).join('');
   const groups=(model.rootCauses||[]).slice(0,6).map(group=>`<span class="v257-remediation-group">${esc(group.rootCause)} · ${group.count}</span>`).join('');
   const rows=filtered.length?filtered.slice(0,80).map(item=>`<article class="v257-remediation-item"><div><span class="v257-remediation-badge ${v257QualitySeverityClass(item.severity)}">${esc(item.severity)}</span><span class="v257-remediation-badge state">${esc(v257QualityStateLabel(item.state))}</span></div><div><strong>${esc(item.entityLabel)}</strong><small>${esc(item.domain)} · ${esc(item.dataState)} · ${esc(item.field)}</small></div><div><strong>${esc(item.message)}</strong><small>${esc(item.impact)}</small></div><div><strong>Próximo passo factual</strong><small>${esc(item.recommendedAction)}${item.route?` · destino seguro: ${esc(item.route)}`:''}</small></div></article>`).join(''):'<div class="v257-remediation-empty" role="status">Nenhum achado corresponde aos filtros. Ausência de achado não transforma dado desconhecido em zero.</div>';
-  return `<section class="v257-remediation-center" id="data-quality-remediation-center" aria-labelledby="v257-remediation-title"><div class="v257-remediation-head"><div><div class="v257-remediation-kicker">V257 · centro factual</div><h2 id="v257-remediation-title">Centro de remediação da qualidade</h2><p>Achados derivados, agrupados por causa-raiz e separados por domínio. Esta área explica o que precisa de revisão, sem corrigir cadastro, promover histórico ou executar qualquer write.</p></div><span class="v257-remediation-readonly">Somente leitura · zero writes</span></div><div class="v257-remediation-summary">${cards}</div><div class="v257-remediation-filters"><label class="sr-only" for="v257-quality-search">Buscar achado</label><input id="v257-quality-search" type="search" placeholder="Buscar ticker, causa ou mensagem" value="${esc(filters.search||'')}" oninput="setV257QualityFilter('search',this.value)"><label class="sr-only" for="v257-quality-state">Estado</label><select id="v257-quality-state" onchange="setV257QualityFilter('state',this.value)">${option('ALL','Todos os estados',filters.state||'ALL')}${engine.STATES.map(value=>option(value,v257QualityStateLabel(value),filters.state||'ALL')).join('')}</select><label class="sr-only" for="v257-quality-domain">Domínio</label><select id="v257-quality-domain" onchange="setV257QualityFilter('domain',this.value)">${option('ALL','Todos os domínios',filters.domain||'ALL')}${engine.DOMAINS.map(value=>option(value,value,filters.domain||'ALL')).join('')}</select><label class="sr-only" for="v257-quality-severity">Severidade</label><select id="v257-quality-severity" onchange="setV257QualityFilter('severity',this.value)">${option('ALL','Todas as severidades',filters.severity||'ALL')}${engine.SEVERITIES.map(value=>option(value,value,filters.severity||'ALL')).join('')}</select></div><div class="v257-remediation-groups" aria-label="Causas-raiz mais frequentes">${groups||'<span class="v257-remediation-group">Nenhum grupo disponível</span>'}</div><div class="v257-remediation-note">${filtered.length} achado(s) exibido(s). Estados de cobertura e confiança permanecem explícitos; resolver uma pendência continua sendo uma ação humana ou de fluxo próprio, nunca automática nesta tela.</div><div class="v257-remediation-list">${rows}</div></section>`;
+  return `<section class="v257-remediation-center" id="data-quality-remediation-center" aria-labelledby="v257-remediation-title"><div class="v257-remediation-head"><div><div class="v257-remediation-kicker">V257 · centro factual</div><h2 id="v257-remediation-title">Centro de remediação da qualidade</h2><p>Achados derivados, agrupados por causa-raiz e separados por domínio. Esta área explica o que precisa de revisão, sem corrigir cadastro, promover histórico ou executar qualquer write.</p></div><span class="v257-remediation-readonly">Somente leitura · zero writes</span></div><div class="v257-remediation-summary">${cards}</div><div class="v257-remediation-filters"><label class="sr-only" for="v257-quality-search">Buscar achado</label><input id="v257-quality-search" type="search" placeholder="Buscar ticker, causa ou mensagem" value="${esc(filters.search||'')}" oninput="setV257QualityFilter('search',this.value)"><label class="sr-only" for="v257-quality-state">Estado</label><select id="v257-quality-state" onchange="setV257QualityFilter('state',this.value)">${option('ALL','Todos os estados',filters.state||'ALL')}${engine.STATES.map(value=>option(value,v257QualityStateLabel(value),filters.state||'ALL')).join('')}</select><label class="sr-only" for="v257-quality-domain">Domínio</label><select id="v257-quality-domain" onchange="setV257QualityFilter('domain',this.value)">${option('ALL','Todos os domínios',filters.domain||'ALL')}${engine.DOMAINS.map(value=>option(value,value,filters.domain||'ALL')).join('')}</select><label class="sr-only" for="v257-quality-severity">Severidade</label><select id="v257-quality-severity" onchange="setV257QualityFilter('severity',this.value)">${option('ALL','Todas as severidades',filters.severity||'ALL')}${engine.SEVERITIES.map(value=>option(value,value,filters.severity||'ALL')).join('')}</select></div><div class="v257-remediation-groups" aria-label="Causas-raiz mais frequentes">${groups||'<span class="v257-remediation-group">Nenhum grupo disponível</span>'}</div><div class="v257-remediation-note">${filtered.length} achado(s) exibido(s). Estados de cobertura e confiança permanecem explícitos; resolver uma pendência continua sendo uma ação humana ou de fluxo próprio, nunca automática nesta tela.</div><details class="audit-fold"${(filtered.length<=12||filters.search||["state","severity","domain"].some(k=>filters[k]&&filters[k]!=="ALL"))?" open":""}><summary>Pendências listadas (${Math.min(filtered.length,80)} de ${filtered.length}) · clique para ${filtered.length<=12?"recolher":"abrir ou recolher"}</summary><div class="v257-remediation-list">${rows}</div></details></section>`;
 }
 function v258MonitoringUserId(){ return String(globalThis.FB?.user?.uid || S.activeWalletId || 'anonymous'); }
 function v258MonitoringCurrent(model){ return {issues:model?.issues||[],complete:true,userId:v258MonitoringUserId(),capturedAt:new Date().toISOString()}; }
@@ -25229,7 +25229,7 @@ function v258MonitoringCenter(result,model){
   const rows=alerts.slice(0,80).map(item=>`<article class="v258-monitoring-alert"><div><span class="v258-monitoring-badge ${String(item.status||'').toLowerCase()}">${esc(v258MonitoringStatusLabel(item.status))}</span><span class="v258-monitoring-badge ${v258MonitoringSeverityClass(item.severity)}">${esc(item.severity)}</span></div><div><strong>${esc(item.entityLabel)}</strong><small>${esc(item.domain)} · ${esc(item.rootCause)}</small></div><div><strong>${esc(item.message)}</strong><small>${esc(item.status==='CHANGED' ? `Mudança factual: ${(item.changeTypes||[]).join(', ')}` : item.impact)} · cobertura ${esc(item.coverage)} · freshness ${esc(item.freshness)}</small></div><div><strong>${esc(item.status==='RESOLVED'?'Ausente na carga atual':'Evidência e contexto')}</strong><small>${esc(item.source)}${item.route?` · <button type="button" class="v258-monitoring-button" onclick="v258OpenMonitoringContext('${esc(item.route)}')">Abrir contexto</button>`:''}</small></div></article>`).join('');
   const modeNote=result.mode==='CURRENT_ONLY'?'Baseline inicializado: os achados atuais não foram tratados como novos. As mudanças começam na próxima análise.':result.comparisonState==='PARTIAL'?'Carga parcial: nenhuma ausência foi marcada como resolvida.':'Comparação com baseline local legítimo; alertas representam mudanças factuais desde a última análise.';
   const groupSummary=groups.length?`<div class="v258-monitoring-note" aria-label="Resumo por causa-raiz">Causas-raiz em evidência: ${groups.map(group=>`${esc(group.rootCause)} (${group.count})`).join(' · ')}</div>`:'';
-  return `<section class="v258-monitoring-center" id="v258-alert-center" aria-labelledby="v258-monitoring-title"><div class="v258-monitoring-head"><div><div class="v258-monitoring-kicker">V258 · monitoramento factual</div><h2 id="v258-monitoring-title">Alert Center</h2><p>Observa mudanças do Centro V257 sem aconselhamento de investimento, sem corrigir dados e sem criar autoridade financeira.</p></div><span class="v258-monitoring-readonly">Somente leitura · sem remediação automática</span></div><div class="v258-monitoring-summary">${cards}</div><div class="v258-monitoring-filters"><label class="sr-only" for="v258-monitoring-search">Buscar alerta</label><input id="v258-monitoring-search" type="search" placeholder="Buscar ativo, causa ou alerta" value="${esc(filters.search||'')}" oninput="S.v258MonitoringFilters={...(S.v258MonitoringFilters||{}),search:this.value};render()"><label class="sr-only" for="v258-monitoring-status">Status</label><select id="v258-monitoring-status" onchange="S.v258MonitoringFilters={...(S.v258MonitoringFilters||{}),status:this.value};render()">${option('ALL','Todos os status',filters.status||'ALL')}${engine.STATUSES.map(value=>option(value,v258MonitoringStatusLabel(value),filters.status||'ALL')).join('')}</select><label class="sr-only" for="v258-monitoring-domain">Domínio</label><select id="v258-monitoring-domain" onchange="S.v258MonitoringFilters={...(S.v258MonitoringFilters||{}),domain:this.value};render()">${option('ALL','Todos os domínios',filters.domain||'ALL')}${engine.DOMAINS.map(value=>option(value,value,filters.domain||'ALL')).join('')}</select><label class="sr-only" for="v258-monitoring-severity">Severidade</label><select id="v258-monitoring-severity" onchange="S.v258MonitoringFilters={...(S.v258MonitoringFilters||{}),severity:this.value};render()"><option value="ALL">Todas as severidades</option><option value="CRITICAL"${filters.severity==='CRITICAL'?' selected':''}>CRITICAL</option><option value="WARNING"${filters.severity==='WARNING'?' selected':''}>WARNING</option><option value="INFO"${filters.severity==='INFO'?' selected':''}>INFO</option></select><button type="button" class="v258-monitoring-button" onclick="v258CommitMonitoringBaseline()">Marcar análise atual</button></div><div class="v258-monitoring-note" role="status">${esc(modeNote)} · ${alerts.length} alerta(s) visível(is) de ${result.currentIssueCount} achado(s) atuais. Acknowledged não significa resolvido.</div>${groupSummary}<div class="v258-monitoring-list">${rows||'<div class="v258-monitoring-empty" role="status">Nenhum alerta corresponde aos filtros. Ausência de mudança não significa dado completo.</div>'}</div></section>`;
+  return `<section class="v258-monitoring-center" id="v258-alert-center" aria-labelledby="v258-monitoring-title"><div class="v258-monitoring-head"><div><div class="v258-monitoring-kicker">V258 · monitoramento factual</div><h2 id="v258-monitoring-title">Alert Center</h2><p>Observa mudanças do Centro V257 sem aconselhamento de investimento, sem corrigir dados e sem criar autoridade financeira.</p></div><span class="v258-monitoring-readonly">Somente leitura · sem remediação automática</span></div><div class="v258-monitoring-summary">${cards}</div><div class="v258-monitoring-filters"><label class="sr-only" for="v258-monitoring-search">Buscar alerta</label><input id="v258-monitoring-search" type="search" placeholder="Buscar ativo, causa ou alerta" value="${esc(filters.search||'')}" oninput="S.v258MonitoringFilters={...(S.v258MonitoringFilters||{}),search:this.value};render()"><label class="sr-only" for="v258-monitoring-status">Status</label><select id="v258-monitoring-status" onchange="S.v258MonitoringFilters={...(S.v258MonitoringFilters||{}),status:this.value};render()">${option('ALL','Todos os status',filters.status||'ALL')}${engine.STATUSES.map(value=>option(value,v258MonitoringStatusLabel(value),filters.status||'ALL')).join('')}</select><label class="sr-only" for="v258-monitoring-domain">Domínio</label><select id="v258-monitoring-domain" onchange="S.v258MonitoringFilters={...(S.v258MonitoringFilters||{}),domain:this.value};render()">${option('ALL','Todos os domínios',filters.domain||'ALL')}${engine.DOMAINS.map(value=>option(value,value,filters.domain||'ALL')).join('')}</select><label class="sr-only" for="v258-monitoring-severity">Severidade</label><select id="v258-monitoring-severity" onchange="S.v258MonitoringFilters={...(S.v258MonitoringFilters||{}),severity:this.value};render()"><option value="ALL">Todas as severidades</option><option value="CRITICAL"${filters.severity==='CRITICAL'?' selected':''}>CRITICAL</option><option value="WARNING"${filters.severity==='WARNING'?' selected':''}>WARNING</option><option value="INFO"${filters.severity==='INFO'?' selected':''}>INFO</option></select><button type="button" class="v258-monitoring-button" onclick="v258CommitMonitoringBaseline()">Marcar análise atual</button></div><div class="v258-monitoring-note" role="status">${esc(modeNote)} · ${alerts.length} alerta(s) visível(is) de ${result.currentIssueCount} achado(s) atuais. Acknowledged não significa resolvido.</div>${groupSummary}<details class="audit-fold"${(alerts.length<=12||filters.search||["status","severity","domain"].some(k=>filters[k]&&filters[k]!=="ALL"))?" open":""}><summary>Alertas listados (${Math.min(alerts.length,80)} de ${alerts.length})</summary><div class="v258-monitoring-list">${rows||'<div class="v258-monitoring-empty" role="status">Nenhum alerta corresponde aos filtros. Ausência de mudança não significa dado completo.</div>'}</div></details></section>`;
 }
 function dataQualityTab(){
   const snapshot=dataQualitySnapshot();
@@ -30232,7 +30232,7 @@ function desktopTabs(){
     <details class="nav-more nav-advanced"${['confiabilidade','importacao'].includes(S.tab)||REPORT_TABS.some(t=>t[0]===S.tab)?' open':''}>
       <summary class="nav-more-summary">Avançado</summary>
       ${navItem('importacao','Importar dados','⇅',S.tab==='importacao')}
-      ${navItem('confiabilidade','Confiabilidade dos dados','🛡️',S.tab==='confiabilidade')}
+      ${navItem('confiabilidade','Confiabilidade','🛡️',S.tab==='confiabilidade')}
       ${navTabGroup('Relatórios',REPORT_TABS,'desktop')}
     </details>
     <div class="side-utilities" aria-label="Preferências da carteira">
@@ -33017,12 +33017,14 @@ function dash(){
   data.insights=portfolioInsightsSnapshot({...data,rf:rfSnapshot,quality:dataQualitySnapshot()});
   const hoje=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
   const dashMeta=new Date().toLocaleString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const dashHour=new Date().getHours();
+  const dashGreeting=dashHour<5?'Boa madrugada':dashHour<12?'Bom dia':dashHour<18?'Boa tarde':'Boa noite';
   return `
     <div class="premium-dashboard canon-dashboard fp-page fp-dashboard">
       <div class="dashboard-page-heading canon-dash-head fp-page-head">
         <div>
           <h1>Visão consolidada</h1>
-          <p class="dashboard-page-sub fp-page-sub">Resumo geral da sua carteira · ${esc(hoje)}</p>
+          <p class="dashboard-page-sub fp-page-sub">${dashGreeting} · resumo da sua carteira · ${esc(hoje)}</p>
         </div>
         <div class="dashboard-page-heading-meta canon-dash-meta fp-page-actions">
           <span class="canon-last-update fp-updated" aria-live="polite">Atualizado ${dashMeta} · ${data.analysis.length} ativos</span>
@@ -37238,14 +37240,14 @@ function canonDividendOverview(rows, kpisHtml){
     false
   );
   const upcoming=dividendUpcomingSection(rows,false);
-  const monthlyHistory=dividendMonthlyTableBlock(rows,true);
+  const monthlyHistory=dividendMonthlyTableBlock(rows,false);
   const incomeEvolution=fpIncomeChart(rows);
   const topAssets=fpTopPayers(rows);
   const annualSummary=`<section class="premium-panel dividend-annual-summary" aria-labelledby="dividend-annual-summary-title"><div class="premium-panel-head"><div><div class="premium-panel-title" id="dividend-annual-summary-title">Resumo por ano</div><div class="premium-panel-sub">Recebimentos registrados por ano; períodos sem cobertura permanecem indisponíveis.</div></div></div>${canonDividendYearSummary(rows)}</section>`;
   return `
     <div class="canon-dividends dividend-calendar-view dividend-daily-overview">
-      <section class="dividend-history-block" aria-label="Histórico mensal de recebimentos">${monthlyHistory}</section>
       <div class="dividend-primary-grid dividend-primary-grid-3">${incomeEvolution}${topAssets}${annualSummary}</div>
+      <section class="dividend-history-block" aria-label="Histórico mensal de recebimentos">${monthlyHistory}</section>
       <section class="dividend-calendar-primary" aria-label="Recebimentos e próximos eventos">
         ${received}
         ${upcoming}
@@ -40856,9 +40858,9 @@ html[data-theme="light"] .premium-dividends-3 .div-premium-head .btn.bp:hover:no
   .premium-dividends-3 .dividend-executive-kpi:first-child,.premium-dividends-3 .dividend-executive-kpi:nth-child(2){grid-column:1/-1}
   .premium-dividends-3 .dividend-executive-kpi:nth-child(3),.premium-dividends-3 .dividend-executive-kpi:nth-child(4),.premium-dividends-3 .dividend-executive-kpi:nth-child(5){min-height:58px;padding:6px 7px}
   .premium-dividends-3 .dividend-executive-kpi:nth-child(3) .dividend-executive-kpi-label,.premium-dividends-3 .dividend-executive-kpi:nth-child(4) .dividend-executive-kpi-label,.premium-dividends-3 .dividend-executive-kpi:nth-child(5) .dividend-executive-kpi-label{font-size:10px;line-height:1.1}
-  .premium-dividends-3 .dividend-executive-kpi:nth-child(3) .dividend-executive-kpi-value,.premium-dividends-3 .dividend-executive-kpi:nth-child(4) .dividend-executive-kpi-value,.premium-dividends-3 .dividend-executive-kpi:nth-child(5) .dividend-executive-kpi-value{font-size:12px!important;line-height:1.2}
+  .premium-dividends-3 .dividend-executive-kpi:nth-child(3) .dividend-executive-kpi-value,.premium-dividends-3 .dividend-executive-kpi:nth-child(4) .dividend-executive-kpi-value,.premium-dividends-3 .dividend-executive-kpi:nth-child(5) .dividend-executive-kpi-value{line-height:1.2}
   .premium-dividends-3 .dividend-executive-kpi-label{font-size:10px;line-height:1.2}
-  .premium-dividends-3 .dividend-executive-kpi-value{font-size:16px!important;line-height:1.2}
+  .premium-dividends-3 .dividend-executive-kpi-value{font-size:16px;line-height:1.2}
   .premium-dividends-3 .dividend-executive-kpi-sub{font-size:10px;line-height:1.25}
   .premium-dividends-3 .canon-div-history .dividend-history-heading{padding:10px 11px}
   .premium-dividends-3 .canon-div-lower{grid-template-columns:minmax(0,1fr);gap:8px}
@@ -41071,7 +41073,6 @@ html:not([data-theme="light"]) .div-premium-tab.on,html:not([data-theme="light"]
 .premium-dividends-3 .dividend-kpis-canon-grid .dividend-executive-kpi-value{font-size:clamp(17px,1.6vw,22px);white-space:nowrap;overflow-wrap:normal}
 .premium-dividends-3 .dividend-primary-grid-3 .div-collapsible-main{padding:0 2px}
 .premium-dividends-3 .dividend-primary-grid-3 .div-collapsible-title{font-size:14px}
-@media (max-width:760px){.premium-dividends-3 .dividend-kpis-canon-grid>.dividend-executive-kpi:last-child{grid-column:1/-1 !important}}
 
 /* Patrimônio: grade única, sem buraco sob o gráfico */
 .patrimonio-grid{align-items:start;align-content:start;grid-template-rows:min-content min-content 1fr min-content;row-gap:10px}
@@ -42097,6 +42098,69 @@ html body :is(.v257-remediation-center,.v258-monitoring-center,.data-quality-her
 html body .wrap :is(.data-quality-card-label,.data-quality-filter-label,.v257-remediation-kicker,.v258-monitoring-kicker){text-transform:none;letter-spacing:0;font-weight:600}
 html body .wrap :is(.v257-remediation-item,.v258-monitoring-item) :is(small,strong,p){overflow-wrap:anywhere}
 html body .wrap .rebalance-tools-summary span{font-size:var(--fp-fs-meta)}
+
+/* ============ V19 — Dashboard e Dividendos (acabamento premium, tokens FP) ============ */
+/* Dashboard: trio de KPIs numa só superfície, protagonista maior, divisórias finas */
+html body .fp-dashboard.canon-dashboard .dashboard-executive-kpis{gap:0;background:var(--fp-surface);border:1px solid var(--fp-border);border-radius:var(--fp-r-lg);overflow:clip}
+html body .fp-dashboard.canon-dashboard .dashboard-executive-kpis .premium-metric,html body .fp-dashboard.canon-dashboard .dashboard-executive-kpis .premium-metric:nth-child(n){border:0;border-radius:0;background:transparent;box-shadow:none;padding:22px 24px}
+html body .fp-dashboard.canon-dashboard .dashboard-executive-kpis .premium-metric+.premium-metric{border-left:1px solid var(--fp-border)}
+html body .fp-dashboard.canon-dashboard .dashboard-executive-kpis .premium-metric:first-child{background:var(--fp-accent-soft)}
+@media (min-width:768px){
+  html body .fp-dashboard.canon-dashboard .dashboard-executive-kpis:not(.package2-kpis){grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr)}
+  html body .fp-dashboard.canon-dashboard .dashboard-executive-kpis.package2-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+html body .fp-dashboard.canon-dashboard .dashboard-executive-kpis.package2-kpis .premium-metric:nth-child(n+4){border-top:1px solid var(--fp-border)}
+html body .fp-dashboard.canon-dashboard .dashboard-executive-kpis.package2-kpis .premium-metric:nth-child(4){border-left:0}
+html body .fp-dashboard.canon-dashboard .dashboard-executive-kpis .premium-metric-label{font-weight:600;color:var(--fp-text-2)}
+html body .fp-dashboard.canon-dashboard .dashboard-executive-kpis .premium-metric:first-child .premium-metric-value{font-size:clamp(30px,3.2vw,40px)}
+html body .fp-dashboard .dashboard-page-sub{color:var(--fp-text-2)}
+/* alerta de prioridade: faixa discreta sob os KPIs */
+html body .fp-dashboard .dashboard-v3-priority{padding:12px 16px;border-radius:var(--fp-r-md)}
+/* grade inferior: cartão vazio não estica até a altura do vizinho */
+html body .fp-dashboard .fp-dash-grid-2{align-items:start}
+html body .fp-dashboard .fp-dash-grid-2>*{align-self:start;height:auto;min-height:0}
+/* alocação: cobertura institucional discreta */
+html body .fp-dashboard .fp-coverage .dashboard-v3-context{font-size:var(--fp-fs-meta);color:var(--fp-text-3)}
+@media (max-width:767px){
+  html body .fp-dashboard.canon-dashboard .dashboard-executive-kpis,html body .fp-dashboard.canon-dashboard .dashboard-executive-kpis.package2-kpis{grid-template-columns:minmax(0,1fr)}
+  html body .fp-dashboard.canon-dashboard .dashboard-executive-kpis .premium-metric+.premium-metric,html body .fp-dashboard.canon-dashboard .dashboard-executive-kpis.package2-kpis .premium-metric:nth-child(4){border-left:0;border-top:1px solid var(--fp-border)}
+  html body .fp-dashboard.canon-dashboard .dashboard-executive-kpis .premium-metric,html body .fp-dashboard.canon-dashboard .dashboard-executive-kpis .premium-metric:nth-child(n){padding:16px 18px}
+}
+/* Dividendos: botões do cabeçalho legíveis nos dois temas */
+html body .premium-dividends-3 .div-premium-canon-actions .btn.bgh{background:transparent;color:var(--fp-text);border:1px solid var(--fp-border-strong)}
+/* matriz anual cabe sem cortar colunas em 1366px */
+html body .premium-dividends-3 .div-mat-table th,html body .premium-dividends-3 .div-mat-table td{padding:8px 3px}
+html body .premium-dividends-3 .div-mat-table .mat-year{padding-left:6px}
+html body .premium-dividends-3 .dividend-annual-summary{background:var(--fp-surface);border:1px solid var(--fp-border);border-radius:var(--fp-r-lg);box-shadow:none;padding:var(--fp-pad)}
+@media (max-width:767px){
+  html body .premium-dividends-3 .dividend-kpis-canon-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  html body .premium-dividends-3 .dividend-executive-kpi:nth-child(n){grid-column:auto;min-height:0;padding:12px}
+  html body .premium-dividends-3 .dividend-executive-kpi:nth-child(n) .dividend-executive-kpi-label{font-size:var(--fp-fs-meta)}
+  html body .premium-dividends-3 .dividend-executive-kpi:nth-child(n) .dividend-executive-kpi-value{font-size:var(--fp-fs-h3)}
+  html body .premium-dividends-3 .dividend-executive-kpi:nth-child(n) .dividend-executive-kpi-sub{font-size:var(--fp-fs-meta);line-height:1.35}
+}
+/* tabela mensal recolhida: resumo claro */
+html body .premium-dividends-3 .dividend-history-block{background:var(--fp-surface);border:1px solid var(--fp-border);border-radius:var(--fp-r-lg);box-shadow:none}
+
+/* V19 — Confiabilidade, Importar dados, Insights: textos >=12px e superfícies sem brilho */
+html body .wrap :is(.data-trust-pill,.data-trust-kicker,.data-trust-card-label,.data-trust-row small,.v257-remediation-item strong,.v258-monitoring-item strong,.import-center-safety,.import-center-step,.import-center-step span,.import-center-panel p,.import-center-source-catalog p,.import-source-card span,.import-support,.import-muted,.ai-hub-summary-note,.ai-hub-section-sub,.ai-hub-section-badge,.ai-hub-card-desc,.ai-hub-pill,.ai-hub-card-evidence,.ai-hub-card-route,.ai-compact-summary-sub,.ai-compact-summary-meta){font-size:var(--fp-fs-meta);line-height:1.45}
+html body .wrap :is(.data-trust-kicker,.import-center-safety){letter-spacing:.02em}
+html body .wrap :is(.ai-hub-summary-card,.ai-hub-section,.ai-hub-card){background:var(--fp-surface);background-image:none;box-shadow:none}
+html body .wrap .audit-fold>summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-size:var(--fp-fs-ui);font-weight:600;color:var(--fp-accent-text);padding:0 2px}
+html body .wrap .audit-fold:not([open])>summary{border-top:1px solid var(--fp-border)}
+@media (max-width:767px){
+  html body .premium-rf-page :is(label,div):has(>select[id$="-mode"]){grid-column:1/-1}
+  html body .premium-rf-page select[id$="-mode"]{width:100%}
+}
+/* V19 — Dashboard e Dividendos: nenhum texto abaixo de 12px */
+html body .wrap :is(.canon-last-update,.dashboard-history-disclosure>summary,.dashboard-history-disclosure-body,.dashboard-quick-action-sub,.canon-year-sum-year,.canon-year-sum-val,.canon-year-sum-count,.when-open,.div-monthly-summary-item span,.div-month-filter-label,.div-monthly-toggle-btn,.mat-year small,.div-collapsible-chev,.div-receipt-ticker,.div-receipt-actions .bdi,.div-upcoming-empty-compact strong,.div-upcoming-empty-compact span,.v253-income-note,.v253-month-row span,.v253-month-row strong,.v253-income-card small,.v253-income-card span){font-size:var(--fp-fs-meta);line-height:1.4}
+html body .premium-dividends-3 .div-premium-canon-actions .btn{font-size:var(--fp-fs-ui)}
+html body #root :is(.canon-last-update,.canon-year-sum-count,.mat-year small,.div-receipt-actions .bdi,.v253-income-kpis small,.v253-income-card strong,.v253-income-card small,.v253-income-card span,.v253-income-intelligence small,.v253-income-intelligence strong){font-size:var(--fp-fs-meta);line-height:1.4}
+html body #root :is(.v253-income-kpis span,.v253-income-kpis article span){font-size:var(--fp-fs-meta);line-height:1.4}
+/* matriz anual: sombra lateral só aparece quando há meses fora da área visível */
+html body .premium-dividends-3 .div-mat-scroll{background:linear-gradient(to right,var(--fp-surface) 30%,transparent) 0 0/40px 100% no-repeat local,linear-gradient(to left,var(--fp-surface) 30%,transparent) 100% 0/40px 100% no-repeat local,radial-gradient(farthest-side at 0 50%,rgba(0,0,0,.28),transparent) 0 0/12px 100% no-repeat scroll,radial-gradient(farthest-side at 100% 50%,rgba(0,0,0,.28),transparent) 100% 0/12px 100% no-repeat scroll}
+html body #root .import-center-step-mobile span{font-size:var(--fp-fs-meta)}
+html body #root .premium-dividends-3 .dividend-annual-summary,html body #root .dividend-annual-summary.premium-panel{background:var(--fp-surface);border:1px solid var(--fp-border);border-radius:var(--fp-r-lg);box-shadow:none;padding:var(--fp-pad)}
 </style>
 </body>
 </html>
