@@ -19,6 +19,7 @@ function extractBlock(startMarker, endMarker) {
 }
 
 const syncFn = extractBlock('function syncAssetsFromAportes(', 'function qtyAtDate(');
+const neutralMovementFn = extractBlock('function aporteMovementKind(', 'function aporteMovementLabel(');
 
 function buildSandbox(aportes, assets = []) {
   const S = { aportes, assets };
@@ -36,10 +37,6 @@ function buildSandbox(aportes, assets = []) {
     metaTicker: () => ({ type: 'Ação', sector: '' }),
     learnedMetaFor: () => null,
     learnTickerMeta: () => {},
-    isNeutralMovement: p => {
-      const op = String(p.operation || p.op || '').toLowerCase();
-      return ['transferencia', 'transfer', 'cobertura', 'doacao', 'desdobramento'].includes(op);
-    },
     isProtectedReadOnlyQaBoot: () => false,
     isLocalTestReadOnlyMode: () => false,
     window: { ProtectedRfReconstruction: null, __V76_RUNTIME_STATUS__: null },
@@ -51,6 +48,7 @@ function buildSandbox(aportes, assets = []) {
     Date, Math, Number, String, Object, Array, JSON,
   };
   vm.createContext(sandbox);
+  vm.runInContext(neutralMovementFn, sandbox);
   vm.runInContext(syncFn, sandbox);
   return { S, run: () => vm.runInContext('syncAssetsFromAportes(false,false);', sandbox) };
 }
@@ -104,16 +102,39 @@ test('V350: same-date operations follow insertion order; sell clamps to availabl
   assert.equal(S.assets.filter(x => x.ticker === 'TEST4').length, 0, 'fully sold asset must be removed');
 });
 
-test('V350: buy with zero/absent price contributes zero cost (UNKNOWN is not invented)', () => {
+test('V350: incomplete price history is coerced to zero cost by legacy calculation', () => {
   const { S, run } = buildSandbox([
     { id: 1, date: '2026-01-10', ticker: 'TEST4', operation: 'compra', qty: 100, price: 10 },
     { id: 2, date: '2026-02-10', ticker: 'TEST4', operation: 'compra', qty: 50 }, // no price field
   ]);
   run();
   const a = S.assets.find(x => x.ticker === 'TEST4');
-  // 1000 total / 150 qty = 6.666..: priceless buy adds quantity but zero cost,
-  // lowering the average — documented legacy behavior, not invented cost.
+  // Reproduces a confirmed risk: the sync uses Number(price)||0, so missing
+  // cost contaminates the average. Import confirmation must gate this path.
   assert.ok(Math.abs(a.avg_price - (1000 / 150)) < 1e-9, `avg with priceless buy expected 1000/150, got ${a.avg_price}`);
+});
+
+test('V350: unknown opening position is lost when aportes history is incomplete', () => {
+  const { S, run } = buildSandbox([
+    { id: 2, date: '2026-02-10', ticker: 'TEST4', operation: 'compra', qty: 10, price: 20 },
+  ], [{ id: 42, ticker: 'TEST4', type: 'Ação', qty: 100, avg_price: 15, current_price: 22 }]);
+  run();
+  const a = S.assets.find(x => x.ticker === 'TEST4');
+  assert.equal(a.qty, 10);
+  assert.equal(a.avg_price, 20);
+});
+
+test('V350: transfers, splits and corporate events do not create purchase cost in this sync', () => {
+  const { S, run } = buildSandbox([
+    { id: 1, date: '2026-01-10', ticker: 'TEST4', operation: 'compra', qty: 10, price: 10 },
+    { id: 2, date: '2026-02-10', ticker: 'TEST4', operation: 'outro', movement: 'transferência', qty: 10, price: 10 },
+    { id: 3, date: '2026-03-10', ticker: 'TEST4', operation: 'outro', movement: 'desdobramento', qty: 10, price: 0 },
+    { id: 4, date: '2026-04-10', ticker: 'TEST4', operation: 'outro', movement: 'evento corporativo', qty: 10, price: 0 },
+  ]);
+  run();
+  const a = S.assets.find(x => x.ticker === 'TEST4');
+  assert.equal(a.qty, 10);
+  assert.equal(a.avg_price, 10);
 });
 
 test('V350: legacy asset fields without avg keep imported positions without inventing cost', () => {

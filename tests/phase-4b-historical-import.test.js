@@ -31,12 +31,24 @@ test('preview deduplicates within batch and against existing records without wri
   const source = { sourceType: 'B3', fileName: 'proventos.xlsx', period: '2025' };
   const row = { Data: '31/01/2025', Ticker: 'ABCD3', Tipo: 'Dividendo', Valor: '10,00' };
   const preview = Preview.previewDividendImport({ source, rows: [row, row], existing: [] });
-  assert.equal(preview.counts.NEW, 1);
-  assert.equal(preview.counts.EXACT_DUPLICATE, 1);
+  assert.equal(preview.counts.NEW, 0);
+  assert.equal(preview.counts.POSSIBLE_DUPLICATE, 2);
   assert.equal(preview.whatWillChange, 0);
   assert.equal(preview.writeEnabled, false);
-  const repeated = Preview.previewDividendImport({ source, rows: [row], previousFingerprints: [preview.newRecords[0].fingerprint] });
-  assert.equal(repeated.counts.EXACT_DUPLICATE, 1);
+  const first = Preview.previewDividendImport({ source, rows: [row] });
+  const repeated = Preview.previewDividendImport({ source, rows: [row], previousFingerprints: [first.newRecords[0].fingerprint] });
+  assert.equal(repeated.counts.POSSIBLE_DUPLICATE, 1);
+});
+
+test('event ID permite dedupe exato e detecta conflito sem colapsar execução distinta', () => {
+  const source = { sourceType: 'B3', fileName: 'proventos.xlsx', period: '2025' };
+  const row = { Data: '31/01/2025', Ticker: 'ABCD3', Tipo: 'Dividendo', Valor: '10,00', sourceEventId: 'exec-1' };
+  const preview = Preview.previewDividendImport({ source, rows: [row, { ...row, sourceEventId: 'exec-2' }] });
+  assert.equal(preview.counts.NEW, 2);
+  const exact = Preview.previewDividendImport({ source, rows: [row], existing: [preview.newRecords[0]] });
+  assert.equal(exact.counts.EXACT_DUPLICATE, 1);
+  const conflict = Preview.previewDividendImport({ source, rows: [{ ...row, Valor: '11,00' }], existing: [preview.newRecords[0]] });
+  assert.equal(conflict.counts.IDENTITY_CONFLICT, 1);
 });
 
 test('preview keeps a different month for the same ticker as a new event', () => {

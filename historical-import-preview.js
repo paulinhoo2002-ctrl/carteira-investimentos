@@ -72,7 +72,8 @@
       unitPrice:normalizeMoney(rowValue(row,['unitPrice','valorUnitario','valorPorCota'])),
       grossValue:normalizeMoney(rowValue(row,['grossValue','gross','value','valorBruto','valor'])),
       netValue:normalizeMoney(rowValue(row,['netValue','net','valorLiquido'])),
-      institution:rowValue(row,['institution','instituicao','broker','corretora'])
+      institution:rowValue(row,['institution','instituicao','broker','corretora']),
+      sourceEventId:rowValue(row,['sourceEventId','sourceExecutionId','executionId','tradeId','transactionId','eventId'])
     };
     const identity=identityOf(event);
     const reasons=[];
@@ -85,8 +86,12 @@
   }
 
   function classifyDividendDuplicate(event, {batch=[], existing=[], previousFingerprints=[]}={}){
-    if(previousFingerprints.includes(event.fingerprint) || existing.some(item=>String(item?.fingerprint||Foundation.eventFingerprint(item))===event.fingerprint)) return 'EXACT_DUPLICATE';
-    if(batch.some(item=>item.fingerprint===event.fingerprint)) return 'EXACT_DUPLICATE';
+    const eventId=Foundation.sourceEventIdentity(event);
+    if(eventId){
+      const identified=[...existing,...batch].find(item=>Foundation.sourceEventIdentity(item)===eventId);
+      if(identified) return String(identified.fingerprint||Foundation.eventFingerprint(identified))===event.fingerprint?'EXACT_DUPLICATE':'IDENTITY_CONFLICT';
+      if(previousFingerprints.includes(event.fingerprint)) return 'EXACT_DUPLICATE';
+    }else if(previousFingerprints.includes(event.fingerprint)||existing.some(item=>String(item?.fingerprint||Foundation.eventFingerprint(item))===event.fingerprint)||batch.some(item=>item.fingerprint===event.fingerprint)) return 'POSSIBLE_DUPLICATE';
     const result=Foundation.classifyDuplicate(event,existing);
     if(result.state==='IDENTITY_CONFLICT'||result.state==='POSSIBLE_DUPLICATE') return result.state;
     return event.state;
@@ -103,10 +108,27 @@
   function previewDividendImport({source={},rows=[],existing=[],previousFingerprints=[],processedSources=[]}={}){
     const normalized=[]; const counts={NEW:0,EXACT_DUPLICATE:0,POSSIBLE_DUPLICATE:0,REVIEW_REQUIRED:0,UNSUPPORTED:0};
     const batch=[];
-    for(const row of (Array.isArray(rows)?rows:[])){
-      const event=normalizeDividendEvent(row,source);
-      const duplicate=classifyDividendDuplicate(event,{batch,existing,previousFingerprints});
-      const state=duplicate==='EXACT_DUPLICATE'||duplicate==='POSSIBLE_DUPLICATE' ? duplicate : event.state;
+    const events=(Array.isArray(rows)?rows:[]).map(row=>normalizeDividendEvent(row,source));
+    const unidentifiedCounts=new Map();
+    const identifiedFingerprints=new Map();
+    events.filter(event=>!Foundation.sourceEventIdentity(event)).forEach(event=>{
+      const key=[event.date,event.identity,event.eventType,event.quantity??event.qty??'',event.grossValue??'',event.netValue??''].join('|');
+      unidentifiedCounts.set(key,(unidentifiedCounts.get(key)||0)+1);
+    });
+    events.filter(event=>Foundation.sourceEventIdentity(event)).forEach(event=>{
+      const key=Foundation.sourceEventIdentity(event);
+      if(!identifiedFingerprints.has(key)) identifiedFingerprints.set(key,new Set());
+      identifiedFingerprints.get(key).add(event.fingerprint);
+    });
+    for(const event of events){
+      const key=[event.date,event.identity,event.eventType,event.quantity??event.qty??'',event.grossValue??'',event.netValue??''].join('|');
+      const eventId=Foundation.sourceEventIdentity(event);
+      const duplicate=eventId&&identifiedFingerprints.get(eventId)?.size>1
+        ? 'IDENTITY_CONFLICT'
+        : !eventId&&unidentifiedCounts.get(key)>1
+          ? 'POSSIBLE_DUPLICATE'
+          : classifyDividendDuplicate(event,{batch,existing,previousFingerprints});
+      const state=['EXACT_DUPLICATE','POSSIBLE_DUPLICATE','IDENTITY_CONFLICT'].includes(duplicate) ? duplicate : event.state;
       const item={...event,state};
       normalized.push(item);
       counts[state]=(counts[state]||0)+1;

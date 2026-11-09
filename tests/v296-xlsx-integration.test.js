@@ -9,11 +9,8 @@ const { applyV289VisualFixture } = require('./helpers/v289-visual-fixtures');
 const ROOT = path.join(__dirname, '..');
 const CHROME = process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const XLSX_FIXTURE = path.join(ROOT, 'tests', 'fixtures', 'import-center', 'v296-synthetic-b3-movements.xlsx');
-const indexHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-const sheetJsTag = indexHtml.match(/<script src="(https:\/\/cdn\.jsdelivr\.net\/npm\/xlsx@0\.18\.5\/dist\/xlsx\.full\.min\.js)" integrity="(sha384-[^"]+)" crossorigin="anonymous"><\\\/script>/);
-if (!sheetJsTag) throw new Error('Production SheetJS URL/SRI tag not found');
-const [, sheetJsUrl, sheetJsIntegrity] = sheetJsTag;
-async function createApp() {
+const SHEETJS_URL = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+async function createApp({ xlsxMode = 'network' } = {}) {
   const harness = await startLocalHttpServer(ROOT);
   const browser = await chromium.launch({ executablePath: CHROME, headless: true });
   const context = await browser.newContext({ viewport: { width: 1366, height: 768 } });
@@ -24,18 +21,10 @@ async function createApp() {
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
   page.on('request', request => requests.push(request.url()));
   try {
+    if (xlsxMode === 'network-failure') await page.route(SHEETJS_URL, route => route.abort());
+    if (xlsxMode === 'missing-library') await page.route(SHEETJS_URL, route => route.fulfill({ status: 200, contentType: 'application/javascript', body: '/* synthetic script without XLSX */' }));
     await page.goto(harness.url, { waitUntil: 'networkidle' });
     await applyV289VisualFixture(page, 'baseline');
-    const version = await page.evaluate(async ({ src, integrity }) => new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = src;
-      script.integrity = integrity;
-      script.crossOrigin = 'anonymous';
-      script.onload = () => resolve(window.XLSX?.version || '');
-      script.onerror = () => reject(new Error('Production SheetJS script failed SRI/runtime load'));
-      document.head.appendChild(script);
-    }), { src: sheetJsUrl, integrity: sheetJsIntegrity });
-    assert.equal(version, '0.18.5', 'the exact production SheetJS runtime must execute in the browser');
     await page.getByRole('button', { name: 'Importar dados', exact: true }).click();
     await page.evaluate(() => {
       const active = activeWallet();
@@ -70,6 +59,42 @@ async function closeApp(app) {
   await app.browser.close();
   app.harness.server.closeAllConnections();
   app.harness.server.close();
+}
+
+async function assertXlsxLoadFailure(mode, code) {
+  const app = await createApp({ xlsxMode: mode });
+  try {
+    await app.page.evaluate(() => {
+      window.__v296SaveCalls = 0;
+      window.__v296OriginalSave = window.save;
+      window.save = function (...args) { window.__v296SaveCalls += 1; return window.__v296OriginalSave.apply(this, args); };
+      window.__v296Before = JSON.stringify({ assets: S.assets, aportes: S.aportes, proventos: S.proventos, rfEvents: S.rfEvents, goals: S.goals });
+      window.__v296StorageBefore = JSON.stringify(Object.keys(localStorage).sort().map(key => [key, localStorage.getItem(key)]));
+    });
+    await app.page.getByRole('button', { name: 'Importar dados', exact: true }).click();
+    await selectAndParse(app, {
+      name: 'QA_XLSX_SYNTHETIC_load_failure.xlsx',
+      mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      buffer: readSyntheticWorkbook(),
+    });
+    const failed = await app.page.evaluate(() => ({
+      status: S.importCenterSession?.result?.status,
+      reason: S.importCenterSession?.result?.reason,
+      error: S.importCenterSession?.result?.error?.message || '',
+      saveCalls: window.__v296SaveCalls,
+      before: window.__v296Before,
+      after: JSON.stringify({ assets: S.assets, aportes: S.aportes, proventos: S.proventos, rfEvents: S.rfEvents, goals: S.goals }),
+      storage: JSON.stringify(Object.keys(localStorage).sort().map(key => [key, localStorage.getItem(key)])),
+    }));
+    assert.equal(failed.status, 'FAILED');
+    assert.equal(failed.reason, 'FILE_READ_OR_PARSE_FAILED');
+    assert.equal(failed.error, code);
+    assert.equal(failed.saveCalls, 0);
+    assert.equal(failed.after, failed.before);
+    assert.equal(failed.storage, await app.page.evaluate(() => window.__v296StorageBefore));
+  } finally {
+    await closeApp(app);
+  }
 }
 
 function readSyntheticWorkbook() {
@@ -107,6 +132,7 @@ test('V296: browser loads production SheetJS CDN and decodes synthetic XLSX befo
     const preview = await app.page.evaluate(() => ({
       status: S.importCenterSession?.result?.status,
       sourceType: S.importCenterSession?.result?.sourceType,
+      xlsxVersion: window.XLSX?.version || '',
       recordCount: S.importCenterSession?.result?.recordCount,
       confirmationRequired: S.importCenterSession?.result?.confirmationRequired,
       writeCount: S.importCenterSession?.result?.writeCount,
@@ -120,6 +146,7 @@ test('V296: browser loads production SheetJS CDN and decodes synthetic XLSX befo
     }));
     assert.equal(preview.status, 'REVIEW_OPEN');
     assert.equal(preview.sourceType, 'B3_MOVEMENTS_XLSX');
+    assert.equal(preview.xlsxVersion, '0.18.5', 'the application loader must obtain the production SheetJS runtime');
     assert.equal(preview.recordCount, 2);
     assert.equal(preview.confirmationRequired, true);
     assert.equal(preview.writeCount, 0);
@@ -228,4 +255,9 @@ test('V296: malformed synthetic XLSX fails visibly without partial write', async
   } finally {
     await closeApp(app);
   }
+});
+
+test('V296: CDN failure and script without XLSX fail clearly without financial writes', async () => {
+  await assertXlsxLoadFailure('network-failure', 'XLSX_LOAD_FAILED');
+  await assertXlsxLoadFailure('missing-library', 'XLSX_UNAVAILABLE');
 });

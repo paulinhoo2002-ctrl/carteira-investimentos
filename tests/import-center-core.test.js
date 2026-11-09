@@ -16,7 +16,7 @@ test('normaliza trade canônico em centavos e valida campos obrigatórios', () =
 
 test('preview separa novo, duplicado e conflito sem qualquer escrita', () => {
   const source = { name: 'inter.pdf', text: 'INTER DTVM', sourceType: 'BROKERAGE_NOTE_PDF' };
-  const rows = [{ date: '2026-09-15', ticker: 'PETR4', operation: 'BUY', quantity: 10, unitPrice: 35.5, grossValue: 355, noteNumber: '10' }];
+  const rows = [{ date: '2026-09-15', ticker: 'PETR4', operation: 'BUY', quantity: 10, unitPrice: 35.5, grossValue: 355, noteNumber: '10', sourceEventId: 'exec-1' }];
   const existing = [Core.normalizeRecord(rows[0], { sourceType: 'BROKERAGE_NOTE_PDF', broker: 'INTER', noteNumber: '10' })];
   const preview = Core.buildPreview({ source, rows, existing });
   assert.equal(preview.counts.EXACT_DUPLICATE, 1);
@@ -58,7 +58,7 @@ test('normalização preserva provenance e operações conhecidas sem inventar d
 
 test('pipeline é idempotente para conteúdo renomeado e separa conflito de duplicata', () => {
   const source = { name: 'nota-a.pdf', text: 'INTER DTVM', sourceType: 'BROKERAGE_NOTE_PDF', broker: 'INTER' };
-  const rows = [{ date: '2026-09-15', ticker: 'PETR4', operation: 'BUY', quantity: 10, unitPrice: 35.5, grossValue: 355, noteNumber: '10' }];
+  const rows = [{ date: '2026-09-15', ticker: 'PETR4', operation: 'BUY', quantity: 10, unitPrice: 35.5, grossValue: 355, noteNumber: '10', sourceEventId: 'exec-1' }];
   const first = Core.buildPreview({ source, rows });
   const renamed = Core.buildPreview({ source: { ...source, name: 'nota-b.pdf' }, rows });
   assert.equal(first.batchFingerprint, renamed.batchFingerprint);

@@ -29,10 +29,24 @@ test('event and source fingerprints are stable across formatting variations', ()
   assert.equal(ImportFoundation.sourceFingerprint(source), ImportFoundation.sourceFingerprint({ ...source, rows: [two] }));
 });
 
+test('economic equality without a source execution ID requires review', () => {
+  const row = { source: 'B3', eventType: 'Compra', date: '2026-01-31', ticker: 'ABCD3', qty: 10, price: 12.34, value: 123.40 };
+  assert.equal(ImportFoundation.classifyDuplicate(row, [row]).state, 'POSSIBLE_DUPLICATE');
+  assert.equal(ImportFoundation.classifyDuplicate({ ...row, qty: 10.000 }, [{ ...row, qty: '10' }]).state, 'POSSIBLE_DUPLICATE');
+});
+
+test('source execution IDs distinguish identical trades and detect ID conflicts', () => {
+  const row = { source: 'B3', documentId: 'DOC-1', eventType: 'Compra', date: '2026-01-31', ticker: 'ABCD3', qty: 10, price: 12.34, value: 123.40, sourceEventId: 'row-7' };
+  assert.equal(ImportFoundation.classifyDuplicate(row, [{ ...row }]).state, 'EXACT_DUPLICATE');
+  assert.equal(ImportFoundation.classifyDuplicate({ ...row, sourceEventId: 'row-8' }, [{ ...row }]).state, 'NOT_DUPLICATE');
+  assert.equal(ImportFoundation.classifyDuplicate({ ...row, value: 120 }, [{ ...row }]).state, 'IDENTITY_CONFLICT');
+  assert.equal(ImportFoundation.classifyDuplicate({ ...row, sourceEventId: 'ROW-7', qty: '10,00', price: 'R$ 12,34', value: 'R$ 123,40' }, [{ ...row }]).state, 'EXACT_DUPLICATE');
+});
+
 test('duplicate classification never approximates identity', () => {
   const existing = [{ source: 'B3', eventType: 'Compra', date: '2026-01-31', ticker: 'ABCD3', qty: 10, price: 12.34 }];
-  assert.equal(ImportFoundation.classifyDuplicate(existing[0], existing).state, 'EXACT_DUPLICATE');
-  assert.equal(ImportFoundation.classifyDuplicate({ source: 'B3', eventType: 'Compra', date: '2026-01-31', ticker: 'ABCD3', qty: 11, price: 12.34 }, existing).state, 'POSSIBLE_DUPLICATE');
+  assert.equal(ImportFoundation.classifyDuplicate(existing[0], existing).state, 'POSSIBLE_DUPLICATE');
+  assert.equal(ImportFoundation.classifyDuplicate({ source: 'B3', eventType: 'Compra', date: '2026-01-31', ticker: 'ABCD3', qty: 11, price: 12.34 }, existing).state, 'NOT_DUPLICATE');
   assert.equal(ImportFoundation.classifyDuplicate({ source: 'B3', eventType: 'Compra', date: '2026-01-31', ticker: 'ABCD30', qty: 10, price: 12.34 }, existing).state, 'NOT_DUPLICATE');
 });
 
@@ -41,14 +55,14 @@ test('same ticker in a different month is not a duplicate', () => {
   assert.equal(ImportFoundation.classifyDuplicate({ source: 'B3', eventType: 'Dividendo', date: '2026-08-14', ticker: 'HGLG11', value: 112.32 }, existing).state, 'NOT_DUPLICATE');
 });
 
-test('same ticker, date, value and type is an economic duplicate', () => {
+test('same ticker, date, value and type without source ID is only a possible duplicate', () => {
   const row = { source: 'B3', eventType: 'Dividendo', date: '2026-08-14', ticker: 'HGLG11', value: 112.32 };
-  assert.equal(ImportFoundation.classifyDuplicate(row, [row]).state, 'EXACT_DUPLICATE');
+  assert.equal(ImportFoundation.classifyDuplicate(row, [row]).state, 'POSSIBLE_DUPLICATE');
 });
 
 test('same ticker and date with materially different value is a conflict', () => {
   const existing = [{ source: 'B3', eventType: 'Dividendo', date: '2026-08-14', ticker: 'HGLG11', value: 112.32 }];
-  assert.equal(ImportFoundation.classifyDuplicate({ source: 'B3', eventType: 'Dividendo', date: '2026-08-14', ticker: 'HGLG11', value: 99.99 }, existing).state, 'IDENTITY_CONFLICT');
+  assert.equal(ImportFoundation.classifyDuplicate({ source: 'B3', eventType: 'Dividendo', date: '2026-08-14', ticker: 'HGLG11', value: 99.99 }, existing).state, 'POSSIBLE_DUPLICATE');
 });
 
 test('same value with a different ticker is not a duplicate', () => {

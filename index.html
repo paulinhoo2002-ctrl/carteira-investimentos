@@ -8967,7 +8967,8 @@ window.ensureXLSX=()=>{ if(window.__XLSX_PROMISE__) return window.__XLSX_PROMISE
     const s=document.createElement('script');
     s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
     s.integrity='sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw'; s.crossOrigin='anonymous';
-    s.onload=()=>resolve(XLSX); s.onerror=()=>{ window.__XLSX_PROMISE__=null; reject(new Error('XLSX_LOAD_FAILED')); };
+    s.onload=()=>{ if(typeof XLSX==='undefined'){ window.__XLSX_PROMISE__=null; reject(new Error('XLSX_UNAVAILABLE')); return; } resolve(XLSX); };
+    s.onerror=()=>{ window.__XLSX_PROMISE__=null; reject(new Error('XLSX_LOAD_FAILED')); };
     document.head.appendChild(s); });
   return window.__XLSX_PROMISE__; };
 </script>
@@ -10068,6 +10069,14 @@ function persistFinancialImportState(snapshot){
   }catch(e){}
   restoreFinancialImportState(snapshot);
   return false;
+}
+function confirmImportedCostBasisCompleteness(sourceLabel='importação'){
+  return confirm([
+    `A ${sourceLabel} recalculará quantidades e custo médio com base em todo o Histórico de aportes.`,
+    '',
+    'Confirme somente após verificar que posição inicial, compras, vendas, transferências e eventos corporativos do ativo estão completos e classificados corretamente.',
+    'Se a posição inicial ou qualquer parte do histórico for desconhecida, cancele. A prévia não certifica o custo médio.'
+  ].join('\n'));
 }
 function save(){
   if(!isLocalTestMode() && FB.accountMode!=='REAL') return false;
@@ -13876,7 +13885,7 @@ function b3MovementLooksLikeSummaryRow(movement, product, row=[]){
   if(keywords.some(k=>firstNorm.includes(b3MovementNorm(k)))) return true;
   return false;
 }
-function b3MovementParseRow({movement, product, entryExit, qty, price, value, importDate, date, broker, sheet='Movimentacao'}){
+function b3MovementParseRow({movement, product, entryExit, qty, price, value, importDate, date, broker, sourceEventId='', sheet='Movimentacao'}){
   const mov=String(movement||'').trim();
   const prod=String(product||'').trim();
   const ticker=b3MovementTicker(prod);
@@ -13916,6 +13925,7 @@ function b3MovementParseRow({movement, product, entryExit, qty, price, value, im
     sheet,
     date:movDate,
     broker:String(broker||''),
+    sourceEventId:String(sourceEventId||'').trim(),
     movKey
   };
 }
@@ -13944,6 +13954,7 @@ function b3QtyEquals(a,b){
 }
 function b3MovementDuplicateKind(it){
   const ticker=String(it.ticker||'').toUpperCase();
+  const sourceEventId=String(it.sourceEventId||'').trim();
   if(!ticker) return '';
   const dateKey=b3MovementDateKey(it.date);
   const value=Number(it.value)||((Number(it.qty)||0)*(Number(it.price)||0));
@@ -13952,6 +13963,7 @@ function b3MovementDuplicateKind(it){
     const dup=(S.proventos||[]).some(p=>{
       const pType=b3MovementNorm(p.type||p.note||'');
       return String(p.ticker||'').toUpperCase()===ticker
+        && (!sourceEventId || !String(p.sourceEventId||'').trim() || String(p.sourceEventId).trim()===sourceEventId)
         && b3MovementDateKey(p.date)===dateKey
         && b3MoneyEquals(p.value,value)
         && (!typeNorm || !pType || pType.includes(typeNorm) || typeNorm.includes(pType));
@@ -13964,6 +13976,7 @@ function b3MovementDuplicateKind(it){
       const aOp=String(a.operation||a.op||'compra').toLowerCase();
       const aTotal=(Math.abs(Number(a.qty)||0))*(Number(a.price)||0);
       return String(a.ticker||'').toUpperCase()===ticker
+        && (!sourceEventId || !String(a.sourceEventId||'').trim() || String(a.sourceEventId).trim()===sourceEventId)
         && b3MovementDateKey(a.date)===dateKey
         && aOp===op
         && b3QtyEquals(Math.abs(Number(a.qty)||0),Math.abs(Number(it.qty)||0))
@@ -14035,7 +14048,8 @@ function b3MovementHistoricalAutoKey(it, operationType, side){
     String(qty.toFixed(4)),
     String(unitPrice.toFixed(2)),
     String(totalValue.toFixed(2)),
-    b3MovementNorm(institution)
+    b3MovementNorm(institution),
+    String(it.sourceEventId||'').trim()
   ].join('|');
 }
 function b3MovementSavedHistoricalAutoKey(a){
@@ -14053,7 +14067,8 @@ function b3MovementSavedHistoricalAutoKey(a){
     String(qty.toFixed(4)),
     String(unitPrice.toFixed(2)),
     String(totalValue.toFixed(2)),
-    b3MovementNorm(a.institution||a.broker||'')
+    b3MovementNorm(a.institution||a.broker||''),
+    String(a.sourceEventId||'').trim()
   ].join('|');
 }
 function b3MovementRefreshReviewFlags(it){
@@ -14129,6 +14144,7 @@ function parseB3MovementWorkbook(wb, fileName=''){
       const value=parseNum(pickB3(row,headers,['Valor da Operação','Valor da Operacao']));
       const movementDate=b3MovementDateFromCell(pickB3(row,headers,['Data','Data do Movimento','Data da Movimentação','Data da Movimentacao','Data da Operação','Data da Operacao']), importDate);
       const broker=String(pickB3(row,headers,['Instituição','Instituicao','Corretora','Instituição Financeira','Instituicao Financeira'])||'').trim();
+      const sourceEventId=String(pickB3(row,headers,['Identificador da execução','Identificador da execucao','ID da movimentação','ID da movimentacao','ID da operação','ID da operacao','Código da operação','Codigo da operacao'])||'').trim();
       if(b3MovementLooksLikeSummaryRow(movement, product, row)){
         addIgnored(movement||product||'sem movimento','linha total / resumo');
         return;
@@ -14137,7 +14153,7 @@ function parseB3MovementWorkbook(wb, fileName=''){
         addIgnored(movement||'sem movimento','linha não reconhecida');
         return;
       }
-      const item=b3MovementParseRow({movement, product, entryExit, qty, price, value, importDate, date:movementDate, broker, sheet:sheetName});
+      const item=b3MovementParseRow({movement, product, entryExit, qty, price, value, importDate, date:movementDate, broker, sourceEventId, sheet:sheetName});
       if(!item.ticker){
         addIgnored(movement,'sem ticker');
         warnings.push(`Movimentacao ${sheetName}: produto nao reconhecido (${movement}).`);
@@ -16124,6 +16140,7 @@ function confirmBrokerNoteImport(){
     alert('Existem ativos pendentes ou linhas inválidas. Corrija o ticker antes de importar.');
     return;
   }
+  if(!confirmImportedCostBasisCompleteness('importação da nota Inter')) return {status:'COST_BASIS_REVIEW_CANCELLED'};
   if(detectBrokerNoteDuplicate(note) && !confirm('Esta nota parece já ter sido importada. Continuar poderá duplicar posições e valores. Deseja realmente importar novamente?')) return;
   const adjusted=rows.map(row=>brokerNoteAdjustedRow(row,note,!!state.rateCosts));
   const now=Date.now();
@@ -16235,7 +16252,7 @@ function brokerNoteImportSuccessHtml(){
     </div>
   </div>`;
 }
-function applyNotaCorretoraTrades(items, noteKey, noteNumber, tradeDate, broker='', noteIdentity='', completenessStatus='', identityStatus=''){
+function applyNotaCorretoraTrades(items, noteKey, noteNumber, tradeDate, broker='', noteIdentity='', completenessStatus='', identityStatus='', costBasisReviewed=false){
   if(S?._financialWriteQuarantined===true) return {status:'SESSION_QUARANTINED'};
   if(!canEditFromThisTab('importar nota de corretagem')) return;
   const importTag='[IMPORT_NOTA_CORRETORA]';
@@ -16290,6 +16307,7 @@ function applyNotaCorretoraTrades(items, noteKey, noteNumber, tradeDate, broker=
     return true;
   });
   if(ambiguousLegacyRows.length) return {status:'REVIEW_REQUIRED'};
+  if(costBasisReviewed!==true && !confirmImportedCostBasisCompleteness('importação da nota de corretagem')) return {status:'COST_BASIS_REVIEW_CANCELLED'};
   const beforeImport=snapshotFinancialImportState(['assets','aportes','learnMeta','wallets','activeWalletId']);
   if(!beforeImport) return {status:'REVIEW_REQUIRED'};
   try{
@@ -16381,7 +16399,8 @@ function importNotaReview(){
   const rows=S.noteReview.rows.filter(r=>r.include!==false && r.ticker && Number(r.qty)>0 && Number(r.price)>0);
   if(!rows.length){ alert('Selecione pelo menos um lançamento válido para importar.'); return; }
   rememberScroll();
-  const result=applyNotaCorretoraTrades(rows.map(r=>({...r.sourceItem,ticker:r.ticker,operation:r.operation,qty:r.qty,price:r.price,type:r.type,sector:r.sector,product:r.product})),S.noteReview.noteKey,S.noteReview.noteNumber,S.noteReview.tradeDate,S.noteReview.broker,S.noteReview.noteIdentity,S.noteReview.completenessStatus,S.noteReview.identityStatus);
+  if(!confirmImportedCostBasisCompleteness('importação da nota de corretagem')) return;
+  const result=applyNotaCorretoraTrades(rows.map(r=>({...r.sourceItem,ticker:r.ticker,operation:r.operation,qty:r.qty,price:r.price,type:r.type,sector:r.sector,product:r.product})),S.noteReview.noteKey,S.noteReview.noteNumber,S.noteReview.tradeDate,S.noteReview.broker,S.noteReview.noteIdentity,S.noteReview.completenessStatus,S.noteReview.identityStatus,true);
   if(result?.status==='REVIEW_REQUIRED'){
     alert('Não foi possível confirmar a identidade da nota. A conferência foi mantida para revisão.');
     return;
@@ -16677,7 +16696,7 @@ function b3WalletApplyNotice(){
     ${esc(gate.name)} · ${gate.allow?'pronta para aplicar nesta carteira':'selecione uma carteira de teste antes de aplicar'}
   </div>`;
 }
-function b3ConfirmApplyToActiveWallet(label, selected, duplicates=0, incomplete=0){
+function b3ConfirmApplyToActiveWallet(label, selected, duplicates=0, incomplete=0, costBasisReview=false){
   const gate=b3ActiveWalletGate();
   if(!gate.allow){
     alert(`Selecione primeiro uma carteira de teste.\n\nCarteira ativa: ${gate.name}\n\nA carteira principal não pode receber esta aplicação.`);
@@ -16691,6 +16710,7 @@ function b3ConfirmApplyToActiveWallet(label, selected, duplicates=0, incomplete=
     `Selecionados: ${selected}`,
     `Duplicados ignorados: ${duplicates}`,
     `Pendentes/incompletos: ${incomplete}`,
+    ...(costBasisReview ? ['', 'A aplicação também recalculará quantidades e custo médio pelo Histórico de aportes atual.', 'Confirme somente após verificar posição inicial, operações, transferências e eventos corporativos. Histórico incompleto pode produzir custo médio incorreto.'] : []),
     '',
     'Somente os itens válidos e selecionados serão aplicados.',
     'Se cancelar, nada será alterado.'
@@ -17952,7 +17972,7 @@ function b3MovementSummary(){
     incomplete
   };
 }
-function applyB3MovementImported(rows, importDate){
+function applyB3MovementImported(rows, importDate, costBasisReviewed=false){
   if(!canEditFromThisTab('aplicar movimentações B3')) return;
   const gate=b3ActiveWalletGate();
   if(!gate.allow){
@@ -17961,31 +17981,62 @@ function applyB3MovementImported(rows, importDate){
   }
   const inputRows=[...(rows||[])];
   const safeRows=inputRows.map(b3MovementRefreshReviewFlags).filter(b3MovementIsHistoricalImportable);
+  const executionKey=row=>{
+    const id=String(row.sourceEventId||'').trim();
+    return id ? `${b3MovementNorm(row.broker||row.institution||'')}|${id.toUpperCase()}` : '';
+  };
+  const executionSignature=row=>[
+    String(row.ticker||'').trim().toUpperCase(),b3MovementDateKey(row.date),
+    b3MovementNorm(b3MovementHistoricalOperationType(row)),
+    b3MovementNorm(b3MovementHistoricalSide(row,b3MovementHistoricalOperationType(row))),
+    String((Number(row.qty)||0).toFixed(4)),String((Number(row.price)||0).toFixed(2)),
+    String((Number(row.value)||0).toFixed(2))
+  ].join('|');
+  const identified=new Map();
+  const conflicts=[];
+  safeRows.forEach(row=>{
+    const key=executionKey(row);
+    if(!key) return;
+    const signature=executionSignature(row);
+    if(identified.has(key) && identified.get(key)!==signature) conflicts.push(row);
+    identified.set(key,signature);
+    const saved=(S.aportes||[]).find(item=>executionKey(item)===key);
+    if(saved && executionSignature(saved)!==signature) conflicts.push(row);
+  });
+  if(conflicts.length){
+    const message='O mesmo identificador de execução aparece com dados financeiros diferentes. Nenhuma movimentação foi aplicada; revise a identidade e os valores na origem.';
+    toast(message,'#fbbf24');
+    importCenterFinishReview('IDENTITY_CONFLICT',message,0);
+    return {status:'IDENTITY_CONFLICT',count:conflicts.length};
+  }
+  const unidentifiableBatchCounts=new Map();
+  safeRows.filter(row=>!String(row.sourceEventId||'').trim()).forEach(row=>{
+    const operationType=b3MovementHistoricalOperationType(row);
+    const side=b3MovementHistoricalSide(row,operationType);
+    const key=b3MovementHistoricalAutoKey(row,operationType,side);
+    unidentifiableBatchCounts.set(key,(unidentifiableBatchCounts.get(key)||0)+1);
+  });
+  const ambiguousBatchDuplicates=[...unidentifiableBatchCounts.values()].reduce((sum,count)=>sum+(count>1?count:0),0);
+  if(ambiguousBatchDuplicates){
+    const message='Há operações com os mesmos dados econômicos e sem identificador de execução. Nenhuma movimentação foi aplicada; revise as linhas para distinguir reimportação de execuções legítimas.';
+    toast(message,'#fbbf24');
+    importCenterFinishReview('POSSIBLE_DUPLICATE',message,0);
+    return {status:'POSSIBLE_DUPLICATE_REVIEW_REQUIRED',count:ambiguousBatchDuplicates};
+  }
   const existingKeys=new Set((S.aportes||[]).map(a=>b3MovementSavedHistoricalAutoKey(a)));
-  const existingSimpleKeys=new Set((S.aportes||[]).map(a=>{
-    const date=b3MovementDateKey(a.date||a.importDate||a.created_at||'');
-    const ticker=String(a.ticker||'').trim().toUpperCase();
-    const type=rfPosNorm(a.eventType||a.type||a.operationType||a.operation||'');
-    const qty=Number(a.qty)||0;
-    const value=Number(a.totalValue||a.value||0);
-    return [date,ticker,type,qty,value.toFixed(2)].join('|');
-  }));
   const batchKeys=new Set();
-  const batchSimpleKeys=new Set();
   const finalRows=[];
   let duplicateCount=0;
   safeRows.forEach(r=>{
     const operationType=b3MovementHistoricalOperationType(r);
     const side=b3MovementHistoricalSide(r, operationType);
     const autoKey=b3MovementHistoricalAutoKey(r, operationType, side);
-    const simpleKey=[b3MovementDateKey(r.date||importDate||''), String(r.ticker||'').trim().toUpperCase(), rfPosNorm(r.eventType||r.type||operationType||''), Number(r.qty)||0, Number(r.value||0).toFixed(2)].join('|');
     const dupKind=r.duplicateKind || b3MovementDuplicateKind({...r, target:'aportes', action:r.action||(/venda/i.test(operationType)?'venda':'compra')});
-    if(dupKind || existingKeys.has(autoKey) || batchKeys.has(autoKey) || existingSimpleKeys.has(simpleKey) || batchSimpleKeys.has(simpleKey)){
+    if(dupKind || existingKeys.has(autoKey) || batchKeys.has(autoKey)){
       duplicateCount++;
       return;
     }
     batchKeys.add(autoKey);
-    batchSimpleKeys.add(simpleKey);
     finalRows.push({...r, operationType, side, autoKey});
   });
   const ignoredCount=Math.max(0, inputRows.length - safeRows.length);
@@ -17993,6 +18044,7 @@ function applyB3MovementImported(rows, importDate){
     toast(`Movimentações importadas: 0 novas, ${duplicateCount} duplicadas ignoradas, ${ignoredCount} ignoradas.`);
     return;
   }
+  if(costBasisReviewed!==true && !confirmImportedCostBasisCompleteness('importação de movimentações B3')) return {status:'COST_BASIS_REVIEW_CANCELLED'};
   const beforeImport=snapshotFinancialImportState(['aportes','assets','learnMeta','wallets','activeWalletId','b3MovementReview']);
   if(!beforeImport){
     alert('Não foi possível preparar uma cópia segura do estado. Nenhuma movimentação foi aplicada.');
@@ -18027,6 +18079,7 @@ function applyB3MovementImported(rows, importDate){
       assetName:r.product||r.ticker,
       category:normalizeType(r.type||metaTicker(r.ticker).type||'Renda Fixa','Renda Fixa'),
       institution,
+      sourceEventId:String(r.sourceEventId||'').trim(),
       source:'B3 Movimentação',
       autoKey:r.autoKey,
       movKey:r.autoKey,
@@ -18060,9 +18113,9 @@ function importB3MovementReview(){
     return;
   }
   const summary=b3MovementSummary();
-  if(!b3ConfirmApplyToActiveWallet('as movimentações B3 no Histórico de aportes', rows.length, summary.duplicates, summary.incomplete+summary.revisar)) return;
+  if(!b3ConfirmApplyToActiveWallet('as movimentações B3 no Histórico de aportes', rows.length, summary.duplicates, summary.incomplete+summary.revisar, true)) return;
   const importDate=S.b3MovementReview.importDate || new Date().toLocaleDateString('pt-BR');
-  applyB3MovementImported(rows, importDate);
+  applyB3MovementImported(rows, importDate, true);
 }
 function b3MovementReviewModal(){
   const r=S.b3MovementReview;
@@ -30123,6 +30176,7 @@ function importCenterHasPositionEvidence(wb){
   });
 }
 async function importCenterParseSpreadsheet(file){
+  if(typeof XLSX==='undefined') await ensureXLSX();
   if(typeof XLSX==='undefined') throw new Error('SPREADSHEET_READER_UNAVAILABLE');
   const isCsv=/\.csv$/i.test(file.name||'')||String(file.type||'').toLowerCase().includes('csv');
   const wb=isCsv?XLSX.read(await file.text(),{type:'string',raw:true}):XLSX.read(await file.arrayBuffer(),{type:'array'});
