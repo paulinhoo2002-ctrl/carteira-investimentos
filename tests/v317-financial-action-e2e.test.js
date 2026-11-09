@@ -550,6 +550,8 @@ it('RF exige valor aplicado explícito e não cria base a partir do valor atual'
   try {
     await app.page.evaluate(() => { fetchQuotes = async () => {}; scheduleAutoProventosGratis = () => {}; });
     await app.page.evaluate(() => openQuickMovement('renda-fixa'));
+    // Garante que o modal está visível antes de interagir (evita race condition no CI)
+    await app.page.locator('.quick-movement-modal').waitFor({ state: 'visible', timeout: 5000 });
     await app.page.getByRole('tab', { name: 'Novo título' }).click();
     await app.page.locator('#qm-rf-name').fill(name);
     await app.page.locator('#qm-rf-subtype').selectOption('CDB');
