@@ -31,7 +31,7 @@ async function withPage(width, fn) {
 }
 
 test('D3: varredura completa mantém linguagem visível em português sem alterar códigos internos', () => {
-  const output = execFileSync(process.execPath, ['output/fase1/work/scan-lang.js'], { cwd: repo, encoding: 'utf8' });
+  const output = execFileSync(process.execPath, ['tests/helpers/scan-lang.js'], { cwd: repo, encoding: 'utf8' });
   assert.match(output, /ocorrências distintas: 0/);
   assert.match(source, /<h1 class="st">Lançamentos<\/h1>/);
   assert.match(source, /<h1 class="premium-settings-title">Configurações<\/h1>/);
