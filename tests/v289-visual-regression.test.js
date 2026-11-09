@@ -633,17 +633,19 @@ test('V289 final route matrix keeps Dashboard first-fold, mobile order and navig
   try {
     await setThemeAndRoute(runtime.page, 'dark', 'dashboard');
     const desktop = await runtime.page.evaluate(() => {
-      const selectors = ['.dashboard-executive-kpis', '.dashboard-evolution-card', '.dashboard-v3-allocation'];
+      const selectors = ['.dashboard-executive-kpis', '.dashboard-home-highlights'];
       return Object.fromEntries(selectors.map(selector => [selector, document.querySelector(selector)?.getBoundingClientRect().bottom ?? null]));
     });
-    // O Resumo abre com o bloco "Quanto eu tenho hoje?" (resposta simples primeiro). KPIs e evolução seguem inteiros na primeira dobra;
-    // a alocação precisa começar dentro dela (topo visível), mas pode terminar abaixo.
+    // O Resumo abre com o bloco "Quanto eu tenho hoje?" (resposta simples primeiro). KPIs e os rankings de
+    // maiores altas/baixas seguem inteiros na primeira dobra (redesign do Início aprovado); o gráfico de
+    // evolução e a alocação precisam começar dentro dela (topo visível), mas podem terminar abaixo.
     for (const [selector, bottom] of Object.entries(desktop)) {
-      if (selector === '.dashboard-v3-allocation') continue;
       assert.ok(bottom !== null && bottom <= 768, `${selector} is below the 1366x768 first fold (${bottom})`);
     }
-    const allocationTop = await runtime.page.evaluate(() => document.querySelector('.dashboard-v3-allocation')?.getBoundingClientRect().top ?? null);
-    assert.ok(allocationTop !== null && allocationTop < 768, `.dashboard-v3-allocation must start inside the 1366x768 first fold (${allocationTop})`);
+    const belowFoldAllowedTop = await runtime.page.evaluate(() => Object.fromEntries(['.dashboard-evolution-card', '.dashboard-v3-allocation'].map(selector => [selector, document.querySelector(selector)?.getBoundingClientRect().top ?? null])));
+    for (const [selector, top] of Object.entries(belowFoldAllowedTop)) {
+      assert.ok(top !== null && top < 768, `${selector} must start inside the 1366x768 first fold (${top})`);
+    }
 
     await runtime.page.setViewportSize({ width: 390, height: 844 });
     await applyV289VisualFixture(runtime.page, 'baseline');
