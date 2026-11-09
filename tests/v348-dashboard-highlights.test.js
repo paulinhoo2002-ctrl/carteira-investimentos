@@ -21,14 +21,15 @@ test('V348: dash() renders the highs/lows panel between priority and quick actio
   assert.ok(panelIdx >= 0 && panelIdx < priorityIdx && priorityIdx < actionsIdx, 'highlights panel must precede priority panel and quick actions');
 });
 
-test('V348: panel renders two columns of five from the canonical source with class filter chips', () => {
+test('V348: panel renders two columns of six (D1: decisão de produto 5→6) from the canonical source with class filter chips', () => {
   const fn = html.slice(html.indexOf('function dashboardHomeHighsLowsPanel'), html.indexOf('function dashboardHomeCompositionPanel'));
   assert.ok(fn.length > 0, 'dashboardHomeHighlightsPanel not found');
   assert.match(fn, /renderColumn=\(kind,title,empty\)=>\{\s*\n\s*const rows=dashboardHighlightsRows\(kind,\s*classFilter\)/, 'must use canonical rows with kind+classFilter');
   assert.match(fn, /renderColumn\('high'/, 'high column from canonical source');
   assert.match(fn, /renderColumn\('low'/, 'low column from canonical source');
   assert.match(fn, /dashboardHighlightsRowHtml\(row,\s*kind\)/, 'must reuse the existing row renderer');
-  assert.match(fn, /slice\(0,\s*5\)/, 'columns cap at five positions');
+  assert.match(fn, /slice\(0,\s*DASHBOARD_HIGHLIGHTS_LIMIT\)/, 'columns cap at DASHBOARD_HIGHLIGHTS_LIMIT positions');
+  assert.match(html, /const DASHBOARD_HIGHLIGHTS_LIMIT=6;/, 'limit is six positions per column (six highs and six lows)');
   assert.match(fn, /dashboard-highlight-column/, 'must render the canon highlight column class');
   assert.match(fn, /Maiores altas/, 'high column title');
   assert.match(fn, /Maiores baixas/, 'low column title');

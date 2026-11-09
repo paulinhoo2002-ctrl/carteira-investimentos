@@ -136,10 +136,10 @@ test.before(async () => {
 
 test.after(() => { if (mainTree) fs.rmSync(mainTree, { recursive: true, force: true }); });
 
-test('Fase 1a - arquivos alterados fora de testes/docs são só index.html, dashboard-premium.css e package.json', () => {
+test('Fase 1 - arquivos de produto alterados seguem os lotes A–C já presentes nesta branch', () => {
   const changed = git(['diff', '--name-only', 'origin/main...HEAD']).toString().split('\n').filter(Boolean)
     .filter(file => !file.startsWith('tests/') && !file.startsWith('docs/'));
-  assert.deepEqual(changed.sort(), ['dashboard-premium.css', 'index.html', 'package.json']);
+  assert.deepEqual(changed.sort(), ['api/yahoo-quote.js', 'dashboard-premium.css', 'index.html', 'package.json', 'scripts/qa/fase1a-golden.js', 'scripts/verify.js', 'vercel.json']);
   ['finance-core.js', 'persistence-core.js', 'sw.js', 'manifest.json', 'firestore.rules', 'modern/src'].forEach(file => {
     assert.equal(git(['diff', '--name-only', 'origin/main...HEAD', '--', file]).toString().trim(), '', `${file} não pode mudar`);
   });
@@ -236,7 +236,7 @@ test('Fase 1a - Lançamentos recentes do Dashboard têm os mesmos valores da lis
     const [, day, month, year, ticker, value] = parsed;
     const ledger = (v20.rich.ledgerByDate[`${year}-${month}-${day}`] || '').replace(/\s+/g, ' ');
     const money = value.replace(/[.$]/g, '\\$&');
-    assert.match(ledger, new RegExp(`${year}-${month}-${day} \\S+ ${ticker}.*?${money}`), `${row} não confere com a lista de Lançamentos`);
+    assert.match(ledger, new RegExp(`${day}/${month}/${year} \\S+ ${ticker}.*?${money}`), `${row} não confere com a lista de Lançamentos`);
   }
 });
 

@@ -92,6 +92,27 @@ test('F-01 capital incompleto: não inventa total; informa cobertura e motivo', 
   });
 });
 
+test('D5: cotações ausentes preservam o capital conhecido e deixam valor atual/retorno indisponíveis', async () => {
+  await withPage(applyRichFixture, async page => {
+    await page.evaluate(() => {
+      S.assets.forEach(asset => { asset.current_price = null; });
+      S.quotes = {};
+      S._dashboardHighlightsCache = null;
+      go('ativos');
+    });
+    const kpis = await assetKpis(page);
+    const byLabel = Object.fromEntries(kpis.map(item => [item.label.toLowerCase(), item]));
+    assert.match(byLabel['total investido'].value, /^R\$/);
+    assert.notEqual(byLabel['total investido'].value, 'R$ 0,00');
+    assert.equal(byLabel['valor atual'].value, '—');
+    assert.equal(byLabel['lucro/prejuízo'].value, '—');
+    assert.equal(byLabel['rentabilidade'].value, '—');
+    const dash = await dashboardCard(page, 'Patrimônio atual');
+    assert.equal(dash.value, '—');
+    assert.match(dash.note, /indisponível|desconhecida/i);
+  });
+});
+
 test('F-01: a regra de base aplicada do Ativos coincide com cx().appliedComplete (sem divergência entre telas)', async () => {
   await withPage(applyV17Fixture, async page => {
     const results = await page.evaluate(() => {

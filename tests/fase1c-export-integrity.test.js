@@ -80,3 +80,55 @@ test('hashes esperados têm origem documentada e nenhuma exportação traz perce
   assert.match(EXPECTED.meta.origin, /origin\/main/);
   assert.equal(Object.keys(EXPECTED.hashes).length, 26);
 });
+
+test('privacidade hideValues afeta a tela, mas preserva o contrato explícito de CSV, JSON e PDF IRPF', async () => {
+  const harness = await startLocalHttpServer(repo);
+  const browser = await chromium.launch({ executablePath: resolveChromePath(), headless: true });
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 }, locale: 'pt-BR', timezoneId: 'America/Sao_Paulo' });
+    await page.clock.setFixedTime(NOW);
+    await page.goto(harness.url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await applyRichFixture(page, NOW);
+    const exports = await page.evaluate(() => {
+      const originalDownload = window.downloadTextFile;
+      const originalIrpfDownload = window.irpfDownloadText;
+      const originalOpen = window.open;
+      const originalTimeout = window.setTimeout;
+      const capture = [];
+      window.downloadTextFile = (name, text) => capture.push(String(text));
+      window.irpfDownloadText = (name, text) => capture.push(String(text));
+      window.open = () => ({ closed: false, focus() {}, print() {}, document: { readyState: 'complete', open() {}, write(text) { capture.push(String(text)); }, close() {} } });
+      window.setTimeout = () => 0;
+      window.toast = () => {};
+      window.alert = () => {};
+      const collect = hidden => {
+        capture.length = 0;
+        S.hideValues = hidden;
+        exportReportCSV('assets');
+        const assetsCsv = capture.pop();
+        exportReportJSON('assets');
+        const assetsJson = capture.pop();
+        irpfExportCSV();
+        const irpfCsv = capture.pop();
+        irpfExportPdf();
+        const irpfPdf = capture.pop();
+        return { assetsCsv, assetsJson, irpfCsv, irpfPdf };
+      };
+      const visible = collect(false);
+      const hidden = collect(true);
+      window.downloadTextFile = originalDownload;
+      window.irpfDownloadText = originalIrpfDownload;
+      window.open = originalOpen;
+      window.setTimeout = originalTimeout;
+      return { visible, hidden, screen: S.hideValues ? '••••' : '' };
+    });
+    assert.deepEqual(exports.hidden, exports.visible);
+    assert.match(exports.visible.irpfPdf, /Declaração IRPF/);
+    assert.match(exports.visible.irpfPdf, /R\$\s*[\d.]+,[\d]{2}/);
+    assert.doesNotMatch(exports.visible.irpfPdf, /••••/);
+    assert.equal(exports.screen, '••••');
+  } finally {
+    await browser.close();
+    harness.server.close();
+  }
+});

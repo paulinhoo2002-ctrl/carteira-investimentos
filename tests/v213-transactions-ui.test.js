@@ -40,9 +40,9 @@ test('transaction list filters by kind and sorts most recent first (behavioral)'
     // sem filtro, ordenação "Mais recentes": datas não crescentes
     await page.locator('.aporte-filter-chip', { hasText: 'Todos' }).first().click();
     const dates = await page.locator('.aporte-history-card .aporte-history-date').allInnerTexts();
-    const iso = dates.map(text => text.trim());
-    assert.ok(iso.length > 3, 'lista renderizada');
-    assert.deepEqual([...iso].sort().reverse(), iso, 'mais recentes primeiro');
+    const chronological = dates.map(text => { const [day, month, year] = text.trim().split('/'); return `${year}-${month}-${day}`; });
+    assert.ok(chronological.length > 3, 'lista renderizada');
+    assert.deepEqual([...chronological].sort().reverse(), chronological, 'mais recentes primeiro');
   } finally {
     await browser.close();
     harness.server.close();

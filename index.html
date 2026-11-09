@@ -5630,7 +5630,7 @@ html[data-theme="light"] .data-quality-entity-label{
 }
 html[data-theme="light"] .data-quality-field,
 html[data-theme="light"] .data-quality-recommendation{
-  color:#6b7b91!important;
+  color:var(--fp-text-2);
 }
 html[data-theme="light"] .data-quality-problem{
   color:#334155!important;
@@ -8975,6 +8975,7 @@ window.ensureXLSX=()=>{ if(window.__XLSX_PROMISE__) return window.__XLSX_PROMISE
 <script src="persistence-core.js"></script>
 <script src="backup-portability.js"></script>
 <script src="protected-local-cloud-authority.js?v=phase4i-authority-2"></script>
+<script src="analytics-monte-carlo-input.js"></script>
 <script src="analytics-passive-income-projection.js"></script>
 <script src="analytics-dividend-evolution.js"></script>
 <script src="analytics-asset-class-comparison.js"></script>
@@ -12508,7 +12509,7 @@ function settingsTab(){
     <div class="premium-settings-header">
       <div>
         <div class="premium-settings-kicker">CONFIGURAÇÕES</div>
-        <h1 class="premium-settings-title">Preferências e administração</h1>
+        <h1 class="premium-settings-title">Configurações</h1>
         <p class="premium-settings-subtitle">Preferências, dados e administração da carteira.</p>
       </div>
     </div>
@@ -21298,6 +21299,12 @@ function passiveIncomeProgressCard({tone='muted', kicker='', value='—', sub=''
     <div class="dbt" style="height:6px;margin-top:7px"><div class="dbf" style="width:${width}%;background:${barColor}"></div></div>
   </div>`;
 }
+function monteCarloInvalidInputText(result){
+  if(result?.error==='RESULT_OVERFLOW') return 'Resultado numérico fora do limite. Reduza o horizonte, o retorno ou a volatilidade.';
+  const labels={currentValue:'patrimônio atual',targetValue:'meta',monthlyContribution:'aporte mensal',expectedReturn:'retorno esperado',volatility:'volatilidade',years:'horizonte em anos',simulations:'quantidade de simulações'};
+  const fields=(result?.invalidParameters||[]).map(name=>labels[name]||name);
+  return fields.length?`Corrija: ${fields.join(', ')}.`:'Revise os parâmetros da simulação.';
+}
 function passiveIncomeDividendSummaryBlock(stats=passiveIncomeGoalStats()){
   const resumo=proventoResumo();
   const historicalSummary=resumo.summary || { total: 0, avg: null, monthCount: 0, best: null };
@@ -21509,7 +21516,7 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
           <div class="sec-body">
             <div class="mu" style="font-size:11px;line-height:1.45;margin-bottom:8px">A média real usa proventos já recebidos nos últimos 12 meses. A renda projetada é uma estimativa da carteira atual.</div>
             <div class="passive-goal-grid secondary">
-              ${passiveIncomeMetricCard({tone:stats.hasData ? 'ok' : 'muted', kicker:'Projeção anualizada real', value:annualLabel, sub:'Média mensal real × 12'})}
+              ${passiveIncomeMetricCard({tone:stats.hasData ? 'ok' : 'muted', kicker:'Projeção anualizada real', value:annualLabel, sub:'Estimativa anualizada; não recebida. Média mensal real × 12'})}
               ${passiveIncomeProgressCard({tone:projTone, kicker:'Progresso pela renda projetada/mês', value:`${projProg.prog.toFixed(1).replace('.',',')}%`, sub:`Estimativa: faltam ${fmt(projProg.falta)}/mês para atingir a meta.`, percent:projProg.prog, barColor:projTone==='ok'?'#34d399':projTone==='info'?'#60a5fa':projTone==='warn'?'#fbbf24':'#f87171'})}
               ${passiveIncomeMetricCard({tone:projTone, kicker:'Quanto falta pela renda projetada', value:fmt(projProg.falta), sub:'Comparação entre meta e estimativa da carteira'})}
             </div>
@@ -21601,9 +21608,10 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
 
                 <div class="passive-goal-grid main" style="margin-bottom:12px">
                   <div class="passive-goal-card muted">
-                    <div class="passive-goal-kicker">Monte Carlo (10a)</div>
-                    <div class="passive-goal-value">${mc.probabilitySuccess.toFixed(1).replace('.',',')}%</div>
-                    <div class="passive-goal-sub">Prob. atingir ${formatMoney(mc.targetValue)} · Mediana: ${formatMoney(mc.percentiles.p50)}</div>
+                  <div class="passive-goal-kicker">Monte Carlo em 10 anos · estimativa por simulação</div>
+                    ${mc.valid === false
+                      ? `<div class="passive-goal-value">Indisponível</div><div class="passive-goal-sub">${esc(monteCarloInvalidInputText(mc))}</div>`
+                      : `<div class="passive-goal-value">${mc.probabilitySuccess.toFixed(1).replace('.',',')}%</div><div class="passive-goal-sub">Prob. atingir ${formatMoney(mc.targetValue)} · Mediana: ${formatMoney(mc.percentiles.p50)}</div>`}
                   </div>
                   <div class="passive-goal-card muted">
                     <div class="passive-goal-kicker">Imposto (Ano 10)</div>
@@ -21782,21 +21790,9 @@ function passiveIncomeGoalBlock(stats=passiveIncomeGoalStats(), projectedMonthly
                         </div>
 
                         <div class="passive-goal-grid main" style="margin-bottom:12px">
-                          <div class="passive-goal-card ok">
-                            <div class="passive-goal-kicker">Prob. Sucesso (MC)</div>
-                            <div class="passive-goal-value">${mc.probability.toFixed(1).replace('.',',')}%</div>
-                            <div class="passive-goal-sub">Mediana: ${formatMoney(mc.percentiles.p50)} · P90: ${formatMoney(mc.percentiles.p90)}</div>
-                          </div>
-                          <div class="passive-goal-card warn">
-                            <div class="passive-goal-kicker">Pessimista (P10)</div>
-                            <div class="passive-goal-value">${formatMoney(mc.percentiles.p10)}</div>
-                            <div class="passive-goal-sub">Cenário adverso em ${report.assumptions.projectionYears} anos</div>
-                          </div>
-                          <div class="passive-goal-card info">
-                            <div class="passive-goal-kicker">Otimista (P90)</div>
-                            <div class="passive-goal-value">${formatMoney(mc.percentiles.p90)}</div>
-                            <div class="passive-goal-sub">Cenário favorável em ${report.assumptions.projectionYears} anos</div>
-                          </div>
+                          ${mc.valid === false
+                            ? `<div class="passive-goal-card muted"><div class="passive-goal-kicker">Estimativa por simulação</div><div class="passive-goal-value">Indisponível</div><div class="passive-goal-sub">${esc(monteCarloInvalidInputText(mc))} Nenhuma probabilidade foi calculada.</div></div>`
+                            : `<div class="passive-goal-card ok"><div class="passive-goal-kicker">Probabilidade de sucesso estimada</div><div class="passive-goal-value">${mc.probability.toFixed(1).replace('.',',')}%</div><div class="passive-goal-sub">Estimativa por simulação; pode variar. Mediana: ${formatMoney(mc.percentiles.p50)} · P90: ${formatMoney(mc.percentiles.p90)}</div></div><div class="passive-goal-card warn"><div class="passive-goal-kicker">Pessimista (P10)</div><div class="passive-goal-value">${formatMoney(mc.percentiles.p10)}</div><div class="passive-goal-sub">Cenário adverso em ${report.assumptions.projectionYears} anos</div></div><div class="passive-goal-card info"><div class="passive-goal-kicker">Otimista (P90)</div><div class="passive-goal-value">${formatMoney(mc.percentiles.p90)}</div><div class="passive-goal-sub">Cenário favorável em ${report.assumptions.projectionYears} anos</div></div>`}
                         </div>
 
                         <details class="sec" style="margin-top:8px">
@@ -25213,7 +25209,7 @@ function v257DataQualityCenter(model){
   const cards=[['Pendências abertas',model.summary.open,''],['Revisão necessária',model.summary.needsReview,'warning'],['Críticos',model.summary.critical,'critical'],['Informativos',model.summary.informational,'info'],['Sem writes',model.writeCount,'']].map(([label,value,tone])=>`<article class="${tone}"><span>${esc(label)}</span><strong>${esc(String(value))}</strong></article>`).join('');
   const groups=(model.rootCauses||[]).slice(0,6).map(group=>`<span class="v257-remediation-group">${esc(group.rootCause)} · ${group.count}</span>`).join('');
   const rows=filtered.length?filtered.slice(0,80).map(item=>`<article class="v257-remediation-item"><div><span class="v257-remediation-badge ${v257QualitySeverityClass(item.severity)}">${esc(item.severity)}</span><span class="v257-remediation-badge state">${esc(v257QualityStateLabel(item.state))}</span></div><div><strong>${esc(item.entityLabel)}</strong><small>${esc(item.domain)} · ${esc(item.dataState)} · ${esc(item.field)}</small></div><div><strong>${esc(item.message)}</strong><small>${esc(item.impact)}</small></div><div><strong>Próximo passo factual</strong><small>${esc(item.recommendedAction)}${item.route?` · destino seguro: ${esc(item.route)}`:''}</small></div></article>`).join(''):'<div class="v257-remediation-empty" role="status">Nenhum achado corresponde aos filtros. Ausência de achado não transforma dado desconhecido em zero.</div>';
-  return `<section class="v257-remediation-center" id="data-quality-remediation-center" aria-labelledby="v257-remediation-title"><div class="v257-remediation-head"><div><div class="v257-remediation-kicker">V257 · centro factual</div><h2 id="v257-remediation-title">Centro de remediação da qualidade</h2><p>Achados derivados, agrupados por causa-raiz e separados por domínio. Esta área explica o que precisa de revisão, sem corrigir cadastro, promover histórico ou executar qualquer write.</p></div><span class="v257-remediation-readonly">Somente leitura · zero writes</span></div><div class="v257-remediation-summary">${cards}</div><div class="v257-remediation-filters"><label class="sr-only" for="v257-quality-search">Buscar achado</label><input id="v257-quality-search" type="search" placeholder="Buscar ticker, causa ou mensagem" value="${esc(filters.search||'')}" oninput="setV257QualityFilter('search',this.value)"><label class="sr-only" for="v257-quality-state">Estado</label><select id="v257-quality-state" onchange="setV257QualityFilter('state',this.value)">${option('ALL','Todos os estados',filters.state||'ALL')}${engine.STATES.map(value=>option(value,v257QualityStateLabel(value),filters.state||'ALL')).join('')}</select><label class="sr-only" for="v257-quality-domain">Domínio</label><select id="v257-quality-domain" onchange="setV257QualityFilter('domain',this.value)">${option('ALL','Todos os domínios',filters.domain||'ALL')}${engine.DOMAINS.map(value=>option(value,value,filters.domain||'ALL')).join('')}</select><label class="sr-only" for="v257-quality-severity">Severidade</label><select id="v257-quality-severity" onchange="setV257QualityFilter('severity',this.value)">${option('ALL','Todas as severidades',filters.severity||'ALL')}${engine.SEVERITIES.map(value=>option(value,value,filters.severity||'ALL')).join('')}</select></div><div class="v257-remediation-groups" aria-label="Causas-raiz mais frequentes">${groups||'<span class="v257-remediation-group">Nenhum grupo disponível</span>'}</div><div class="v257-remediation-note">${filtered.length} achado(s) exibido(s). Estados de cobertura e confiança permanecem explícitos; resolver uma pendência continua sendo uma ação humana ou de fluxo próprio, nunca automática nesta tela.</div><details class="audit-fold"${(filtered.length<=12||filters.search||["state","severity","domain"].some(k=>filters[k]&&filters[k]!=="ALL"))?" open":""}><summary>Pendências listadas (${Math.min(filtered.length,80)} de ${filtered.length}) · clique para ${filtered.length<=12?"recolher":"abrir ou recolher"}</summary><div class="v257-remediation-list">${rows}</div></details></section>`;
+  return `<section class="v257-remediation-center" id="data-quality-remediation-center" aria-labelledby="v257-remediation-title"><div class="v257-remediation-head"><div><div class="v257-remediation-kicker">Centro factual</div><h2 id="v257-remediation-title">Centro de remediação da qualidade</h2><p>Achados derivados, agrupados por causa-raiz e separados por domínio. Esta área explica o que precisa de revisão, sem corrigir cadastro, promover histórico ou executar qualquer write.</p></div><span class="v257-remediation-readonly">Somente leitura · zero writes</span></div><div class="v257-remediation-summary">${cards}</div><div class="v257-remediation-filters"><label class="sr-only" for="v257-quality-search">Buscar achado</label><input id="v257-quality-search" type="search" placeholder="Buscar ticker, causa ou mensagem" value="${esc(filters.search||'')}" oninput="setV257QualityFilter('search',this.value)"><label class="sr-only" for="v257-quality-state">Estado</label><select id="v257-quality-state" onchange="setV257QualityFilter('state',this.value)">${option('ALL','Todos os estados',filters.state||'ALL')}${engine.STATES.map(value=>option(value,v257QualityStateLabel(value),filters.state||'ALL')).join('')}</select><label class="sr-only" for="v257-quality-domain">Domínio</label><select id="v257-quality-domain" onchange="setV257QualityFilter('domain',this.value)">${option('ALL','Todos os domínios',filters.domain||'ALL')}${engine.DOMAINS.map(value=>option(value,value,filters.domain||'ALL')).join('')}</select><label class="sr-only" for="v257-quality-severity">Severidade</label><select id="v257-quality-severity" onchange="setV257QualityFilter('severity',this.value)">${option('ALL','Todas as severidades',filters.severity||'ALL')}${engine.SEVERITIES.map(value=>option(value,value,filters.severity||'ALL')).join('')}</select></div><div class="v257-remediation-groups" aria-label="Causas-raiz mais frequentes">${groups||'<span class="v257-remediation-group">Nenhum grupo disponível</span>'}</div><div class="v257-remediation-note">${filtered.length} achado(s) exibido(s). Estados de cobertura e confiança permanecem explícitos; resolver uma pendência continua sendo uma ação humana ou de fluxo próprio, nunca automática nesta tela.</div><details class="audit-fold"${(filtered.length<=12||filters.search||["state","severity","domain"].some(k=>filters[k]&&filters[k]!=="ALL"))?" open":""}><summary>Pendências listadas (${Math.min(filtered.length,80)} de ${filtered.length}) · clique para ${filtered.length<=12?"recolher":"abrir ou recolher"}</summary><div class="v257-remediation-list">${rows}</div></details></section>`;
 }
 function v258MonitoringUserId(){ return String(globalThis.FB?.user?.uid || S.activeWalletId || 'anonymous'); }
 function v258MonitoringCurrent(model){ return {issues:model?.issues||[],complete:true,userId:v258MonitoringUserId(),capturedAt:new Date().toISOString()}; }
@@ -25252,7 +25248,7 @@ function v258MonitoringCenter(result,model){
   const rows=alerts.slice(0,80).map(item=>`<article class="v258-monitoring-alert"><div><span class="v258-monitoring-badge ${String(item.status||'').toLowerCase()}">${esc(v258MonitoringStatusLabel(item.status))}</span><span class="v258-monitoring-badge ${v258MonitoringSeverityClass(item.severity)}">${esc(item.severity)}</span></div><div><strong>${esc(item.entityLabel)}</strong><small>${esc(item.domain)} · ${esc(item.rootCause)}</small></div><div><strong>${esc(item.message)}</strong><small>${esc(item.status==='CHANGED' ? `Mudança factual: ${(item.changeTypes||[]).join(', ')}` : item.impact)} · cobertura ${esc(item.coverage)} · freshness ${esc(item.freshness)}</small></div><div><strong>${esc(item.status==='RESOLVED'?'Ausente na carga atual':'Evidência e contexto')}</strong><small>${esc(item.source)}${item.route?` · <button type="button" class="v258-monitoring-button" onclick="v258OpenMonitoringContext('${esc(item.route)}')">Abrir contexto</button>`:''}</small></div></article>`).join('');
   const modeNote=result.mode==='CURRENT_ONLY'?'Baseline inicializado: os achados atuais não foram tratados como novos. As mudanças começam na próxima análise.':result.comparisonState==='PARTIAL'?'Carga parcial: nenhuma ausência foi marcada como resolvida.':'Comparação com baseline local legítimo; alertas representam mudanças factuais desde a última análise.';
   const groupSummary=groups.length?`<div class="v258-monitoring-note" aria-label="Resumo por causa-raiz">Causas-raiz em evidência: ${groups.map(group=>`${esc(group.rootCause)} (${group.count})`).join(' · ')}</div>`:'';
-  return `<section class="v258-monitoring-center" id="v258-alert-center" aria-labelledby="v258-monitoring-title"><div class="v258-monitoring-head"><div><div class="v258-monitoring-kicker">V258 · monitoramento factual</div><h2 id="v258-monitoring-title">Alert Center</h2><p>Observa mudanças do Centro V257 sem aconselhamento de investimento, sem corrigir dados e sem criar autoridade financeira.</p></div><span class="v258-monitoring-readonly">Somente leitura · sem remediação automática</span></div><div class="v258-monitoring-summary">${cards}</div><div class="v258-monitoring-filters"><label class="sr-only" for="v258-monitoring-search">Buscar alerta</label><input id="v258-monitoring-search" type="search" placeholder="Buscar ativo, causa ou alerta" value="${esc(filters.search||'')}" oninput="S.v258MonitoringFilters={...(S.v258MonitoringFilters||{}),search:this.value};render()"><label class="sr-only" for="v258-monitoring-status">Status</label><select id="v258-monitoring-status" onchange="S.v258MonitoringFilters={...(S.v258MonitoringFilters||{}),status:this.value};render()">${option('ALL','Todos os status',filters.status||'ALL')}${engine.STATUSES.map(value=>option(value,v258MonitoringStatusLabel(value),filters.status||'ALL')).join('')}</select><label class="sr-only" for="v258-monitoring-domain">Domínio</label><select id="v258-monitoring-domain" onchange="S.v258MonitoringFilters={...(S.v258MonitoringFilters||{}),domain:this.value};render()">${option('ALL','Todos os domínios',filters.domain||'ALL')}${engine.DOMAINS.map(value=>option(value,value,filters.domain||'ALL')).join('')}</select><label class="sr-only" for="v258-monitoring-severity">Severidade</label><select id="v258-monitoring-severity" onchange="S.v258MonitoringFilters={...(S.v258MonitoringFilters||{}),severity:this.value};render()"><option value="ALL">Todas as severidades</option><option value="CRITICAL"${filters.severity==='CRITICAL'?' selected':''}>CRITICAL</option><option value="WARNING"${filters.severity==='WARNING'?' selected':''}>WARNING</option><option value="INFO"${filters.severity==='INFO'?' selected':''}>INFO</option></select><button type="button" class="v258-monitoring-button" onclick="v258CommitMonitoringBaseline()">Marcar análise atual</button></div><div class="v258-monitoring-note" role="status">${esc(modeNote)} · ${alerts.length} alerta(s) visível(is) de ${result.currentIssueCount} achado(s) atuais. Acknowledged não significa resolvido.</div>${groupSummary}<details class="audit-fold"${(alerts.length<=12||filters.search||["status","severity","domain"].some(k=>filters[k]&&filters[k]!=="ALL"))?" open":""}><summary>Alertas listados (${Math.min(alerts.length,80)} de ${alerts.length})</summary><div class="v258-monitoring-list">${rows||'<div class="v258-monitoring-empty" role="status">Nenhum alerta corresponde aos filtros. Ausência de mudança não significa dado completo.</div>'}</div></details></section>`;
+  return `<section class="v258-monitoring-center" id="v258-alert-center" aria-labelledby="v258-monitoring-title"><div class="v258-monitoring-head"><div><div class="v258-monitoring-kicker">Monitoramento factual</div><h2 id="v258-monitoring-title">Alert Center</h2><p>Observa mudanças do Centro de qualidade sem aconselhamento de investimento, sem corrigir dados e sem criar autoridade financeira.</p></div><span class="v258-monitoring-readonly">Somente leitura · sem remediação automática</span></div><div class="v258-monitoring-summary">${cards}</div><div class="v258-monitoring-filters"><label class="sr-only" for="v258-monitoring-search">Buscar alerta</label><input id="v258-monitoring-search" type="search" placeholder="Buscar ativo, causa ou alerta" value="${esc(filters.search||'')}" oninput="S.v258MonitoringFilters={...(S.v258MonitoringFilters||{}),search:this.value};render()"><label class="sr-only" for="v258-monitoring-status">Status</label><select id="v258-monitoring-status" onchange="S.v258MonitoringFilters={...(S.v258MonitoringFilters||{}),status:this.value};render()">${option('ALL','Todos os status',filters.status||'ALL')}${engine.STATUSES.map(value=>option(value,v258MonitoringStatusLabel(value),filters.status||'ALL')).join('')}</select><label class="sr-only" for="v258-monitoring-domain">Domínio</label><select id="v258-monitoring-domain" onchange="S.v258MonitoringFilters={...(S.v258MonitoringFilters||{}),domain:this.value};render()">${option('ALL','Todos os domínios',filters.domain||'ALL')}${engine.DOMAINS.map(value=>option(value,value,filters.domain||'ALL')).join('')}</select><label class="sr-only" for="v258-monitoring-severity">Severidade</label><select id="v258-monitoring-severity" onchange="S.v258MonitoringFilters={...(S.v258MonitoringFilters||{}),severity:this.value};render()"><option value="ALL">Todas as severidades</option><option value="CRITICAL"${filters.severity==='CRITICAL'?' selected':''}>CRITICAL</option><option value="WARNING"${filters.severity==='WARNING'?' selected':''}>WARNING</option><option value="INFO"${filters.severity==='INFO'?' selected':''}>INFO</option></select><button type="button" class="v258-monitoring-button" onclick="v258CommitMonitoringBaseline()">Marcar análise atual</button></div><div class="v258-monitoring-note" role="status">${esc(modeNote)} · ${alerts.length} alerta(s) visível(is) de ${result.currentIssueCount} achado(s) atuais. Acknowledged não significa resolvido.</div>${groupSummary}<details class="audit-fold"${(alerts.length<=12||filters.search||["status","severity","domain"].some(k=>filters[k]&&filters[k]!=="ALL"))?" open":""}><summary>Alertas listados (${Math.min(alerts.length,80)} de ${alerts.length})</summary><div class="v258-monitoring-list">${rows||'<div class="v258-monitoring-empty" role="status">Nenhum alerta corresponde aos filtros. Ausência de mudança não significa dado completo.</div>'}</div></details></section>`;
 }
 function dataQualityTab(){
   const snapshot=dataQualitySnapshot();
@@ -26768,21 +26764,23 @@ function assetsPortfolioSummary(rows, deps={}){
     const row={asset,ticker:String(asset?.ticker||asset?.name||'').trim(),assetClass,
       invested:hasApplied?applied:null,current:hasCurrent?current:null,result,
       returnPct:Number.isFinite(returnPct)?returnPct:null};
-    if(!byClass.has(assetClass)) byClass.set(assetClass,{className:assetClass,invested:0,current:0,result:0,complete:0,incomplete:0,assets:[]});
+    if(!byClass.has(assetClass)) byClass.set(assetClass,{className:assetClass,invested:null,current:null,result:0,complete:0,incomplete:0,assets:[]});
     const group=byClass.get(assetClass);
     group.assets.push(row);
-    if(hasApplied&&hasCurrent){
-      group.invested+=applied; group.current+=current; group.result+=result; group.complete+=1;
-    }else group.incomplete+=1;
+    if(hasApplied) group.invested=(group.invested||0)+applied;
+    if(hasCurrent) group.current=(group.current||0)+current;
+    if(hasApplied&&hasCurrent){group.result+=result;group.complete+=1;}else group.incomplete+=1;
     return row;
   });
-  const complete=assets.filter(row=>row.invested!=null&&row.current!=null);
-  const invested=complete.reduce((sum,row)=>sum+row.invested,0);
-  const current=complete.reduce((sum,row)=>sum+row.current,0);
-  const result=current-invested;
-  return {assets,invested,current,result,returnPct:invested!==0?(result/invested)*100:null,
+  const allAppliedKnown=assets.every(row=>row.invested!=null);
+  const allCurrentKnown=assets.every(row=>row.current!=null);
+  const invested=assets.length?(allAppliedKnown?assets.reduce((sum,row)=>sum+row.invested,0):null):0;
+  const current=assets.length?(allCurrentKnown?assets.reduce((sum,row)=>sum+row.current,0):null):0;
+  const result=invested!=null&&current!=null?current-invested:null;
+  return {assets,invested,current,result,returnPct:result!=null&&invested!==0?(result/invested)*100:null,
     byClass:Array.from(byClass.values()).map(group=>({...group,
-      returnPct:group.invested!==0?(group.result/group.invested)*100:null}))};
+      result:group.incomplete===0?group.result:null,
+      returnPct:group.incomplete===0&&group.invested!==0?(group.result/group.invested)*100:null}))};
 }
 function assetRankingModeLabel(mode){
   return ({
@@ -29916,6 +29914,108 @@ function restoreQuoteUi(){
   requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({left:x,top:y,behavior:'auto'})));
 }
 function disarmQuoteUi(){ quoteUiArmed=false; quoteUiSnapshot=null; }
+// ============================================================================
+// D3 — Apresentação em português dos identificadores técnicos.
+// Os identificadores continuam iguais nos dados, logs e testes; só o TEXTO EXIBIDO (nós de texto e
+// title/aria-label/placeholder) é traduzido depois de cada render(). Valores, estados e chaves não mudam.
+// ============================================================================
+const UI_CODE_LABELS={
+  CORPORATE_EVENT_AUTHORITY_NOT_ENABLED:'Eventos societários sem autoridade habilitada',
+  IMPORT_FIXTURE_REQUIRED:'Importação sem arquivo de exemplo sanitizado',
+  FIXED_INCOME_MANUAL_AUTHORITY:'Renda fixa com autoridade manual',
+  WEAK_SOURCE_PROVENANCE:'Origem dos dados frágil',
+  CURRENT_POSITION_MISMATCH:'Posição atual divergente',
+  HISTORICAL_COVERAGE:'Cobertura histórica',
+  CORPORATE_EVENTS:'Eventos societários',
+  FIXTURE_REQUIRED:'Arquivo de exemplo necessário',
+  ENGINE_AVAILABLE:'Motor disponível',
+  SET_CONTRIBUTION:'Definir aporte',
+  FIXED_INCOME:'Renda fixa',
+  DATA_QUALITY:'Qualidade dos dados',
+  FULL_COVERAGE:'Cobertura completa',
+  SIMPLE_RETURN:'Retorno simples',
+  NEEDS_REVIEW:'Revisão necessária',
+  WEAK_SOURCE:'Fonte frágil',
+  MARKET_DATA:'Dados de mercado',
+  MISSING_FEES:'Taxas ausentes',
+  INCOME_DATA:'Dados de renda',
+  FII_INCOME:'Rendimento de FII',
+  DATA_READY:'Dados prontos',
+  COST_BASIS:'Custo de aquisição',
+  SET_GOAL:'Definir meta',
+  SYSTEM:'Sistema',
+  avg_price:'preço médio',
+  current_price:'preço atual',
+  fixed_issuer:'emissor',
+  legacy_data_quality:'qualidade de dados (legado)',
+  LAYOUT_NOT_RECOGNIZED:'Layout do arquivo não reconhecido',
+  SOURCE_IDENTITY_UNCONFIRMED:'Identidade da origem não confirmada',
+  NO_VALID_ROWS:'Nenhuma linha válida encontrada',
+  UNSUPPORTED:'Formato não compatível',
+  UNKNOWN:'Desconhecido',
+  PARTIAL:'Parcial'
+};
+const UI_PHRASE_LABELS=[
+  ['Status do valuation','Status da avaliação'],
+  ['Avaliação: não suportada','Avaliação: não suportada'],
+  ['Valuation de abertura','Avaliação de abertura'],
+  ['Último valuation histórico válido','Última avaliação histórica válida'],
+  ['valuations e preços históricos','avaliações e preços históricos'],
+  ['Alert Center','Central de alertas'],
+  ['Corporate Events','Eventos societários'],
+  ['patrimonio.target','meta de patrimônio'],
+  ['reference/shadow','referência/observação'],
+  ['referências/shadow','referências/observação'],
+  ['Fixture necessária','Arquivo de exemplo necessário']
+];
+const UI_WORD_LABELS=[
+  [/\bvaluations\b/g,'avaliações'],[/\bValuation\b/g,'Avaliação'],[/\bvaluation\b/g,'avaliação'],
+  [/\bwrites\b/g,'gravações'],[/\bwrite\b/g,'gravação'],
+  [/\bSHADOW\b/g,'OBSERVAÇÃO'],[/\bShadow\b/g,'Observação'],[/\bshadow\b/g,'observação'],
+  [/\bFixture\b/g,'Arquivo de exemplo'],[/\bfixture\b/g,'arquivo de exemplo'],
+  [/\bFallback\b/g,'Alternativa'],[/\bfallback\b/g,'alternativa'],
+  [/\bMovimentacoes\b/g,'Movimentações'],[/\bConfiguracoes\b/g,'Configurações'],[/\bPossiveis\b/g,'Possíveis'],
+  [/\bIdentificacao\b/g,'Identificação'],[/\bReconciliacao\b/g,'Reconciliação'],
+  [/\bPreco\b/g,'Preço'],[/\bpreco\b/g,'preço'],[/\baquisicao\b/g,'aquisição'],
+  [/\binvalido\b/g,'inválido'],[/\bconfiavel\b/g,'confiável'],[/\bnao\b/g,'não']
+];
+const UI_CODE_REGEX=new RegExp('\\b('+Object.keys(UI_CODE_LABELS).sort((a,b)=>b.length-a.length).join('|')+')\\b','g');
+const UI_AI_ROUTE_DOMAINS={'fixed-income':'Renda fixa','data-quality':'Qualidade dos dados',concentration:'Concentração',income:'Renda',goals:'Metas',allocation:'Alocação'};
+const UI_AI_ROUTE_TARGETS={'renda-fixa':'Renda Fixa',auditoria:'Auditoria',ativos:'Ativos',dividendos:'Dividendos',metas:'Metas',rentabilidade:'Rentabilidade',patrimonio:'Patrimônio',ajudar:'Rebalanceamento',ia:'Insights',irpf:'IRPF',analise:'Análise'};
+function localizeUiText(text,options){
+  let out=String(text);
+  if(!out) return out;
+  const startedWithVersion=/^\s*V\d{3,4}\s*·\s*/.test(out);
+  out=out.replace(/\s*\(M\d{4}\)/g,'').replace(/\bV\d{3,4}\s*·\s*/g,'');
+  if(startedWithVersion) out=out.replace(/^(\s*)(\p{Ll})/u,(match,space,letter)=>space+letter.toUpperCase());
+  for(const [from,to] of UI_PHRASE_LABELS) if(out.includes(from)) out=out.split(from).join(to);
+  out=out.replace(UI_CODE_REGEX,code=>UI_CODE_LABELS[code]);
+  for(const [pattern,to] of UI_WORD_LABELS) out=out.replace(pattern,to);
+  if(options&&options.aiRoute){
+    out=out.replace(/^\s*([a-z-]+)\s*·\s*([a-z-]+)\s*$/,(match,domain,target)=>`${UI_AI_ROUTE_DOMAINS[domain]||domain} · ${UI_AI_ROUTE_TARGETS[target]||target}`);
+  }
+  return out;
+}
+function localizeUiCodes(root){
+  if(!root||typeof document==='undefined') return;
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:node=>{
+    const parent=node.parentElement;
+    if(!parent||/^(SCRIPT|STYLE|TEXTAREA|CODE)$/.test(parent.tagName)||parent.isContentEditable) return NodeFilter.FILTER_REJECT;
+    return node.nodeValue&&node.nodeValue.trim()?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT;
+  }});
+  const nodes=[];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+  for(const node of nodes){
+    const next=localizeUiText(node.nodeValue,{aiRoute:!!node.parentElement.closest('.ai-hub-card-route')});
+    if(next!==node.nodeValue) node.nodeValue=next;
+  }
+  root.querySelectorAll('[title],[aria-label],[placeholder]').forEach(element=>{
+    for(const name of ['title','aria-label','placeholder']){
+      const value=element.getAttribute(name);
+      if(value){ const next=localizeUiText(value); if(next!==value) element.setAttribute(name,next); }
+    }
+  });
+}
 function render(){
   const root=document.getElementById('root');
   if(!root) return;
@@ -29932,6 +30032,7 @@ function render(){
     bind();
     renderPortfolioSearch();
     maskSensitiveRenderedValues(root);
+    localizeUiCodes(root);
     if(preserveQuoteUI) restoreQuoteUi();
     else if(preserveScroll) restoreScroll();
   }catch(error){
@@ -30427,7 +30528,7 @@ function assetDetailTrust(asset,isRF){
   if(!isRF)return{label:'Cotação de mercado',className:'accent',note:asset?.quoteSource==='yahoo'?'Yahoo Finance':'Cotação da carteira'};
   const source=assetRfCurrentValueMeta(asset), normalized=rfPosNorm(`${assetRfName(asset)} ${assetRfSubtype(asset)} ${source.source}`);
   if(normalized.includes('TREND DI'))return{label:'Benchmark CDI',className:'accent',note:'Comparação com CDI; não é valor oficial do título.'};
-  if(normalized.includes('CRA')||normalized.includes('DEB MOVIDA')||normalized.includes('DEBENTURE'))return{label:'Valuation automático indisponível',className:'',note:'Use o valor informado na carteira e a data-base disponível.'};
+  if(normalized.includes('CRA')||normalized.includes('DEB MOVIDA')||normalized.includes('DEBENTURE'))return{label:'Avaliação automática indisponível',className:'',note:'Use o valor informado na carteira e a data-base disponível.'};
   return{label:source.source||'Valor informado na carteira',className:'',note:source.origin||'Fonte cadastrada no ativo'};
 }
 function assetDetailPage(asset){
@@ -30475,7 +30576,7 @@ function assetDetailPage(asset){
   const provenanceFacts=globalThis.V213TransactionTrust?.provenanceFacts?.({...asset,source:asset?.source||asset?.quoteSource})||[];
   const provenanceHtml=provenanceFacts.length?`<article class="asset-detail-panel" data-provenance="true"><div class="asset-detail-panel-head"><div><h2>Origem e atualização</h2><p>Metadata factual disponível para esta posição.</p></div></div><div class="asset-detail-list">${provenanceFacts.map(item=>row(item.label,item.value)).join('')}</div></article>`:'';
   const overview=isRF?`<div class="asset-detail-content-grid"><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Informações do produto</h2><p>Identidade e condições registradas para este título.</p></div></div><div class="asset-detail-list">${row('Nome',name)}${row('Tipo',assetRfSubtype(asset))}${row('Indexador',assetRfIndexerLabel(asset))}${row('Taxa contratada',assetRfContractRate(asset))}${row('Data de aplicação',assetDetailDate(assetRfApplicationDate(asset)))}${row('Vencimento',assetDetailDate(assetRfMaturityDate(asset)))}${row('Origem',assetDetailText(assetRfNote(asset),'Cadastro da carteira'))}</div></article><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Confiança do valor</h2><p>O detalhe preserva a autoridade do valor já cadastrado.</p></div></div><div class="asset-detail-value-block"><div class="asset-detail-label">Status</div><strong>${esc(trust.label)}</strong><p>${esc(trust.note)}</p></div><div class="asset-detail-list" style="margin-top:14px">${row('Valor atualizado em',assetDetailText(asset?.rf_updated_at||asset?.updatedAt||asset?.lastUpdatedAt,'Data-base não identificada'))}${row('IR/IOF',assetRfIrIof(asset)>0?fmt(assetRfIrIof(asset)):'—')}</div></article></div>${provenanceHtml}`:`<div class="asset-detail-content-grid"><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Posição atual</h2><p>Leitura consolidada pelos dados reais da carteira.</p></div></div><div class="asset-detail-value-block"><div class="asset-detail-label">Valor de mercado</div><strong>${esc(valueText)}</strong><p>${esc(trust.note)}</p></div><div class="asset-detail-list" style="margin-top:14px">${row('Ticker',ticker)}${row('Classe',type)}${row('Setor',assetDetailText(asset?.sector))}${row('DY',Number.isFinite(Number(asset?.dy))?`${asset.dy}%`:'—')}</div></article><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Leitura da cotação</h2><p>Fonte e atualização sem duplicar o cálculo oficial.</p></div></div><div class="asset-detail-list">${row('Fonte',trust.note)}${row('Última atualização',assetDetailDate(asset?.quoteUpdatedAt))}${row('Preço atual',Number(asset?.current_price)>0?fmt(asset.current_price):'—')}${row('Preço alvo',Number(asset?.price_target)>0?fmt(asset.price_target):'—')}</div></article></div>${provenanceHtml}`;
-  const valuation=`<div class="asset-detail-content-grid"><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Valuation usado</h2><p>Valor que participa da carteira neste momento.</p></div><span class="asset-detail-badge ${trust.className}">${esc(trust.label)}</span></div><div class="asset-detail-value-block"><div class="asset-detail-label">Valor na carteira</div><strong>${esc(valueText)}</strong><p>${esc(isRF&&assetNeedsRFUpdate(asset)?'Atualização necessária para ampliar a leitura.':trust.note)}</p></div></article><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Base e atualização</h2><p>Sem comparação artificial quando a data-base não é comparável.</p></div></div><div class="asset-detail-list">${row('Data-base',isRF?assetDetailText(asset?.rf_valuation_as_of||asset?.valuationAsOf,'Data-base não identificada'):assetDetailDate(asset?.quoteUpdatedAt))}${row('Origem',isRF?trust.note:asset?.quoteSource==='yahoo'?'Yahoo Finance':'Cotação da carteira')}${row('Comparação',isRF&&trust.label==='Benchmark CDI'?'Comparação com CDI':'Comparação indisponível')}${row('Diferença','—')}</div></article></div>`;
+  const valuation=`<div class="asset-detail-content-grid"><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Avaliação usada</h2><p>Valor que participa da carteira neste momento.</p></div><span class="asset-detail-badge ${trust.className}">${esc(trust.label)}</span></div><div class="asset-detail-value-block"><div class="asset-detail-label">Valor na carteira</div><strong>${esc(valueText)}</strong><p>${esc(isRF&&assetNeedsRFUpdate(asset)?'Atualização necessária para ampliar a leitura.':trust.note)}</p></div></article><article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Base e atualização</h2><p>Sem comparação artificial quando a data-base não é comparável.</p></div></div><div class="asset-detail-list">${row('Data-base',isRF?assetDetailText(asset?.rf_valuation_as_of||asset?.valuationAsOf,'Data-base não identificada'):assetDetailDate(asset?.quoteUpdatedAt))}${row('Origem',isRF?trust.note:asset?.quoteSource==='yahoo'?'Yahoo Finance':'Cotação da carteira')}${row('Comparação',isRF&&trust.label==='Benchmark CDI'?'Comparação com CDI':'Comparação indisponível')}${row('Diferença','—')}</div></article></div>`;
   const history=records.length?`<article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Histórico de movimentações</h2><p>Registros existentes para este ativo, sem alterar a fonte.</p></div><span class="asset-detail-badge">${records.length} registro${records.length===1?'':'s'}</span></div><div class="asset-detail-list">${records.map(item=>row(`${assetDetailDate(item.date||item.tradeDate)} · ${assetDetailKindLabel(item)}`,Number(item.total||item.value||item.amount)>0?fmt(Number(item.total||item.value||item.amount)):'Quantidade registrada')).join('')}</div></article>`:'<article class="asset-detail-panel"><div class="asset-detail-empty">Coletando histórico desde 15/09/2026. Ainda não há pontos suficientes para uma série confiável.</div></article>';
   const incomeHtml=income.length?`<article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Proventos do ativo</h2><p>Somente eventos já presentes no histórico da carteira.</p></div><span class="asset-detail-badge">${income.length} registro${income.length===1?'':'s'}</span></div><div class="asset-detail-list">${income.map(item=>row(`${assetDetailDate(item.date||item.paymentDate)} · ${assetDetailText(item.type,'Provento')}`,Number(item.value)>0?fmt(item.value):'Valor não informado')).join('')}</div></article>`:'<article class="asset-detail-panel"><div class="asset-detail-empty">Nenhum provento disponível para este ativo no histórico atual.</div></article>';
   const docsHtml=documents.length?`<article class="asset-detail-panel"><div class="asset-detail-panel-head"><div><h2>Documentos</h2><p>Referências vinculadas ao ativo.</p></div></div><div class="asset-detail-list">${documents.map(doc=>row(assetDetailText(doc.title||doc.name,'Documento'),assetDetailText(doc.date||doc.source,'Referência cadastrada'))).join('')}</div></article>`:'<article class="asset-detail-panel"><div class="asset-detail-empty">Nenhum documento vinculado a este ativo.</div></article>';
@@ -31173,13 +31274,15 @@ function dashboardHighlightsRowHtml(row, kind){
     ? `<button type="button" class="premium-exec-row dashboard-highlight-row dashboard-context-action" onclick="dashboardOpenAssetByTicker(${esc(JSON.stringify(ticker))})" aria-label="Abrir ativo ${esc(ticker)}">${content}</button>`
     : `<div class="premium-exec-row dashboard-highlight-row">${content}</div>`;
 }
+// Quantidade de itens por coluna do ranking do Início (6 maiores altas e 6 maiores baixas).
+const DASHBOARD_HIGHLIGHTS_LIMIT=6;
 function dashboardHomeHighsLowsPanel(){
   const classFilter=['all','acao','fii','etf'].includes(String(S.dashboardHighlightsClassFilter||'all'))
     ? String(S.dashboardHighlightsClassFilter||'all') : 'all';
-  const chips=[['all','Todas'],['acao','Ações'],['fii','FIIs'],['etf','ETFs']].map(([value,label])=>
+  const chips=[['all','Todos'],['acao','Ações'],['fii','FIIs'],['etf','ETFs']].map(([value,label])=>
     `<button type="button" class="asset-inner-tab ${classFilter===value?'on':''}" onclick="setDashboardHighlightsClassFilter('${value}')" aria-pressed="${classFilter===value?'true':'false'}">${label}</button>`).join('');
   const renderColumn=(kind,title,empty)=>{
-    const rows=dashboardHighlightsRows(kind,classFilter).slice(0,5);
+    const rows=dashboardHighlightsRows(kind,classFilter).slice(0,DASHBOARD_HIGHLIGHTS_LIMIT);
     const body=rows.length ? rows.map(row=>dashboardHighlightsRowHtml(row,kind)).join('') : `<div class="premium-empty">${empty}</div>`;
     return `<section class="dashboard-highlight-column ${kind}" aria-label="${title}">
       <div class="dashboard-highlight-column-head"><strong>${title}</strong><span>${rows.length} ativo${rows.length===1?'':'s'}</span></div>
@@ -32171,7 +32274,7 @@ function rendaFixaTab(){
     ? '<section class="premium-rf-panel ds-panel ds-panel--readonly" aria-labelledby="rf-ipca-diagnostics-title"><div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title" id="rf-ipca-diagnostics-title">Diagnóstico IPCA</div><div class="premium-rf-panel-sub" role="status">Diagnóstico indisponível neste ambiente.</div></div></div></section>'
     : ipcaDiagnostics.length===0
       ? ''
-    : `<section class="premium-rf-panel premium-rf-ipca-diagnostics ds-panel ds-panel--readonly" aria-labelledby="rf-ipca-diagnostics-title"><div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title" id="rf-ipca-diagnostics-title">Diagnóstico da série IPCA</div><div class="premium-rf-panel-sub">Diagnóstico do índice; não calcula o valor do título.</div></div><span class="ds-badge">${ipcaDiagnostics.length} posição${ipcaDiagnostics.length===1?'':'ões'}</span></div><div class="premium-income-list">${ipcaDiagnostics.map(item=>`<div class="premium-income-row"><div class="premium-row-main"><div class="premium-row-title">${esc(item.ticker||item.name||'Título IPCA')}</div><div class="premium-row-sub">Valuation: não suportado · valor manual continua sendo a autoridade</div></div><div class="premium-row-value"><span class="ds-badge">Cobertura ${esc(item.coverageStatus==='UNAVAILABLE'?'indisponível':item.coverageStatus==='PARTIAL'?'parcial':'completa')}${item.coveragePercent===null?'':` · ${esc(String(item.coveragePercent))}%`}</span><div class="premium-row-sub">Frescor ${esc(item.freshness==='UNKNOWN'?'desconhecido':item.freshness==='STALE'?'desatualizado':'atual')} · fonte até ${esc(item.sourceAsOf||'indisponível')}</div></div></div>`).join('')}</div></section>`;
+    : `<section class="premium-rf-panel premium-rf-ipca-diagnostics ds-panel ds-panel--readonly" aria-labelledby="rf-ipca-diagnostics-title"><div class="premium-rf-panel-head"><div><div class="premium-rf-panel-title" id="rf-ipca-diagnostics-title">Diagnóstico da série IPCA</div><div class="premium-rf-panel-sub">Diagnóstico do índice; não calcula o valor do título.</div></div><span class="ds-badge">${ipcaDiagnostics.length} posição${ipcaDiagnostics.length===1?'':'ões'}</span></div><div class="premium-income-list">${ipcaDiagnostics.map(item=>`<div class="premium-income-row"><div class="premium-row-main"><div class="premium-row-title">${esc(item.ticker||item.name||'Título IPCA')}</div><div class="premium-row-sub">Avaliação: não suportada · valor manual continua sendo a autoridade</div></div><div class="premium-row-value"><span class="ds-badge">Cobertura ${esc(item.coverageStatus==='UNAVAILABLE'?'indisponível':item.coverageStatus==='PARTIAL'?'parcial':'completa')}${item.coveragePercent===null?'':` · ${esc(String(item.coveragePercent))}%`}</span><div class="premium-row-sub">Frescor ${esc(item.freshness==='UNKNOWN'?'desconhecido':item.freshness==='STALE'?'desatualizado':'atual')} · fonte até ${esc(item.sourceAsOf||'indisponível')}</div></div></div>`).join('')}</div></section>`;
   const count=data.assets.length;
   const {overdue, soon30, soon90, soon12m, longTerm, missingDue, missingRate}=data;
   const trustSummary=data.trustSummary||{};
@@ -32518,7 +32621,7 @@ function rendaFixaTab(){
       </summary>
       <div class="sec-body">
         <div class="rf-responsive-cards" aria-label="Detalhamento dos títulos de renda fixa">${responsiveCards}</div>
-        <div class="rf-table-wrap">
+        <div class="rf-table-wrap scrollable-region-focusable" tabindex="0" role="region" aria-label="Tabela de posições de renda fixa com rolagem horizontal">
           <table class="rf-table">
             <thead>
               <tr>
@@ -32609,7 +32712,7 @@ function dashboardMetricCard(icon,label,value,note,tone='#edf3ff',glow='rgba(96,
   </div>`;
 }
 function dataStateLabel(state){
-  const map={fresh:'Atualizado',stale:'Desatualizado',partial:'Parcial',unavailable:'Indisponível',demo:'Demo'};
+  const map={fresh:'Atualizado',stale:'Desatualizado',partial:'Parcial',unavailable:'Indisponível',demo:'Demonstração',estimated:'Estimativa'};
   return map[state]||state;
 }
 function dashboardRadarCard(title,rows,formatter,empty){
@@ -33038,7 +33141,7 @@ function renderAssetRow(a, totalCart) {
             <td class="col-actions">
               <div class="action-btns">
                 <button class="btn btn-buy" style="padding: 5px 10px; font-size: 10px;" onclick="event.stopPropagation(); openAporteModal(); setTimeout(()=>{document.getElementById('aporteAsset').value=${a.id}},100)">Comprar</button>
-                <button class="btn btn-sell" style="padding: 5px 10px; font-size: 10px;" onclick="event.stopPropagation(); showToast('Função de venda em desenvolvimento')">Vender</button>
+                <button type="button" class="btn btn-sell" style="padding: 5px 10px; font-size: 10px;" disabled aria-label="Vender — indisponível nesta linha" title="Fluxo de venda indisponível nesta lista">Vender</button>
                 <button class="icon-action" onclick="event.stopPropagation(); openAssetModal(${a.id})" title="Editar">✏️</button>
                 <button class="icon-action delete" onclick="event.stopPropagation(); deleteAsset(${a.id})" title="Excluir">🗑️</button>
               </div>
@@ -33076,6 +33179,7 @@ ${!S.assets.length ? `<div class="dashboard-empty-cta" role="region" aria-label=
           <button type="button" class="btn bgh" onclick="go('importacao')">⬆ Importar dados</button>
         </div>
       </div>` : ''}
+      ${dashboardHomeHighsLowsPanel()}
       <div class="dashboard-analytical-primary canon-dash-row-b">
         <div class="fp-dash-main">
           ${dashboardPerformancePanel(data)}
@@ -33083,7 +33187,6 @@ ${!S.assets.length ? `<div class="dashboard-empty-cta" role="region" aria-label=
         </div>
         ${dashboardV3AllocationPanel()}
       </div>
-      ${dashboardHomeHighsLowsPanel()}
       <div class="fp-dash-grid-2">
         ${dashboardUpcomingDividendsPanel()}
         ${dashboardRecentTransactionsPanel()}
@@ -34537,7 +34640,7 @@ function aporteHistoryCard(row){
   }
   actions.push(`<button class="bdi" onclick='deleteMovementLaunch(${JSON.stringify(row.id)}, ${JSON.stringify(row.sourceType)})' title="Excluir lançamento" aria-label="Excluir lançamento">🗑️</button>`);
   return `<article class="aporte-history-card">
-    <div class="aporte-history-date">${esc(row.date||'Sem data')}</div>
+    <div class="aporte-history-date">${esc(row.date?brDate(row.date):'Sem data')}</div>
     <div class="aporte-history-main">
       <div class="aporte-history-title"><span class="aporte-kind ${esc(row.kind)}">${esc(row.label)}</span><span class="aporte-history-ticker">${esc(row.ticker)}</span></div>
       ${name?`<div class="aporte-history-name">${esc(name)}</div>`:''}
@@ -34906,7 +35009,7 @@ function apTab(){
   return`<div class="aporte-premium">
     <div class="sh">
       <div>
-        <h1 class="st">Aportes</h1>
+        <h1 class="st">Lançamentos</h1>
         <div class="mu" style="font-size:12px;margin-top:4px">Acompanhe entradas, ritmo mensal e histórico da carteira.</div>
       </div>
     </div>
@@ -37028,7 +37131,7 @@ function dividendExecutiveKpis(rows=dividendPremiumRows()){
     [`Recebido em ${currentYear}`,yearTotal==null?'—':fmt(yearTotal),yearTotal==null?'Sem recebimento registrado no ano':`Soma registrada · ${annualRow.completeCount}/12 meses confirmados`,'',''],
     ['Média mensal',complete&&stats.monthlyAvg!=null?fmt(stats.monthlyAvg):'—',monthlyAverageSub,'',''],
     ['Último mês',previousMonthKnown?fmt(previousMonth.total):'—',previousMonthSub,'',''],
-    ['Projeção anual',projectionValue,projectionNote,'',(complete&&stats.annualProjection!=null)?'Estimativa':'']
+    ['Projeção anual',projectionValue,(complete&&stats.annualProjection!=null)?'Estimativa; não recebida · '+projectionNote:projectionNote,'',(complete&&stats.annualProjection!=null)?'Estimativa':'']
   ];
   const strip=[
     ['Recebido este mês',stats.currentMonthTotal==null?'—':fmt(stats.currentMonthTotal),currentSub],
@@ -38189,7 +38292,7 @@ function v252PerformanceIntelligence(){
   const classRows=model.byClass.filter(row=>row.complete>0).sort((a,b)=>b.current-a.current).slice(0,5).map(row=>`<tr><td>${esc(row.name)}</td><td>${fmt(row.current)}</td><td>${row.returnPct==null?'Indisponível':fmtP(row.returnPct)}</td><td>${esc(row.status)}</td></tr>`).join('');
   const benchmarkText=benchmark.status==='PASS'?`${benchmark.value>=0?'+':''}${fmtP(benchmark.value)} vs ${esc(S.rentBench||'CDI')}`:'Indisponível · janela ou cobertura desalinhada';
   return `<section class="card v252-intelligence-panel" aria-label="Inteligência de patrimônio e performance">
-    <div class="sh"><div><div class="st">Inteligência de patrimônio</div><div class="mu">Leitura derivada V252: patrimônio, fluxos e resultado sem alterar a carteira.</div></div><span class="ds-badge ${model.coverage==='FULL_COVERAGE'?'ok':model.coverage==='PARTIAL_COVERAGE'?'warning':'muted'}">${esc(coverageLabel)}</span></div>
+    <div class="sh"><div><div class="st">Inteligência de patrimônio</div><div class="mu">Leitura derivada patrimônio, fluxos e resultado sem alterar a carteira.</div></div><span class="ds-badge ${model.coverage==='FULL_COVERAGE'?'ok':model.coverage==='PARTIAL_COVERAGE'?'warning':'muted'}">${esc(coverageLabel)}</span></div>
     <div class="rent-summary-preview">
       <div class="rent-summary-chip"><div class="rent-summary-chip-label">Patrimônio atual</div><div class="rent-summary-chip-value">${metric(model.portfolio.currentPatrimony)}</div><div class="rent-summary-chip-sub">Somente posições com valor conhecido</div></div>
       <div class="rent-summary-chip"><div class="rent-summary-chip-label">Resultado não realizado</div><div class="rent-summary-chip-value">${metric(model.portfolio.unrealizedResult,assetSignedMoneyText)}</div><div class="rent-summary-chip-sub">Atual menos custo conhecido</div></div>
@@ -38274,19 +38377,19 @@ function rentabilidadeTab(){
     {
       title:'Últimos 12 meses',
       value:certifiedHistory&&return12m!=null?fmtP(return12m):'Indisponível',
-      foot:certifiedHistory&&return12m!=null?`Proventos: ${fmt(provCurrent)}`:'Valuation de abertura da janela de 12 meses indisponível',
+      foot:certifiedHistory&&return12m!=null?`Proventos: ${fmt(provCurrent)}`:'Avaliação de abertura da janela de 12 meses indisponível',
       color:certifiedHistory&&return12m!=null?'#60a5fa':'var(--muted)',
     },
     {
       title:'Último mês',
       value:certifiedHistory&&currentMonth!=null?fmtP(currentMonth):'Indisponível',
-      foot:certifiedHistory&&currentMonth!=null?'Retorno entre valuations datados':'Valuations de abertura/fechamento mensal indisponíveis',
+      foot:certifiedHistory&&currentMonth!=null?'Retorno entre avaliações datadas':'Avaliações de abertura/fechamento mensal indisponíveis',
       color:certifiedHistory&&currentMonth!=null?(currentMonth||0)>=0?'var(--success)':'var(--danger)':'var(--muted)',
     },
     {
       title:'Patrimônio atual',
       value:current.currentValue==null?'Indisponível':fmt(current.currentValue),
-      foot:current.currentValue==null?'Valuation histórico indisponível':'Último valuation datado disponível',
+      foot:current.currentValue==null?'Avaliação histórica indisponível':'Última avaliação datada disponível',
       color:'var(--fp-text)',
     },
   ];
@@ -38337,7 +38440,7 @@ function rentabilidadeTab(){
     : `${bench} · fonte/série histórica indisponível para ${periodLabel}; taxa fixa não é série datada`;
   const baseLabel=certifiedHistory
     ? `${data.metric==='TWR'?'TWR':'Retorno simples'} com valuations datados · ${data.asOf||'data-base indisponível'}`
-    : 'Valuations históricos necessários; preço atual não é usado como histórico';
+    : 'Avaliações históricas necessárias; preço atual não é usado como histórico';
   const primaryResultCard=sideCards[0];
   const secondaryMetricCards=sideCards.slice(1);
 
@@ -38422,7 +38525,7 @@ function rentabilidadeTab(){
       <div class="sec-meta">${data.totalMonths} meses analisados · clique para abrir</div>
     </summary>
     <div class="sec-body">
-      <div class="tw"><div class="ts"><table class="hist-monthly rent-table">
+      <div class="tw"><div class="ts scrollable-region-focusable" tabindex="0" role="region" aria-label="Tabela mensal de rentabilidade com rolagem horizontal"><table class="hist-monthly rent-table">
         <thead><tr><th>Ano</th>${['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'].map(m=>`<th>${m}</th>`).join('')}<th>Retorno anual</th><th>Proventos ano</th><th>Proventos acum.</th><th>Acumulado</th></tr></thead>
         <tbody>${yearsRows||'<tr><td colspan="17" class="rent-table-empty">Sem dados de rentabilidade ainda.</td></tr>'}</tbody>
       </table></div></div>
@@ -39148,20 +39251,20 @@ function mobileMenuDrawer(){
       <div class="sheet-title" tabindex="-1">Mais seções</div>
       <button class="portfolio-search-mobile-trigger" type="button" onclick="mobileMenuClose();portfolioSearchOpen()">⌕&nbsp; Buscar na carteira</button>
       <div class="sheet-grid">
-        <button onclick="mobileMenuClose();go('patrimonio')" aria-current="${S.tab==='patrimonio'?'page':'false'}">◈ Patrimônio</button>
-        <button onclick="mobileMenuClose();go('aportes')"${S.tab==='aportes'?' aria-current="page"':''}>💰 Aportes</button>
-        <button onclick="mobileMenuClose();go('analise')"${S.tab==='analise'?' aria-current="page"':''}>📊 Análise</button>
-        <button onclick="mobileMenuClose();go('rentabilidade')"${S.tab==='rentabilidade'?' aria-current="page"':''}>📈 Rentab.</button>
-        <button onclick="mobileMenuClose();go('metas')"${S.tab==='metas'?' aria-current="page"':''}>🎯 Metas</button>
-        <button onclick="mobileMenuClose();go('ajudar')"${S.tab==='ajudar'?' aria-current="page"':''}>⚖️ Rebalancear</button>
-        <button onclick="mobileMenuClose();go('auditoria')"${S.tab==='auditoria'?' aria-current="page"':''}>🔎 Auditoria</button>
-        <button onclick="mobileMenuClose();go('confiabilidade')"${S.tab==='confiabilidade'?' aria-current="page"':''}>🛡️ Confiabilidade</button>
-        <button onclick="mobileMenuClose();go('relatorios')"${S.tab==='relatorios'?' aria-current="page"':''}>📑 Relatórios</button>
-        <button onclick="mobileMenuClose();go('corporate-eventos')"${S.tab==='corporate-eventos'?' aria-current="page"':''}>◈ Eventos societários</button>
-        <button onclick="mobileMenuClose();go('importacao')"${S.tab==='importacao'?' aria-current="page"':''}>⇅ Importar dados</button>
-        <button class="focus" onclick="mobileMenuClose();go('ia')"${S.tab==='ia'?' aria-current="page"':''}>💡 Insights</button>
-        <button onclick="mobileMenuClose();go('irpf')"${S.tab==='irpf'?' aria-current="page"':''}>🧾 IRPF</button>
-        <button onclick="mobileMenuClose();go('settings')"${S.tab==='settings'?' aria-current="page"':''}>⚙️ Configurações</button>
+        <button onclick="mobileMenuClose();go('patrimonio')" aria-current="${S.tab==='patrimonio'?'page':'false'}">${fpNavLabel('patrimonio','Patrimônio')}</button>
+        <button onclick="mobileMenuClose();go('aportes')"${S.tab==='aportes'?' aria-current="page"':''}>${fpNavLabel('aportes','Aportes')}</button>
+        <button onclick="mobileMenuClose();go('analise')"${S.tab==='analise'?' aria-current="page"':''}>${fpNavLabel('analise','Análise')}</button>
+        <button onclick="mobileMenuClose();go('rentabilidade')"${S.tab==='rentabilidade'?' aria-current="page"':''}>${fpNavLabel('rentabilidade','Rentab.')}</button>
+        <button onclick="mobileMenuClose();go('metas')"${S.tab==='metas'?' aria-current="page"':''}>${fpNavLabel('metas','Metas')}</button>
+        <button onclick="mobileMenuClose();go('ajudar')"${S.tab==='ajudar'?' aria-current="page"':''}>${fpNavLabel('ajudar','Rebalancear')}</button>
+        <button onclick="mobileMenuClose();go('auditoria')"${S.tab==='auditoria'?' aria-current="page"':''}>${fpNavLabel('auditoria','Auditoria')}</button>
+        <button onclick="mobileMenuClose();go('confiabilidade')"${S.tab==='confiabilidade'?' aria-current="page"':''}>${fpNavLabel('confiabilidade','Confiabilidade')}</button>
+        <button onclick="mobileMenuClose();go('relatorios')"${S.tab==='relatorios'?' aria-current="page"':''}>${fpNavLabel('relatorios','Relatórios')}</button>
+        <button onclick="mobileMenuClose();go('corporate-eventos')"${S.tab==='corporate-eventos'?' aria-current="page"':''}>${fpNavLabel('corporate-eventos','Eventos societários')}</button>
+        <button onclick="mobileMenuClose();go('importacao')"${S.tab==='importacao'?' aria-current="page"':''}>${fpNavLabel('importacao','Importar dados')}</button>
+        <button class="focus" onclick="mobileMenuClose();go('ia')"${S.tab==='ia'?' aria-current="page"':''}>${fpNavLabel('ia','Insights')}</button>
+        <button onclick="mobileMenuClose();go('irpf')"${S.tab==='irpf'?' aria-current="page"':''}>${fpNavLabel('irpf','IRPF')}</button>
+        <button onclick="mobileMenuClose();go('settings')"${S.tab==='settings'?' aria-current="page"':''}>${fpNavLabel('settings','Configurações')}</button>
       </div>
     </div>
   </div>`;
@@ -41419,7 +41522,7 @@ html body .side-utility{color:var(--fp-text-2)}
 .fp-dashboard .dashboard-evolution-card.dashboard-evolution-compact{height:auto}
 .fp-dashboard .dashboard-evolution-header{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--fp-s3);margin:0 0 var(--fp-s3);flex-wrap:wrap}
 .fp-dashboard .dashboard-evolution-header .premium-panel-title,.fp-dashboard .dashboard-v3-section-head h2{margin:0;font-size:var(--fp-fs-h3);font-weight:600;letter-spacing:-.01em;text-transform:none;color:var(--fp-text)}
-.fp-dashboard .dashboard-evolution-card svg.dashboard-patrimony-chart,.fp-dashboard .dashboard-evolution-card.dashboard-evolution-compact svg.dashboard-patrimony-chart,.fp-dashboard .dashboard-evolution-card.dashboard-evolution-sparse svg.dashboard-patrimony-chart{display:block;width:100%;height:clamp(170px,24vh,300px);margin:0}
+.fp-dashboard .dashboard-evolution-card svg.dashboard-patrimony-chart,.fp-dashboard .dashboard-evolution-card.dashboard-evolution-compact svg.dashboard-patrimony-chart,.fp-dashboard .dashboard-evolution-card.dashboard-evolution-sparse svg.dashboard-patrimony-chart{display:block;width:100%;height:clamp(120px,15vh,180px);margin:0}
 .fp-dashboard .dashboard-period-selector{display:inline-flex;gap:2px;padding:3px;background:var(--fp-subtle);border:1px solid var(--fp-border);border-radius:var(--fp-r-md)}
 .fp-dashboard .dashboard-period-selector .dash-chip{min-height:44px;min-width:44px;padding:0 10px;border:0;border-radius:9px;background:transparent;background-image:none;color:var(--fp-text-2);font-size:var(--fp-fs-ui);font-weight:500;box-shadow:none}
 .fp-dashboard .dashboard-period-selector .dash-chip.on{background:var(--fp-surface);color:var(--fp-text);font-weight:600;outline:1px solid var(--fp-border-strong)}
@@ -42255,6 +42358,56 @@ html body .premium-dividends-3 .div-mat-note{margin:var(--fp-s2) 0 0;font-size:v
 /* V20: ano do gráfico em linha própria no desktop (sem encostar no mês seguinte) */
 html body .fp-bars-x .fp-tick-year{display:block;font-style:normal;line-height:1.2}
 @media (max-width:767px){html body .fp-bars-x .fp-tick-year{display:none}}
+
+/* ============ D1 — rankings do Início: 6 altas e 6 baixas compactas, PM e preço atual acessíveis ============ */
+html body .dashboard-home-highlights.fp-highlights{gap:var(--fp-s2)}
+html body .dashboard-home-highlights.fp-highlights .dashboard-highlight-column .dashboard-highlight-row{min-height:52px;padding:4px 0}
+html body .dashboard-home-highlights.fp-highlights .dashboard-highlight-column-head{margin-bottom:var(--fp-s1)}
+html body .dashboard-home-highlights.fp-highlights .premium-exec-value span{white-space:nowrap}
+@media (min-width:768px){
+  html body .dashboard-home-highlights.fp-highlights .dashboard-highlights-tabs{margin:0;gap:var(--fp-s2)}
+  html body .dashboard-home-highlights.fp-highlights .dashboard-highlights-tabs .asset-inner-tab{min-height:36px}
+}
+@container (max-width:560px){
+  html body .dashboard-home-highlights.fp-highlights .dashboard-highlight-column .dashboard-highlight-row{grid-template-columns:minmax(0,1fr) auto auto}
+  html body .dashboard-home-highlights.fp-highlights .dashboard-highlight-column .dashboard-highlight-details{display:flex;flex-direction:column;align-items:flex-start;gap:0;line-height:1.35;font-size:var(--fp-fs-meta);color:var(--fp-text-2)}
+  html body .dashboard-home-highlights.fp-highlights .dashboard-highlight-column .dashboard-highlight-details strong{margin-left:var(--fp-s1);font-size:var(--fp-fs-meta);font-weight:600;color:var(--fp-text)}
+  html body .dashboard-home-highlights.fp-highlights .dashboard-highlight-column .dashboard-highlight-bar{display:none}
+}
+@container (max-width:400px){
+  html body .dashboard-home-highlights.fp-highlights .dashboard-highlight-column .dashboard-highlight-row{grid-template-columns:minmax(0,1fr) auto;row-gap:2px}
+  html body .dashboard-home-highlights.fp-highlights .dashboard-highlight-column .premium-exec-left{grid-column:1;grid-row:1}
+  html body .dashboard-home-highlights.fp-highlights .dashboard-highlight-column .premium-exec-value{grid-column:2;grid-row:1}
+  html body .dashboard-home-highlights.fp-highlights .dashboard-highlight-column .dashboard-highlight-details{grid-column:1/-1;grid-row:2;flex-direction:row;flex-wrap:wrap;gap:var(--fp-s3)}
+}
+/* Lote D: estados financeiros, contraste claro e adaptação mobile */
+.data-state-badge{display:inline-flex;align-items:center;gap:5px;min-height:24px;padding:2px 8px;border:1px solid var(--fp-border-strong);border-radius:var(--fp-r-pill);background:var(--fp-subtle);color:var(--fp-text-2);font-size:var(--fp-fs-meta);font-weight:600;line-height:1.25}
+.data-state-badge .state-icon{width:7px;height:7px;flex:none;border-radius:50%;background:currentColor}
+.data-state-badge.state-fresh{color:var(--fp-pos)}
+.data-state-badge.state-stale,.data-state-badge.state-partial{color:var(--fp-warn)}
+.data-state-badge.state-unavailable{color:var(--fp-text-2)}
+.data-state-badge.state-demo{color:var(--fp-info)}
+.data-state-badge.state-estimated{color:var(--fp-info)}
+html[data-theme="light"] body .rf-event-kpi.good .rf-event-kpi-value{color:var(--fp-pos)}
+html[data-theme="light"] body .rf-event-kpi.warn .rf-event-kpi-value{color:var(--fp-warn)}
+html[data-theme="light"] body .rf-event-kpi.info .rf-event-kpi-value,html[data-theme="light"] body .rf-event-badge.info{color:var(--fp-info)}
+html[data-theme="light"] body .passive-goal-card.ok .passive-goal-value{color:var(--fp-pos)}
+html[data-theme="light"] body .passive-goal-card.info .passive-goal-value{color:var(--fp-info)}
+html[data-theme="light"] body .passive-goal-card.warn .passive-goal-value{color:var(--fp-warn)}
+html[data-theme="light"] body .passive-goal-card.danger .passive-goal-value{color:var(--fp-neg)}
+html[data-theme="light"] body .passive-goal-card.muted .passive-goal-value{color:var(--fp-text-2)}
+html[data-theme="light"] body .data-quality-field,html[data-theme="light"] body .data-quality-recommendation{color:var(--fp-text-2)}
+@media(max-width:560px){
+  html body .metas-shell :is(.sec-meta,.metas-summary-label,.metas-summary-detail,.metas-goal-status,.metas-projection-note,.metas-kpi-sub,.passive-goal-kicker,.passive-goal-sub,.passive-goal-empty-note,.passive-goal-list-label,.passive-goal-list-value,.passive-goal-badge){font-size:var(--fp-fs-meta);line-height:1.4}
+  html body .premium-rf-page :is(.rf-event-kpi-label,.rf-event-kpi-sub,.rf-event-badge,.rf-event-sub,.premium-rf-row-meta,.premium-rf-row-sub){font-size:var(--fp-fs-meta);line-height:1.4}
+  html body .metas-shell .metas-goal-section>summary{align-items:flex-start;text-align:left}
+  html body .metas-shell .metas-goal-section>summary>div{min-width:0;white-space:normal}
+  html body .metas-shell .metas-goal-section .sec-body{overflow-x:auto}
+  html body .metas-shell .metas-goal-section .tw{min-width:0;overflow-x:auto}
+  html body .premium-rf-page .premium-rf-filter-options{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html body .premium-rf-page .premium-rf-position-row>.premium-rf-row-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  html body .premium-rf-page .premium-rf-position-row>.premium-rf-row-actions :is(.btn,.asset-detail-link,.premium-rf-act){min-height:44px;width:100%;min-width:0}
+}
 </style>
 </body>
 </html>

@@ -11,6 +11,8 @@
  */
 (function (global) {
   'use strict';
+  var monteCarloInputContract = global.MonteCarloInputContract;
+  if (!monteCarloInputContract && typeof module !== 'undefined' && module.exports) monteCarloInputContract = require('./analytics-monte-carlo-input.js');
 
   function calculatePortfolioYield(assets) {
     if (!Array.isArray(assets) || assets.length === 0) {
@@ -201,13 +203,17 @@
   }
 
   function monteCarloWealthProjection(params) {
-    var currentValue = params.currentValue || 0;
-    var targetValue = params.targetValue || currentValue * 2;
-    var monthlyContribution = params.monthlyContribution || 0;
-    var expectedReturn = params.expectedReturn || 0.10;
-    var volatility = params.volatility || 0.15;
-    var years = params.years || 10;
-    var simulations = params.simulations || 200;
+    var validation = monteCarloInputContract.validate(params);
+    if (!validation.ok) return { valid: false, error: validation.error, invalidParameters: validation.invalidParameters };
+    var input = validation.values;
+    var currentValue = input.currentValue;
+    var targetValue = input.targetValue;
+    var monthlyContribution = input.monthlyContribution;
+    var expectedReturn = input.expectedReturn;
+    var volatility = input.volatility;
+    var years = input.years;
+    var simulations = input.simulations;
+    var defaultsApplied = validation.defaultsApplied;
 
     var monthlyReturn = expectedReturn / 12;
     var monthlyVolatility = volatility / Math.sqrt(12);
@@ -220,11 +226,15 @@
 
       for (var month = 0; month < months; month++) {
         var random1 = Math.random();
+        // F-13: log(0) = -Infinity. Math.random() está em [0,1); 0 vira a menor fração positiva que o gerador
+        // resolve (2^-53 => |z| ≈ 8,57, cauda legítima e finita). Qualquer outro valor segue inalterado.
+        if (!(random1 > 0)) random1 = Math.pow(2, -53);
         var random2 = Math.random();
         var z = Math.sqrt(-2 * Math.log(random1)) * Math.cos(2 * Math.PI * random2);
         var monthlyR = monthlyReturn - 0.5 * monthlyVolatility * monthlyVolatility + monthlyVolatility * z;
 
         value = value * (1 + monthlyR) + monthlyContribution;
+        if (!Number.isFinite(value)) return monteCarloInputContract.resultOverflow();
       }
 
       finalValues.push(value);
@@ -240,6 +250,8 @@
 
     var probSuccess = finalValues.filter(function(v) { return v >= targetValue; }).length / simulations;
 
+    var expectedValue = finalValues.reduce(function(a, b) { return a + b; }, 0) / simulations;
+    if (!Number.isFinite(expectedValue)) return monteCarloInputContract.resultOverflow();
     return {
       targetValue: targetValue,
       probabilitySuccess: Math.round(probSuccess * 10000) / 100,
@@ -250,8 +262,9 @@
         p75: Math.round(p75),
         p90: Math.round(p90)
       },
-      expectedValue: Math.round(finalValues.reduce(function(a, b) { return a + b; }, 0) / simulations),
-      simulations: simulations
+      expectedValue: Math.round(expectedValue),
+      simulations: simulations,
+      assumptions: { expectedReturn: expectedReturn, volatility: volatility, years: years, simulations: simulations, defaultsApplied: defaultsApplied }
     };
   }
 
