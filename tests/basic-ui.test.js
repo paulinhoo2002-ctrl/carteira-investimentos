@@ -469,10 +469,11 @@ test('Dashboard explains partial history on demand without filling missing chart
   assert.deepEqual(Array.from(chartInput.labels), ['Jan/26', 'Fev/26', 'Mar/26']);
 });
 test('Dashboard position result label stays distinct from portfolio total', () => {
-  const source = extractSnippet('function dashboardExecutiveKPIs(data, showTotalStatus=true){', 'function dashboardEvolutionPanel(');
+  const source = extractSnippet('function dashboardPositionResult(data){', 'function dashboardEvolutionPanel(');
   const cards = [];
-  const renderKpis = vm.runInNewContext(`${source}\ndashboardExecutiveKPIs`, {
+  const renderKpis = vm.runInNewContext(`${source}\ndashboardPerformancePanel`, {
     S: { proventos: [], rfEvents: [], hideValues: false },
+    cx: () => ({ assets: [], quotes: {} }),
     dashboardCurrentValueAvailability: () => ({ state: 'AVAILABLE', note: 'Valores atuais informados' }),
 
       package2HasRenderableSummary: () => false,
@@ -494,6 +495,46 @@ test('Dashboard position result label stays distinct from portfolio total', () =
     recent: { month: '2026-10', total: null, coverage: 'UNKNOWN' }
   });
   assert.ok(cards.some(card => card.label === 'Resultado da posição'));
+});
+test('Dashboard exibe card Variação diária quando ativos têm quote com change', () => {
+  const source = extractSnippet('function dashboardPositionResult(data){', 'function dashboardEvolutionPanel(');
+  const cards = [];
+  const S = {
+    assets: [
+      { id: '1', ticker: 'VALE3', qty: 100, current_price: 65.22 },
+      { id: '2', ticker: 'PETR4', qty: 50, current_price: 30.00 }
+    ],
+    quotes: {
+      VALE3: { price: 65.22, change: 2.5 },
+      PETR4: { price: 30.00, change: -1.5 }
+    },
+    hideValues: false,
+    proventos: [],
+    rfEvents: []
+  };
+  const renderKpis = vm.runInNewContext(`${source}\ndashboardPerformancePanel`, {
+    S,
+    cx: () => ({ assets: [], quotes: {} }),
+    dashboardCurrentValueAvailability: () => ({ state: 'AVAILABLE', note: 'Valores atuais informados' }),
+    package2HasRenderableSummary: () => false,
+    dashboardHasEconomicCertification: () => false,
+    dashboardEconomicResultStatus: () => '',
+    FB: {},
+    passiveIncomeMonthKey: () => '2026-10',
+    passiveIncomeMonthSummary: () => ({ month: '2026-10', total: null, coverage: 'UNKNOWN' }),
+    assetSignedMoneyText: value => `R$ ${value}`,
+    fmtP: value => `${value}%`,
+    dashboardMetricIcon: () => '',
+    dashboardMetricCard: (icon, label, value, note) => { cards.push({ label, value, note }); return ''; },
+    passiveIncomeValue: () => '—',
+    fmt: value => `R$ ${value}`
+  });
+
+  renderKpis({
+    portfolio: { tC: 100, tI: 80, tG: 20, tGP: 25, appliedComplete: true },
+    recent: { month: '2026-10', total: null, coverage: 'UNKNOWN' }
+  });
+  assert.ok(cards.some(card => card.label === 'Variação diária'));
 });
 test('M523 light foundation is emitted inside a stylesheet', () => {
   const html = readIndexHtml();

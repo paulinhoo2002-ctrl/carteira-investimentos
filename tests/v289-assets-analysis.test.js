@@ -5,7 +5,7 @@ const { chromium } = require('playwright-core');
 const { startLocalHttpServer } = require('./local-http-server');
 const { applyV289VisualFixture } = require('./helpers/v289-visual-fixtures');
 
-const chrome = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+const chrome = require('./helpers/chrome-path').resolveChromePath();
 
 async function withPage(viewport, run) {
   const harness = await startLocalHttpServer(path.join(__dirname, '..'));

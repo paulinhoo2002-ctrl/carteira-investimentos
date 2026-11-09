@@ -91,9 +91,20 @@ test('Renda Fixa usa somente aplicado e atual', () => {
 
 test('RF sem atual explícito permanece incompleta', () => {
   const result = summarize([{ ticker: 'CDB', type: 'Renda Fixa', applied: 1000, current: null }]);
+  assert.equal(result.invested, 1000);
+  assert.equal(result.current, null);
+  assert.equal(result.result, null);
   assert.equal(result.returnPct, null);
-  assert.equal(result.byClass[0].current, 0);
+  assert.equal(result.byClass[0].current, null);
   assert.equal(result.byClass[0].incomplete, 1);
+});
+
+test('Renda Fixa com valor atual zero explícito preserva zero legítimo', () => {
+  const result = summarize([{ ticker: 'CDB', type: 'Renda Fixa', applied: 1000, current: 0 }]);
+  assert.equal(result.invested, 1000);
+  assert.equal(result.current, 0);
+  assert.equal(result.result, -1000);
+  assert.equal(result.byClass[0].current, 0);
 });
 
 test('fechamento ativo para classe e classe para carteira', () => {

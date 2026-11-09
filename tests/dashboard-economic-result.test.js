@@ -76,6 +76,7 @@ test('Package2 fallback keeps one consolidation label; certified subset uses the
   const context = vm.createContext({
     S: { hideValues: false, proventos: [], rfEvents: [] },
     FB: { package2: { current_result_summary: { rv_total: 1 }, income_summary: { y2026_total: 1 } } },
+    cx: () => ({ assets: [], quotes: {} }),
     dashboardCurrentValueAvailability: () => ({ state: 'AVAILABLE', note: 'Disponível' }),
     passiveIncomeMonthKey: () => '2026-10',
     passiveIncomeMonthSummary: () => ({ month: '2026-10', total: null, coverage: 'UNKNOWN' }),
@@ -86,7 +87,7 @@ test('Package2 fallback keeps one consolidation label; certified subset uses the
     dashboardMetricCard: (_icon, label, value) => `${label}|${value}`,
     dashboardMetricIcon: () => '',
   });
-  vm.runInContext(`${source.slice(start, end)};globalThis.render=dashboardExecutiveKPIs;`, context);
+  vm.runInContext(`${source.slice(start, end)};globalThis.render=data=>dashboardExecutiveKPIs(data)+dashboardPerformancePanel(data);`, context);
   const fallback = context.render({ portfolio: { tC: 0, tI: 0, tG: 0, tGP: 0, appliedComplete: true }, portfolioEconomicResult: { status: 'PARTIAL' } });
   assert.doesNotMatch(fallback, /Resultado total: Em consolidação/);
   const certified = context.render({ portfolio: { tC: 0, tI: 0, tG: 0, tGP: 0, appliedComplete: true }, portfolioEconomicResult: { status: 'PARTIAL', certifiedAssets: ['rf-1'], certifiedEconomicResult: 12 } });
@@ -100,7 +101,7 @@ test('null Package2 aggregates stay unknown and do not suppress dashboard consol
   assert.notEqual(panelStart, -1);
   const panelContext = vm.createContext({
     S: { hideValues: false }, FB: { package2: summary },
-    cx: () => ({ tC: 0, tI: 0, tG: 0, tGP: 0, appliedComplete: true }),
+    cx: () => ({ assets: [], quotes: {} }),
     dashboardCurrentValueAvailability: () => ({ state: 'AVAILABLE', note: 'Disponível' }),
     passiveIncomeMonthKey: () => '2026-10',
     passiveIncomeMonthSummary: () => ({ month: '2026-10', total: null, coverage: 'UNKNOWN' }),
@@ -111,7 +112,7 @@ test('null Package2 aggregates stay unknown and do not suppress dashboard consol
     dashboardMetricCard: (_icon, label, value) => `${label}|${value}`,
     dashboardMetricIcon: () => '', assetSignedMoneyText: value => `R$ ${value}`,
   });
-  vm.runInContext(`${source.slice(panelStart, panelEnd)};globalThis.render=dashboardExecutiveKPIs;`, panelContext);
+  vm.runInContext(`${source.slice(panelStart, panelEnd)};globalThis.render=data=>dashboardExecutiveKPIs(data)+dashboardPerformancePanel(data);`, panelContext);
   const html = panelContext.render();
   assert.match(html, /Patrimônio atual/);
   assert.match(html, /Recebido no mês/);
@@ -123,6 +124,7 @@ test('null Package2 aggregates stay unknown and do not suppress dashboard consol
   const dashboardEnd = source.indexOf('\nfunction dashboardEvolutionPanel(', dashboardStart);
   const dashboardContext = vm.createContext({
     S: { hideValues: false, proventos: [], rfEvents: [] }, FB: { package2: summary },
+    cx: () => ({ assets: [], quotes: {} }),
     dashboardCurrentValueAvailability: () => ({ state: 'AVAILABLE', note: 'Disponível' }),
     passiveIncomeMonthKey: () => '2026-10',
     passiveIncomeMonthSummary: () => ({ month: '2026-10', total: null, coverage: 'UNKNOWN' }),
@@ -133,7 +135,7 @@ test('null Package2 aggregates stay unknown and do not suppress dashboard consol
     dashboardMetricCard: (_icon, label, value) => `${label}|${value}`,
     dashboardMetricIcon: () => '',
   });
-  vm.runInContext(`${source.slice(dashboardStart, dashboardEnd)};globalThis.render=dashboardExecutiveKPIs;`, dashboardContext);
+  vm.runInContext(`${source.slice(dashboardStart, dashboardEnd)};globalThis.render=data=>dashboardExecutiveKPIs(data)+dashboardPerformancePanel(data);`, dashboardContext);
   const dashboard = dashboardContext.render({
     portfolio: { tC: 0, tI: 0, tG: 0, tGP: 0, appliedComplete: true },
     portfolioEconomicResult: { status: 'PARTIAL' },

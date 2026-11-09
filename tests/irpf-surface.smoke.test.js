@@ -15,18 +15,11 @@ function browserPath() {
   });
 }
 
+// O modo de teste exige o marcador de runtime QA injetado pelo servidor oficial (tests/local-http-server.js).
 async function startServer(root) {
-  const server = http.createServer((req, res) => {
-    const pathname = decodeURIComponent(new URL(req.url || '/', 'http://127.0.0.1').pathname);
-    const file = path.join(root, pathname === '/' ? 'index.html' : pathname);
-    if (!file.startsWith(root) || !fs.existsSync(file)) {
-      res.writeHead(404);
-      return res.end();
-    }
-    res.end(fs.readFileSync(file));
-  });
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  return { server, url: `http://127.0.0.1:${server.address().port}/index.html?testMode=1` };
+  const { startLocalHttpServer } = require('./local-http-server');
+  const harness = await startLocalHttpServer(root);
+  return { server: harness.server, url: harness.url };
 }
 
 test('IRPF preserva rota, leitura auxiliar, exportacoes e layout responsivo', async () => {

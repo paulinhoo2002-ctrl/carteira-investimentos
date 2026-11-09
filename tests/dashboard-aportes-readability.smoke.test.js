@@ -14,23 +14,11 @@ function resolveBrowser() {
   ].filter(Boolean).find(file => { try { fs.accessSync(file); return true; } catch { return false; } });
 }
 
+// O modo de teste exige o marcador de runtime QA injetado pelo servidor oficial (tests/local-http-server.js).
 async function startServer(rootDir) {
-  const server = http.createServer(async (req, res) => {
-    try {
-      const pathname = decodeURIComponent(new URL(req.url || '/', 'http://127.0.0.1').pathname);
-      const filePath = path.normalize(path.join(rootDir, pathname === '/' ? 'index.html' : pathname));
-      if (!filePath.startsWith(rootDir)) { res.writeHead(403); res.end(); return; }
-      const content = await fsp.readFile(filePath);
-      const types = { '.html': 'text/html', '.js': 'text/javascript', '.json': 'application/json' };
-      res.writeHead(200, { 'Content-Type': `${types[path.extname(filePath)] || 'text/plain'}; charset=utf-8` });
-      res.end(content);
-    } catch (error) {
-      res.writeHead(error.code === 'ENOENT' ? 404 : 500);
-      res.end();
-    }
-  });
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  return { server, url: `http://127.0.0.1:${server.address().port}/index.html?testMode=1` };
+  const { startLocalHttpServer } = require('./local-http-server');
+  const harness = await startLocalHttpServer(rootDir);
+  return { server: harness.server, url: harness.url };
 }
 
 const viewports = [
@@ -40,8 +28,10 @@ const viewports = [
   { width: 1920, height: 1080, label: '1920x1080' },
 ];
 
-const metricLabels = ['Patrimônio atual', 'Total investido', 'Resultado geral', 'Rentabilidade', 'Recebido no mês', 'Média 12 meses', 'Meta mensal'];
-const aporteLabels = ['Total aportado', 'Média mensal', 'Maior aporte', 'Meses com aportes'];
+// Contrato V15/V16: primeiro bloco = Patrimônio, Valor investido e Recebido; resultado no painel de rentabilidade.
+const metricLabels = ['Patrimônio atual', 'Valor investido', 'Recebido no mês', 'Resultado da posição'];
+// Resumo de aportes atual (6 indicadores): período, total, média, maior entrada e meses com aporte.
+const aporteLabels = ['Este mês', 'Este ano', 'Total investido em compras e aplicações', 'Média mensal', 'Maior entrada', 'Meses com aportes'];
 
 for (const viewport of viewports) {
   test(`Dashboard/Aportes readability - ${viewport.label}`, async () => {
@@ -60,7 +50,7 @@ for (const viewport of viewports) {
       page.on('requestfailed', request => requestFailures.push(`${request.url()} (${request.failure()?.errorText || 'unknown'})`));
       await page.goto(harness.url, { waitUntil: 'networkidle' });
       await page.evaluate(() => { restoreLocalTestData(); go('dashboard'); });
-      await page.waitForSelector('.dashboard-master-primary', { state: 'visible', timeout: 5000 });
+      await page.waitForSelector('.dashboard-executive-kpis', { state: 'visible', timeout: 5000 });
 
       const dashboard = await page.evaluate(labels => {
         const firstStyle = selector => getComputedStyle(document.querySelector(selector));

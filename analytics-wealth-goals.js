@@ -4,6 +4,8 @@
  */
 (function (global) {
   'use strict';
+  let monteCarloInputContract = global.MonteCarloInputContract;
+  if (!monteCarloInputContract && typeof module !== 'undefined' && module.exports) monteCarloInputContract = require('./analytics-monte-carlo-input.js');
 
   function calculateGoalProgress(currentValue, targetValue) {
     if (!targetValue || targetValue <= 0) return null;
@@ -65,16 +67,11 @@
     }));
   }
 
-  function monteCarloGoalProbability({
-    currentValue,
-    targetValue,
-    monthlyContribution,
-    expectedReturn = 0.10,
-    volatility = 0.15,
-    years = 10,
-    simulations = 200
-  }) {
-    if (!targetValue || targetValue <= 0) return { probability: 0 };
+  function monteCarloGoalProbability(input = {}) {
+    const validation = monteCarloInputContract.validate(input);
+    if (!validation.ok) return { valid: false, error: validation.error, invalidParameters: validation.invalidParameters };
+    const { currentValue, targetValue, monthlyContribution, expectedReturn, volatility, years, simulations } = validation.values;
+    const defaultsApplied = validation.defaultsApplied;
     if (currentValue >= targetValue) return { probability: 100 };
 
     const monthlyReturn = expectedReturn / 12;
@@ -87,11 +84,15 @@
     for (let sim = 0; sim < simulations; sim++) {
       let value = currentValue;
       for (let month = 0; month < months; month++) {
-        const random1 = Math.random();
+        let random1 = Math.random();
+        // F-13: log(0) = -Infinity. Math.random() está em [0,1); 0 vira a menor fração positiva que o gerador
+        // resolve (2^-53 => |z| ≈ 8,57, cauda legítima e finita). Qualquer outro valor segue inalterado.
+        if (!(random1 > 0)) random1 = Math.pow(2, -53);
         const random2 = Math.random();
         const z = Math.sqrt(-2 * Math.log(random1)) * Math.cos(2 * Math.PI * random2);
         const monthlyR = monthlyReturn - 0.5 * monthlyVolatility * monthlyVolatility + monthlyVolatility * z;
         value = value * (1 + monthlyR) + (monthlyContribution || 0);
+        if (!Number.isFinite(value)) return monteCarloInputContract.resultOverflow();
       }
       finalValues.push(value);
       if (value >= targetValue) successCount++;
@@ -102,11 +103,14 @@
     const p50 = finalValues[Math.floor(simulations * 0.50)];
     const p90 = finalValues[Math.floor(simulations * 0.90)];
 
+    const expectedValue = finalValues.reduce((a, b) => a + b, 0) / simulations;
+    if (!Number.isFinite(expectedValue)) return monteCarloInputContract.resultOverflow();
     return {
       probability: Math.round((successCount / simulations) * 10000) / 100,
       percentiles: { p10: Math.round(p10), p50: Math.round(p50), p90: Math.round(p90) },
-      expectedValue: Math.round(finalValues.reduce((a, b) => a + b, 0) / simulations),
-      simulations
+      expectedValue: Math.round(expectedValue),
+      simulations,
+      assumptions: { expectedReturn, volatility, years, simulations, defaultsApplied }
     };
   }
 

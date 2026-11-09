@@ -146,7 +146,7 @@ test('hide-values masks currency, percentages, and quantities across primary ren
         const attributes=[...root.querySelectorAll('[aria-label],[title],[data-chart-tooltip],[alt]')].flatMap(node=>['aria-label','title','data-chart-tooltip','alt'].map(key=>node.getAttribute(key)||''));
         const svg=[...root.querySelectorAll('svg title,svg desc,svg text')].map(node=>node.textContent||'');
         const text=[root.innerText,...attributes,...svg].join(' ');
-        return {text,empty:!root.innerText.trim(),currency:/[-+]?\s*R\$\s*[-+]?\s*[\d.,]+/.test(text),percentage:/\b[\d.,]+\s*%/.test(text),quantity:/\b[\d.,]+\s+(?:cotas?|ações?|acoes|unidades?|un\.|units?)\b/i.test(text)};
+        return {text,empty:!root.innerText.trim(),currency:/[-+]?\s*R\$\s*[-+]?\s*[\d.,]+/.test(text),percentage:/\b[\d.,]+\s*%/.test(text),quantity:/\b[\d.,]+[ \t ]+(?:cotas?|ações?|acoes|unidades?|un\.|units?)\b/i.test(text)};
       });
       assert.equal(surface.empty,false,'rota '+route+' não renderizou');
       assert.equal(surface.currency,false,'valor monetário visível em '+route);

@@ -1,0 +1,113 @@
+{
+ "meta": {
+  "origin": "origin/main (produção) com fixtures sintéticas e relógio congelado 2026-11-08T15:00Z",
+  "baselineSha": "f8fef82313681c60ef641e56a9eb75b24526940b",
+  "how": "tests/fase1c-export-integrity.test.js executado na referência com EXPORT_HASH_DUMP=1"
+ },
+ "hashes": {
+  "completo|complete|CSV": {
+   "sha": "d22ad9fa07b5b3f6",
+   "length": 29862
+  },
+  "completo|complete|JSON": {
+   "sha": "2a6048cb791dc8b4",
+   "length": 382746
+  },
+  "completo|assets|CSV": {
+   "sha": "3e87b68e0d966a93",
+   "length": 1333
+  },
+  "completo|assets|JSON": {
+   "sha": "64dec9b4ab0c71fb",
+   "length": 330158
+  },
+  "completo|proventos|CSV": {
+   "sha": "0074f447c8b6af24",
+   "length": 4470
+  },
+  "completo|proventos|JSON": {
+   "sha": "c062ce11745ef236",
+   "length": 337204
+  },
+  "completo|fixed|CSV": {
+   "sha": "fd6d1c6f6a7f3e68",
+   "length": 492
+  },
+  "completo|fixed|JSON": {
+   "sha": "59b1f10cd8d56e4f",
+   "length": 327714
+  },
+  "completo|patrimony|CSV": {
+   "sha": "862e61f45fd5db6c",
+   "length": 1733
+  },
+  "completo|patrimony|JSON": {
+   "sha": "04dcdeb09c3de443",
+   "length": 330601
+  },
+  "completo|audit|CSV": {
+   "sha": "46c80a182b758e1e",
+   "length": 21645
+  },
+  "completo|audit|JSON": {
+   "sha": "fffd98050014c9c6",
+   "length": 365775
+  },
+  "completo|irpf|CSV": {
+   "sha": "d5edcb54e20cdf64",
+   "length": 6297
+  },
+  "parcial|complete|CSV": {
+   "sha": "c357bc2e761786a7",
+   "length": 34390
+  },
+  "parcial|complete|JSON": {
+   "sha": "a92300c97d347f2a",
+   "length": 569813
+  },
+  "parcial|assets|CSV": {
+   "sha": "64d10c575d0c9454",
+   "length": 1918
+  },
+  "parcial|assets|JSON": {
+   "sha": "601ac36a9651bf81",
+   "length": 510031
+  },
+  "parcial|proventos|CSV": {
+   "sha": "0074f447c8b6af24",
+   "length": 4470
+  },
+  "parcial|proventos|JSON": {
+   "sha": "c6b88a7c5d07f259",
+   "length": 515419
+  },
+  "parcial|fixed|CSV": {
+   "sha": "e73802acf470e9bb",
+   "length": 1391
+  },
+  "parcial|fixed|JSON": {
+   "sha": "4b48ce965b0d1bdc",
+   "length": 508109
+  },
+  "parcial|patrimony|CSV": {
+   "sha": "35fa61f04be02759",
+   "length": 1734
+  },
+  "parcial|patrimony|JSON": {
+   "sha": "19cd431a278aa285",
+   "length": 508817
+  },
+  "parcial|audit|CSV": {
+   "sha": "25aa6993ef2f802b",
+   "length": 24686
+  },
+  "parcial|audit|JSON": {
+   "sha": "e5955103b2d58b6d",
+   "length": 549003
+  },
+  "parcial|irpf|CSV": {
+   "sha": "3b77d619da6ff46c",
+   "length": 6308
+  }
+ }
+}
