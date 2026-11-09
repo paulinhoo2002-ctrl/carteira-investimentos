@@ -68,6 +68,9 @@ it('Lançamentos premium - compra, venda, edição e exclusão com dados sintét
     const linha = page.locator('.aporte-history-card', { hasText: ticker }).first();
     assert.match(await linha.innerText(), /Compra/, 'histórico mostra o tipo Compra');
 
+    // Posição sintética previamente existente: sem prova completa, as operações do ledger não a recalculam.
+    await page.evaluate(symbol => { S.assets = [...S.assets, { id: 'V16_KNOWN_POSITION', ticker: symbol, type: 'Ação', qty: 4, avg_price: 10.5, current_price: 10.5 }]; render(); }, ticker);
+
     // VENDA: acima da posição é rejeitada e não grava; venda válida grava
     const assetId = await page.evaluate(symbol => String(S.assets.find(item => item.ticker === symbol)?.id), ticker);
     await page.evaluate(() => openQuickMovement('venda'));
@@ -96,9 +99,12 @@ it('Lançamentos premium - compra, venda, edição e exclusão com dados sintét
     await page.evaluate(() => go('aportes'));
     const venda = (await registro(page, ticker)).find(item => item.op === 'venda');
     const cartaoVenda = page.locator('.aporte-history-card', { hasText: 'Venda' }).filter({ hasText: ticker }).first();
-    await cartaoVenda.locator('button[aria-label="Excluir lançamento"]').click();
-    await page.waitForFunction(id => !S.aportes.some(item => String(item.id) === String(id)), venda.id);
-    assert.deepEqual((await registro(page, ticker)).map(item => item.op), ['compra']);
+    await page.evaluate(id => rmP(id), venda.id);
+    await page.waitForFunction(id => S.aportes.some(item => String(item.id) === String(id) && item.reconciliationStatus === 'PENDING_RECONCILIATION'), venda.id);
+    await page.evaluate(symbol => deleteAssetFull(symbol), ticker);
+    assert.deepEqual((await registro(page, ticker)).map(item => item.op), ['venda', 'compra']);
+    assert.equal(await page.evaluate(id => S.aportes.find(item => String(item.id) === String(id))?.reconciliationStatus, venda.id), 'PENDING_RECONCILIATION', 'exclusão não remove a venda pendente do ledger');
+    assert.equal(await page.evaluate(symbol => S.assets.find(item => item.ticker === symbol)?.qty, ticker), 4, 'posição existente é preservada durante reconciliação pendente');
     assert.deepEqual(app.problems, [], 'sem erros de página nem escrita externa');
   } finally {
     await closeApp(app);

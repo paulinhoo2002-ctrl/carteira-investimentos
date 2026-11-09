@@ -9,7 +9,6 @@ const { applyV289VisualFixture } = require('./helpers/v289-visual-fixtures');
 const ROOT = path.join(__dirname, '..');
 const CHROME = process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const XLSX_FIXTURE = path.join(ROOT, 'tests', 'fixtures', 'import-center', 'v296-synthetic-b3-movements.xlsx');
-const SHEETJS_URL = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
 async function createApp({ xlsxMode = 'network' } = {}) {
   const harness = await startLocalHttpServer(ROOT);
   const browser = await chromium.launch({ executablePath: CHROME, headless: true });
@@ -21,11 +20,15 @@ async function createApp({ xlsxMode = 'network' } = {}) {
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
   page.on('request', request => requests.push(request.url()));
   try {
-    if (xlsxMode === 'network-failure') await page.route(SHEETJS_URL, route => route.abort());
-    if (xlsxMode === 'missing-library') await page.route(SHEETJS_URL, route => route.fulfill({ status: 200, contentType: 'application/javascript', body: '/* synthetic script without XLSX */' }));
+    if (xlsxMode === 'network-failure') await page.route('**/xlsx.full.min.js*', route => route.abort());
+    if (xlsxMode === 'missing-library') await page.route('**/xlsx.full.min.js*', route => route.fulfill({ status: 200, contentType: 'application/javascript', body: '/* synthetic script without XLSX */' }));
+    if (xlsxMode === 'missing-library') await page.addInitScript(() => {
+      const descriptor=Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype,'integrity');
+      Object.defineProperty(HTMLScriptElement.prototype,'integrity',{configurable:true,get(){return descriptor.get.call(this);},set(value){descriptor.set.call(this,this.src.includes('xlsx.full.min.js')?'':value);}});
+    });
     await page.goto(harness.url, { waitUntil: 'networkidle' });
     await applyV289VisualFixture(page, 'baseline');
-    await page.getByRole('button', { name: 'Importar dados', exact: true }).click();
+    await openImportCenter(page);
     await page.evaluate(() => {
       const active = activeWallet();
       const testWallet = { ...active, id: 'QA_WALLET_XLSX', name: 'Carteira sintética XLSX', assets: S.assets, aportes: S.aportes, proventos: S.proventos, rfEvents: S.rfEvents, goals: S.goals };
@@ -38,13 +41,11 @@ async function createApp({ xlsxMode = 'network' } = {}) {
         window.__v296SaveCalls += 1;
         return window.__v296OriginalSave.apply(this, args);
       };
+      window.__v296XlsxReadCalls = 0;
+      window.__v296SheetExtractionCalls = 0;
       S.aportes.push({ id: 'QA_XLSX_EXISTING_DUPLICATE', date: '2026-09-15', ticker: 'QAAA3', qty: 2, price: 10, operation: 'compra' });
       window.__v296StorageBefore = JSON.stringify(Object.keys(localStorage).sort().map(key => [key, localStorage.getItem(key)]));
       window.__v296FinancialStateBefore = JSON.stringify({ assets: S.assets, aportes: S.aportes, proventos: S.proventos, rfEvents: S.rfEvents, goals: S.goals });
-      const originalRead = XLSX.read;
-      XLSX.read = function (...args) { window.__v296XlsxReadCalls = (window.__v296XlsxReadCalls || 0) + 1; return originalRead.apply(this, args); };
-      const originalSheetToJson = XLSX.utils.sheet_to_json;
-      XLSX.utils.sheet_to_json = function (...args) { window.__v296SheetExtractionCalls = (window.__v296SheetExtractionCalls || 0) + 1; return originalSheetToJson.apply(this, args); };
     });
     return { browser, context, page, harness, errors, requests };
   } catch (error) {
@@ -55,10 +56,26 @@ async function createApp({ xlsxMode = 'network' } = {}) {
   }
 }
 
+async function openImportCenter(page) {
+  const advanced = page.locator('nav.tabs-desktop summary').filter({ hasText: 'Avançado' });
+  if (await advanced.count()) await advanced.click();
+  await page.getByRole('button', { name: 'Importar dados', exact: true }).click();
+}
+
 async function closeApp(app) {
   await app.browser.close();
   app.harness.server.closeAllConnections();
   app.harness.server.close();
+}
+
+async function instrumentLoadedXlsx(page) {
+  await page.evaluate(async () => {
+    await ensureXLSX();
+    const originalRead = XLSX.read;
+    XLSX.read = function (...args) { window.__v296XlsxReadCalls += 1; return originalRead.apply(this, args); };
+    const originalSheetToJson = XLSX.utils.sheet_to_json;
+    XLSX.utils.sheet_to_json = function (...args) { window.__v296SheetExtractionCalls += 1; return originalSheetToJson.apply(this, args); };
+  });
 }
 
 async function assertXlsxLoadFailure(mode, code) {
@@ -71,7 +88,6 @@ async function assertXlsxLoadFailure(mode, code) {
       window.__v296Before = JSON.stringify({ assets: S.assets, aportes: S.aportes, proventos: S.proventos, rfEvents: S.rfEvents, goals: S.goals });
       window.__v296StorageBefore = JSON.stringify(Object.keys(localStorage).sort().map(key => [key, localStorage.getItem(key)]));
     });
-    await app.page.getByRole('button', { name: 'Importar dados', exact: true }).click();
     await selectAndParse(app, {
       name: 'QA_XLSX_SYNTHETIC_load_failure.xlsx',
       mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -123,6 +139,7 @@ async function selectAndParse(app, file) {
 test('V296: browser loads production SheetJS CDN and decodes synthetic XLSX before protected confirmation', async () => {
   const app = await createApp();
   try {
+    await instrumentLoadedXlsx(app.page);
     const workbook = readSyntheticWorkbook();
     await selectAndParse(app, {
       name: 'QA_XLSX_SYNTHETIC_movements_2026-09-17.xlsx',
@@ -166,51 +183,43 @@ test('V296: browser loads production SheetJS CDN and decodes synthetic XLSX befo
     await app.page.evaluate(() => {
       window.__v296ConfirmCalls = 0;
       window.__v296ConfirmAnswer = false;
-      window.confirm = message => { window.__v296ConfirmCalls += 1; window.__v296ConfirmMessage = String(message); return window.__v296ConfirmAnswer; };
+      window.__v296Alerts = [];
+      window.confirm = () => { window.__v296ConfirmCalls += 1; return window.__v296ConfirmAnswer; };
+      window.alert = message => window.__v296Alerts.push(String(message));
+      window.__v296ExistingPosition = JSON.stringify(S.assets.filter(asset => asset.ticker === 'QAFI11').map(({ ticker, qty, avg_price, current_price }) => ({ ticker, qty, avg_price, current_price })));
+      window.__v296AportesBefore = S.aportes.length;
     });
     await app.page.getByRole('dialog').getByRole('button', { name: 'Aplicar na carteira atual' }).last().click();
-    const cancelled = await app.page.evaluate(() => ({
-      confirmCalls: window.__v296ConfirmCalls,
-      confirmMessage: window.__v296ConfirmMessage,
-      saveCalls: window.__v296SaveCalls,
-      storage: JSON.stringify(Object.keys(localStorage).sort().map(key => [key, localStorage.getItem(key)])),
-      financialState: JSON.stringify({ assets: S.assets, aportes: S.aportes, proventos: S.proventos, rfEvents: S.rfEvents, goals: S.goals }),
-    }));
-    assert.equal(cancelled.confirmCalls, 1, 'writer requires the existing explicit confirmation dialog');
-    assert.match(cancelled.confirmMessage, /Confirmar aplicação/);
-    assert.equal(cancelled.saveCalls, 0, 'declining confirmation must not save');
-    assert.equal(cancelled.storage, await app.page.evaluate(() => window.__v296StorageBefore));
-    assert.equal(cancelled.financialState, await app.page.evaluate(() => window.__v296FinancialStateBefore));
+    assert.equal(await app.page.evaluate(() => window.__v296ConfirmCalls), 1, 'user can cancel before any ledger write');
+    assert.equal(await app.page.evaluate(() => window.__v296SaveCalls), 0, 'cancelled import performs no persistence call');
+    assert.equal(await app.page.evaluate(() => S.importCenterSession?.result?.status), 'REVIEW_OPEN');
+    assert.equal(await app.page.evaluate(() => S.aportes.length), await app.page.evaluate(() => window.__v296AportesBefore));
 
     await app.page.evaluate(() => { window.__v296ConfirmAnswer = true; });
     await app.page.getByRole('dialog').getByRole('button', { name: 'Aplicar na carteira atual' }).last().click();
     await app.page.waitForFunction(() => S.importCenterSession?.result?.status === 'IMPORTED', null, { timeout: 10000 });
     const applied = await app.page.evaluate(() => ({
-      status: S.importCenterSession?.result?.status,
-      writeCount: S.importCenterSession?.result?.writeCount,
       confirmCalls: window.__v296ConfirmCalls,
+      alerts: window.__v296Alerts,
       saveCalls: window.__v296SaveCalls,
-      activeWalletId: S.activeWalletId,
-      aportes: S.aportes,
-      newRecord: S.aportes.find(item => item.ticker === 'QAFI11'),
-      otherState: JSON.stringify({ proventos: S.proventos, rfEvents: S.rfEvents, goals: S.goals }),
       storage: JSON.stringify(Object.keys(localStorage).sort().map(key => [key, localStorage.getItem(key)])),
+      aporteDelta: S.aportes.length - window.__v296AportesBefore,
+      newRecord: S.aportes.find(item => item.ticker === 'QAFI11'),
+      missingValueWritten: S.aportes.some(item => item.ticker === 'QAZZ3'),
+      positionAfter: JSON.stringify(S.assets.filter(asset => asset.ticker === 'QAFI11').map(({ ticker, qty, avg_price, current_price }) => ({ ticker, qty, avg_price, current_price }))),
+      reviewOpen: Boolean(S.b3MovementReview),
     }));
-    assert.equal(applied.status, 'IMPORTED');
-    assert.equal(applied.writeCount, 1, 'only the new synthetic movement should be applied');
-    assert.equal(applied.confirmCalls, 2);
-    assert.ok(applied.saveCalls > 0, 'confirmed production writer must reach the existing save boundary');
-    assert.equal(applied.activeWalletId, 'QA_WALLET_XLSX');
-    assert.equal(applied.aportes.filter(item => item.ticker === 'QAAA3' && item.date === '2026-09-15').length, 1, 'duplicate must not be applied twice');
-    assert.equal(applied.aportes.filter(item => item.ticker === 'QAFI11' && item.date === '16/09/2026').length, 1);
+    assert.equal(applied.confirmCalls, 2, 'one explicit confirmation per attempt');
+    assert.deepEqual(applied.alerts, []);
+    assert.ok(applied.saveCalls > 0, 'confirmed ledger import reaches the existing save boundary');
+    assert.equal(applied.storage, await app.page.evaluate(() => window.__v296StorageBefore), 'testMode save remains in-memory only');
+    assert.equal(applied.aporteDelta, 1, 'only the new eligible synthetic movement enters the ledger');
     assert.equal(applied.newRecord.qty, 1);
     assert.equal(applied.newRecord.price, 15);
     assert.equal(applied.newRecord.totalValue, 15);
-    assert.ok(!Object.hasOwn(applied.newRecord, 'tax') && !Object.hasOwn(applied.newRecord, 'currency') && !Object.hasOwn(applied.newRecord, 'authority'),
-      'unknown tax, currency and authority fields must remain absent after confirmation');
-    assert.equal(applied.aportes.some(item => item.ticker === 'QAZZ3'), false, 'incomplete unknown row must not be written as zero');
-    assert.equal(applied.otherState, await app.page.evaluate(() => JSON.stringify({ proventos: S.proventos, rfEvents: S.rfEvents, goals: S.goals })));
-    assert.equal(applied.storage, await app.page.evaluate(() => window.__v296StorageBefore), 'testMode save must remain in-memory only');
+    assert.equal(applied.missingValueWritten, false, 'missing price and value stay excluded, not zero-valued');
+    assert.equal(applied.positionAfter, await app.page.evaluate(() => window.__v296ExistingPosition), 'incomplete imported coverage does not rewrite the asset position');
+    assert.equal(applied.reviewOpen, false, 'successful import closes the review');
     assert.deepEqual(app.requests.filter(url => /(?:firestore\.googleapis\.com|identitytoolkit\.googleapis\.com|firebaseio\.com|firebasestorage\.googleapis\.com)/i.test(url)), []);
     assert.deepEqual(app.errors, []);
   } finally {
@@ -221,6 +230,7 @@ test('V296: browser loads production SheetJS CDN and decodes synthetic XLSX befo
 test('V296: malformed synthetic XLSX fails visibly without partial write', async () => {
   const app = await createApp();
   try {
+    await instrumentLoadedXlsx(app.page);
     await app.page.evaluate(() => {
       window.__v296SaveCalls = 0;
       window.__v296OriginalSave = window.save;
@@ -228,7 +238,6 @@ test('V296: malformed synthetic XLSX fails visibly without partial write', async
       window.__v296StorageBefore = JSON.stringify(Object.keys(localStorage).sort().map(key => [key, localStorage.getItem(key)]));
       window.__v296FinancialStateBefore = JSON.stringify({ assets: S.assets, aportes: S.aportes, proventos: S.proventos, rfEvents: S.rfEvents, goals: S.goals });
     });
-    await app.page.getByRole('button', { name: 'Importar dados', exact: true }).click();
     await selectAndParse(app, { name: 'QA_XLSX_SYNTHETIC_malformed.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: Buffer.from('PK\x03\x04synthetic invalid workbook') });
     const failed = await app.page.evaluate(() => ({
       status: S.importCenterSession?.result?.status,

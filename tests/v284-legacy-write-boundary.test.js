@@ -220,7 +220,7 @@ test('Inter note review: opening/closing is read-only; explicit import invokes p
   context.S.noteReview = { noteKey: 'v284-note|INTER|number|1|01-01-2026', noteIdentity: 'v284-note|INTER|number|1|01-01-2026', broker: 'INTER', noteNumber: '1', tradeDate: '2026-01-01', completenessStatus: 'COMPLETE', identityStatus: 'READY', rows: [{ include: true, ticker: 'SYN1', operation: 'compra', qty: 1, price: 10, sourceItem: { date: '2026-01-01', operation: 'compra' } }] };
   context.importNotaReview();
   assert.equal(metrics.saveCalls, 1);
-  assert.equal(metrics.portfolioMutations, 1);
+  assert.equal(metrics.portfolioMutations, 0, 'ledger import never triggers portfolio reconstruction');
 });
 
 test('fixed-income review: cancel blocks persistence; explicit apply reaches confirmed writer', () => {
@@ -881,16 +881,21 @@ function applySyntheticLegacyNote(context, parsed) {
   );
 }
 
-test('cost basis import requires explicit completeness review before changing the ledger', () => {
+test('complete note identity permits ledger import without certifying or overwriting position', () => {
   const { context, metrics } = legacyNoteHarness();
+  const existingPosition = { id: 7, ticker: 'SYN1', type: 'Ação', qty: 20, avg_price: 40 };
+  context.S.assets = [existingPosition];
+  let syncCalls=0;
+  context.syncAssetsFromAportes=()=>{syncCalls++; context.S.assets=[{ticker:'UNRELATED-RF',current_price:0}]};
   const parsed = syntheticLegacyNote(context, { fileName: 'nota-custo.xlsx', broker: 'INTER DTVM LTDA', trades: [{}] });
   context.confirmAnswer = false;
   const result = applySyntheticLegacyNote(context, parsed);
-  assert.equal(result?.status, 'COST_BASIS_REVIEW_CANCELLED');
-  assert.equal(metrics.confirmCalls, 1);
-  assert.equal(metrics.saveCalls, 0);
-  assert.deepEqual(context.S.aportes, []);
-  assert.deepEqual(context.S.assets, []);
+  assert.equal(result?.status, 'APPLIED');
+  assert.equal(metrics.confirmCalls, 0, 'manual confirmation is not a completeness proof');
+  assert.equal(metrics.saveCalls, 1, 'the confirmed ledger entry is persisted');
+  assert.equal(context.S.aportes.length, 1);
+  assert.equal(syncCalls,0, 'ledger import does not run a whole-portfolio recalculation');
+  assert.deepEqual(context.S.assets, [existingPosition], 'the writer does not claim a recalculated position');
 });
 
 test('NOTE-ID-1: unnumbered note reimported under same filename is duplicate-safe', () => {
@@ -1332,20 +1337,23 @@ test('B3 movements: failed save quarantines; verified reload permits one retry',
   assert.equal(persistence.getStorageWrites(), 1);
 });
 
-test('B3 movement writer requires explicit cost basis review and cancellation has zero writes', () => {
+test('B3 movement writer records history without claiming a recalculated position', () => {
   const row = { ticker: 'SYN-MOV-COST', qty: 1, price: 25, value: 25, date: '2026-01-02', movement: 'Compra', entryExit: 'Débito', type: 'Ação', target: 'aportes', destination: 'historico', confidence: 'Alta', include: true };
   const { context, persistence } = syntheticB3MovementImport([row]);
-  context.confirmAnswer = false;
+  let syncCalls=0;
+  context.syncAssetsFromAportes=()=>{syncCalls++; context.S.assets=[{ticker:'UNRELATED-RF',current_price:0}]};
+  const existingPosition = { id: 8, ticker: row.ticker, type: 'Ação', qty: 11, avg_price: 18 };
+  context.S.assets = [existingPosition];
   const result = context.applyB3MovementImported([row], '2026-01-02');
-  assert.equal(result.status, 'COST_BASIS_REVIEW_CANCELLED');
-  assert.equal(context.metrics.confirmCalls, 1);
-  assert.match(context.metrics.confirmMessages[0], /posição inicial, compras, vendas, transferências e eventos corporativos/i);
-  assert.match(context.metrics.confirmMessages[0], /posição inicial ou qualquer parte do histórico for desconhecida, cancele/i);
-  assert.equal(persistence.getStorageWrites(), 0);
-  assert.equal(context.S.aportes.length, 0);
+  assert.equal(result.status, 'APPLIED');
+  assert.equal(context.metrics.confirmCalls, 0, 'no manual answer is treated as coverage evidence');
+  assert.equal(persistence.getStorageWrites(), 1);
+  assert.equal(context.S.aportes.length, 1);
+  assert.equal(syncCalls,0, 'B3 ledger import must not run whole-portfolio reconstruction');
+  assert.deepEqual(context.S.assets, [existingPosition]);
 });
 
-test('B3 movement writer restores all state when persistence fails after cost basis confirmation', () => {
+test('B3 movement writer restores all state when persistence fails after ledger confirmation', () => {
   const row = { ticker: 'SYN-MOV-COST-ROLLBACK', qty: 1, price: 25, value: 25, date: '2026-01-02', movement: 'Compra', entryExit: 'Débito', type: 'Ação', target: 'aportes', destination: 'historico', confidence: 'Alta', include: true };
   const { context, persistence } = syntheticB3MovementImport([row], { failStorage: true });
   const before = JSON.stringify({ assets: context.S.assets, aportes: context.S.aportes, learnMeta: context.S.learnMeta });
@@ -1355,7 +1363,7 @@ test('B3 movement writer restores all state when persistence fails after cost ba
   assert.equal(JSON.stringify({ assets: context.S.assets, aportes: context.S.aportes, learnMeta: context.S.learnMeta }), before);
   assert.equal(context.S._financialWriteQuarantined, true);
   assert.equal(persistence.getPersisted().aportes.length, 0);
-  assert.equal(context.metrics.confirmCalls, 1);
+  assert.equal(context.metrics.confirmCalls, 0);
 });
 
 test('B3 movement writer blocks identical rows without execution IDs instead of importing one silently', () => {

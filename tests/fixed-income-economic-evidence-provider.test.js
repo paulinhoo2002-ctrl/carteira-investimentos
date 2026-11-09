@@ -15,6 +15,11 @@ const trend = (name = 'Trend DI FIC RF Simples RL') => ({ id: 'trend-1', ticker:
 const proof = (coverage = {}) => ({
   status: 'COMPLETE', periodStart: '2024-01-01', periodEnd: '2026-10-18',
   openingPosition: 'NONE', allEventsRepresented: true, duplicatesResolved: true, sourceOverlapResolved: true,
+  openingPositionEvidence: {
+    sourceKind: 'POSITION_SNAPSHOT', sourceId: 'synthetic-zero-opening-snapshot', stableEventId: 'no-opening-1', assetIdentity: 'trend-1',
+    asOfDate: '2023-12-31', authority: 'BROKER_STATEMENT', status: 'OBSERVED', compatibleWithPeriod: true,
+    positionQuantity: 0, quantityUnit: 'QUOTA', duplicateState: 'NONE', conflictState: 'NONE',
+  },
   coverage: { contributions: 'COMPLETE', income: 'COMPLETE', taxes: 'COMPLETE', capitalReturns: 'COMPLETE', principal: 'COMPLETE', ...coverage },
 });
 const event = (id, type, fields = {}) => ({
@@ -43,7 +48,7 @@ test('PROVIDER_UNKNOWN_FAILS_CLOSED and missing type does not become interest', 
 test('normalized contribution and receipt amounts remain attached to their provenance', () => {
   const asset = trend();
   const result = provider.buildEvidence({ asset, assets: [asset], historyEvidence: proof(), events: [
-    event('application-1', 'aporte', { status: 'CONFIRMED', principalDelta: 100 }),
+    event('application-1', 'aporte', { status: 'CONFIRMED', principalDelta: 100, qty: 3 }),
     event('coupon-1', 'juros', { status: 'RECEIVED', netValue: 10, amountBasis: 'NET' }),
   ] });
 
@@ -51,6 +56,9 @@ test('normalized contribution and receipt amounts remain attached to their prove
     const source = result.sourceEvidence.find(row => row.stableEventId === normalized.id);
     assert.equal(source.amount, normalized.amount);
   }
+  assert.equal(result.coverage.history.expectedEventsMatched, true);
+  assert.equal(result.sourceEvidence.find(row => row.stableEventId === 'application-1').quantity, 3);
+  assert.equal(result.contributions.find(row => row.id === 'application-1').quantity, 3);
 });
 
 test('history completion requires period, no opening position, all events, and resolved duplicates', () => {
@@ -89,7 +97,7 @@ test('missing or zero receipt/tax amounts are not promoted from normalizer defau
 
 test('PROVIDER_COMPLETE_HISTORY_REQUIRES_STABLE_IDS_AND_DATES', () => {
   const noId = event('', 'juros', { status: 'RECEIVED', netValue: 10 });
-  const noDate = event('coupon-2', 'juros', { status: 'RECEIVED', date: '' , netValue: 10 });
+  const noDate = event('coupon-2', 'juros', { status: 'RECEIVED', date: '', netValue: 10 });
   for (const row of [noId, noDate]) {
     const result = provider.buildEvidence({ asset: trend(), assets: [trend()], events: [row], historyEvidence: proof() });
     assert.equal(result.coverage.history.status, 'PARTIAL');
@@ -283,6 +291,7 @@ test('real runtime evidence is gated by REAL authorization and logout clears sou
     S: { assets: [trend()], rfEvents: [event('live-1', 'juros', { status: 'RECEIVED', netValue: 1 })], aportes: [], proventos: [] },
     DEFAULT_RUNTIME_STATE: { assets: [], wallets: [], aportes: [], proventos: [], rfEvents: [], hideValues: false },
     window: {},
+    financialMovementsForCalculations: () => context.S.aportes.filter(row => row.reconciliationStatus !== 'PENDING_RECONCILIATION'),
     cloneData: value => JSON.parse(JSON.stringify(value)),
     resetTransientRuntimeState() {},
     rfPosNorm: value => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim(),
@@ -331,7 +340,7 @@ test('runtime data sources and strict authenticated gate remain explicit', () =>
   assert.match(integration, /FB\.cloudLoaded!==true/);
   assert.match(integration, /S\.assets/);
   assert.match(integration, /S\.rfEvents/);
-  assert.match(integration, /S\.aportes/);
+  assert.match(integration, /aportes:financialMovementsForCalculations\(\)/);
   assert.match(integration, /S\.proventos/);
   assert.doesNotMatch(integration, /FixedIncomeEconomicResultEvidence/);
   assert.match(integration, /FixedIncomeEconomicEvidenceProvider\?\.buildEvidence/);
@@ -346,7 +355,8 @@ test('PROVENANCE_MISSING_FAILS_CLOSED and registered evidence keeps source ident
   const missing = provider.buildEvidence({ asset, assets: [asset], events: rows, historyEvidence: proof() });
   assert.equal(missing.coverage.history.status, 'PARTIAL');
   assert.ok(missing.blockers.includes('PROVENANCE_INCOMPLETE'));
-  assert.equal(missing.sourceEvidence.length, 1);
+  assert.equal(missing.sourceEvidence.length, 2);
+  assert.equal(missing.sourceEvidence[0].semanticType, 'NO_OPENING_POSITION');
 
   const provenance = require('../financial-evidence-provenance.js');
   const registered = provenance.createRegistry([{ sourceKind: 'RF_EVENT', sourceId: 'synthetic-ledger', stableEventId: 'application-1', assetIdentity: 'trend-1', occurredOn: '2025-01-01', authority: 'SYNTHETIC_TEST', semanticType: 'APPLICATION', status: 'CONFIRMED' }]);
@@ -375,6 +385,15 @@ test('HISTORY_PERIOD_END_REQUIRED and every independent component stays explicit
   assert.equal(result.coverage.history.periodEnd, null);
 });
 
+test('PROVENANCE_PRESERVES_LINKED_TAX_EVENT_ID', () => {
+  const registry = provenance.createRegistry([{
+    sourceKind: 'RF_EVENT', sourceId: 'ledger-1', stableEventId: 'tax-1', assetIdentity: 'trend-1',
+    occurredOn: '2025-06-02', authority: 'BROKER_STATEMENT', semanticType: 'IR', status: 'PAID',
+    relatedEventId: 'redemption-1', periodStart: '2024-01-01', periodEnd: '2026-10-18',
+    duplicateState: 'NONE', conflictState: 'NONE',
+  }]);
+  assert.equal(registry.sourceEvidence[0].relatedEventId, 'redemption-1');
+});
 test('PROVENANCE_REGISTRY records explicit descriptors and rejects missing source identity', () => {
   const descriptor = {
     sourceKind: 'RF_EVENT', sourceId: 'source-ledger-1', stableEventId: 'event-1', assetIdentity: 'trend-1',
@@ -477,6 +496,7 @@ test('KNOWN_OPENING_POSITION_REQUIRES_COMPATIBLE_PROVENANCE', () => {
   const result = coverageEngine.evaluateCoverage({
     historyEvidence: { ...proof(), openingPosition: 'KNOWN' }, registry: openingRegistry,
     componentCoverage: { contributions: 'COMPLETE' }, subjectIdentity: 'trend-1', subjectPresent: true,
+    expectedEvents: [], observedEvents: [],
   });
   assert.equal(result.coverage.history.openingPosition, 'KNOWN');
   assert.equal(result.coverage.history.status, 'COMPLETE');
@@ -485,9 +505,11 @@ test('KNOWN_OPENING_POSITION_REQUIRES_COMPATIBLE_PROVENANCE', () => {
   assert.equal(coverageEngine.evaluateCoverage({
     historyEvidence: { ...proof(), openingPosition: 'KNOWN' }, registry: unproven,
     componentCoverage: { contributions: 'COMPLETE' }, subjectIdentity: 'trend-1', subjectPresent: true,
+    expectedEvents: [], observedEvents: [],
   }).coverage.history.status, 'PARTIAL');
   assert.equal(coverageEngine.evaluateCoverage({
     historyEvidence: { ...proof(), openingPosition: 'KNOWN' }, componentCoverage: { contributions: 'COMPLETE' }, subjectIdentity: 'trend-1', subjectPresent: true,
+    expectedEvents: [], observedEvents: [],
   }).coverage.history.status, 'PARTIAL');
 });
 
