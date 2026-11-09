@@ -27,6 +27,10 @@ function completeCoverage(ticker) {
 }
 
 function verifiedCoverage(ticker, movements) {
+  return verifiedCoverageWithOpening(ticker, movements, 'NONE');
+}
+
+function verifiedCoverageWithOpening(ticker, movements, openingPosition) {
   const start = '2026-01-01';
   const end = '2026-12-31';
   const events = movements.filter(row => String(row.ticker).trim().toUpperCase() === ticker.toUpperCase()).map(row => ({
@@ -37,10 +41,15 @@ function verifiedCoverage(ticker, movements) {
     quantity: Number(row.qty),
     status: 'CONFIRMED',
   }));
+  const openingEvidence = openingPosition === 'NONE'
+    ? { semanticType: 'NO_OPENING_POSITION', coverageState: 'COMPLETE', assetIdentity: ticker,
+        periodMembership: 'OPENING_COMPATIBLE', periodStart: start, periodEnd: end,
+        occurredOn: '2025-12-31', noOpeningPositionCompatible: true }
+    : { semanticType: 'OPENING_POSITION', coverageState: 'COMPLETE', assetIdentity: ticker,
+        periodMembership: 'OPENING_COMPATIBLE', periodStart: start, periodEnd: end,
+        occurredOn: '2025-12-31', openingPositionCompatible: true, positionQuantity: 100, quantityUnit: 'shares' };
   const sourceEvidence = [
-    { semanticType: 'NO_OPENING_POSITION', coverageState: 'COMPLETE', assetIdentity: ticker,
-      periodMembership: 'OPENING_COMPATIBLE', periodStart: start, periodEnd: end,
-      occurredOn: '2025-12-31', noOpeningPositionCompatible: true },
+    openingEvidence,
     ...events.map(event => ({ ...event, stableEventId: event.id, semanticType: event.type,
       assetIdentity: ticker, coverageState: 'COMPLETE', periodMembership: 'IN_PERIOD',
       periodStart: start, periodEnd: end })),
@@ -51,14 +60,14 @@ function verifiedCoverage(ticker, movements) {
     sourceKind: 'SYNTHETIC_TEST', sourceId: 'synthetic-ledger',
     stableEventId: row.stableEventId || `opening-${index}`,
     authority: 'SYNTHETIC_TEST',
-    status: row.semanticType === 'NO_OPENING_POSITION' ? 'OBSERVED' : 'CONFIRMED',
+    status: row.semanticType === 'NO_OPENING_POSITION' ? 'OBSERVED' : (row.semanticType === 'OPENING_POSITION' ? 'OBSERVED' : 'CONFIRMED'),
     duplicateState: 'NONE', conflictState: 'NONE',
-    positionQuantity: row.semanticType === 'NO_OPENING_POSITION' ? 0 : undefined,
-    quantityUnit: row.semanticType === 'NO_OPENING_POSITION' ? 'shares' : undefined,
-    compatibleWithPeriod: row.semanticType === 'NO_OPENING_POSITION',
+    positionQuantity: row.semanticType === 'NO_OPENING_POSITION' ? 0 : (row.semanticType === 'OPENING_POSITION' ? row.positionQuantity || 100 : undefined),
+    quantityUnit: row.semanticType === 'NO_OPENING_POSITION' ? 'shares' : (row.semanticType === 'OPENING_POSITION' ? 'shares' : undefined),
+    compatibleWithPeriod: row.semanticType === 'NO_OPENING_POSITION' || row.semanticType === 'OPENING_POSITION',
   })), { duplicatesResolved: true, sourceOverlapResolved: true });
   const result = require('../historical-coverage-engine.js').evaluateCoverage({
-    historyEvidence: { status: 'COMPLETE', periodStart: start, periodEnd: end, openingPosition: 'NONE',
+    historyEvidence: { status: 'COMPLETE', periodStart: start, periodEnd: end, openingPosition,
       allEventsRepresented: true, duplicatesResolved: true, sourceOverlapResolved: true },
     registry,
     componentCoverage: { contributions: 'COMPLETE', costBasis: 'COMPLETE' }, subjectIdentity: ticker, subjectPresent: true,
@@ -283,4 +292,48 @@ test('V350: legacy asset fields without avg keep imported positions without inve
   // no aportes for the ticker: grouped is empty and the imported asset is not
   // rebuilt by the sync — imported positions pass through untouched.
   assert.ok(!a || (a.qty === 10 && a.avg_price === 0), 'imported position must not gain invented cost');
+});
+
+test('V350: known opening position with complete coverage allows recalculation (A-01)', () => {
+  const { S, run } = buildSandbox([
+    { id: 1, date: '2026-01-10', ticker: 'KNOWN4', operation: 'compra', qty: 100, price: 10 },
+    { id: 2, date: '2026-02-10', ticker: 'KNOWN4', operation: 'compra', qty: 100, price: 20 },
+  ], [{ id: 42, ticker: 'KNOWN4', type: 'Ação', qty: 100, avg_price: 10, current_price: 15 }], {
+    KNOWN4: verifiedCoverageWithOpening('KNOWN4', [
+      { id: 1, date: '2026-01-10', ticker: 'KNOWN4', operation: 'compra', qty: 100, price: 10 },
+      { id: 2, date: '2026-02-10', ticker: 'KNOWN4', operation: 'compra', qty: 100, price: 20 },
+    ], 'KNOWN'),
+  });
+  const result = run();
+  const a = S.assets.find(x => x.ticker === 'KNOWN4');
+  assert.ok(a, 'known opening position with complete coverage must be recalculated');
+  assert.equal(a.qty, 200);
+  assert.ok(Math.abs(a.avg_price - 15) < 1e-9, `weighted avg expected 15, got ${a.avg_price}`);
+  assert.equal(result.recalculatedTickers.includes('KNOWN4'), true);
+});
+
+test('V350: known opening position without complete coverage blocks recalculation (A-01)', () => {
+  const { S, run } = buildSandbox([
+    { id: 1, date: '2026-01-10', ticker: 'PARTIAL4', operation: 'compra', qty: 100, price: 10 },
+  ], [{ id: 43, ticker: 'PARTIAL4', type: 'Ação', qty: 100, avg_price: 10, current_price: 15 }], {
+    PARTIAL4: verifiedCoverageWithOpening('PARTIAL4', [], 'KNOWN'),
+  });
+  const result = run();
+  const a = S.assets.find(x => x.ticker === 'PARTIAL4');
+  assert.equal(a.qty, 100, 'incomplete coverage must preserve existing quantity');
+  assert.equal(a.avg_price, 10, 'incomplete coverage must preserve existing average cost');
+  assert.equal(result.recalculatedTickers.includes('PARTIAL4'), false);
+});
+
+test('V350: unknown opening position blocks recalculation (A-01 fail-closed)', () => {
+  const { S, run } = buildSandbox([
+    { id: 1, date: '2026-01-10', ticker: 'UNKNOWN4', operation: 'compra', qty: 100, price: 10 },
+  ], [{ id: 44, ticker: 'UNKNOWN4', type: 'Ação', qty: 100, avg_price: 10, current_price: 15 }], {
+    UNKNOWN4: verifiedCoverageWithOpening('UNKNOWN4', [], 'UNKNOWN'),
+  });
+  const result = run();
+  const a = S.assets.find(x => x.ticker === 'UNKNOWN4');
+  assert.equal(a.qty, 100, 'unknown opening position must preserve existing quantity');
+  assert.equal(a.avg_price, 10, 'unknown opening position must preserve existing average cost');
+  assert.equal(result.recalculatedTickers.includes('UNKNOWN4'), false);
 });

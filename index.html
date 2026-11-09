@@ -25838,7 +25838,7 @@ function syncAssetsFromAportes(showMsg=false,persistState=true,coverageByTicker=
       && coverage.costBasis==='COMPLETE' && history?.status==='COMPLETE'
       && history.expectedEventsMatched===true && history.sourceEventsMatched===true && history.allEventsRepresented===true
       && history.duplicatesResolved===true && history.sourceOverlapResolved===true
-      && history.openingPosition==='NONE';
+      && ['NONE','KNOWN'].includes(history.openingPosition);
   };
   const markIncomplete=(ticker,blocker)=>{
     if(!incompleteCoverage.has(ticker)) incompleteCoverage.set(ticker,{status:'PARTIAL',blockers:[]});
