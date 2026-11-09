@@ -19491,7 +19491,7 @@ function quickMovementBuildAporteFromFields(kind){
     const rfLiquid=rfLiquidState.value;
     const rfIrIof=rfIrIofState.value;
     const rfUnavailable=rfUnavailableState.value;
-    if(!(rfApplied>0)) return {error:'Informe o valor aplicado para registrar a base do título.', field:'qm-rf-applied'};
+    if(!rfApplied && !rfGross && !rfLiquid) return {error:'Preencha ao menos um valor: aplicado, bruto ou líquido.', field:'qm-rf-applied'};
     const ticker=cleanAssetCode(String(document.getElementById('qm-rf-name')?.value||rfName||`${rfSubtype} ${rfAppDate}`));
     const value=Math.max(rfApplied, rfGross, rfLiquid);
     const currentValue=rfLiquid>0 ? rfLiquid : (rfGross>0 ? rfGross : 0);
