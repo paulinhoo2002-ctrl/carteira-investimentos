@@ -10,7 +10,7 @@
     'TREND DI II FIC RF SIMPLES RL',
   ]);
   const SUPPORTED_PROVENANCE_TYPES = new Set([
-    'OPENING_POSITION', 'LINKED_REFERENCE', 'APPLICATION', 'PURCHASE', 'COUPON', 'INTEREST', 'INCOME',
+    'OPENING_POSITION', 'NO_OPENING_POSITION', 'LINKED_REFERENCE', 'APPLICATION', 'PURCHASE', 'COUPON', 'INTEREST', 'INCOME',
     'IR', 'IOF', 'AMORTIZATION', 'PARTIAL_REDEMPTION', 'TOTAL_REDEMPTION', 'PRINCIPAL_RETURN', 'UNKNOWN',
   ]);
 
@@ -76,11 +76,14 @@
       && Number.isFinite(Date.parse(`${value}T00:00:00.000Z`))
       && new Date(`${value}T00:00:00.000Z`).toISOString().slice(0, 10) === value;
     const validRows = relevant.every((row) => {
-      const opening = row?.semanticType === 'OPENING_POSITION';
+      const opening = row?.semanticType === 'OPENING_POSITION' || row?.semanticType === 'NO_OPENING_POSITION';
       const sourcePeriodMatches = row.periodStart === history.periodStart && row.periodEnd === history.periodEnd;
-      const periodProof = opening
-        ? history.openingPosition === 'KNOWN' && row.openingPositionCompatible === true
+      const periodProof = row?.semanticType === 'OPENING_POSITION'
+        ? history.openingPosition === 'KNOWN' && row.openingPositionCompatible === true && row.positionQuantity > 0
           && row.periodMembership === 'OPENING_COMPATIBLE' && isDate(row.occurredOn) && row.occurredOn < history.periodStart
+        : row?.semanticType === 'NO_OPENING_POSITION'
+          ? history.openingPosition === 'NONE' && row.noOpeningPositionCompatible === true && row.positionQuantity === 0
+            && row.periodMembership === 'OPENING_COMPATIBLE' && isDate(row.occurredOn) && row.occurredOn < history.periodStart
         : row.periodMembership === 'IN_PERIOD' && isDate(row.occurredOn)
           && row.occurredOn >= history.periodStart && row.occurredOn <= history.periodEnd;
       const amountBasisValid = !['COUPON', 'INTEREST', 'INCOME', 'AMORTIZATION', 'PARTIAL_REDEMPTION', 'TOTAL_REDEMPTION', 'PRINCIPAL_RETURN'].includes(row.semanticType)
@@ -98,9 +101,14 @@
         && sourcePeriodMatches && periodProof && amountBasisValid;
     });
     if (!validRows) return false;
+    const openingType = history.openingPosition === 'NONE' ? 'NO_OPENING_POSITION'
+      : history.openingPosition === 'KNOWN' ? 'OPENING_POSITION' : null;
+    const openingRows = relevant.filter(row => ['OPENING_POSITION', 'NO_OPENING_POSITION'].includes(row?.semanticType));
+    if (!openingType || openingRows.length !== 1 || openingRows[0].semanticType !== openingType) return false;
     const isMatchingEvent = (row, item, contribution) => row.stableEventId === item?.id
       && row.semanticType === item?.type && row.occurredOn === item?.occurredOn
       && toCents(row.amount) !== null && toCents(row.amount) === toCents(item?.amount)
+      && (item.quantity === undefined || row.quantity === item.quantity)
       && (contribution
         ? row.status === 'CONFIRMED'
         : row.status === 'RECEIVED' || ['IR', 'IOF'].includes(row.semanticType) && row.status === 'PAID')

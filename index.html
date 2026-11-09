@@ -10070,12 +10070,13 @@ function persistFinancialImportState(snapshot){
   restoreFinancialImportState(snapshot);
   return false;
 }
-function confirmImportedCostBasisCompleteness(sourceLabel='importação'){
+function confirmLedgerImport(sourceLabel='importação') {
   return confirm([
-    `A ${sourceLabel} recalculará quantidades e custo médio com base em todo o Histórico de aportes.`,
+    `A ${sourceLabel} registrará movimentações no Histórico de aportes.`,
     '',
-    'Confirme somente após verificar que posição inicial, compras, vendas, transferências e eventos corporativos do ativo estão completos e classificados corretamente.',
-    'Se a posição inicial ou qualquer parte do histórico for desconhecida, cancele. A prévia não certifica o custo médio.'
+    'Esta confirmação autoriza somente o registro; posições e custos médios seguem preservados enquanto a cobertura histórica não estiver comprovada.',
+    '',
+    'Deseja continuar?'
   ].join('\n'));
 }
 function save(){
@@ -16140,7 +16141,8 @@ function confirmBrokerNoteImport(){
     alert('Existem ativos pendentes ou linhas inválidas. Corrija o ticker antes de importar.');
     return;
   }
-  if(!confirmImportedCostBasisCompleteness('importação da nota Inter')) return {status:'COST_BASIS_REVIEW_CANCELLED'};
+
+  if(!confirmLedgerImport('nota Inter')) return;
   if(detectBrokerNoteDuplicate(note) && !confirm('Esta nota parece já ter sido importada. Continuar poderá duplicar posições e valores. Deseja realmente importar novamente?')) return;
   const adjusted=rows.map(row=>brokerNoteAdjustedRow(row,note,!!state.rateCosts));
   const now=Date.now();
@@ -16207,7 +16209,7 @@ function confirmBrokerNoteImport(){
   S.aportesViewMode='extrato';
   S.aportesFilter='todos';
   S.aportesPage=1;
-  syncAssetsFromAportes(false);
+
   if(!persistFinancialImportState(beforeImport)){
     render();
     alert('A gravação da nota não foi confirmada. O estado anterior foi restaurado e novas gravações estão bloqueadas; recarregue e confira a carteira.');
@@ -16216,7 +16218,7 @@ function confirmBrokerNoteImport(){
   }
   fetchQuotes(false);
   scheduleAutoProventosGratis('nota-inter-pdf');
-  toast(`✅ Nota Inter ${note.noteNumber} importada com sucesso.`);
+  toast('Nota Inter registrada no Histórico; posições e custos atuais foram preservados sem recálculo.');
   importCenterFinishReview('IMPORTED','Nota Inter confirmada e aplicada.',records.length);
   return {status:'APPLIED',imported:records.length};
 }
@@ -16231,7 +16233,7 @@ function brokerNoteImportSuccessHtml(){
   if(!result) return '';
   return `<div class="note-overlay" role="dialog" aria-modal="true" onclick="if(event.target===this) closeBrokerNoteImportSuccess()">
     <div class="note-modal" style="max-width:680px">
-      <div class="note-head"><div class="note-title"><div><h3>Nota importada com sucesso</h3><p>Os lançamentos foram enviados ao Extrato de Aportes e os painéis foram recalculados.</p></div></div></div>
+      <div class="note-head"><div class="note-title"><div><h3>Nota importada com sucesso</h3><p>Os lançamentos foram registrados no Extrato de Aportes. Posições e custos só são recalculados quando a cobertura do histórico está comprovada.</p></div></div></div>
       <div class="note-body">
         <div class="broker-note-success">
           <div class="broker-note-success-icon">✓</div>
@@ -16244,7 +16246,7 @@ function brokerNoteImportSuccessHtml(){
               <div class="broker-note-success-item"><div class="broker-note-field-label">Custos</div><div class="broker-note-line-value">${result.rateCosts?'Rateados':'Não rateados'}</div></div>
               <div class="broker-note-success-item"><div class="broker-note-field-label">Custos da nota</div><div class="broker-note-line-value">${fmt(result.costs)}</div></div>
             </div>
-            <div class="broker-note-status" style="margin-top:10px">Dashboard, Ativos e Patrimônio foram atualizados pelo fluxo atual de recálculo da carteira.</div>
+            <div class="broker-note-status" style="margin-top:10px">O Histórico foi atualizado. Cada posição só é recalculada quando a cobertura necessária está comprovada.</div>
           </div>
         </div>
         <div class="note-foot"><div class="hint">A sincronização com a nuvem seguirá a fila normal do aplicativo.</div><button class="btn bsv" onclick="closeBrokerNoteImportSuccess()">Abrir Extrato de Aportes</button></div>
@@ -16307,12 +16309,13 @@ function applyNotaCorretoraTrades(items, noteKey, noteNumber, tradeDate, broker=
     return true;
   });
   if(ambiguousLegacyRows.length) return {status:'REVIEW_REQUIRED'};
-  if(costBasisReviewed!==true && !confirmImportedCostBasisCompleteness('importação da nota de corretagem')) return {status:'COST_BASIS_REVIEW_CANCELLED'};
+
   const beforeImport=snapshotFinancialImportState(['assets','aportes','learnMeta','wallets','activeWalletId']);
   if(!beforeImport) return {status:'REVIEW_REQUIRED'};
+
   try{
     S.aportes=[...novos,...S.aportes];
-    syncAssetsFromAportes(false);
+
     items.forEach(it=>learnTickerMeta(it.ticker, it.type, it.sector, true));
     if(!persistFinancialImportState(beforeImport)){
       return {status:'SAVE_OUTCOME_UNKNOWN'};
@@ -16324,7 +16327,7 @@ function applyNotaCorretoraTrades(items, noteKey, noteNumber, tradeDate, broker=
   render();
   fetchQuotes(false);
   scheduleAutoProventosGratis('nota');
-  toast(`✅ ${novos.length} lançamento(ões) importado(s) da nota da corretora.`);
+  toast('Lançamentos registrados no Histórico; posições e custos atuais foram preservados sem recálculo.');
   return {status:'APPLIED',imported:novos.length};
 }
 function openNotaReview(parsed, fileName){
@@ -16398,8 +16401,9 @@ function importNotaReview(){
   if(!canEditFromThisTab('importar nota de corretagem')) return;
   const rows=S.noteReview.rows.filter(r=>r.include!==false && r.ticker && Number(r.qty)>0 && Number(r.price)>0);
   if(!rows.length){ alert('Selecione pelo menos um lançamento válido para importar.'); return; }
+  if(!confirmLedgerImport('nota de corretagem')) return;
   rememberScroll();
-  if(!confirmImportedCostBasisCompleteness('importação da nota de corretagem')) return;
+
   const result=applyNotaCorretoraTrades(rows.map(r=>({...r.sourceItem,ticker:r.ticker,operation:r.operation,qty:r.qty,price:r.price,type:r.type,sector:r.sector,product:r.product})),S.noteReview.noteKey,S.noteReview.noteNumber,S.noteReview.tradeDate,S.noteReview.broker,S.noteReview.noteIdentity,S.noteReview.completenessStatus,S.noteReview.identityStatus,true);
   if(result?.status==='REVIEW_REQUIRED'){
     alert('Não foi possível confirmar a identidade da nota. A conferência foi mantida para revisão.');
@@ -18044,7 +18048,7 @@ function applyB3MovementImported(rows, importDate, costBasisReviewed=false){
     toast(`Movimentações importadas: 0 novas, ${duplicateCount} duplicadas ignoradas, ${ignoredCount} ignoradas.`);
     return;
   }
-  if(costBasisReviewed!==true && !confirmImportedCostBasisCompleteness('importação de movimentações B3')) return {status:'COST_BASIS_REVIEW_CANCELLED'};
+
   const beforeImport=snapshotFinancialImportState(['aportes','assets','learnMeta','wallets','activeWalletId','b3MovementReview']);
   if(!beforeImport){
     alert('Não foi possível preparar uma cópia segura do estado. Nenhuma movimentação foi aplicada.');
@@ -18090,7 +18094,7 @@ function applyB3MovementImported(rows, importDate, costBasisReviewed=false){
     });
   });
   S.aportes=[...addAportes,...S.aportes];
-  syncAssetsFromAportes(false);
+
   [...finalRows].forEach(r=>learnTickerMeta(r.ticker, r.type, r.sector, true));
   if(!persistFinancialImportState(beforeImport)){
     render();
@@ -18100,8 +18104,8 @@ function applyB3MovementImported(rows, importDate, costBasisReviewed=false){
   }
   S.b3MovementReview=null;
   render();
-  b3ImportCompletedMessage(`Movimentações importadas na carteira "${gate.name}": ${addAportes.length} novas, ${duplicateCount} duplicadas ignoradas, ${ignoredCount} ignoradas.`);
-  importCenterFinishReview(addAportes.length?'IMPORTED':'NO_NEW_RECORDS',addAportes.length?'Movimentações confirmadas e aplicadas.':'Nenhuma movimentação nova elegível; nenhum registro foi gravado.',addAportes.length);
+  b3ImportCompletedMessage('Movimentações registradas no Histórico; posições e custos atuais foram preservados sem recálculo.');
+  importCenterFinishReview(addAportes.length?'IMPORTED':'NO_NEW_RECORDS',addAportes.length?'Movimentações registradas no Histórico; posições e custos preservados sem recálculo.':'Nenhuma movimentação nova elegível; nenhum registro foi gravado.',addAportes.length);
   return {status:'APPLIED',added:addAportes.length,duplicates:duplicateCount,ignored:ignoredCount};
 }
 function importB3MovementReview(){
@@ -18115,7 +18119,8 @@ function importB3MovementReview(){
   const summary=b3MovementSummary();
   if(!b3ConfirmApplyToActiveWallet('as movimentações B3 no Histórico de aportes', rows.length, summary.duplicates, summary.incomplete+summary.revisar, true)) return;
   const importDate=S.b3MovementReview.importDate || new Date().toLocaleDateString('pt-BR');
-  applyB3MovementImported(rows, importDate, true);
+  const applied=applyB3MovementImported(rows, importDate);
+
 }
 function b3MovementReviewModal(){
   const r=S.b3MovementReview;
@@ -19337,10 +19342,63 @@ function aporteMovementKind(a){
   if(op==='aporte' || op==='entrada') return 'aporte';
   return 'desconhecido';
 }
+function isReconciliationPendingMovement(a){
+  return String(a?.reconciliationStatus||'').trim().toUpperCase()==='PENDING_RECONCILIATION';
+}
+function financialMovementsForCalculations(){
+  return (S.aportes||[]).filter(movement=>!isReconciliationPendingMovement(movement));
+}
+function hasPendingSaleForTicker(ticker,excludeId=''){
+  const normalized=cleanAssetCode(ticker);
+  return Boolean(normalized&&(S.aportes||[]).some(row=>cleanAssetCode(row?.ticker)===normalized
+    && isReconciliationPendingMovement(row)&&String(row.id)!==String(excludeId)));
+}
+function pendingSaleIdentityBlocker(ticker,excludeId=''){
+  const normalized=cleanAssetCode(ticker);
+  if(!normalized) return 'Informe um ativo válido para registrar a venda.';
+  const matches=(S.assets||[]).filter(asset=>cleanAssetCode(asset?.ticker)===normalized);
+  if(matches.length>1) return 'Venda bloqueada: há mais de uma posição com esta identidade. Reconcilie o ativo antes de continuar.';
+  if(hasPendingSaleForTicker(normalized,excludeId)) return 'Venda bloqueada: este ativo possui movimentação PENDENTE DE RECONCILIAÇÃO. Reconcilie o histórico antes de registrar outra venda.';
+  return '';
+}
+function createManualRfOpeningPosition(reg){
+  if(normalizeType(reg?.type||reg?.asset_type||'','')!=='Renda Fixa'
+    || !['compra','buy','purchase','aporte'].includes(String(reg?.operation||reg?.op||'').toLowerCase())
+    || String(reg?.source||'').toLowerCase()!=='manual-rf') return false;
+  const ticker=cleanAssetCode(reg.ticker);
+  if(!ticker) return false;
+  if((S.assets||[]).some(asset=>cleanAssetCode(asset?.ticker)===ticker)) return false;
+  if((S.aportes||[]).some(row=>String(row?.id)!==String(reg.id)&&cleanAssetCode(row?.ticker)===ticker)) return false;
+  const applied=Number(reg.rf_applied_value??reg.fixed_initial_value);
+  const gross=Number(reg.rf_gross_value??reg.fixed_gross_value);
+  const currentCandidates=[reg.rf_liquid_value,reg.rf_gross_value,reg.fixed_gross_value]
+    .filter(value=>value!==null&&value!==undefined&&String(value).trim()!=='').map(Number);
+  const current=currentCandidates.find(value=>Number.isFinite(value)&&value>0);
+  if(!String(reg.name||reg.rf_name||'').trim()||!String(reg.date||reg.rf_application_date||'').trim()
+    || !Number.isFinite(applied)||applied<=0 || !Number.isFinite(current)||current<=0) return false;
+  S.assets=[...(S.assets||[]),{
+    ...reg,
+    id:reg.id,
+    ticker,
+    type:'Renda Fixa',
+    qty:1,
+    avg_price:Number.isFinite(applied)&&applied>0?applied:null,
+    current_price:Number.isFinite(current)&&current>0?current:null,
+    fixed_initial_value:Number.isFinite(applied)&&applied>0?applied:null,
+    fixed_current_value:Number.isFinite(current)&&current>0?current:null,
+    fixed_gross_value:Number.isFinite(gross)&&gross>0?gross:null,
+    rf_applied_value:Number.isFinite(applied)&&applied>0?applied:null,
+    rf_liquid_value:Number.isFinite(current)&&current>0?current:null,
+    rf_gross_value:Number.isFinite(gross)&&gross>0?gross:null,
+    source:'manual-rf',
+  }];
+  return true;
+}
 function isNeutralMovement(a){
-  return aporteMovementKind(a)==='outro';
+  return isReconciliationPendingMovement(a)||aporteMovementKind(a)==='outro';
 }
 function aporteMovementLabel(a){
+  if(isReconciliationPendingMovement(a)) return 'PENDENTE DE RECONCILIAÇÃO';
   const kind=aporteMovementKind(a);
   if(kind==='compra') return 'Compra';
   if(kind==='venda') return 'Venda';
@@ -19433,11 +19491,11 @@ function quickMovementBuildAporteFromFields(kind){
     const rfLiquid=rfLiquidState.value;
     const rfIrIof=rfIrIofState.value;
     const rfUnavailable=rfUnavailableState.value;
-    if(!rfApplied && !rfGross && !rfLiquid) return {error:'Preencha ao menos um valor: aplicado, bruto ou líquido.', field:'qm-rf-applied'};
+    if(!(rfApplied>0)) return {error:'Informe o valor aplicado para registrar a base do título.', field:'qm-rf-applied'};
     const ticker=cleanAssetCode(String(document.getElementById('qm-rf-name')?.value||rfName||`${rfSubtype} ${rfAppDate}`));
     const value=Math.max(rfApplied, rfGross, rfLiquid);
-    const currentValue=rfLiquid>0 ? rfLiquid : (rfGross>0 ? rfGross : (rfApplied>0 ? rfApplied : 0));
-    const appliedValue=rfApplied>0 ? rfApplied : (rfGross>0 ? rfGross : (rfLiquid>0 ? rfLiquid : 0));
+    const currentValue=rfLiquid>0 ? rfLiquid : (rfGross>0 ? rfGross : 0);
+    const appliedValue=rfApplied;
     return {
       kind:next,
       reg:{
@@ -19648,6 +19706,17 @@ function saveQuickMovement(){
   }
   const reg=built.reg;
   const editId=S.quickMovementEditId;
+  if(String(reg.operation||reg.op||'').toLowerCase()==='venda'){
+    const blocker=pendingSaleIdentityBlocker(reg.ticker,editId||'');
+    if(blocker){
+      S.quickMovementSaving=false;
+      S.quickMovementError=blocker;
+      S.quickMovementErrorField='';
+      render();
+      return;
+    }
+    reg.reconciliationStatus='PENDING_RECONCILIATION';
+  }
   const draftBeforeClose=S.quickMovementDraft;
   const financialSnapshot=snapshotFinancialImportState(['aportes','proventos','assets','wallets','activeWalletId','learnMeta']);
   S.quickMovementOpen=false;
@@ -19682,18 +19751,21 @@ function saveQuickMovement(){
     S.aportes.unshift(reg);
     if(kind==='renda-fixa'){
       learnTickerMeta(reg.ticker, 'Renda Fixa', reg.sector, true);
-      syncAssetsFromAportes(false,false);
+      const createdManualRfPosition=createManualRfOpeningPosition(reg);
+      const syncResult=syncAssetsFromAportes(false,false);
       if(!persistFinancialImportState(financialSnapshot)) throw new Error('QUICK_MOVEMENT_PERSIST_FAILED');
-      toast(quickMovementSuccessText(reg,kind));
+      toast(createdManualRfPosition ? quickMovementSuccessText(reg,kind)
+        : !financialSyncUpdatedAllTickers(syncResult,[reg.ticker]) ? 'Movimentação salva no histórico; posição e custo médio preservados porque a cobertura não foi comprovada.' : quickMovementSuccessText(reg,kind));
       fetchQuotes(false);
       scheduleAutoProventosGratis('aporte-rf');
       persisted=true;
       return;
     }
     learnTickerMeta(reg.ticker, reg.type, reg.sector, true);
-    syncAssetsFromAportes(false,false);
+    const syncResult=syncAssetsFromAportes(false,false);
     if(!persistFinancialImportState(financialSnapshot)) throw new Error('QUICK_MOVEMENT_PERSIST_FAILED');
-    toast(quickMovementSuccessText(reg,kind));
+    toast(isReconciliationPendingMovement(reg) ? 'Venda registrada como PENDENTE DE RECONCILIAÇÃO. Quantidade, custo médio e patrimônio foram preservados.'
+      : !financialSyncUpdatedAllTickers(syncResult,[reg.ticker]) ? 'Movimentação salva no histórico; posição e custo médio preservados porque a cobertura não foi comprovada.' : quickMovementSuccessText(reg,kind));
     fetchQuotes(false);
     scheduleAutoProventosGratis('aporte');
     persisted=true;
@@ -22655,7 +22727,7 @@ function irpfBuildYearReport(year){
   }));
   const holdings=new Map();
   const carryByBucket=Object.fromEntries(bucketOrder.map(b=>[b,0]));
-  const txs=[...S.aportes]
+  const txs=[...financialMovementsForCalculations()]
     .map(a=>({...a,_dt:parseAnyDate(a.date)}))
     .filter(a=>a._dt && a._dt.getFullYear()===y)
     .sort((a,b)=>a._dt-b._dt||((Number(a.id)||0)-(Number(b.id)||0)));
@@ -22854,6 +22926,8 @@ function irpfAlertItems(report){
     .slice(0,12);
   const rfNoDue=rfAssets.filter(a=>!assetRfMaturityDate(a)).slice(0,12);
   const rfNoCurrent=rfAssets.filter(a=>!assetRfCurrentValueMeta(a).source || assetRfCurrentValueMeta(a).source==='valor aplicado').slice(0,12);
+  const pendingSales=(S.aportes||[]).filter(isReconciliationPendingMovement).slice(0,12);
+  pendingSales.forEach(row=>items.push({tone:'warn',label:'Venda pendente de reconciliação',value:String(row.ticker||'Ativo'),hint:'Esta movimentação foi excluída dos cálculos do relatório até a reconciliação do histórico.'}));
   noType.forEach(a=>items.push({tone:'warn',label:'Ativo sem tipo',value:String(a.ticker||a.name||'—'),hint:'Verifique o tipo antes de fechar a declaração.'}));
   noQty.forEach(a=>items.push({tone:'warn',label:'Ativo sem quantidade',value:String(a.ticker||a.name||'—'),hint:'A posição precisa ter quantidade para compor Bens e Direitos.'}));
   noAvg.forEach(a=>items.push({tone:'warn',label:'Ativo sem preço médio',value:String(a.ticker||a.name||'—'),hint:'O IRPF usa custo de aquisição como referência principal.'}));
@@ -25240,7 +25314,7 @@ function v257QualityModel(legacySnapshot=dataQualitySnapshot()){
   return engine.build({
     legacyIssues:legacySnapshot?.issues||[],
     assets:S.assets||[],
-    transactions:S.aportes||[],
+    transactions:financialMovementsForCalculations(),
     xpStatus:'FIXTURE_REQUIRED',
     btgStatus:'FIXTURE_REQUIRED',
     corporateEventsMode:'SHADOW_READ_ONLY',
@@ -25737,11 +25811,86 @@ const pointsMarkup=values.map((v,i)=>{
   </svg>`;
 }
 
-function syncAssetsFromAportes(showMsg=false,persistState=true){
+function financialSyncUpdatedAllTickers(syncResult,tickers){
+  const updated=new Set(syncResult?.recalculatedTickers||[]);
+  const expected=[...new Set((tickers||[]).map(cleanAssetCode).filter(Boolean))];
+  return expected.length>0 && expected.every(ticker=>updated.has(ticker));
+}
+function syncAssetsFromAportes(showMsg=false,persistState=true,coverageByTicker={}){
   if(typeof isLocalTestReadOnlyMode==='function' && isLocalTestReadOnlyMode()) return;
   if(isProtectedReadOnlyQaBoot()) return;
+  const incompleteCoverage=new Map();
+  const blockedTickers=new Set();
+  const hasCompleteCoverage=ticker=>{
+    const coverage=coverageByTicker?.[ticker];
+    const history=coverage?.history;
+    const rows=movementsByTicker.get(ticker)||[];
+    const events=rows.map(row=>{
+      const operation=String(row.operation||row.op||'compra').toLowerCase();
+      const date=parseAnyDate(row.date);
+      const quantity=Number(row.qty);
+      const price=Number(row.price);
+      const amount=Number(row.totalValue??row.value??(quantity*price));
+      if(row.id==null||!['compra','buy','purchase','aporte','venda','sell'].includes(operation)||!date||!Number.isFinite(quantity)||quantity<=0||!Number.isFinite(price)||price<=0||!Number.isFinite(amount)) return null;
+      return {id:String(row.id),type:['venda','sell'].includes(operation)?'SALE':'PURCHASE',occurredOn:toISODate(date),amount,quantity,status:'CONFIRMED'};
+    });
+    return window.HistoricalCoverageEngine?.matchesVerifiedEvents?.(coverage,events)===true
+      && coverage.costBasis==='COMPLETE' && history?.status==='COMPLETE'
+      && history.expectedEventsMatched===true && history.sourceEventsMatched===true && history.allEventsRepresented===true
+      && history.duplicatesResolved===true && history.sourceOverlapResolved===true
+      && history.openingPosition==='NONE';
+  };
+  const markIncomplete=(ticker,blocker)=>{
+    if(!incompleteCoverage.has(ticker)) incompleteCoverage.set(ticker,{status:'PARTIAL',blockers:[]});
+    const coverage=incompleteCoverage.get(ticker);
+    if(blocker&&!coverage.blockers.includes(blocker)) coverage.blockers.push(blocker);
+  };
+  (S.aportes||[]).filter(isReconciliationPendingMovement).forEach(movement=>{
+    const ticker=cleanAssetCode(movement?.ticker||'');
+    if(!ticker) return;
+    markIncomplete(ticker,'PENDING_RECONCILIATION');
+    blockedTickers.add(ticker);
+  });
+  const movementsByTicker=new Map();
+  (S.aportes||[]).filter(movement=>!isNeutralMovement(movement)).forEach(movement=>{
+    const ticker=cleanAssetCode(movement?.ticker||'');
+    if(!ticker) return;
+    if(!movementsByTicker.has(ticker)) movementsByTicker.set(ticker,[]);
+    movementsByTicker.get(ticker).push(movement);
+  });
+  const existingAssetsByTicker=new Map();
   const keep={};
-  S.assets.forEach(a=>keep[a.ticker]={...a});
+  (S.assets||[]).forEach(asset=>{
+    const ticker=cleanAssetCode(asset?.ticker||'');
+    if(!ticker) return;
+    if(!existingAssetsByTicker.has(ticker)) existingAssetsByTicker.set(ticker,[]);
+    existingAssetsByTicker.get(ticker).push(asset);
+    keep[ticker]={...asset};
+    if(!hasCompleteCoverage(ticker)){
+      markIncomplete(ticker,coverageByTicker?.[ticker]?.history?.openingPosition==='KNOWN'?'OPENING_POSITION_RECONSTRUCTION_UNSUPPORTED':'HISTORY_COVERAGE_UNPROVEN');
+      blockedTickers.add(ticker);
+    }
+  });
+  existingAssetsByTicker.forEach((assets,ticker)=>{
+    if(assets.length>1){
+      markIncomplete(ticker,'ASSET_IDENTITY_AMBIGUOUS');
+      blockedTickers.add(ticker);
+    }
+  });
+  (S.aportes||[]).forEach(movement=>{
+    const ticker=cleanAssetCode(movement?.ticker||'');
+    if(!ticker||isNeutralMovement(movement)) return;
+    if(!hasCompleteCoverage(ticker)){
+      markIncomplete(ticker,coverageByTicker?.[ticker]?.history?.openingPosition==='KNOWN'?'OPENING_POSITION_RECONSTRUCTION_UNSUPPORTED':'HISTORY_COVERAGE_UNPROVEN');
+      blockedTickers.add(ticker);
+    }
+    const type=String(movement.type||movement.asset_type||'').trim();
+    const isRF=normalizeType(type||'Ação','Ação')==='Renda Fixa';
+    const quantity=Number(movement.qty);
+    if(!Number.isFinite(quantity)||quantity<=0){ markIncomplete(ticker,'MOVEMENT_QUANTITY_UNKNOWN'); blockedTickers.add(ticker); }
+    if(!isRF&&(!Number.isFinite(Number(movement.price))||Number(movement.price)<=0)){ markIncomplete(ticker,'MOVEMENT_PRICE_UNKNOWN'); blockedTickers.add(ticker); }
+    if(!String(movement.date||'').trim()){ markIncomplete(ticker,'MOVEMENT_DATE_UNKNOWN'); blockedTickers.add(ticker); }
+  });
   const grouped={};
   const movs=[...S.aportes].sort((a,b)=>{
     const da=parseAnyDate(a.date)?.getTime()||0,db=parseAnyDate(b.date)?.getTime()||0;
@@ -25834,7 +25983,8 @@ function syncAssetsFromAportes(showMsg=false,persistState=true){
     }
     grouped[t].qty+=q; grouped[t].total+=q*pr;
   });
-  S.assets=Object.values(grouped).filter(g=>g.qty>0.000001).map(g=>{
+  const recalculatedTickers=[...new Set([...Object.keys(keep),...Object.keys(grouped)])].filter(ticker=>!blockedTickers.has(cleanAssetCode(ticker)));
+  S.assets=Object.values(grouped).filter(g=>g.qty>0.000001&&!blockedTickers.has(cleanAssetCode(g.ticker))).map(g=>{
     const old=keep[g.ticker]||{},m=metaTicker(g.ticker),avg=g.qty>0?g.total/g.qty:0;
     const isRF=normalizeType(g.type||old.type||m.type||'Ação','Ação')==='Renda Fixa';
     const oldApplied=Number(old.fixed_initial_value)||Number(old.avg_price)||avg;
@@ -25909,19 +26059,28 @@ function syncAssetsFromAportes(showMsg=false,persistState=true){
       };
     });
   }
-  const importedPositionAssets=Object.values(keep)
-    .filter(a=>{
-      const tk=String(a?.ticker||'').trim().toUpperCase();
-      return tk && !grouped[tk] && (rfPositionImportSourceTag(a?.source) || rfPositionImportSourceTag(a?.fixed_source));
-    })
-    .map(a=>({...a}));
-  if(importedPositionAssets.length){
-    S.assets=[...S.assets, ...importedPositionAssets].sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR'));
+  const importedPositionAssets=[...existingAssetsByTicker.values()].flat()
+    .filter(asset=>{
+      const ticker=String(asset?.ticker||'').trim().toUpperCase();
+      return ticker && !grouped[ticker] && (rfPositionImportSourceTag(asset?.source) || rfPositionImportSourceTag(asset?.fixed_source));
+    });
+  const preservedPositions=[...blockedTickers].flatMap(ticker=>existingAssetsByTicker.get(ticker)||[]);
+  const preservedAssets=[...new Set([...preservedPositions,...importedPositionAssets])];
+  if(preservedAssets.length){
+    S.assets=[...S.assets,...preservedAssets.filter(asset=>!S.assets.some(current=>asset.id!=null && String(current.id)===String(asset.id)))]
+      .sort((a,b)=>String(a.ticker||'').localeCompare(String(b.ticker||''),'pt-BR'));
   }
   autoDY(persistState);
   if(persistState) save();
-  if(showMsg) toast('✅ Carteira recalculada pelos aportes!');
+  if(showMsg) toast(blockedTickers.size
+    ? `Posições preservadas em ${incompleteCoverage.size} ativo(s): histórico ou dados da movimentação sem cobertura suficiente.`
+    : '✅ Carteira recalculada pelos aportes!');
   render();
+  return Object.freeze({
+    status:blockedTickers.size?'PARTIAL':'RECALCULATED',
+    coverage:Object.freeze(Object.fromEntries([...incompleteCoverage].map(([ticker,coverage])=>[ticker,Object.freeze({status:coverage.status,blockers:Object.freeze([...coverage.blockers])})]))),
+    recalculatedTickers:Object.freeze(recalculatedTickers),
+  });
 }
 function qtyAtDate(ticker,refDate){
   const t=String(ticker||'').toUpperCase(); let qty=0;
@@ -27501,8 +27660,10 @@ function reportsSnapshot(){
     const audit=dataAuditSnapshot();
     const filteredProventos=(S.proventos||[]).filter(p=>reportsDateAllowed(p.date));
     const filteredAportes=(S.aportes||[]).filter(a=>reportsDateAllowed(a.date));
+    const pendingReconciliationCount=filteredAportes.filter(isReconciliationPendingMovement).length;
+    const confirmedAportes=filteredAportes.filter(a=>!isReconciliationPendingMovement(a));
     const incomePeriodTotal=filteredProventos.reduce((sum,item)=>sum+(Number.isFinite(Number(item?.value))?Number(item.value):0),0);
-    const movementCounts=filteredAportes.reduce((counts,movement)=>{
+    const movementCounts=confirmedAportes.reduce((counts,movement)=>{
       const operation=String(movement?.movementKind||movement?.kind||movement?.operation||movement?.op||'').trim().toLowerCase();
       const type=String(movement?.type||movement?.asset_type||'').trim().toLowerCase();
       const kind=operation==='venda'||operation==='sell'?'venda':(operation==='provento'||operation==='dividendo'||operation==='dividendos'||operation==='jcp'||operation==='rendimento'?'provento':(operation==='renda-fixa'||type==='renda fixa'||type==='tesouro direto'?'renda-fixa':(operation==='outro'||operation==='neutro'||type==='outro'?'outro':'compra')));
@@ -27525,6 +27686,7 @@ function reportsSnapshot(){
       assetsCount:(S.assets||[]).length,
       proventosCount:filteredProventos.length,
       aportesCount:filteredAportes.length,
+      pendingReconciliationCount,
       movementCounts,
       fixedCount:fixed.assets.length,
       auditCount:audit.alerts.length
@@ -27658,7 +27820,7 @@ function reportAuditRows(){
 let v228TimelineUi={type:'all',status:'all',source:'all',search:''};
 function v228TimelineEvents(){
   const corporate=Array.isArray(window.__CORPORATE_EVENTS_RUNTIME__?.events)?window.__CORPORATE_EVENTS_RUNTIME__.events:[];
-  return globalThis.PortfolioEventTimeline?.buildTimeline?.({proventos:S.proventos||[],aportes:S.aportes||[],rfEvents:S.rfEvents||[],corporateEvents:corporate},{period:reportsPeriod(),now:new Date()})||[];
+  return globalThis.PortfolioEventTimeline?.buildTimeline?.({proventos:S.proventos||[],aportes:financialMovementsForCalculations(),rfEvents:S.rfEvents||[],corporateEvents:corporate},{period:reportsPeriod(),now:new Date()})||[];
 }
 function v228TimelineValue(event){return event.value===null?'—':fmt(event.value);}
 function v228TimelineStatus(status){return ({REALIZED:'Realizado',REFERENCE:'Referência',SHADOW:'Shadow',UNAVAILABLE:'Indisponível',EXPECTED:'Informado'})[status]||status||'Indisponível';}
@@ -29758,10 +29920,10 @@ function v273HealthEvidenceText(label,item){
 function v254FiscalPanel(){
   const engine=globalThis.TaxCostBasisIntelligence;
   if(!engine?.buildTaxIntelligence) return '';
-  const result=engine.buildTaxIntelligence({transactions:S.aportes||[],incomeEvents:S.proventos||[]});
+  const result=engine.buildTaxIntelligence({transactions:financialMovementsForCalculations(),incomeEvents:S.proventos||[]});
   const historyEngine=globalThis.HistoricalReconstructionHardening;
-  const historyAudit=historyEngine?.buildHistoricalReconstructionAudit?.({transactions:S.aportes||[],currentPositions:S.assets||[],yearEndYears:[new Date().getFullYear()-1,new Date().getFullYear()]})||null;
-  const completeness=historyEngine?.buildHistoricalReconstructionCompleteness?.({transactions:S.aportes||[],currentPositions:S.assets||[],yearEndYears:[new Date().getFullYear()-1,new Date().getFullYear()],corporateEvents:[],authoritativeCostBasis:result})||null;
+  const historyAudit=historyEngine?.buildHistoricalReconstructionAudit?.({transactions:financialMovementsForCalculations(),currentPositions:S.assets||[],yearEndYears:[new Date().getFullYear()-1,new Date().getFullYear()]})||null;
+  const completeness=historyEngine?.buildHistoricalReconstructionCompleteness?.({transactions:financialMovementsForCalculations(),currentPositions:S.assets||[],yearEndYears:[new Date().getFullYear()-1,new Date().getFullYear()],corporateEvents:[],authoritativeCostBasis:result})||null;
   const money=value=>value===null||value===undefined?'—':fmt(value);
   const status=result.costBasis?.status||'UNAVAILABLE';
   const positions=(result.positions||[]).filter(row=>row.ticker);
@@ -30591,8 +30753,8 @@ function assetDetailPage(asset){
   const applied=assetAppliedValue(asset), current=isRF?(rfValues(asset).hasExplicitCurrent?assetCurrentValue(asset):null):assetCurrentValueForDisplay(asset);
   const result=isRF?assetJurosValue(asset):(Number.isFinite(current)&&Number.isFinite(applied)?current-applied:null), rentab=assetRentabPct(asset);
   const records=assetDetailRecords(asset), income=assetDetailIncomeRecords(asset), documents=Array.isArray(asset?.documents)?asset.documents.filter(Boolean):[];
-  const taxModel=globalThis.TaxCostBasisIntelligence?.buildTaxIntelligence?.({transactions:S.aportes||[],incomeEvents:S.proventos||[],yearEndYears:[new Date().getFullYear()-1,new Date().getFullYear()]})||null;
-  const historyAudit=globalThis.HistoricalReconstructionHardening?.buildHistoricalReconstructionAudit?.({transactions:S.aportes||[],currentPositions:S.assets||[],yearEndYears:[new Date().getFullYear()-1,new Date().getFullYear()]})||null;
+  const taxModel=globalThis.TaxCostBasisIntelligence?.buildTaxIntelligence?.({transactions:financialMovementsForCalculations(),incomeEvents:S.proventos||[],yearEndYears:[new Date().getFullYear()-1,new Date().getFullYear()]})||null;
+  const historyAudit=globalThis.HistoricalReconstructionHardening?.buildHistoricalReconstructionAudit?.({transactions:financialMovementsForCalculations(),currentPositions:S.assets||[],yearEndYears:[new Date().getFullYear()-1,new Date().getFullYear()]})||null;
   const detailTicker=String(asset?.ticker||'').trim().toUpperCase();
   const detailQuoteMeta=quoteTrustMeta(asset);
   const detailQuote=detailTicker?(S.quotes||{})[detailTicker]||null:null;
@@ -30620,7 +30782,7 @@ function assetDetailPage(asset){
     transactionSource:{getSourceForTicker:(t)=>detailAporteOrigin,getCoverageForTicker:(t)=>records.length?(detailReconciliation?.status==='ALL_MATCH'?'FULL':'PARTIAL'):'UNAVAILABLE'},
     documents:{getDocumentsForAsset:(t)=>({items:documents,status:documents.length?'AVAILABLE':'UNAVAILABLE'})},
   };
-  const detailIntelligence=globalThis.AssetDetailIntelligence?.buildAssetDetailIntelligence?.({asset,transactions:S.aportes||[],incomeEvents:S.proventos||[],historicalAudit:historyAudit,taxModel,position:{quantity:asset?.qty,averageCost:asset?.avg_price,currentValue:current,result},options:detailIntelligenceOptions})||null;
+  const detailIntelligence=globalThis.AssetDetailIntelligence?.buildAssetDetailIntelligence?.({asset,transactions:financialMovementsForCalculations(),incomeEvents:S.proventos||[],historicalAudit:historyAudit,taxModel,position:{quantity:asset?.qty,averageCost:asset?.avg_price,currentValue:current,result},options:detailIntelligenceOptions})||null;
   const tabs=[['overview','Visão geral'],['valuation','Valuation']]; if(records.length)tabs.push(['history','Histórico']); if(income.length)tabs.push(['income','Proventos']); if(documents.length)tabs.push(['documents','Documentos']); if(detailIntelligence)tabs.push(['intelligence','Inteligência']); if(!tabs.some(([key])=>key===assetDetailTab))assetDetailTab='overview';
   const trust=assetDetailTrust(asset,isRF), resultClass=Number.isFinite(result)?(result>0?'pos':result<0?'neg':'neutral'):'';
   const valueText=Number.isFinite(current)?fmt(current):'—', subtitle=isRF?`${assetRfSubtype(asset)} · ${assetRfIndexerLabel(asset)}`:`${type}${asset?.sector?` · ${asset.sector}`:''}`;
@@ -31742,7 +31904,7 @@ function rfEconomicEvidenceForAsset(asset){
     asset,
     assets:S.assets||[],
     events:S.rfEvents||[],
-    aportes:S.aportes||[],
+    aportes:financialMovementsForCalculations(),
     linkedIncomeEvents:S.proventos||[],
     historyEvidence:null,
     currentPositionCoverage,
@@ -32789,6 +32951,7 @@ function dashLegacy(){
   twelveMonthsAgo.setDate(1);
   const movMap=new Map();
   S.aportes.forEach(a=>{
+    if(isReconciliationPendingMovement(a)) return;
     const d=parseAnyDate(a.date);
     if(!d||d<twelveMonthsAgo) return;
     const mk=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
@@ -33971,6 +34134,7 @@ function deleteAssetFull(ticker){
   const normalized=String(ticker||'').trim().toUpperCase();
   if(!normalized){ toast('⚠️ Ticker inválido.','#f87171'); return; }
   const matchTicker=value=>String(value||'').trim().toUpperCase()===normalized;
+  if((S.aportes||[]).some(row=>matchTicker(row.ticker)&&isReconciliationPendingMovement(row))){ toast('⚠️ Ativo preservado: há movimentação PENDENTE DE RECONCILIAÇÃO no ledger.','#fbbf24'); return; }
   const aportesCount=(S.aportes||[]).filter(a=>matchTicker(a.ticker)).length;
   const proventosCount=(S.proventos||[]).filter(p=>matchTicker(p.ticker)).length;
   const assetExists=(S.assets||[]).some(a=>matchTicker(a.ticker));
@@ -34583,6 +34747,7 @@ function aporteExtractRows(){
       raw:item,
       kind,
       label:aporteMovementLabel(item),
+      reconciliationStatus:isReconciliationPendingMovement(item)?'PENDING_RECONCILIATION':'',
       date:String(item.date||item.rf_application_date||item.fixed_application_date||''),
       ticker:ticker||'Movimentação',
       name:String(item.name||item.product||item.title||'').trim(),
@@ -34660,13 +34825,18 @@ function sortedAporteRows(rows=filteredAporteRows()){
 function deleteMovementLaunch(id,sourceType){
   if(!canEditFromThisTab('excluir lançamento')) return;
   const type=String(sourceType||'aporte').toLowerCase();
+  if(type!=='provento'&&isReconciliationPendingMovement((S.aportes||[]).find(a=>String(a.id)===String(id)))){
+    toast('Movimentação PENDENTE DE RECONCILIAÇÃO preservada no ledger até revisão.','#fbbf24');
+    return;
+  }
+  const removedTicker=cleanAssetCode((S.aportes||[]).find(a=>String(a.id)===String(id))?.ticker||'');
   if(!confirm('Deseja excluir este lançamento? Esta ação não pode ser desfeita.')) return;
   if(type==='provento'){
     const before=(S.proventos||[]).length;
     S.proventos=(S.proventos||[]).filter(p=>String(p.id)!==String(id));
     if(before===S.proventos.length){ toast('⚠️ Nenhum provento encontrado com esse identificador.','#f87171'); return; }
     save();
-    toast('🗑️ Lançamento excluído.');
+    toast('🗑️ Provento excluído.');
     markProventosDirty();
     render();
     return;
@@ -34675,8 +34845,8 @@ function deleteMovementLaunch(id,sourceType){
   S.aportes=(S.aportes||[]).filter(a=>String(a.id)!==String(id));
   if(before===S.aportes.length){ toast('⚠️ Nenhuma operação encontrada com esse identificador.','#f87171'); return; }
   if(String(S.editPId||'')===String(id)){ S.editPId=null; S.showP=false; S._fp=null; }
-  syncAssetsFromAportes(false);
-  toast('🗑️ Lançamento excluído.');
+  const syncResult=syncAssetsFromAportes(false);
+  toast(financialSyncUpdatedAllTickers(syncResult,[removedTicker]) ? 'Lançamento excluído e posição recalculada.' : 'Lançamento excluído; posição preservada por falta de cobertura completa.');
   scheduleAutoProventosGratis('remove-aporte');
 }
 function aporteHistoryCard(row){
@@ -34686,19 +34856,20 @@ function aporteHistoryCard(row){
   const detail=[row.type,row.sector].filter(Boolean).join(' · ') || 'Sem classificação';
   const name=row.name && row.name.toUpperCase()!==row.ticker.toUpperCase() ? row.name : '';
   const actions=[];
-  if(row.sourceType==='aporte'){
+  if(row.sourceType==='aporte'&&!row.reconciliationStatus){
     actions.push(`<button class="bi" onclick='edP(${JSON.stringify(row.id)})' title="Editar movimentação" aria-label="Editar movimentação">✏️</button>`);
     if(row.kind==='compra') actions.push(`<button class="bi repeat-contribution-action" onclick='repeatContribution(${JSON.stringify(row.id)})' title="Repetir aporte como rascunho" aria-label="Repetir aporte como rascunho para ${esc(row.ticker||'este ativo')}">↻</button>`);
   }else if(row.sourceType==='provento'){
     actions.push(`<button class="bi" onclick="go('dividendos')" title="Abrir Dividendos" aria-label="Abrir Dividendos">↗</button>`);
   }
-  actions.push(`<button class="bdi" onclick='deleteMovementLaunch(${JSON.stringify(row.id)}, ${JSON.stringify(row.sourceType)})' title="Excluir lançamento" aria-label="Excluir lançamento">🗑️</button>`);
+  if(!row.reconciliationStatus) actions.push(`<button class="bdi" onclick='deleteMovementLaunch(${JSON.stringify(row.id)}, ${JSON.stringify(row.sourceType)})' title="Excluir lançamento" aria-label="Excluir lançamento">🗑️</button>`);
   return `<article class="aporte-history-card">
     <div class="aporte-history-date">${esc(row.date?brDate(row.date):'Sem data')}</div>
     <div class="aporte-history-main">
       <div class="aporte-history-title"><span class="aporte-kind ${esc(row.kind)}">${esc(row.label)}</span><span class="aporte-history-ticker">${esc(row.ticker)}</span></div>
       ${name?`<div class="aporte-history-name">${esc(name)}</div>`:''}
       ${row.note?`<div class="aporte-history-note">${esc(row.note)}</div>`:''}
+      ${row.reconciliationStatus?'<div class="aporte-history-note" role="status" aria-label="Pendente de reconciliação">PENDENTE DE RECONCILIAÇÃO · não altera posição, custo médio ou patrimônio.</div>':''}
     </div>
     <div class="aporte-history-meta"><div class="aporte-history-meta-label">Classe e setor</div><div class="aporte-history-meta-value">${esc(detail)}</div></div>
     <div class="aporte-history-meta"><div class="aporte-history-meta-label">Quantidade</div><div class="aporte-history-meta-value">${esc(quantity)}</div></div>
@@ -34738,7 +34909,7 @@ function aporteByAssetHtml(rows){
   });
   const html=[...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([ticker,items])=>{
     const bought=items.filter(r=>r.kind==='compra'||r.kind==='renda-fixa').reduce((s,r)=>s+r.total,0);
-    const sold=items.filter(r=>r.kind==='venda').reduce((s,r)=>s+r.total,0);
+    const sold=items.filter(r=>r.kind==='venda'&&!r.reconciliationStatus).reduce((s,r)=>s+r.total,0);
     const income=items.filter(r=>r.kind==='provento').reduce((s,r)=>s+r.total,0);
     const balance=bought-sold;
     const detail=[items[0]?.type,items[0]?.sector].filter(Boolean).join(' · ')||'Sem classificação';
@@ -38334,7 +38505,7 @@ function v252PerformanceIntelligence(){
   const runtime=window.__V76_RUNTIME__||{};
   const externalFlows=Array.isArray(runtime.flows?.flows)?runtime.flows.flows:[];
   const income=typeof rentabilityIncomeRows==='function'?rentabilityIncomeRows():[];
-  const realized=(Array.isArray(S.aportes)?S.aportes:[]).filter(row=>/venda|resgate/i.test(String(row.operationType||row.operation||row.op||''))).map(row=>({result:row.realizedResult??row.result??row.profit}));
+  const realized=(Array.isArray(S.aportes)?S.aportes:[]).filter(row=>!isReconciliationPendingMovement(row)&&/venda|resgate/i.test(String(row.operationType||row.operation||row.op||''))).map(row=>({result:row.realizedResult??row.result??row.profit}));
   const model=engine.buildPerformanceIntelligence({assets,externalFlows,income,realized});
   const history=v248HistoricalPerformanceSnapshot();
   const currentHistory=history.model?.metrics?.totalReturn;
@@ -39658,6 +39829,7 @@ function clP(){ withScrollPreserved(()=>{ S.showP=false; S.editPId=null; S._fp=n
 function edP(id){
   const p=(S.aportes||[]).find(x=>String(x.id)===String(id));
   if(!p){ toast('⚠️ Nenhuma operação encontrada com esse identificador.','#f87171'); return; }
+  if(isReconciliationPendingMovement(p)){ toast('Movimentação PENDENTE DE RECONCILIAÇÃO não pode ser editada até revisão.','#fbbf24'); return; }
   if(isNeutralMovement(p)){
     S.quickMovementEditId=p.id;
     S.quickMovementDraft={...quickMovementDefaultDraft('outro'), kind:'outro', date:inputDateValue(p.date||''), outroTitle:String(p.title||p.name||p.ticker||'').trim(), value:String(Number(p.totalValue||p.value||p.price||0)||''), outroCategory:String(p.sector||'Geral').trim()||'Geral', note:String(p.note||p.decision||'').trim()};
@@ -39747,13 +39919,19 @@ function svP(){
       quoteUpdatedAt:'',
       source:'manual-rf'
     };
+    const financialSnapshot=snapshotFinancialImportState(['aportes','assets','wallets','activeWalletId','learnMeta']);
+    if(!financialSnapshot){ toast('Não foi possível preparar a gravação segura. Nenhuma movimentação foi aplicada.','#f87171'); return; }
     if(S.editPId){ S.aportes=S.aportes.map(a=>String(a.id)===String(S.editPId)?reg:a); }
     else { S.aportes.unshift(reg); }
+    const createdManualRfPosition=createManualRfOpeningPosition(reg);
     if(!isReserve) learnTickerMeta(ti, 'Renda Fixa', rfSubtype, true);
     rememberScroll();
     S.showP=false; S.editPId=null; S._fp=null;
-    syncAssetsFromAportes(false);
-    toast(`✅ ${wasEdit?'Edição':'Lançamento'} de ${rfName} registrado!`);
+    const syncResult=syncAssetsFromAportes(false,false);
+    if(!persistFinancialImportState(financialSnapshot)){ render(); toast('A gravação não foi confirmada; estado anterior restaurado e novas gravações bloqueadas.','#f87171'); return; }
+    if(createdManualRfPosition) toast(`✅ ${wasEdit?'Edição':'Lançamento'} de ${rfName} registrado com posição manual explícita!`);
+    else if(!financialSyncUpdatedAllTickers(syncResult,[ti])&&!isReserve) toast('Lançamento salvo no histórico; posição e custo médio preservados porque a cobertura não foi comprovada.','#fbbf24');
+    else toast(`✅ ${wasEdit?'Edição':'Lançamento'} de ${rfName} registrado!`);
     fetchQuotes(false);
     scheduleAutoProventosGratis('aporte-rf');
     return;
@@ -39779,26 +39957,42 @@ function svP(){
     reg.reserveLabel=reserveTarget==='pessoal'?'Pessoal':'Bolsa';
     reg.sector=reserveTarget==='pessoal'?'Pessoal':'Bolsa';
   }
+  const pendingSale=!isReserve&&op==='venda';
+  const ledgerSnapshot=pendingSale?snapshotFinancialImportState(['aportes','assets','wallets','activeWalletId','learnMeta']):null;
+  if(pendingSale){
+    const blocker=pendingSaleIdentityBlocker(ti,S.editPId||'');
+    if(blocker){ toast(blocker,'#f87171'); return; }
+    reg.reconciliationStatus='PENDING_RECONCILIATION';
+    if(!ledgerSnapshot){ toast('Não foi possível preparar a gravação segura. Nenhuma venda foi aplicada.','#f87171'); return; }
+  }
   if(S.editPId){ S.aportes=S.aportes.map(a=>String(a.id)===String(S.editPId)?reg:a); }
   else { S.aportes.unshift(reg); }
   rememberScroll();
   S.showP=false; S.editPId=null; S._fp=null;
   if(!isReserve) learnTickerMeta(ti, ty, se, true);
-  syncAssetsFromAportes(false);
-  toast(`✅ ${isReserve? (reserveMode==='saida'?'Saída':'Reserva') : (op==='venda'?'Venda':'Compra')} de ${ti} registrada!`);
+  const syncResult=syncAssetsFromAportes(false,!pendingSale);
+  if(pendingSale&&!persistFinancialImportState(ledgerSnapshot)){ render(); toast('A gravação da venda não foi confirmada; estado anterior restaurado e novas gravações bloqueadas.','#f87171'); return; }
+  if(pendingSale) toast('Venda registrada como PENDENTE DE RECONCILIAÇÃO. Quantidade, custo médio e patrimônio foram preservados.','#fbbf24');
+  else if(!financialSyncUpdatedAllTickers(syncResult,[ti])&&!isReserve) toast('Lançamento salvo no histórico; posição e custo médio preservados porque a cobertura não foi comprovada.','#fbbf24');
+  else toast(`✅ ${isReserve? (reserveMode==='saida'?'Saída':'Reserva') : (op==='venda'?'Venda':'Compra')} de ${ti} registrada!`);
   fetchQuotes(false);
   scheduleAutoProventosGratis('aporte');
 }
 function rmP(id){
   if(!canEditFromThisTab('excluir operação')) return;
   const idStr=String(id);
-  if(!confirm('Remover esta operação? A aba Ativos será recalculada.')) return;
+  if(isReconciliationPendingMovement((S.aportes||[]).find(a=>String(a.id)===idStr))){
+    toast('Movimentação PENDENTE DE RECONCILIAÇÃO preservada no ledger até revisão.','#fbbf24');
+    return;
+  }
+  if(!confirm('Remover esta operação? A posição só será recalculada se a cobertura histórica estiver comprovada.')) return;
+  const removedTicker=cleanAssetCode((S.aportes||[]).find(a=>String(a.id)===String(idStr))?.ticker||'');
   const before=(S.aportes||[]).length;
   S.aportes=(S.aportes||[]).filter(a=>String(a.id)!==idStr);
   if(before===S.aportes.length){ toast('⚠️ Nenhuma operação encontrada com esse identificador.','#f87171'); return; }
   if(String(S.editPId||'')===idStr){ S.editPId=null; S.showP=false; S._fp=null; }
-  syncAssetsFromAportes(false);
-  toast('🗑️ Operação removida.');
+  const syncResult=syncAssetsFromAportes(false);
+  toast(financialSyncUpdatedAllTickers(syncResult,[removedTicker]) ? 'Operação removida e posição recalculada.' : 'Operação removida; posição preservada por falta de cobertura completa.');
   scheduleAutoProventosGratis('remove-aporte');
 }
 
@@ -40029,9 +40223,9 @@ function startPublicEventsSync(){
   if(isLocalTestMode()||isProtectedShadowBoot()||isProtectedReadOnlyQaBoot())return;
   const yahoo=window.MarketDataProviders.createYahooProvider();
   const registry={getEvents:(symbol,from,to)=>yahoo.getEvents(symbol,{from:from||'2025-01-01',to:to||'2099-12-31'}).then(result=>({ok:result.ok,events:result.events||[],providers:[{provider:result.provider||'yahoo-chart',ok:Boolean(result.ok),error:result.error||null}]}))};
-  const provider={syncPortfolio:()=>window.CorporateEventsSync.syncPortfolio({assets:S.assets,transactions:S.aportes,from:'2025-01-01',to:'2099-12-31',registry})};
+  const provider={syncPortfolio:()=>window.CorporateEventsSync.syncPortfolio({assets:S.assets,transactions:financialMovementsForCalculations(),from:'2025-01-01',to:'2099-12-31',registry})};
   const publicAssets=(S.assets||[]).filter(a=>!String(a.type||'').toLowerCase().includes('renda fixa'));
-  const runtime=window.PublicEventsRuntime.create({store:window.PublicEventsStore,storage:window.localStorage,provider,assets:publicAssets,transactions:S.aportes,onUpdate:()=>{if(typeof render==='function')render();}});
+  const runtime=window.PublicEventsRuntime.create({store:window.PublicEventsStore,storage:window.localStorage,provider,assets:publicAssets,transactions:financialMovementsForCalculations(),onUpdate:()=>{if(typeof render==='function')render();}});
   window.__PUBLIC_EVENTS_SYNC_STARTED__=true;
   window.__PUBLIC_EVENTS_RUNTIME_CONTROLLER__=runtime;
   runtime.start().catch(()=>{});
