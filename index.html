@@ -16216,9 +16216,10 @@ function confirmBrokerNoteImport(){
     importCenterFinishReview('SAVE_FAILED','A gravação não foi confirmada; estado restaurado e sessão bloqueada para recarga/conferência.',0);
     return {status:'SAVE_OUTCOME_UNKNOWN'};
   }
+  const syncResult=syncAssetsFromAportes(false,false);
   fetchQuotes(false);
   scheduleAutoProventosGratis('nota-inter-pdf');
-  toast('Nota Inter registrada no Histórico; posições e custos atuais foram preservados sem recálculo.');
+  toast(syncResult.status==='RECALCULATED'?'Nota Inter importada e posições recalculadas com cobertura comprovada.':'Nota Inter registrada no Histórico; posições e custos preservados aguardando reconciliação.');
   importCenterFinishReview('IMPORTED','Nota Inter confirmada e aplicada.',records.length);
   return {status:'APPLIED',imported:records.length};
 }
@@ -16324,10 +16325,11 @@ function applyNotaCorretoraTrades(items, noteKey, noteNumber, tradeDate, broker=
     restoreFinancialImportState(beforeImport);
     return {status:'SAVE_OUTCOME_UNKNOWN'};
   }
+  const syncResult=syncAssetsFromAportes(false,false);
   render();
   fetchQuotes(false);
   scheduleAutoProventosGratis('nota');
-  toast('Lançamentos registrados no Histórico; posições e custos atuais foram preservados sem recálculo.');
+  toast(syncResult.status==='RECALCULATED'?'Lançamentos importados e posições recalculadas com cobertura comprovada.':'Lançamentos registrados no Histórico; posições e custos preservados aguardando reconciliação.');
   return {status:'APPLIED',imported:novos.length};
 }
 function openNotaReview(parsed, fileName){
@@ -18102,10 +18104,11 @@ function applyB3MovementImported(rows, importDate, costBasisReviewed=false){
     importCenterFinishReview('SAVE_FAILED','A gravação não foi confirmada; movimentações restauradas e sessão bloqueada para recarga/conferência.',0);
     return {status:'SAVE_OUTCOME_UNKNOWN'};
   }
+  const syncResult=syncAssetsFromAportes(false,false);
   S.b3MovementReview=null;
   render();
-  b3ImportCompletedMessage('Movimentações registradas no Histórico; posições e custos atuais foram preservados sem recálculo.');
-  importCenterFinishReview(addAportes.length?'IMPORTED':'NO_NEW_RECORDS',addAportes.length?'Movimentações registradas no Histórico; posições e custos preservados sem recálculo.':'Nenhuma movimentação nova elegível; nenhum registro foi gravado.',addAportes.length);
+  b3ImportCompletedMessage(syncResult.status==='RECALCULATED'?'Movimentações B3 importadas e posições recalculadas com cobertura comprovada.':'Movimentações registradas no Histórico; posições e custos preservados aguardando reconciliação.');
+  importCenterFinishReview(addAportes.length?'IMPORTED':'NO_NEW_RECORDS',addAportes.length?'Movimentações registradas no Histórico; posições e custos preservados aguardando reconciliação.':'Nenhuma movimentação nova elegível; nenhum registro foi gravado.',addAportes.length);
   return {status:'APPLIED',added:addAportes.length,duplicates:duplicateCount,ignored:ignoredCount};
 }
 function importB3MovementReview(){
