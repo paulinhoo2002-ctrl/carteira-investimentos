@@ -27696,9 +27696,19 @@ function reportsSnapshot(){
 function reportNumber(value){
   return (Number(value)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
+
+function formatDateBR(d){
+  if(!(d instanceof Date)||isNaN(d.getTime())) return String(d||'');
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+}
+
+function formatDateTimeBR(d){
+  if(!(d instanceof Date)||isNaN(d.getTime())) return String(d||'');
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}, ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+}
 function reportDateText(value){
   const date=parseAnyDate(value);
-  return date ? date.toLocaleDateString('pt-BR') : String(value||'');
+  return date ? formatDateBR(date) : String(value||'');
 }
 function csvEscape(value){
   return `"${String(value??'').replace(/"/g,'""')}"`;
@@ -27785,7 +27795,7 @@ function reportFixedIncomeRows(){
     resultPct:row.pct,
     rate:row.rate,
     applicationDate:reportDateText(assetRfApplicationDate(row.asset)),
-    maturityDate:row.due?row.due.toLocaleDateString('pt-BR'):'—',
+    maturityDate:row.due?formatDateBR(row.due):'—',
     status:row.issues.length?row.issues.map(issue=>issue.label).join(' | '):'Organizado',
     valueSource:[row.currentMeta?.source,row.currentMeta?.origin].filter(Boolean).join(' · ')||'—'
   }));
@@ -27931,7 +27941,7 @@ function exportReportCSV(type){
       const body=type==='complete'
         ? [reportSummaryCsv(),sections,reportGoalsCsv()].join('\r\n\r\n')
         : sections;
-      const header=[csvEscape(APP_NAME),csvEscape(`Relatório: ${type}`),csvEscape(`Período: ${reportsPeriodLabel()}`),csvEscape(`Gerado em: ${new Date().toLocaleString('pt-BR')}`)].join(';');
+      const header=[csvEscape(APP_NAME),csvEscape(`Relatório: ${type}`),csvEscape(`Período: ${reportsPeriodLabel()}`),csvEscape(`Gerado em: ${formatDateTimeBR(new Date())}`)].join(';');
       downloadTextFile(reportFilename(type,'csv'),`\ufeff${header}\r\n\r\n${body}`,'text/csv;charset=utf-8');
       toast('✅ Relatório exportado com sucesso.');
     }catch(error){
