@@ -204,6 +204,7 @@ test('economic evidence is limited to REAL Trend products and synthetic local fi
   const context={
     isLocalTestMode:()=>true,
     FB:{accountMode:'LOCAL'},
+    financialMovementsForCalculations:()=> (context.S?.aportes||[]).filter(row=>row?.reconciliationStatus!=='PENDING_RECONCILIATION'),
     rfPosNorm:value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim(),
     assetRfName:asset=>asset.name,
     rfAssetEventId:item=>item.id,

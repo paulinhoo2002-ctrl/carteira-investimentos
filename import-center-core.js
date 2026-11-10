@@ -111,6 +111,7 @@
       feesCents: Foundation.normalizeMoneyCents(valueOf(row, ['fees', 'feesTotal', 'taxas', 'corretagem'])),
       broker: clean(valueOf(row, ['broker', 'corretora', 'instituicao']) || context.broker),
       noteNumber: clean(valueOf(row, ['noteNumber', 'documentId', 'numeroNota']) || context.noteNumber),
+      sourceEventId: clean(valueOf(row, ['sourceEventId', 'sourceExecutionId', 'executionId', 'tradeId', 'transactionId', 'eventId'])),
       sourceType: context.sourceType || 'UNKNOWN', sourceId: clean(context.sourceId || row.sourceId),
       sourceDocumentType: clean(context.sourceDocumentType || row.sourceDocumentType || context.sourceType || 'UNKNOWN'),
     };
@@ -145,21 +146,31 @@
     return [record.tradeDate, record.operation, record.identity, record.quantity, record.unitPriceCents, record.grossValueCents, upper(record.broker), record.noteNumber].join('|');
   }
 
+  function sourceEventIdentity(record = {}) {
+    return Foundation.sourceEventIdentity({ source: record.sourceType, broker: record.broker, documentId: record.noteNumber, sourceEventId: record.sourceEventId });
+  }
+
   function classifyRecord(record, existing = []) {
-    const exact = existing.find(item => String(item?.fingerprint || '') === String(record?.fingerprint || '') || tradeIdentity(item) === tradeIdentity(record));
-    if (exact) return { state: 'EXACT_DUPLICATE', matchedId: exact.id || exact.importRecordId || null };
+    const eventId = sourceEventIdentity(record);
+    if (eventId) {
+      const identified = existing.find(item => sourceEventIdentity(item) === eventId);
+      if (identified) {
+        const same = identified.fingerprint && record.fingerprint
+          ? String(identified.fingerprint) === String(record.fingerprint)
+          : tradeIdentity(identified) === tradeIdentity(record);
+        return { state: same ? 'EXACT_DUPLICATE' : 'IDENTITY_CONFLICT', matchedId: identified.id || identified.importRecordId || null };
+      }
+    }
     const similar = existing.find(item => item?.tradeDate === record.tradeDate && item?.operation === record.operation && item?.identity === record.identity && String(item?.quantity) === String(record.quantity));
-    if (similar && (similar.unitPriceCents !== record.unitPriceCents || similar.grossValueCents !== record.grossValueCents)) return { state: 'IDENTITY_CONFLICT', matchedId: similar.id || similar.importRecordId || null };
-    if (similar) return { state: 'PROBABLE_DUPLICATE', matchedId: similar.id || similar.importRecordId || null };
+    if (similar && (!eventId || !sourceEventIdentity(similar))) return { state: 'POSSIBLE_DUPLICATE', matchedId: similar.id || similar.importRecordId || null };
     return { state: 'UNIQUE', matchedId: null };
   }
 
   function createDedupeIndex(existing = []) {
-    const index = { exact: new Map(), similar: new Map() };
+    const index = { identified: new Map(), similar: new Map() };
     (Array.isArray(existing) ? existing : []).forEach(item => {
-      const fingerprint = String(item?.fingerprint || '');
-      const exactKey = fingerprint || tradeIdentity(item);
-      if (exactKey) index.exact.set(exactKey, item);
+      const eventId = sourceEventIdentity(item);
+      if (eventId && !index.identified.has(eventId)) index.identified.set(eventId, item);
       const similarKey = [item?.tradeDate, item?.operation, item?.identity, item?.quantity].join('|');
       if (!index.similar.has(similarKey)) index.similar.set(similarKey, []);
       index.similar.get(similarKey).push(item);
@@ -168,18 +179,23 @@
   }
 
   function classifyIndexed(record, index) {
-    const exact = index.exact.get(String(record?.fingerprint || '')) || index.exact.get(tradeIdentity(record));
-    if (exact) return { state: 'EXACT_DUPLICATE', matchedId: exact.id || exact.importRecordId || null };
+    const eventId = sourceEventIdentity(record);
+    const identified = eventId ? index.identified.get(eventId) : null;
+    if (identified) {
+      const same = identified.fingerprint && record.fingerprint
+        ? String(identified.fingerprint) === String(record.fingerprint)
+        : tradeIdentity(identified) === tradeIdentity(record);
+      return { state: same ? 'EXACT_DUPLICATE' : 'IDENTITY_CONFLICT', matchedId: identified.id || identified.importRecordId || null };
+    }
     const similarKey = [record?.tradeDate, record?.operation, record?.identity, record?.quantity].join('|');
-    const similar = index.similar.get(similarKey)?.[0];
-    if (similar && (similar.unitPriceCents !== record.unitPriceCents || similar.grossValueCents !== record.grossValueCents)) return { state: 'IDENTITY_CONFLICT', matchedId: similar.id || similar.importRecordId || null };
-    if (similar) return { state: 'PROBABLE_DUPLICATE', matchedId: similar.id || similar.importRecordId || null };
+    const similar = (index.similar.get(similarKey) || []).find(item => !eventId || !sourceEventIdentity(item));
+    if (similar) return { state: 'POSSIBLE_DUPLICATE', matchedId: similar.id || similar.importRecordId || null };
     return { state: 'UNIQUE', matchedId: null };
   }
 
   function addToDedupeIndex(record, index) {
-    const exactKey = String(record?.fingerprint || '') || tradeIdentity(record);
-    if (exactKey && !index.exact.has(exactKey)) index.exact.set(exactKey, record);
+    const eventId = sourceEventIdentity(record);
+    if (eventId && !index.identified.has(eventId)) index.identified.set(eventId, record);
     const similarKey = [record?.tradeDate, record?.operation, record?.identity, record?.quantity].join('|');
     if (!index.similar.has(similarKey)) index.similar.set(similarKey, []);
     index.similar.get(similarKey).push(record);
@@ -194,19 +210,36 @@
     const safeRows = Array.isArray(rows) ? rows : [];
     const normalized = safeRows.map((row, index) => normalizeRecord(row, { sourceType: detection.sourceType, sourceId: source.sourceId || source.name, sourceFileName: source.name || source.fileName, sourceDocumentType: source.sourceDocumentType, sourceRow: row.sourceRow ?? index + 1, broker: detection.provider, noteNumber: source.noteNumber }));
     const dedupeIndex = createDedupeIndex(existing);
+    const batchCounts = new Map();
+    const batchIds = new Map();
+    normalized.filter(record => !sourceEventIdentity(record)).forEach(record => {
+      const key = [record.tradeDate, record.operation, record.identity, record.quantity].join('|');
+      batchCounts.set(key, (batchCounts.get(key) || 0) + 1);
+    });
+    normalized.filter(record => sourceEventIdentity(record)).forEach(record => {
+      const key = sourceEventIdentity(record);
+      if (!batchIds.has(key)) batchIds.set(key, new Set());
+      batchIds.get(key).add(record.fingerprint);
+    });
     const records = normalized.map(record => {
-      const duplicate = classifyIndexed(record, dedupeIndex);
+      const key = [record.tradeDate, record.operation, record.identity, record.quantity].join('|');
+      const eventId = sourceEventIdentity(record);
+      const duplicate = (eventId && batchIds.get(eventId)?.size > 1)
+        ? { state: 'IDENTITY_CONFLICT', matchedId: null }
+        : !eventId && batchCounts.get(key) > 1
+        ? { state: 'POSSIBLE_DUPLICATE', matchedId: null }
+        : classifyIndexed(record, dedupeIndex);
       if (duplicate.state === 'UNIQUE') addToDedupeIndex(record, dedupeIndex);
       return { ...record, validation: validateRecord(record), duplicate };
     });
     const counts = records.reduce((acc, record) => {
       const state = !record.validation.valid ? 'REVIEW_REQUIRED' : record.duplicate.state;
       acc[state] = (acc[state] || 0) + 1; return acc;
-    }, { UNIQUE: 0, EXACT_DUPLICATE: 0, PROBABLE_DUPLICATE: 0, IDENTITY_CONFLICT: 0, REVIEW_REQUIRED: 0 });
+    }, { UNIQUE: 0, EXACT_DUPLICATE: 0, POSSIBLE_DUPLICATE: 0, PROBABLE_DUPLICATE: 0, IDENTITY_CONFLICT: 0, REVIEW_REQUIRED: 0 });
     const status = !safeRows.length ? 'EMPTY' : detection.provider === 'UNKNOWN' ? 'REVIEW_REQUIRED' : counts.REVIEW_REQUIRED || counts.IDENTITY_CONFLICT ? 'WARNING' : 'READY_FOR_REVIEW';
     return {
       detection, records, counts, status, batchFingerprint: batchFingerprint(records, detection),
-      summary: { total: records.length, valid: records.filter(row => row.validation.valid).length, warnings: records.filter(row => row.validation.warnings.length).length, errors: records.filter(row => !row.validation.valid).length, duplicates: counts.EXACT_DUPLICATE, potentialDuplicates: counts.PROBABLE_DUPLICATE, conflicts: counts.IDENTITY_CONFLICT, unsupported: detection.capability === 'UNSUPPORTED' || detection.capability === 'FIXTURE_REQUIRED' ? records.length : 0 },
+      summary: { total: records.length, valid: records.filter(row => row.validation.valid).length, warnings: records.filter(row => row.validation.warnings.length).length, errors: records.filter(row => !row.validation.valid).length, duplicates: counts.EXACT_DUPLICATE, potentialDuplicates: counts.POSSIBLE_DUPLICATE + counts.PROBABLE_DUPLICATE, conflicts: counts.IDENTITY_CONFLICT, unsupported: detection.capability === 'UNSUPPORTED' || detection.capability === 'FIXTURE_REQUIRED' ? records.length : 0 },
       writeCount: 0, writeCounters: cloneCounters(), requiresConfirmation: true, autoConfirm: false, financialWrite: false, previewOnly: true,
     };
   }

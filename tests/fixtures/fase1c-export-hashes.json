@@ -2,7 +2,8 @@
  "meta": {
   "origin": "origin/main (produção) com fixtures sintéticas e relógio congelado 2026-11-08T15:00Z",
   "baselineSha": "f8fef82313681c60ef641e56a9eb75b24526940b",
-  "how": "tests/fase1c-export-integrity.test.js executado na referência com EXPORT_HASH_DUMP=1"
+  "how": "tests/fase1c-export-integrity.test.js executado na referência com EXPORT_HASH_DUMP=1",
+  "updatedBy": "SUPERMISSAO-19: adicionado reconciliationStatus nas exportações JSON; movimentos PENDENTE DE RECONCILIAÇÃO excluídos dos totais"
  },
  "hashes": {
   "completo|complete|CSV": {
@@ -10,100 +11,100 @@
    "length": 29862
   },
   "completo|complete|JSON": {
-   "sha": "2a6048cb791dc8b4",
-   "length": 382746
+   "sha": "56f8251f6c1052fc",
+   "length": 382783
   },
   "completo|assets|CSV": {
    "sha": "3e87b68e0d966a93",
    "length": 1333
   },
   "completo|assets|JSON": {
-   "sha": "64dec9b4ab0c71fb",
-   "length": 330158
+   "sha": "1371a8132ae6d443",
+   "length": 330195
   },
   "completo|proventos|CSV": {
    "sha": "0074f447c8b6af24",
    "length": 4470
   },
   "completo|proventos|JSON": {
-   "sha": "c062ce11745ef236",
-   "length": 337204
+   "sha": "6c9b78364fd713af",
+   "length": 337241
   },
   "completo|fixed|CSV": {
    "sha": "fd6d1c6f6a7f3e68",
    "length": 492
   },
   "completo|fixed|JSON": {
-   "sha": "59b1f10cd8d56e4f",
-   "length": 327714
+   "sha": "0ab96955d78197da",
+   "length": 327751
   },
   "completo|patrimony|CSV": {
    "sha": "862e61f45fd5db6c",
    "length": 1733
   },
   "completo|patrimony|JSON": {
-   "sha": "04dcdeb09c3de443",
-   "length": 330601
+   "sha": "7f3dca1192a8f80a",
+   "length": 330638
   },
   "completo|audit|CSV": {
    "sha": "46c80a182b758e1e",
    "length": 21645
   },
   "completo|audit|JSON": {
-   "sha": "fffd98050014c9c6",
-   "length": 365775
+   "sha": "db87140f6f11ca43",
+   "length": 365812
   },
   "completo|irpf|CSV": {
    "sha": "d5edcb54e20cdf64",
    "length": 6297
   },
   "parcial|complete|CSV": {
-   "sha": "c357bc2e761786a7",
+   "sha": "be6fc7e80a7d1730",
    "length": 34390
   },
   "parcial|complete|JSON": {
-   "sha": "a92300c97d347f2a",
-   "length": 569813
+   "sha": "17056241e565ab5a",
+   "length": 569850
   },
   "parcial|assets|CSV": {
    "sha": "64d10c575d0c9454",
    "length": 1918
   },
   "parcial|assets|JSON": {
-   "sha": "601ac36a9651bf81",
-   "length": 510031
+   "sha": "f00e4a2c08e4680d",
+   "length": 510068
   },
   "parcial|proventos|CSV": {
    "sha": "0074f447c8b6af24",
    "length": 4470
   },
   "parcial|proventos|JSON": {
-   "sha": "c6b88a7c5d07f259",
-   "length": 515419
+   "sha": "78960e5b8a025e0d",
+   "length": 515456
   },
   "parcial|fixed|CSV": {
-   "sha": "e73802acf470e9bb",
+   "sha": "e6b41cab166a8222",
    "length": 1391
   },
   "parcial|fixed|JSON": {
-   "sha": "4b48ce965b0d1bdc",
-   "length": 508109
+   "sha": "42771f1146e3a8ae",
+   "length": 508146
   },
   "parcial|patrimony|CSV": {
    "sha": "35fa61f04be02759",
    "length": 1734
   },
   "parcial|patrimony|JSON": {
-   "sha": "19cd431a278aa285",
-   "length": 508817
+   "sha": "bfe89f435b09c786",
+   "length": 508854
   },
   "parcial|audit|CSV": {
    "sha": "25aa6993ef2f802b",
    "length": 24686
   },
   "parcial|audit|JSON": {
-   "sha": "e5955103b2d58b6d",
-   "length": 549003
+   "sha": "c07219f06b5b02b2",
+   "length": 549040
   },
   "parcial|irpf|CSV": {
    "sha": "3b77d619da6ff46c",

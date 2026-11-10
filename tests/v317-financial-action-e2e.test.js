@@ -246,6 +246,10 @@ it('venda sintética confirmada atualiza o ledger sem writes externos', async ()
     assert.ok(options > 1, 'fixture deve conter posição vendável');
     await app.page.selectOption('#qm-sale-asset', { index: 1 });
     const ticker = await app.page.evaluate(() => S.quickMovementDraft.ticker);
+    const beforeSale = await app.page.evaluate(symbol => {
+      const asset = S.assets.find(item => item.ticker === symbol);
+      return { qty: asset.qty, avg: asset.avg_price, value: assetCurrentValue(asset), total: cx().tC };
+    }, ticker);
     await app.page.locator('#qm-qty').fill('1');
     await app.page.locator('#qm-price').fill('20');
     await app.page.getByRole('button', { name: 'Confirmar venda' }).click();
@@ -253,12 +257,87 @@ it('venda sintética confirmada atualiza o ledger sem writes externos', async ()
     const sale = await app.page.evaluate(symbol => S.aportes.find(item => item.operation === 'venda' && item.ticker === symbol), ticker);
     assert.equal(Number(sale.qty), 1);
     assert.equal(Number(sale.price), 20);
+    assert.equal(sale.reconciliationStatus, 'PENDING_RECONCILIATION');
+    assert.deepEqual(await app.page.evaluate(symbol => {
+      const asset = S.assets.find(item => item.ticker === symbol);
+      return { qty: asset.qty, avg: asset.avg_price, value: assetCurrentValue(asset), total: cx().tC };
+    }, ticker), beforeSale, 'venda pendente não altera quantidade, custo ou patrimônio');
+    await app.page.evaluate(() => go('aportes'));
+    await app.page.waitForFunction(() => document.querySelector('#root')?.innerText.includes('Lançamentos'));
+    assert.match(await app.page.locator('body').innerText(), /PENDENTE DE RECONCILIAÇÃO/);
+    await app.page.evaluate(() => openQuickMovement('venda'));
+    await app.page.selectOption('#qm-sale-asset', { index: 1 });
+    assert.equal(await app.page.evaluate(() => S.quickMovementDraft.ticker), ticker, 'ativo pendente continua selecionável');
+    await app.page.locator('#qm-qty').fill('1');
+    await app.page.locator('#qm-price').fill('20');
+    await app.page.getByRole('button', { name: 'Confirmar venda' }).click();
+    await app.page.waitForFunction(() => String(S.quickMovementError||'').includes('PENDENTE DE RECONCILIAÇÃO'));
+    assert.equal(await app.page.evaluate(symbol => S.aportes.filter(item => item.ticker === symbol && item.operation === 'venda').length, ticker), 1, 'venda pendente não pode ser aplicada duas vezes');
     assert.equal(await app.page.evaluate(() => localStorage.getItem('civ5')), storageBefore);
     assertNoOutboundWrites(app.outboundRequests);
   } finally { await closeApp(app); }
 });
+it('falha ao persistir venda pendente restaura ledger e posição sem alteração', async () => {
+  const app = await openApp();
+  try {
+    app.page.on('dialog', dialog => dialog.accept());
+    await app.page.evaluate(() => {
+      fetchQuotes = async () => {};
+      scheduleAutoProventosGratis = () => {};
+      window.save = () => false;
+    });
+    const before = await app.page.evaluate(() => ({
+      aportes: S.aportes.length,
+      assets: JSON.stringify(S.assets),
+      ticker: S.assets[0]?.ticker,
+    }));
+    await app.page.evaluate(() => openQuickMovement('venda'));
+    await app.page.selectOption('#qm-sale-asset', { index: 1 });
+    await app.page.locator('#qm-qty').fill('1');
+    await app.page.locator('#qm-price').fill('20');
+    await app.page.getByRole('button', { name: 'Confirmar venda' }).click();
+    await app.page.waitForFunction(() => String(S.quickMovementError||'').includes('salvar'));
+    assert.deepEqual(await app.page.evaluate(() => ({
+      aportes: S.aportes.length,
+      assets: JSON.stringify(S.assets),
+      pendingSales: S.aportes.filter(item => item.reconciliationStatus === 'PENDING_RECONCILIATION').length,
+      quarantined: S._financialWriteQuarantined,
+    })), { aportes: before.aportes, assets: before.assets, pendingSales: 0, quarantined: true });
+    assertNoOutboundWrites(app.outboundRequests);
+  } finally { await closeApp(app); }
+});
+it('formulário clássico registra venda pendente e bloqueia repetição do ativo', async () => {
+  const app = await openApp();
+  const ticker = 'V317CLASSIC';
+  try {
+    app.page.on('dialog', dialog => dialog.accept());
+    await app.page.evaluate(symbol => {
+      const wallet = activeWallet();
+      S.assets = [{ id: 'v317-classic-asset', ticker: symbol, type: 'Ação', qty: 5, avg_price: 12, current_price: 15 }];
+      S.aportes = []; S.proventos = []; S.rfEvents = [];
+      wallet.assets = S.assets; wallet.aportes = S.aportes; wallet.proventos = S.proventos; wallet.rfEvents = S.rfEvents;
+      go('aportes');
+      S.showP = true; S._fp = { type: 'Ação', operation: 'venda', ticker: symbol, qty: 1, price: 15, date: '2026-10-01' };
+      render();
+    }, ticker);
+    await app.page.getByRole('button', { name: 'Salvar operação' }).click();
+    await app.page.waitForFunction(symbol => S.aportes.some(item => item.ticker === symbol && item.operation === 'venda'), ticker);
+    const result = await app.page.evaluate(symbol => ({
+      sales: S.aportes.filter(item => item.ticker === symbol && item.operation === 'venda'),
+      asset: S.assets.find(item => item.ticker === symbol),
+    }), ticker);
+    assert.equal(result.sales.length, 1);
+    assert.equal(result.sales[0].reconciliationStatus, 'PENDING_RECONCILIATION');
+    assert.equal(result.asset.qty, 5);
+    assert.equal(result.asset.avg_price, 12);
+    await app.page.evaluate(symbol => { S.showP = true; S._fp = { type: 'Ação', operation: 'venda', ticker: symbol, qty: 1, price: 15, date: '2026-10-02' }; render(); }, ticker);
+    await app.page.getByRole('button', { name: 'Salvar operação' }).click();
+    assert.equal(await app.page.evaluate(symbol => S.aportes.filter(item => item.ticker === symbol && item.operation === 'venda').length, ticker), 1);
+    assertNoOutboundWrites(app.outboundRequests);
+  } finally { await closeApp(app); }
+});
 
-it('ciclo sintético compra, venda total e recompra preserva o ledger e fecha a posição atual', async () => {
+it('compra manual sem cobertura grava apenas no ledger e não inventa posição', async () => {
   const app = await openApp();
   const ticker = 'M579LIFE';
   try {
@@ -267,119 +346,47 @@ it('ciclo sintético compra, venda total e recompra preserva o ledger e fecha a 
       const wallet = activeWallet();
       S.assets = []; S.aportes = []; S.proventos = []; S.rfEvents = [];
       wallet.assets = S.assets; wallet.aportes = S.aportes; wallet.proventos = S.proventos; wallet.rfEvents = S.rfEvents;
-      S.assetsSearch = ''; S.assetsFilterClasses = []; S.assetsSectorFilter = 'all'; S.assetsClassFilter = 'all'; S.assetsPerformanceFilter = 'all';
       render();
     });
-    const storageBefore = await app.page.evaluate(() => localStorage.getItem('civ5'));
     await app.page.evaluate(() => { fetchQuotes = async () => {}; scheduleAutoProventosGratis = () => {}; });
     const portfolioBefore = await app.page.evaluate(() => cx().tC);
-
     await fillPurchase(app.page, ticker);
     await app.page.locator('.quick-movement-modal button.btn.bsv').click();
     await app.page.waitForFunction(symbol => S.aportes.some(item => item.ticker === symbol && item.operation === 'compra'), ticker);
-    const bought = await app.page.evaluate(symbol => {
-      const asset = S.assets.find(item => item.ticker === symbol);
-      return asset ? { id: asset.id, quantity: Number(asset.qty), average: asset.avg_price, current: asset.current_price, total: cx().tC } : null;
-    }, ticker);
-    assert.ok(bought?.id, 'compra confirmada deve abrir a posição atual');
-    assert.equal(bought.quantity, 2);
-    assert.equal(bought.average, 10.25);
-    assert.equal(bought.total, portfolioBefore + 20.5);
-
+    assert.equal(await app.page.evaluate(symbol => S.assets.some(item => item.ticker === symbol), ticker), false, 'sem posição inicial comprovada, o aporte não cria quantidade ou custo médio');
+    assert.equal(await app.page.evaluate(() => cx().tC), portfolioBefore, 'o dashboard não incorpora uma posição incompleta');
     await app.page.evaluate(() => openQuickMovement('venda'));
-    const firstAssetId = await app.page.evaluate(symbol => S.assets.find(item => item.ticker === symbol)?.id, ticker);
-    await app.page.selectOption('#qm-sale-asset', String(firstAssetId));
-    await app.page.locator('#qm-qty').fill('3');
-    await app.page.locator('#qm-price').fill('12');
-    await app.page.getByRole('button', { name: 'Confirmar venda' }).click();
-    assert.match(await app.page.locator('.quick-movement-modal').innerText(), /acima da posição/i);
-    assert.equal(await app.page.evaluate(symbol => S.aportes.filter(item => item.ticker === symbol).length, ticker), 1);
+    assert.match(await app.page.locator('#qm-sale-asset').innerText(), /Nenhum ativo vendável/, 'venda fica indisponível sem posição comprovada');
     await app.page.getByRole('button', { name: 'Cancelar', exact: true }).click();
-    assert.equal(await app.page.evaluate(symbol => Number(S.assets.find(item => item.ticker === symbol)?.qty), ticker), 2);
-
-    await app.page.evaluate(() => openQuickMovement('venda'));
-    await app.page.selectOption('#qm-sale-asset', String(firstAssetId));
-    await app.page.getByRole('button', { name: 'Vender tudo' }).click();
-    await app.page.locator('#qm-price').fill('12');
-    await app.page.getByRole('button', { name: 'Confirmar venda' }).click();
-    await app.page.waitForFunction(symbol => S.aportes.some(item => item.ticker === symbol && item.operation === 'venda'), ticker);
-
-    const closed = await app.page.evaluate(symbol => ({
-      entries: S.aportes.filter(item => item.ticker === symbol).map(item => ({ operation: item.operation, quantity: Number(item.qty), price: Number(item.price) })),
-      currentPosition: S.assets.some(item => item.ticker === symbol),
-      analysisPosition: assetAnalysisRows().some(item => item.ticker === symbol),
-      dashboardPosition: dashboardSnapshot().analysis.some(item => item.ticker === symbol),
-      currentValue: cx().tC,
-      patrimonyValue: patrimonySnapshot().summary.tC,
-      sellable: quickMovementSellableAssets().some(item => item.ticker === symbol),
-    }), ticker);
-    assert.deepEqual(closed.entries, [
-      { operation: 'venda', quantity: 2, price: 12 },
-      { operation: 'compra', quantity: 2, price: 10.25 },
-    ]);
-    assert.equal(closed.currentPosition, false, 'posição zerada não deve aparecer na lista atual');
-    assert.equal(closed.analysisPosition, false);
-    assert.equal(closed.dashboardPosition, false);
-    assert.equal(closed.currentValue, portfolioBefore, 'valor corrente da carteira deve voltar ao baseline da posição');
-    assert.equal(closed.patrimonyValue, portfolioBefore);
-    assert.equal(closed.sellable, false);
-    await app.page.evaluate(() => go('ativos'));
-    await app.page.locator('#assets-premium-search').fill(ticker);
-    await app.page.waitForTimeout(200);
-    assert.equal(await app.page.locator('.assets-premium-shell tr[data-id]').filter({ hasText: ticker }).count(), 0);
-    assert.equal(await app.page.evaluate(symbol => S.aportes.filter(item => item.ticker === symbol).length, ticker), 2, 'filtros da posição atual não podem apagar o histórico');
-
-    await fillPurchase(app.page, ticker);
-    await app.page.locator('#qm-price').fill('11');
-    await app.page.locator('.quick-movement-modal button.btn.bsv').click();
-    await app.page.waitForFunction(symbol => S.assets.some(item => item.ticker === symbol), ticker);
-    const rebought = await app.page.evaluate(symbol => {
-      const asset = S.assets.find(item => item.ticker === symbol);
-      return { id: asset?.id, quantity: Number(asset?.qty), average: asset?.avg_price, applied: assetAppliedValue(asset), rows: S.aportes.filter(item => item.ticker === symbol).map(item => item.operation) };
-    }, ticker);
-    assert.notEqual(rebought.id, bought.id, 'recompra após posição encerrada inicia novo cadastro de posição');
-    assert.equal(rebought.quantity, 2);
-    assert.equal(rebought.average, 11);
-    assert.equal(rebought.applied, 22);
-    assert.deepEqual(rebought.rows, ['compra', 'venda', 'compra']);
-
-    await app.page.evaluate(() => { S.assetsSearch = ''; S.assetsFilterClasses = []; S.assetsSectorFilter = 'all'; S.assetsClassFilter = 'all'; S.assetsPerformanceFilter = 'all'; applyTheme('light'); go('ativos'); });
-    const assetId = await app.page.evaluate(symbol => S.assets.find(item => item.ticker === symbol)?.id, ticker);
-    const desktopRow = app.page.locator(`.assets-premium-shell tr[data-id="${assetId}"]`);
-    assert.equal(await desktopRow.count(), 1);
-    const desktopColumns = await desktopRow.evaluate(row => [...row.closest('table').querySelectorAll('thead th')].map(header => header.textContent.trim()));
-    for (const label of ['Quantidade', 'Preço médio', 'Preço atual / posição', 'Resultado R$', 'Rentabilidade', 'Valor total', 'Ações']) assert.ok(desktopColumns.includes(label), `tabela desktop deve preservar ${label}`);
-
-    for (const theme of ['light', 'dark']) {
-      await app.page.evaluate(value => { applyTheme(value); render(); }, theme);
-      const desktopLayout = await app.page.evaluate(() => ({ width: window.innerWidth, scrollWidth: document.documentElement.scrollWidth, theme: document.documentElement.dataset.theme }));
-      assert.equal(desktopLayout.theme, theme);
-      assert.ok(desktopLayout.scrollWidth <= desktopLayout.width, `sem overflow desktop ${theme}: ${JSON.stringify(desktopLayout)}`);
-      await app.page.setViewportSize({ width: 390, height: 844 });
-      await app.page.evaluate(() => render());
-      const mobileLayout = await app.page.evaluate(() => ({ width: window.innerWidth, scrollWidth: document.documentElement.scrollWidth, theme: document.documentElement.dataset.theme }));
-      assert.equal(mobileLayout.theme, theme);
-      assert.ok(mobileLayout.scrollWidth <= mobileLayout.width, `sem overflow mobile ${theme}: ${JSON.stringify(mobileLayout)}`);
-      const category = app.page.locator('.assets-premium-shell details.ag[data-asset-group="Ação"]');
-      if (!(await category.evaluate(element => element.open))) await category.locator('summary.accordion-header').click();
-      const card = app.page.locator(`.assets-premium-shell .asset-mobile-cards details[data-id="${assetId}"]`);
-      assert.equal(await card.count(), 1, 'posição ativa deve ser apresentada no card mobile');
-      await card.locator('summary').click();
-      assert.match(await card.innerText(), /Quantidade[\s\S]*2[\s\S]*Preço médio[\s\S]*11/);
-      await card.getByRole('button', { name: `Mais ações para ${ticker}` }).click();
-      const actionMenu = app.page.getByRole('menu', { name: `Ações para ${ticker}` });
-      const actionsText = await actionMenu.innerText();
-      for (const action of ['Comprar', 'Vender', 'Editar']) assert.ok(actionsText.includes(action), `card mobile deve oferecer ${action}`);
-      await app.page.keyboard.press('Escape');
-      assert.equal(await actionMenu.isVisible(), false, 'Escape deve fechar o menu antes da próxima interação');
-      assertNoOutboundWrites(app.outboundRequests);
-      await app.page.setViewportSize({ width: 1366, height: 768 });
-    }
-    assert.equal(await app.page.evaluate(() => localStorage.getItem('civ5')), storageBefore);
+    assert.equal(await app.page.evaluate(symbol => S.aportes.filter(item => item.ticker === symbol).length, ticker), 1, 'a compra confirmada permanece no ledger');
     assertNoOutboundWrites(app.outboundRequests);
   } finally { await closeApp(app); }
 });
-
+it('Ativos mobile mantém detalhes acessíveis e ações por teclado com posição sintética', async () => {
+  const app = await openApp();
+  const ticker = 'V317CARD';
+  try {
+    await app.page.setViewportSize({ width: 390, height: 844 });
+    await app.page.evaluate(symbol => {
+      const wallet = activeWallet();
+      const asset = { id: 'v317-card-synthetic', ticker: symbol, name: 'Ativo sintético', type: 'Ação', sector: 'QA', qty: 2, avg_price: 11, current_price: 12, ideal_pct: 0 };
+      S.assets = [asset]; S.aportes = []; S.proventos = []; S.rfEvents = [];
+      wallet.assets = S.assets; wallet.aportes = S.aportes; wallet.proventos = S.proventos; wallet.rfEvents = S.rfEvents;
+      go('ativos');
+    }, ticker);
+    await app.page.locator('.accordion-category.ag').first().evaluate(element => { element.open = true; });
+    const card = app.page.locator('details.asset-premium-card').filter({ hasText: ticker });
+    await card.locator('summary').click();
+    assert.match(await card.innerText(), /Quantidade[\s\S]*2[\s\S]*Preço médio[\s\S]*11/);
+    await card.getByRole('button', { name: `Mais ações para ${ticker}` }).click();
+    const actionMenu = app.page.getByRole('menu', { name: `Ações para ${ticker}` });
+    const actionsText = await actionMenu.innerText();
+    for (const action of ['Comprar', 'Vender', 'Editar']) assert.ok(actionsText.includes(action), `menu mobile deve conter ${action}`);
+    await app.page.keyboard.press('Escape');
+    assert.equal(await actionMenu.isVisible(), false, 'Escape fecha o menu de ações');
+    assertNoOutboundWrites(app.outboundRequests);
+  } finally { await closeApp(app); }
+});
 it('aplicação e resgate parciais RF sintéticos preservam eventos e isolamento local', async () => {
   const app = await openApp();
   try {
@@ -393,6 +400,7 @@ it('aplicação e resgate parciais RF sintéticos preservam eventos e isolamento
     await app.page.locator('#qm-rf-app-date').fill('2026-06-01');
     await app.page.locator('#qm-rf-due').fill('2028-06-01');
     await app.page.locator('#qm-rf-applied').fill('1000');
+    await app.page.locator('#qm-rf-liquid').fill('1000');
     await app.page.locator('.quick-movement-modal button.btn.bsv').click();
     await app.page.waitForFunction(() => S.assets.some(asset => asset.name === 'CDB QA sintético 2028'));
     const asset = await app.page.evaluate(() => {
@@ -478,6 +486,81 @@ it('registro e cancelamento de provento sintético alteram somente a sessão QA'
     assert.equal(await app.page.evaluate(() => S.proventos.length), before + 1);
     assert.equal(await app.page.evaluate(() => S.proventos.some(item => item.ticker === 'QACANCEL3')), false);
     assert.equal(await app.page.evaluate(() => localStorage.getItem('civ5')), storageBefore);
+    assertNoOutboundWrites(app.outboundRequests);
+  } finally { await closeApp(app); }
+});
+it('IRPF exclui venda pendente dos totais e alerta sobre reconciliação', async () => {
+  const app = await openApp();
+  try {
+    const result = await app.page.evaluate(() => {
+      const ticker = 'V317IRPF';
+      S.assets = [{ id: 'v317-irpf-asset', ticker, type: 'Ação', qty: 4, avg_price: 10, current_price: 12 }];
+      S.aportes = [
+        { id: 'v317-irpf-buy', ticker, type: 'Ação', operation: 'compra', qty: 4, price: 10, date: '2026-02-01' },
+        { id: 'v317-irpf-sale', ticker, type: 'Ação', operation: 'venda', qty: 1, price: 12, date: '2026-03-01', reconciliationStatus: 'PENDING_RECONCILIATION' },
+      ];
+      const report = irpfBuildYearReport(2026);
+      return {
+        buys: report.totals.buys,
+        sells: report.totals.sells,
+        yearEndCost: report.totals.yearEndCost,
+        position: report.positions.find(row => row.ticker === ticker),
+        pendingAlert: irpfAlertItems(report).find(row => row.label === 'Venda pendente de reconciliação' && row.value === ticker),
+        reports: reportsSnapshot(),
+      };
+    });
+    assert.equal(result.buys, 40);
+    assert.equal(result.sells, 0);
+    assert.equal(result.yearEndCost, 40);
+    assert.equal(result.position?.qty, 4);
+    assert.equal(result.pendingAlert?.tone, 'warn');
+    assert.match(result.pendingAlert?.hint || '', /excluída dos cálculos/i);
+    assert.equal(result.reports.pendingReconciliationCount, 1);
+    assert.equal(result.reports.movementCounts.vendas, 0);
+    assertNoOutboundWrites(app.outboundRequests);
+  } finally { await closeApp(app); }
+});
+
+it('título RF com valor aplicado ausente de valor atual não cria posição', async () => {
+  const app = await openApp();
+  const ticker = 'CDB QA sem valor atual';
+  try {
+    await app.page.evaluate(() => { fetchQuotes = async () => {}; scheduleAutoProventosGratis = () => {}; });
+    await app.page.evaluate(() => openQuickMovement('renda-fixa'));
+    await app.page.getByRole('tab', { name: 'Novo título' }).click();
+    await app.page.locator('#qm-rf-name').fill(ticker);
+    await app.page.locator('#qm-rf-subtype').selectOption('CDB');
+    await app.page.locator('#qm-rf-app-date').fill('2026-06-01');
+    await app.page.locator('#qm-rf-due').fill('2028-06-01');
+    await app.page.locator('#qm-rf-applied').fill('1000');
+    await app.page.locator('.quick-movement-modal button.btn.bsv').click();
+    await app.page.waitForFunction(name => S.aportes.some(row => row.name === name), ticker);
+    const result = await app.page.evaluate(name => ({
+      position: S.assets.some(asset => asset.name === name),
+      ledger: S.aportes.some(row => row.name === name),
+    }), ticker);
+    assert.equal(result.position, false, 'valor aplicado não é usado como valor atual implícito');
+    assert.equal(result.ledger, true, 'movimentação explícita continua preservada no ledger');
+    assertNoOutboundWrites(app.outboundRequests);
+  } finally { await closeApp(app); }
+});
+it('RF exige valor aplicado explícito e não cria base a partir do valor atual', async () => {
+  const app = await openApp();
+  const name = 'CDB QA sem base explícita';
+  try {
+    await app.page.evaluate(() => { fetchQuotes = async () => {}; scheduleAutoProventosGratis = () => {}; });
+    await app.page.evaluate(() => openQuickMovement('renda-fixa'));
+    // Garante que o modal está visível antes de interagir (evita race condition no CI)
+    await app.page.locator('.quick-movement-modal').waitFor({ state: 'visible', timeout: 5000 });
+    await app.page.getByRole('tab', { name: 'Novo título' }).click();
+    await app.page.locator('#qm-rf-name').fill(name);
+    await app.page.locator('#qm-rf-subtype').selectOption('CDB');
+    await app.page.locator('#qm-rf-app-date').fill('2026-06-01');
+    await app.page.locator('#qm-rf-due').fill('2028-06-01');
+    await app.page.locator('#qm-rf-liquid').fill('1100');
+    await app.page.locator('.quick-movement-modal button.btn.bsv').click();
+    assert.match(await app.page.locator('.quick-movement-modal').innerText(), /valor aplicado/i);
+    assert.equal(await app.page.evaluate(title => S.aportes.some(row => row.name === title) || S.assets.some(row => row.name === title), name), false);
     assertNoOutboundWrites(app.outboundRequests);
   } finally { await closeApp(app); }
 });
