@@ -7,6 +7,8 @@ const test = require('node:test');
 const root = path.join(__dirname, '..');
 const config = JSON.parse(fs.readFileSync(path.join(root, '.releaserc.json'), 'utf8'));
 const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'release.yml'), 'utf8');
+const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
+const releaseTemplate = fs.readFileSync(path.join(root, '.github', 'release-template.md'), 'utf8');
 
 test('release publishes a GitHub release without committing directly to its protected branch', () => {
   assert.ok(config.plugins.includes('@semantic-release/github'));
@@ -16,6 +18,9 @@ test('release publishes a GitHub release without committing directly to its prot
   assert.equal(config.plugins.includes('@semantic-release/npm'), false);
   assert.equal(config.plugins.includes('@semantic-release/changelog'), false);
   assert.doesNotMatch(workflow, /NPM_TOKEN/);
+  assert.match(workflow, /permissions:[\s\S]*?contents:\s*write/);
+  assert.match(readme, /semantic-release creates a versioned tag and GitHub Release with generated notes/i);
+  assert.match(releaseTemplate, /not updated automatically|não é atualizado automaticamente/i);
 });
 
 test('release runs tests and both builds before semantic-release, without invoking Vercel deployment', () => {
