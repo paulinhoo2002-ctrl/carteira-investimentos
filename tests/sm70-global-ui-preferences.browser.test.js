@@ -110,15 +110,16 @@ test('SM70 density and sidebar preferences persist without touching financial st
   }
 });
 
-test('SM70 both density modes keep all routes usable at five requested viewports', async () => {
+test('SM70 both density modes keep all routes usable across ten viewports with Axe', async () => {
   const runtime = await createRuntime();
   try {
     const { page } = runtime;
+    await page.addScriptTag({ content: AXE_SOURCE });
     const routes = await page.evaluate(excluded => [...new Set(
       [...content.toString().matchAll(/if\(S\.tab===['"]([^'"]+)['"]\)/g)].map(match => match[1]),
     )].filter(route => !excluded.includes(route)), [...INTERNAL_ROUTES]);
     assert.ok(routes.length >= 15);
-    for (const viewport of [{ width: 1366, height: 768 }, { width: 1440, height: 900 }, { width: 1920, height: 1080 }, { width: 2560, height: 1440 }, { width: 390, height: 844 }]) {
+    for (const viewport of [{ width: 360, height: 800 }, { width: 390, height: 844 }, { width: 412, height: 915 }, { width: 430, height: 932 }, { width: 768, height: 1024 }, { width: 1024, height: 768 }, { width: 1366, height: 768 }, { width: 1440, height: 900 }, { width: 1920, height: 1080 }, { width: 2560, height: 1440 }]) {
       await page.setViewportSize(viewport);
       for (const density of ['compact', 'comfortable']) {
         await page.evaluate(value => { document.documentElement.dataset.uiDensity = value; }, density);
@@ -137,6 +138,9 @@ test('SM70 both density modes keep all routes usable at five requested viewports
             }));
             assert.equal(layout.overflow, false, `${route} overflow at ${viewport.width}/${density}/${theme}`);
             assert.ok(layout.heading || layout.text.length > 20, `${route} empty at ${viewport.width}/${density}/${theme}`);
+            if (density === 'compact' && [390, 1366].includes(viewport.width)) {
+              await assertNoSeriousAxe(page, `${route} ${viewport.width}/${theme}`);
+            }
           }
         }
       }
