@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script>
+(()=>{let density="compact",collapsed="false";try{const savedDensity=localStorage.getItem("ci_ui_density");if(savedDensity==="compact"||savedDensity==="comfortable")density=savedDensity;collapsed=localStorage.getItem("ci_sidebar_collapsed")==="true"?"true":"false";}catch(e){}document.documentElement.dataset.uiDensity=density;document.documentElement.dataset.sidebarCollapsed=collapsed;})();
+</script>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' http://127.0.0.1:* ws://127.0.0.1:* https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://brapi.dev https://fonts.googleapis.com https://fonts.gstatic.com; frame-src 'self' https://carteira-de-investimento-16725.firebaseapp.com https://accounts.google.com; base-uri 'self'; form-action 'self'">
 <meta name="theme-color" content="#f4f7fb">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -9331,6 +9334,31 @@ function saveThemePreference(theme){
   if(isLocalTestMode()) return;
   try{ localStorage.setItem(THEME_STOR, THEME); }catch(e){}
 }
+function persistUiPreference(key,value){
+  try{localStorage.setItem(key,value);return true;}catch(e){toast('Preferência aplicada nesta sessão, mas não foi possível salvá-la.','#fbbf24');return false;}
+}
+function setUiDensity(density){
+  if(!['compact','comfortable'].includes(density)) return;
+  document.documentElement.dataset.uiDensity=density;
+  persistUiPreference('ci_ui_density',density);
+  document.querySelectorAll('[data-ui-density-choice]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.uiDensityChoice===density)));
+}
+function setSidebarCollapsed(collapsed){
+  const value=!!collapsed;
+  document.documentElement.dataset.sidebarCollapsed=String(value);
+  persistUiPreference('ci_sidebar_collapsed',String(value));
+  const button=document.querySelector('.sidebar-collapse-toggle');
+  if(button){
+    const label=value?'Expandir menu lateral':'Recolher menu lateral';
+    button.setAttribute('aria-label',label);
+    button.setAttribute('title',label);
+    button.setAttribute('aria-expanded',String(!value));
+    const icon=button.querySelector('[data-sidebar-toggle-icon]');
+    const text=button.querySelector('[data-sidebar-toggle-label]');
+    if(icon) icon.textContent=value?'›':'‹';
+    if(text) text.textContent=label;
+  }
+}
 function toggleTheme(){
   saveThemePreference(THEME==='light' ? 'dark' : 'light');
   render();
@@ -12515,6 +12543,7 @@ function settingsTab(){
   const pwaInstalled=!!PWA.installed;
   const canSec=canManageSecurity();
   const isTest=isLocalTestMode();
+  const uiDensity=document.documentElement.dataset.uiDensity==='comfortable'?'comfortable':'compact';
   return `<div class="premium-settings-page">
     <div class="premium-settings-header">
       <div>
@@ -12592,6 +12621,13 @@ function settingsTab(){
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">Tema</div><div class="premium-settings-row-desc">${esc(themeLabel)}</div></div>
             <button class="btn bgh ds-button ds-button--ghost" onclick="toggleTheme()" data-compact="true">${esc(themeIcon)} Alternar</button>
+          </div>
+          <div class="premium-settings-row">
+            <div class="premium-settings-row-info"><div class="premium-settings-row-label">Densidade</div><div class="premium-settings-row-desc">Ajusta o espaçamento das telas sem alterar os dados.</div></div>
+            <div class="fp-segmented" role="group" aria-label="Densidade do layout">
+              <button type="button" data-ui-density-choice="compact" aria-pressed="${uiDensity==='compact'?'true':'false'}" onclick="setUiDensity('compact')">Compacto</button>
+              <button type="button" data-ui-density-choice="comfortable" aria-pressed="${uiDensity==='comfortable'?'true':'false'}" onclick="setUiDensity('comfortable')">Confortável</button>
+            </div>
           </div>
           <div class="premium-settings-row">
             <div class="premium-settings-row-info"><div class="premium-settings-row-label">${S.hideValues?'Mostrar valores':'Ocultar valores'}</div><div class="premium-settings-row-desc">${S.hideValues?'Valores ocultos na carteira':'Valores visíveis normalmente'}</div></div>
@@ -16631,7 +16667,7 @@ function b3ReviewPeriod(rows){
     .filter(Boolean)
     .sort((a,b)=>a-b);
   if(!dates.length) return 'Não identificado';
-  const format=date=>date.toLocaleDateString('pt-BR');
+  const format=date=>formatDateBR(date);
   return dates.length===1 ? format(dates[0]) : `${format(dates[0])} a ${format(dates[dates.length-1])}`;
 }
 function b3ConfirmImport(label, selected, duplicates=0, incomplete=0){
@@ -25114,7 +25150,7 @@ function dataTrustDate(value){
   const date=typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value)
     ?new Date(Number(value.slice(0,4)),Number(value.slice(5,7))-1,Number(value.slice(8,10)))
     :value?new Date(value):null;
-  return date && Number.isFinite(date.getTime())?date.toLocaleDateString('pt-BR'):'—';
+  return date && Number.isFinite(date.getTime())?formatDateBR(date):'—';
 }
 function dataTrustTone(status){
   const key=String(status||'').toUpperCase();
@@ -27694,7 +27730,12 @@ function reportsSnapshot(){
   });
 }
 function reportNumber(value){
-  return (Number(value)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const n=Number(value)||0;
+  const neg=n<0;
+  const m=Math.abs(n).toFixed(2);
+  const [int,dec]=m.split('.');
+  const intPart=int.replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+  return (neg?'-':'')+intPart+','+dec;
 }
 
 function formatDateBR(d){
@@ -30570,13 +30611,15 @@ function fpTopPayers(rows){
 function desktopTabs(){
   const sideLu=S.lastUpdate?S.lastUpdate.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—';
   const isAtivos=S.tab==='ativos';
+  const sidebarCollapsed=document.documentElement.dataset.sidebarCollapsed==='true';
   const navItem=(key,label,icon,active,count)=>`<button type="button" class="tab${active?' on':''}" onclick="go('${key}')"${active?' aria-current="page"':''} aria-label="${esc(label)}"><span class="side-nav-icon" aria-hidden="true">${fpIcon(key)||icon}</span><span>${esc(label)}</span>${Number.isFinite(count)&&count>0?`<span class="side-nav-count" aria-hidden="true">${count>999?'999+':count}</span>`:''}</button>`;
   const navItemInner=(tooltip,label,icon,active)=>`<button type="button" class="tab${active?' on':''}" onclick="goAssetInner('${tooltip}')"${active?' aria-current="page"':''} aria-label="${esc(label)}"><span class="side-nav-icon" aria-hidden="true">${icon}</span><span>${esc(label)}</span></button>`;
-  return `<nav class="tabs tabs-desktop" aria-label="Navegação principal da carteira">
+  return `<nav id="primaryDesktopNavigation" class="tabs tabs-desktop" aria-label="Navegação principal da carteira">
     <div class="side-brand">
       <div class="side-brand-icon" aria-hidden="true">${fpIcon('brand')}</div>
       <div class="side-brand-text"><div class="side-brand-name">Carteira</div><div class="side-brand-sub"><span class="side-avatar" aria-hidden="true">PS</span>Paulo Sérgio</div></div>
     </div>
+    <button type="button" class="sidebar-collapse-toggle" onclick="setSidebarCollapsed(! (document.documentElement.dataset.sidebarCollapsed==='true'))" aria-controls="primaryDesktopNavigation" aria-expanded="${sidebarCollapsed?'false':'true'}" aria-label="${sidebarCollapsed?'Expandir menu lateral':'Recolher menu lateral'}" title="${sidebarCollapsed?'Expandir menu lateral':'Recolher menu lateral'}"><span class="side-nav-icon" data-sidebar-toggle-icon aria-hidden="true">${sidebarCollapsed?'›':'‹'}</span><span data-sidebar-toggle-label>${sidebarCollapsed?'Expandir menu lateral':'Recolher menu lateral'}</span></button>
     <button class="portfolio-search-trigger" type="button" onclick="portfolioSearchOpen()" aria-label="Buscar na carteira" title="Buscar na carteira (Ctrl+K)"><span aria-hidden="true">⌕</span><span>Buscar na carteira</span><kbd>Ctrl K</kbd></button>
     ${navItem('dashboard','Resumo','📊',S.tab==='dashboard')}
     ${navItem('ativos','Ativos','💼',isAtivos,(S.assets||[]).length)}
@@ -30585,7 +30628,7 @@ function desktopTabs(){
     ${navItem('analise','Análise','📊',S.tab==='analise')}
     ${navItem('settings','Configurações','⚙️',S.tab==='settings')}
     <details class="nav-more" open>
-      <summary class="nav-more-summary">Planejar e acompanhar</summary>
+      <summary class="nav-more-summary" aria-label="Planejar e acompanhar">Planejar e acompanhar</summary>
       ${navItem('ia','Insights','💡',S.tab==='ia')}
       ${navItem('metas','Metas','🎯',S.tab==='metas')}
       ${navItem('patrimonio','Patrimônio','◈',S.tab==='patrimonio')}
@@ -30594,7 +30637,7 @@ function desktopTabs(){
       ${navItem('ajudar','Rebalancear','⚖️',S.tab==='ajudar')}
     </details>
     <details class="nav-more nav-advanced"${['confiabilidade','importacao'].includes(S.tab)||REPORT_TABS.some(t=>t[0]===S.tab)?' open':''}>
-      <summary class="nav-more-summary">Avançado</summary>
+      <summary class="nav-more-summary" aria-label="Avançado">Avançado</summary>
       ${navItem('importacao','Importar dados','⇅',S.tab==='importacao')}
       ${navItem('confiabilidade','Confiabilidade','🛡️',S.tab==='confiabilidade')}
       ${navTabGroup('Relatórios',REPORT_TABS,'desktop')}
@@ -39560,7 +39603,7 @@ function portfolioSearchText(value){
 }
 function portfolioSearchDate(value){
   const date=parseAnyDate(value);
-  return date ? date.toLocaleDateString('pt-BR') : String(value||'').trim();
+  return date ? formatDateBR(date) : String(value||'').trim();
 }
 function portfolioSearchValue(value){
   const n=Number(value);
@@ -42665,6 +42708,30 @@ html[data-theme="light"] body .data-quality-field,html[data-theme="light"] body 
   html body .premium-rf-page .premium-rf-filter-options{grid-template-columns:repeat(2,minmax(0,1fr))}
   html body .premium-rf-page .premium-rf-position-row>.premium-rf-row-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
   html body .premium-rf-page .premium-rf-position-row>.premium-rf-row-actions :is(.btn,.asset-detail-link,.premium-rf-act){min-height:44px;width:100%;min-width:0}
+}
+:root[data-ui-density="comfortable"]{
+  --fp-s3:14px;--fp-s4:18px;--fp-s5:22px;
+  --fp-gap:clamp(14px,1.25vw,22px);--fp-pad:clamp(18px,1.5vw,28px)
+}
+html body .tabs-desktop .sidebar-collapse-toggle{display:flex;align-items:center;gap:7px;width:100%;min-height:40px;padding:9px 10px;border:1px solid var(--fp-border);border-radius:10px;background:transparent;color:var(--fp-text-2);font:500 var(--fp-fs-ui)/1 var(--fp-font);text-align:left;cursor:pointer}
+html body .tabs-desktop .sidebar-collapse-toggle:hover{background:var(--fp-subtle);color:var(--fp-text)}
+@media(min-width:1181px){
+  html[data-sidebar-collapsed="true"] .tabs-desktop{width:72px;padding-inline:10px}
+  html[data-sidebar-collapsed="true"] .shell-main{margin-left:72px}
+  html[data-sidebar-collapsed="true"] .tabs-desktop .side-brand{justify-content:center;margin-inline:0;padding-inline:0}
+  html[data-sidebar-collapsed="true"] .tabs-desktop .side-brand-text,
+  html[data-sidebar-collapsed="true"] .tabs-desktop .portfolio-search-trigger>span:not([aria-hidden="true"]),
+  html[data-sidebar-collapsed="true"] .tabs-desktop .portfolio-search-trigger>kbd{display:none}
+  html[data-sidebar-collapsed="true"] .tabs-desktop .portfolio-search-trigger{min-width:44px;justify-content:center;padding-inline:0}
+  html[data-sidebar-collapsed="true"] .tabs-desktop .tab{justify-content:center;padding-inline:0}
+  html[data-sidebar-collapsed="true"] .tabs-desktop .tab>span:not(.side-nav-icon):not(.side-nav-count){display:none}
+  html[data-sidebar-collapsed="true"] .tabs-desktop .sidebar-collapse-toggle{justify-content:center;padding-inline:0}
+  html[data-sidebar-collapsed="true"] .tabs-desktop .sidebar-collapse-toggle>span:not([data-sidebar-toggle-icon]){display:none}
+  html[data-sidebar-collapsed="true"] .tabs-desktop .side-nav-count{position:absolute;top:1px;right:0;min-width:16px;padding:0 4px;font-size:9px}
+  html[data-sidebar-collapsed="true"] .tabs-desktop .nav-more-summary{justify-content:center;padding-inline:0;font-size:0}
+  html[data-sidebar-collapsed="true"] .tabs-desktop .nav-more-summary::after{margin-left:0;font-size:10px}
+  html[data-sidebar-collapsed="true"] .tabs-desktop .side-utility{justify-content:center;padding-inline:0;font-size:0}
+  html[data-sidebar-collapsed="true"] .tabs-desktop .side-status{display:none}
 }
 </style>
 </body>
