@@ -16631,7 +16631,7 @@ function b3ReviewPeriod(rows){
     .filter(Boolean)
     .sort((a,b)=>a-b);
   if(!dates.length) return 'Não identificado';
-  const format=date=>date.toLocaleDateString('pt-BR');
+  const format=date=>formatDateBR(date);
   return dates.length===1 ? format(dates[0]) : `${format(dates[0])} a ${format(dates[dates.length-1])}`;
 }
 function b3ConfirmImport(label, selected, duplicates=0, incomplete=0){
@@ -25114,7 +25114,7 @@ function dataTrustDate(value){
   const date=typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value)
     ?new Date(Number(value.slice(0,4)),Number(value.slice(5,7))-1,Number(value.slice(8,10)))
     :value?new Date(value):null;
-  return date && Number.isFinite(date.getTime())?date.toLocaleDateString('pt-BR'):'—';
+  return date && Number.isFinite(date.getTime())?formatDateBR(date):'—';
 }
 function dataTrustTone(status){
   const key=String(status||'').toUpperCase();
@@ -27694,7 +27694,12 @@ function reportsSnapshot(){
   });
 }
 function reportNumber(value){
-  return (Number(value)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const n=Number(value)||0;
+  const neg=n<0;
+  const m=Math.abs(n).toFixed(2);
+  const [int,dec]=m.split('.');
+  const intPart=int.replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+  return (neg?'-':'')+intPart+','+dec;
 }
 
 function formatDateBR(d){
@@ -39560,7 +39565,7 @@ function portfolioSearchText(value){
 }
 function portfolioSearchDate(value){
   const date=parseAnyDate(value);
-  return date ? date.toLocaleDateString('pt-BR') : String(value||'').trim();
+  return date ? formatDateBR(date) : String(value||'').trim();
 }
 function portfolioSearchValue(value){
   const n=Number(value);
