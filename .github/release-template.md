@@ -16,7 +16,7 @@
 - [ ] Manutencao
 
 ### Changelog
-Ver CHANGELOG.md
+Notas geradas pelo semantic-release acompanham o GitHub Release. O `CHANGELOG.md` do repositório não é atualizado automaticamente.
 
 ### Checklist
 - [ ] Todos os testes passam

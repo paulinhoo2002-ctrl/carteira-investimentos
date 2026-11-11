@@ -37,8 +37,10 @@ jobs:
       - name: Build
         run: npm run build && npm run build:modern
 
+      - name: Validate release workflow contract
+        run: node --test tests/release-automation.test.js
+
       - name: Semantic Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npx semantic-release

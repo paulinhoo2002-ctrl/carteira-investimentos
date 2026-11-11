@@ -162,7 +162,7 @@ node --test tests/qa-probes/m14*.test.js  # 400+ tests
 
 ### Production (Vercel)
 - Auto-deploy on merge to `main`
-- semantic-release creates version + tag + changelog
+- semantic-release creates a versioned tag and GitHub Release with generated notes. It does not commit package or changelog updates to protected `main`.
 - Vercel preview on every PR
 
 ### Firebase

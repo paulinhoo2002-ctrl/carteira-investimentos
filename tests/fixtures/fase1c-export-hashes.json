@@ -59,11 +59,11 @@
    "length": 6297
   },
   "parcial|complete|CSV": {
-   "sha": "be6fc7e80a7d1730",
+   "sha": "3c46c5f8f090c746",
    "length": 34390
   },
   "parcial|complete|JSON": {
-   "sha": "17056241e565ab5a",
+   "sha": "7b0917bf3b44a641",
    "length": 569850
   },
   "parcial|assets|CSV": {
@@ -71,7 +71,7 @@
    "length": 1918
   },
   "parcial|assets|JSON": {
-   "sha": "f00e4a2c08e4680d",
+   "sha": "10f704936bddb45f",
    "length": 510068
   },
   "parcial|proventos|CSV": {
@@ -79,15 +79,15 @@
    "length": 4470
   },
   "parcial|proventos|JSON": {
-   "sha": "78960e5b8a025e0d",
+   "sha": "1b17f8e8bf51ff5d",
    "length": 515456
   },
   "parcial|fixed|CSV": {
-   "sha": "e6b41cab166a8222",
+   "sha": "27f6c1da6c506de6",
    "length": 1391
   },
   "parcial|fixed|JSON": {
-   "sha": "42771f1146e3a8ae",
+   "sha": "696d0a8d9a7c8470",
    "length": 508146
   },
   "parcial|patrimony|CSV": {
@@ -95,7 +95,7 @@
    "length": 1734
   },
   "parcial|patrimony|JSON": {
-   "sha": "bfe89f435b09c786",
+   "sha": "28161b43676762b4",
    "length": 508854
   },
   "parcial|audit|CSV": {
@@ -103,7 +103,7 @@
    "length": 24686
   },
   "parcial|audit|JSON": {
-   "sha": "c07219f06b5b02b2",
+   "sha": "16790818c872dc54",
    "length": 549040
   },
   "parcial|irpf|CSV": {
