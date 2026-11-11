@@ -11699,7 +11699,7 @@ async function recordAccessAttempt(user, allowed, reason=''){
   try{
     if(!FB.db || !user?.uid) return;
     const ref = FB.db.collection('users').doc(user.uid);
-    await ref.set({
+    ref.set({
       email: user.email || '',
       displayName: user.displayName || '',
       photoURL: user.photoURL || '',
@@ -11709,7 +11709,7 @@ async function recordAccessAttempt(user, allowed, reason=''){
       loginCount: firebase.firestore.FieldValue.increment(1),
       lastReason: String(reason || ''),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge:true });
+    }, { merge:true }).catch(e=>debugWarn('log acesso:', e));
   }catch(e){
     debugWarn('log acesso:', e);
   }
