@@ -7,7 +7,7 @@
     "node": ">=22.14.0"
   },
   "scripts": {
-    "build": "node -e \"const fs=require('fs'); const files=['index.html','manifest.json','sw.js','v250-runtime.js','v250-offline-session.js']; for (const f of files) { if (!fs.existsSync(f)) { throw new Error('Missing file: ' + f); } } console.log('Build OK: static app validated.');\"",
+    "build": "node -e \"const fs=require('fs'); const files=['index.html','manifest.json','sw.js','v250-runtime.js','v250-offline-session.js']; for (const f of files) { if (!fs.existsSync(f)) { throw new Error('Missing file: ' + f); } } console.log('Build OK: static app validated.');\" && node scripts/verify-assets.js",
     "dev:modern": "vite --config modern/vite.config.ts",
     "build:modern": "vite build --config modern/vite.config.ts",
     "test:fase1": "node --test tests/chrome-path-helper.test.js tests/fase1-registration.test.js tests/api-yahoo-quote.test.js tests/csp-brapi-fallback.browser.test.js tests/fase1a-golden.test.js tests/fase1b-daily-variation.test.js tests/fase1c-indicator-states.test.js tests/assets-consolidated-results.test.js tests/dashboard-financial-state-display.test.js tests/fase1c-br-format.test.js tests/fase1c-monte-carlo.test.js tests/fase1c-export-integrity.test.js tests/fase1d-dashboard-rankings.test.js tests/fase1d-language.test.js tests/fase1d-quality.test.js",
