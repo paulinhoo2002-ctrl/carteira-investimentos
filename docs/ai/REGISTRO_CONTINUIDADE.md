@@ -2,7 +2,7 @@
 
 Registro legível por humanos e agentes. Documenta o estado; **não concede autorização**. Uma tarefa pendente nunca autoriza execução: cada ação depende de autorização explícita do proprietário registrada aqui em `DECISOES` ou na mensagem da missão.
 
-Ponto de entrada: [`PROJECT_STATE.md`](PROJECT_STATE.md) (seção "Atualização de continuidade"). Verificador offline: `npm run verify:continuity` (commit local `4dca2d7` (verificador, não publicado nesta branch)).
+Ponto de entrada: [`PROJECT_STATE.md`](PROJECT_STATE.md) (seção "Atualização de continuidade"). Verificador offline: `npm run verify:continuity`. Presente nesta branch local (`scripts/verify-continuity.js` e `tests/verify-continuity.test.js`, commit local `3434bc6`), funciona localmente e ainda não está publicado no GitHub nem integrado ao `main`.
 
 ## Convenções
 
