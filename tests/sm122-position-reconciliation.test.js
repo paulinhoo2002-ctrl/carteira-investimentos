@@ -86,3 +86,35 @@ test('CONCILIADA só com cobertura completa comprovada e quantidades iguais', ()
   const semCob = reconcilePosition({ ticker: 'SUZB3', qty: 36 }, FX.suzb3_two_buys, {});
   assert.notEqual(semCob.status, STATUS.CONCILIADA);
 });
+
+// SM122-R — apresentação dos estados de conciliação (não altera a lógica financeira).
+const { presentState, LABEL } = require('../position-reconciliation.js');
+
+test('R1. quantidades diferentes com histórico incompleto → "Divergência identificada · histórico incompleto"', () => {
+  const r = reconcilePosition({ ticker: 'SUZB3', qty: 21 }, FX.suzb3_two_buys, {});
+  assert.equal(presentState(r).label, 'Divergência identificada · histórico incompleto');
+});
+
+test('R2. quantidades iguais com histórico incompleto → "Quantidades coincidem · conciliação não comprovada" (nunca conciliada)', () => {
+  const r = reconcilePosition({ ticker: 'SUZB3', qty: 36 }, FX.suzb3_two_buys, {});
+  assert.equal(r.difference, 0);
+  assert.equal(presentState(r).label, 'Quantidades coincidem · conciliação não comprovada');
+  assert.notEqual(presentState(r).key, 'CONCILIADA');
+});
+
+test('R3. dados insuficientes (sem movimentos, preço ausente) → "Dados insuficientes para comparar"', () => {
+  assert.equal(presentState(reconcilePosition({ ticker: 'X', qty: 5 }, [], {})).label, 'Dados insuficientes para comparar');
+  const r = reconcilePosition({ ticker: 'SUZB3', qty: 36 }, FX.incomplete_price, { coverage: COVERAGE.COMPLETE });
+  assert.equal(presentState(r).label, 'Dados insuficientes para comparar');
+});
+
+test('R4. cobertura completa comprovada e quantidades iguais → "Posição conciliada"', () => {
+  const r = reconcilePosition({ ticker: 'SUZB3', qty: 36 }, FX.suzb3_two_buys, { coverage: COVERAGE.COMPLETE });
+  assert.equal(presentState(r).label, LABEL.CONCILIADA);
+  assert.equal(presentState(r).label, 'Posição conciliada');
+});
+
+test('R5. cobertura completa com quantidades diferentes → divergência (sem "conciliada")', () => {
+  const r = reconcilePosition({ ticker: 'SUZB3', qty: 21 }, FX.suzb3_two_buys, { coverage: COVERAGE.COMPLETE });
+  assert.equal(presentState(r).key, 'DIVERGENCIA');
+});

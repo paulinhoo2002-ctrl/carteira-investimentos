@@ -98,7 +98,27 @@
     };
   }
 
-  var api = { COVERAGE: COVERAGE, STATUS: STATUS, deriveFromMovements: deriveFromMovements, reconcilePosition: reconcilePosition };
+  // Apresentação (SM122-R): traduz o resultado de reconcilePosition em rótulo. Não recalcula nada.
+  // Quantidades iguais com cobertura não comprovada NUNCA viram "Posição conciliada".
+  var LABEL = {
+    INSUFICIENTE: 'Dados insuficientes para comparar',
+    DIVERGENCIA_INCOMPLETA: 'Divergência identificada · histórico incompleto',
+    COINCIDEM_NAO_COMPROVADA: 'Quantidades coincidem · conciliação não comprovada',
+    DIVERGENCIA: 'Divergência identificada',
+    CONCILIADA: 'Posição conciliada'
+  };
+  function presentState(r) {
+    if (!r || r.derivedQty == null || !r.complete) return { key: 'INSUFICIENTE', label: LABEL.INSUFICIENTE };
+    var same = Math.abs(r.difference) < 1e-9;
+    if (r.coverage !== COVERAGE.COMPLETE) {
+      return same
+        ? { key: 'COINCIDEM_NAO_COMPROVADA', label: LABEL.COINCIDEM_NAO_COMPROVADA }
+        : { key: 'DIVERGENCIA_INCOMPLETA', label: LABEL.DIVERGENCIA_INCOMPLETA };
+    }
+    return same ? { key: 'CONCILIADA', label: LABEL.CONCILIADA } : { key: 'DIVERGENCIA', label: LABEL.DIVERGENCIA };
+  }
+
+  var api = { COVERAGE: COVERAGE, STATUS: STATUS, LABEL: LABEL, deriveFromMovements: deriveFromMovements, reconcilePosition: reconcilePosition, presentState: presentState };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.PositionReconciliation = api;
 })(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : this));

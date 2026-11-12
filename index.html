@@ -22946,7 +22946,8 @@ function irpfReconciliationAlerts(){
   const movs=(S.aportes||[]).filter(m=>!isNeutralMovement(m));
   (S.assets||[]).filter(a=>!isRendaFixaAsset(a)).slice(0,40).forEach(a=>{
     const r=PR.reconcilePosition({ticker:a.ticker,qty:a.qty},movs,{});
-    if(r.status===PR.STATUS.NAO_CONCILIADA) items.push({tone:'warn',label:'Posição não conciliada com lançamentos',value:String(a.ticker||'—'),hint:'Cobertura histórica não comprovada: a quantidade pode não representar a posição atual. Conferir antes de declarar.'});
+    const st=PR.presentState(r);
+    if(st.key!=='CONCILIADA') items.push({tone:'warn',label:st.label,value:String(a.ticker||'—'),hint:(r.notice||'Conferir antes de declarar.')});
   });
   return items;
 }
@@ -34212,11 +34213,14 @@ function assetReconciliationNote(a){
   const PR=window.PositionReconciliation;
   const movs=(S.aportes||[]).filter(m=>!isNeutralMovement(m));
   const r=PR.reconcilePosition({ticker:a.ticker,qty:a.qty},movs,{});
-  if(r.status===PR.STATUS.SEM_MOVIMENTOS) return '<span class="recon-note" style="display:block;font-size:11px;color:var(--muted,#64748b)">Registrada sem lançamentos para comparar · data de referência: desconhecida</span>';
+  const st=PR.presentState(r);
   const diff=r.difference==null?'':` · diferença ${r.difference>0?'+':''}${formatQuantity(r.difference,a.type)}`;
+  const derived=r.derivedQty==null?'':` · derivada dos lançamentos ${formatQuantity(r.derivedQty,a.type)}`;
   const ref=r.referenceDate?`último lançamento ${esc(r.referenceDate)}`:'data de referência desconhecida';
-  return `<span class="recon-note" role="note" style="display:block;font-size:11px;line-height:1.35;color:#b45309"><strong>NÃO CONCILIADA</strong> · registrada ${formatQuantity(r.registeredQty,a.type)} · derivada dos lançamentos ${formatQuantity(r.derivedQty,a.type)}${diff} · ${ref}<br>${esc(r.notice||'')}</span>`;
+  const color=st.key==='CONCILIADA'?'#15803d':'#b45309';
+  return `<span class="recon-note" role="note" style="display:block;font-size:11px;line-height:1.35;color:${color}"><strong>${esc(st.label)}</strong> · registrada ${formatQuantity(r.registeredQty,a.type)}${derived}${diff} · ${ref}<br>${esc(r.notice||'')}</span>`;
 }
+
 function ativos(){
   const innerTab = ['analise','desempenho','renda-fixa','alocacao'].includes(String(S.assetsInnerTab||'patrimonio')) ? String(S.assetsInnerTab) : 'patrimonio';
   const ativosCategoryIcon = type => ({
