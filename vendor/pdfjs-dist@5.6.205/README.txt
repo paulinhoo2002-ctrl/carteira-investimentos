@@ -1,0 +1,1 @@
+pdfjs-dist 5.6.205 (Apache-2.0). Arquivo pdf.worker.mjs copiado do pacote npm pdfjs-dist@5.6.205 (legacy/build), SHA-256 499da1f7f1c6c24be898b556638d2ffec999b2ad234c796508e3d7c7025c28cb, idêntico ao servido pelo CDN na mesma versão.
