@@ -1,6 +1,6 @@
 # Próximo passo oficial
 
-> **Estado atual (SM100.4, 2026-11-12):** o registro canônico é [`REGISTRO_CONTINUIDADE.md`](REGISTRO_CONTINUIDADE.md); o estado resumido está em [`PROJECT_STATE.md`](PROJECT_STATE.md). Este arquivo guarda só o passo de 2026-11-01 e não autoriza nada por estar aqui.
+> **Estado atual (SM100.9, 2026-11-12):** memória publicada na branch `docs/sm100-memoria-permanente` (`e1d6bb1`), ainda não integrada ao `main`. O registro canônico é [`REGISTRO_CONTINUIDADE.md`](REGISTRO_CONTINUIDADE.md); o estado resumido está em [`PROJECT_STATE.md`](PROJECT_STATE.md). Este arquivo guarda só o passo de 2026-11-01 e não autoriza nada por estar aqui.
 
 **Próxima prioridade:** homologação Android físico do PWA em `https://sm95-homolog-443691a.vercel.app` (SHA `443691a`, projeto Vercel isolado, apenas homologação). Sem esse resultado, a SM95 não está homologada e a SM94 segue bloqueada.
 
