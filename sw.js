@@ -529,6 +529,35 @@ function clearAllCaches() {
   });
 }
 
+// SM109: rotas network-first (navegação, scripts, estilos, json, manifest) com prazo. Sem prazo, uma rede que não responde
+// deixa a página em branco: os scripts síncronos do index.html ficam pendentes. Após NAV_NETWORK_TIMEOUT_MS cai para o cache.
+// Disjuntor: depois de um prazo esgotado, por NETWORK_DEGRADED_MS as próximas requisições com cópia EXATA em cache usam o
+// cache direto, e as sem cópia falham na hora, para não somar um prazo por script. Versão e URL (incl. ?v=) determinam a cópia.
+var NAV_NETWORK_TIMEOUT_MS = 4000;
+var NETWORK_DEGRADED_MS = 60000;
+var networkDegradedUntil = 0;
+function fetchNetworkNow(request) {
+  return new Promise(function(resolve, reject) {
+    var timer = setTimeout(function() {
+      networkDegradedUntil = Date.now() + NETWORK_DEGRADED_MS;
+      reject(new Error('NAV_NETWORK_TIMEOUT'));
+    }, NAV_NETWORK_TIMEOUT_MS);
+    fetch(request, { cache: 'no-store' }).then(function(response) {
+      clearTimeout(timer); resolve(response);
+    }, function(error) {
+      clearTimeout(timer); reject(error);
+    });
+  });
+}
+function fetchNetworkWithTimeout(request) {
+  if (Date.now() < networkDegradedUntil) {
+    return caches.match(request).then(function(cached) {
+      return cached || Promise.reject(new Error('NETWORK_DEGRADED'));
+    });
+  }
+  return fetchNetworkNow(request);
+}
+
 self.addEventListener('fetch', function(event) {
   var request = event.request;
 
@@ -544,7 +573,7 @@ self.addEventListener('fetch', function(event) {
 
   if (request.mode === 'navigate') {
     event.respondWith((function() {
-      return fetch(request, { cache: 'no-store' }).then(function(fresh) {
+      return fetchNetworkWithTimeout(request).then(function(fresh) {
         if (fresh.ok) {
           return caches.open(CACHE_DYNAMIC).then(function(cache) {
             return cache.put(request, fresh.clone()).then(function() {
@@ -568,7 +597,7 @@ self.addEventListener('fetch', function(event) {
   if (CRITICAL_RUNTIME_PATHS.has(url.pathname)) {
     event.respondWith((function() {
       return caches.open(CACHE_STATIC).then(function(cache) {
-        return fetch(request, { cache: 'no-store' }).then(function(fresh) {
+        return fetchNetworkWithTimeout(request).then(function(fresh) {
           if (fresh.ok && fresh.type === 'basic') {
             return cache.put(request, fresh.clone()).then(function() { return fresh; });
           }
@@ -584,7 +613,7 @@ self.addEventListener('fetch', function(event) {
   if (isVersionSensitiveAsset(request, url)) {
     event.respondWith((function() {
       return caches.open(CACHE_STATIC).then(function(cache) {
-        return fetch(request, { cache: 'no-store' }).then(function(fresh) {
+        return fetchNetworkWithTimeout(request).then(function(fresh) {
           if (fresh.ok && fresh.type === 'basic') {
             return cache.put(request, fresh.clone()).then(function() { return fresh; });
           }
