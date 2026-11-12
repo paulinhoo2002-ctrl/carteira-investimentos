@@ -13424,7 +13424,7 @@ async function loadPdfJs(){
     window.__pdfjsPromise = import('https://cdn.jsdelivr.net/npm/pdfjs-dist@5.6.205/legacy/build/pdf.mjs')
       .then(mod=>{
         try{
-          mod.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@5.6.205/legacy/build/pdf.worker.mjs';
+          mod.GlobalWorkerOptions.workerSrc='./vendor/pdfjs-dist@5.6.205/pdf.worker.mjs';
         }catch(e){}
         window.__pdfjsLib = mod;
         return mod;
