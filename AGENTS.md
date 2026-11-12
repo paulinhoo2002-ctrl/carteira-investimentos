@@ -93,6 +93,12 @@ Ao iniciar uma tarefa relevante neste repositório:
 7. Valide com os testes, build e navegador aplicáveis.
 8. Registre decisões duradouras na memória/documentação apropriada.
 
+## Registro de continuidade
+
+Antes de trabalhar, consultar `docs/ai/PROJECT_STATE.md` (estado atual) e `docs/ai/REGISTRO_CONTINUIDADE.md` (tarefas, bloqueios, decisões e missões). Ao terminar uma missão, atualizar o registro conforme `docs/ai/HANDOFF_PROTOCOL.md` e rodar `npm run verify:continuity`.
+
+O registro documenta o estado e não concede autorização: tarefa pendente não autoriza execução. Estados de entrega (implementado localmente, commitado localmente, publicado, PR aberto, integrado ao `main`, implantado, homologado) não são equivalentes.
+
 ## PROJECT BOOTSTRAP
 
 Before doing ANY work in this repository:
