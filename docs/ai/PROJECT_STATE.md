@@ -1,5 +1,27 @@
 # Estado atual da Carteira LEGACY
 
+## Atualização de continuidade (SM100, 2026-11-11)
+
+Este bloco é o ponto de entrada atual. O conteúdo abaixo dele pode estar anterior a 2026-11-11.
+
+- Projeto: Carteira de Investimentos (`paulinhoo2002-ctrl/carteira-investimentos`). Checkout canônico: `C:\Projetos\carteira-investimentos`.
+- Branch principal do repositório: `main`, em `58827aa` (`origin/main`).
+- Estado de publicação: SM99 commitada localmente (`6c4962761dc1933fcac6db633abb494ff2031993`, branch `codex/sm99-export-contract`), **não publicada**. PR #577 em Draft (boot da PWA), sem merge.
+- Testes: `fase1c-export-integrity` falha no CI do PR #577 e em `origin/main`. Após a SM99, 14 dos 26 hashes da fixture divergem.
+- Homologação: **nenhuma homologação em Android físico**. Nenhuma tela foi aprovada visualmente pelo proprietário. Uso financeiro real **não homologado**.
+- Registro estruturado de tarefas, bloqueios, decisões e missões: [`REGISTRO_CONTINUIDADE.md`](REGISTRO_CONTINUIDADE.md). Verificar com `npm run verify:continuity`.
+- SM95.4 (homologação Android isolada, PREPARAÇÃO, não executada): fonte `443691a` em `codex/sm95-android-boot`, fora de `origin/main`; relação com PR #577 não comprovada. SM95 **não homologada**; Android físico pendente; SM94 bloqueada. Nenhum ambiente Vercel de homologação criado; nenhum Firebase de teste criado; CSP de `vercel.json` não modificada (`unsafe-eval` em `script-src`, dependência não comprovada; Firebase de produção em `connect-src`). Plano e critérios GO/NO-GO em `output/` da worktree SM95 (`docs/ai/SM95_4_HOMOLOGACAO_ANDROID.md`), não integrado a `main`. Bloqueios B-06, B-07, B-08.
+- SM99: contrato aditivo commitado localmente (`6c4962761dc1933fcac6db633abb494ff2031993`, branch `codex/sm99-export-contract`), NÃO publicado (B-05).
+- SM100: memória operacional em `docs/ai/` implementada e commitada localmente (`4dca2d7`). Verificador offline: `npm run verify:continuity`.
+- SM95.6: homologação PWA publicada por CLI em `https://sm95-homolog-443691a.vercel.app` (projeto Vercel `sm95-homolog-443691a`, sem Git, sem variáveis). SHA de origem: `443691a`. Produção NÃO modificada.
+- Homologação: testes de navegador desktop (boot, reabertura, offline, manifest, Service Worker) passaram sem erro de console. Exportação, importação e backup NÃO EXECUTÁVEIS sem Firebase (não há contorno de autenticação). Android físico: PENDENTE. Firebase de teste: INEXISTENTE.
+- CSP: variante de homologação sem `unsafe-eval` testada apenas no boot (sem violações). Produção inalterada; decisão pendente (B-08).
+- PR #577: Draft, não integrado a `main`. Estado remoto NÃO conferido nesta auditoria (sujeito à conferência remota). Relação de `443691a` com o PR #577 NÃO comprovada.
+- SM94: BLOQUEADA até resultado Android (B-09).
+- SM101: EM ANDAMENTO, não concluído, em worktree própria (`sm101-export-integrity`, `codex/sm101-export-integrity`, base `4dca2d7`) com alterações NÃO commitadas. Determinismo do helper de títulos sintéticos corrigido com teste de regressão (não commitado). Hashes da fixture **não** atualizados; 14 divergências permanecem: 12 JSON e 2 CSV parciais (origem NÃO COMPROVADA). Detalhes em `REGISTRO_CONTINUIDADE.md`.
+- A-02: proveniência histórica insuficiente (B-03). Uso financeiro real NÃO homologado.
+- Próxima ação **autorizada**: nenhuma. Qualquer commit, publicação, teste no aparelho ou criação de recurso externo exige autorização explícita do proprietário.
+
 > Nesta branch de governança, o roteador canônico de Skills está em `.agents/SKILL_ROUTER.md`; o seletor usa o inventário local versionado e não depende de chat ou modelo. Esta proposta ainda não está integrada em `main`.
 
 DATE=2026-10-27

@@ -1,5 +1,15 @@
 # Próximo passo oficial
 
+> **Estado atual (SM100.4, 2026-11-12):** o registro canônico é [`REGISTRO_CONTINUIDADE.md`](REGISTRO_CONTINUIDADE.md); o estado resumido está em [`PROJECT_STATE.md`](PROJECT_STATE.md). Este arquivo guarda só o passo de 2026-11-01 e não autoriza nada por estar aqui.
+
+**Próxima prioridade:** homologação Android físico do PWA em `https://sm95-homolog-443691a.vercel.app` (SHA `443691a`, projeto Vercel isolado, apenas homologação). Sem esse resultado, a SM95 não está homologada e a SM94 segue bloqueada.
+
+**Próximas dependências:** Firebase de teste separado (T-FB-01, B-07) e integridade das exportações (T-EXP-01, B-04).
+
+**SM101 em andamento:** worktree `sm101-export-integrity` com alterações não commitadas. Não presumir conclusão nem atualizar hashes sem decisão do proprietário.
+
+**Restrições:** produção intocada; PR #577 em Draft e não integrado; sem deploy, merge ou release sem autorização explícita; dados financeiros reais não homologados (A-02, B-03); sem Firebase de produção nos testes.
+
 OPERATING_MODE=MAINTENANCE_AND_DATA_CERTIFICATION_MODE
 VISUAL_PHASE=UX_OVERLOAD_REDUCTION_IN_PROGRESS (PR #542)
 

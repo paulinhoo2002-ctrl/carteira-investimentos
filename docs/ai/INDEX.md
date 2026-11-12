@@ -5,6 +5,7 @@ Start an agent session in this order:
 1. `AGENTS.md`
 2. `docs/ai/INDEX.md`
 3. `docs/ai/PROJECT_STATE.md`
+3a. `docs/ai/REGISTRO_CONTINUIDADE.md` (tarefas, bloqueios, decisões e missões com estados verificáveis; verificar com `npm run verify:continuity`)
 4. `docs/ai/NEXT_STEP.md`
 5. `docs/ai/CURRENT_PROJECT_MAP.md`
 6. docs/ai/LEGACY_FINAL_RELEASE_2026-10-17.md for the latest release record
