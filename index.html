@@ -11,8 +11,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://apis.google.com" crossorigin>
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=arrow_back,arrow_forward,home,settings,person,attach_money,trending_up,trending_down,account_balance,analytics,receipt,credit_card,savings,pie_chart,bar_chart,show_chart,assessment,flag,warning,error,check_circle,cancel,help,info,menu,close,search,filter_list,sort,download,upload,cloud,cloud_off,sync,refresh,autorenew,lock,lock_open,visibility,visibility_off,edit,delete,add,remove,create,star,star_border,favorite,favorite_border,thumb_up,thumb_down,share,link,copy,print,mail,chat,phone,call,video_call,videocam,photo_camera,image,music_note,video_library,movie,live_tv,ondemand_video,playlist_play,queue_music,radio,mic,mic_off,volume_up,volume_down,volume_off,volume_mute,playlist_add,queue,skip_next,skip_previous,repeat,shuffle,loop,fast_forward,fast_rewind,play_circle,pause_circle,stop,replay,replay_10,replay_30,forward_10,forward_30&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=arrow_back,arrow_forward,home,settings,person,attach_money,trending_up,trending_down,account_balance,analytics,receipt,credit_card,savings,pie_chart,bar_chart,show_chart,assessment,flag,warning,error,check_circle,cancel,help,info,menu,close,search,filter_list,sort,download,upload,cloud,cloud_off,sync,refresh,autorenew,lock,lock_open,visibility,visibility_off,edit,delete,add,remove,create,star,star_border,favorite,favorite_border,thumb_up,thumb_down,share,link,copy,print,mail,chat,phone,call,video_call,videocam,photo_camera,image,music_note,video_library,movie,live_tv,ondemand_video,playlist_play,queue_music,radio,mic,mic_off,volume_up,volume_down,volume_off,volume_mute,playlist_add,queue,skip_next,skip_previous,repeat,shuffle,loop,fast_forward,fast_rewind,play_circle,pause_circle,stop,replay,replay_10,replay_30,forward_10,forward_30&display=swap" media="print" onload="this.media='all'">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
@@ -8952,12 +8952,26 @@ summary:focus-visible,
 <input type="file" id="nota-file" accept=".xlsx,.xls,.csv" style="display:none">
 <input type="file" id="broker-note-pdf-file" accept=".pdf,application/pdf" style="display:none">
 <script>
-(()=>{if(window.__LOCAL_TEST_MODE__) return;
-document.write([
-  '<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"><\/script>',
-  '<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"><\/script>',
-  '<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"><\/script>'
-].join(''));})();
+/* SM95: Firebase carregado sem bloquear o parser (document.write travava a abertura com rede lenta/travada).
+   Espera limitada: após 8 s segue sem Firebase, e initFirebase trata a ausência como antes. */
+window.__FIREBASE_READY__=new Promise(resolve=>{
+  if(window.__LOCAL_TEST_MODE__){ resolve(false); return; }
+  const urls=[
+    'https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js',
+    'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js',
+    'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js'
+  ];
+  let pending=urls.length;
+  let timedOut=false;
+  const timer=setTimeout(()=>{ timedOut=true; resolve(!!window.firebase); },8000);
+  urls.forEach(src=>{
+    const s=document.createElement('script');
+    s.src=src; s.async=false;
+    s.onload=()=>{ if(--pending===0){ clearTimeout(timer); if(timedOut){ window.__FIREBASE_LATE__=true; if(!FB.app && window.firebase){ try{ initFirebase(); render(); }catch(e){ console.error("firebase tardio:",e); } } } else resolve(!!window.firebase); } };
+    s.onerror=()=>{ clearTimeout(timer); resolve(false); };
+    document.head.appendChild(s);
+  });
+});
 </script>
 <script>
 // M1022-M1025: xlsx (269KB na rede, 26% da carga fria) carregado SOB DEMANDA — usado
@@ -11699,7 +11713,7 @@ async function recordAccessAttempt(user, allowed, reason=''){
   try{
     if(!FB.db || !user?.uid) return;
     const ref = FB.db.collection('users').doc(user.uid);
-    await ref.set({
+    ref.set({
       email: user.email || '',
       displayName: user.displayName || '',
       photoURL: user.photoURL || '',
@@ -11709,7 +11723,7 @@ async function recordAccessAttempt(user, allowed, reason=''){
       loginCount: firebase.firestore.FieldValue.increment(1),
       lastReason: String(reason || ''),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge:true });
+    }, { merge:true }).catch(e=>debugWarn('log acesso:', e));
   }catch(e){
     debugWarn('log acesso:', e);
   }
@@ -40292,7 +40306,7 @@ if(isActiveWalletHostMode()){
   render();
 }else{
   initEditProtection();
-  initFirebase();
+  window.__FIREBASE_READY__.then(()=>{ initFirebase(); render(); });
   render();
   const schedulePublicEventsSync=()=>{
     if(!navigator.onLine) return;
