@@ -42,6 +42,9 @@ const FS = `http://127.0.0.1:8086/v1/projects/${PROJECT}/databases/(default)/doc
 const KEY = 'demo-api-key';
 const OWNER_EMAIL = 'paulinhoo2002@gmail.com'; // hardcoded in canonical firestore.rules (isOwnerAccount)
 const OWNER_PASS = 'M594-Pass-123';
+// uid fixo exigido por firestore.rules (isOwnerAccount): request.auth.uid == este valor.
+// A conta do dono precisa ser criada com este localId, senão o caso "verified owner ALLOWED" nunca pode passar.
+const OWNER_UID = 'yaypxiiv7Ye7pwpDZ0nqhG3Yj7E3';
 
 async function request(url, options = {}) {
   return fetch(url, { ...options, signal: AbortSignal.timeout(12000) });
@@ -92,6 +95,19 @@ async function markEmailVerified(idToken) {
   assert.equal(update.ok, true, `accounts:update (verify) failed: HTTP ${update.status}`);
 }
 
+// Cria a conta do dono com o localId fixo das regras (API administrativa do emulador, sem verificação).
+async function ensureOwnerAccount() {
+  const res = await request(`${AUTH}/identitytoolkit.googleapis.com/v1/projects/${PROJECT}/accounts`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: 'Bearer owner' },
+    body: JSON.stringify({ localId: OWNER_UID, email: OWNER_EMAIL, password: OWNER_PASS, emailVerified: false }),
+  });
+  if (res.ok) return;
+  const body = await res.json().catch(() => ({}));
+  const msg = body && body.error && body.error.message ? body.error.message : '';
+  assert.ok(msg.includes('EMAIL_EXISTS'), `criação do dono com localId fixo falhou: HTTP ${res.status} ${msg}`);
+}
+
 async function freshVerifiedAccount(email) {
   const first = await signUpOrIn(email, 'M594-Pass-123');
   await markEmailVerified(first.idToken);
@@ -130,6 +146,7 @@ test('R01: unauthenticated read and write of portfolio are denied', async () => 
 test('OWNER LIFECYCLE: unverified owner-email DENIED everywhere, verified owner ALLOWED (R05,R11 → R02,R03,R03b,R08,R09)', async () => {
   // Phase 1 — fresh UNVERIFIED account bearing the owner email: denied on the
   // admin registry AND on its own financial documents (M595 verified gate).
+  await ensureOwnerAccount();
   const unverifiedOwner = await signUpOrIn(OWNER_EMAIL, OWNER_PASS);
   const unvPortfolioRead = await fsGet(unverifiedOwner.idToken, `portfolios/${unverifiedOwner.localId}`);
   denied(unvPortfolioRead.status, 'R05 unverified owner-email read own portfolio');
@@ -144,6 +161,7 @@ test('OWNER LIFECYCLE: unverified owner-email DENIED everywhere, verified owner 
   // email_verified=true): the positive authorization of the verified owner.
   await markEmailVerified(unverifiedOwner.idToken);
   const owner = await signIn(OWNER_EMAIL, OWNER_PASS);
+  assert.equal(owner.localId, OWNER_UID, 'a conta do dono precisa ter o UID fixo exigido por firestore.rules');
   const write = await fsWrite(owner.idToken, `portfolios/${owner.localId}`, { probe: { stringValue: 'owner-write-ok' } });
   allowed(write.status, 'R03 verified owner write own portfolio');
   const read = await fsGet(owner.idToken, `portfolios/${owner.localId}`);
