@@ -26,6 +26,11 @@ async function seedGoal(page, target = 25000) {
   }, target);
 }
 
+async function openImportCenter(page) {
+  await page.locator('#root .nav-advanced > summary').click();
+  await page.getByRole('button', { name: 'Importar dados', exact: true }).click();
+}
+
 async function closeApp(app) {
   await app.browser.close();
   app.harness.server.closeAllConnections();
@@ -77,6 +82,10 @@ test('E1 Metas: carteira sem dados mantém patrimônio e progresso indisponívei
       text: node.innerText,
       progressBars: node.querySelectorAll('.metas-primary-goal-progress').length,
     }));
+    await app.page.locator('.metas-kpi-grid').evaluate(node => {
+      const details = node.closest('details');
+      if (details) details.open = true;
+    });
     const secondaryValues = await app.page.locator('.metas-kpi-grid .metas-kpi-card .metas-kpi-value').allInnerTexts();
     assert.match(state.text, /Meta definida/);
     assert.match(state.text, /Patrimônio atual\s+Sem leitura atual/);
@@ -271,7 +280,7 @@ test('E3 Importar: seleção, prévia protegida, duplicidade e cancelamento não
       window.__v293StorageBefore = JSON.stringify(Object.keys(localStorage).sort().map(key => [key, localStorage.getItem(key)]));
       window.__v293FinancialStateBefore = JSON.stringify({ assets: S.assets, aportes: S.aportes, proventos: S.proventos, rfEvents: S.rfEvents, goals: S.goals });
     });
-    await app.page.getByRole('button', { name: 'Importar dados', exact: true }).click();
+    await openImportCenter(app.page);
     const empty = await app.page.evaluate(() => ({
       step: S.importCenterSession?.step || 1,
       hasEmptyMessage: /Nenhum arquivo selecionado/.test(document.querySelector('.import-center-shell')?.innerText || ''),
@@ -426,7 +435,7 @@ test('E3 Importar: seleção, prévia protegida, duplicidade e cancelamento não
 test('E3 Importar: seleção é primeira e catálogo secundário em sete larguras e dois temas', async () => {
   const app = await createApp();
   try {
-    await app.page.getByRole('button', { name: 'Importar dados', exact: true }).click();
+    await openImportCenter(app.page);
     for (const theme of ['dark', 'light']) {
       await app.page.evaluate(value => {
         if (value === 'light') document.documentElement.setAttribute('data-theme', 'light');
