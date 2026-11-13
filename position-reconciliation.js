@@ -28,7 +28,10 @@
       else { seen[String(m.id)] = true; }
       var q = Math.abs(Number(m.qty));
       if (!(q > 0)) { flags.push('MOVEMENT_QUANTITY_UNKNOWN'); complete = false; return; }
-      var op = String(m.operation || m.op || 'compra').toLowerCase();
+      // Operação ausente ou desconhecida NÃO vira compra: a posição fica incompleta (SM132, P1).
+      var rawOp = m.operation != null && m.operation !== '' ? m.operation : m.op;
+      var op = String(rawOp == null ? '' : rawOp).trim().toLowerCase();
+      if (['compra', 'buy', 'purchase', 'venda', 'sell'].indexOf(op) === -1) { flags.push('OPERATION_UNKNOWN'); complete = false; return; }
       if (op === 'venda' || op === 'sell') {
         if (qty <= 0) { flags.push('SALE_WITHOUT_POSITION'); complete = false; return; }
         var sold = Math.min(q, qty);
