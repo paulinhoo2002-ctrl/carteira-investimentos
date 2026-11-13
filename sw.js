@@ -531,18 +531,21 @@ function clearAllCaches() {
 
 // SM109: rotas network-first (navegação, scripts, estilos, json, manifest) com prazo. Sem prazo, uma rede que não responde
 // deixa a página em branco: os scripts síncronos do index.html ficam pendentes. Após NAV_NETWORK_TIMEOUT_MS cai para o cache.
-// Disjuntor (SM132): depois de um prazo esgotado, por NETWORK_DEGRADED_MS as requisições com cópia EXATA em cache usam o
-// cache direto. As sem cópia recebem UMA tentativa de rede com o mesmo prazo limitado (não falham na hora, para não
-// derrubar recursos saudáveis). Qualquer resposta da rede (status < 500) fecha o disjuntor. Versão e URL (incl. ?v=) determinam a cópia.
+// Disjuntor (SM132): depois de um prazo esgotado, por NETWORK_DEGRADED_MS os recursos com cópia EXATA em cache usam o
+// cache direto. Os sem cópia não falham na hora: têm teto de UNCACHED_NETWORK_TIMEOUT_MS. Qualquer resposta da rede
+// com status < 500 fecha o disjuntor. Versão e URL (incl. ?v=) determinam a cópia. Navegação não usa o atalho.
 var NAV_NETWORK_TIMEOUT_MS = 4000;
+// SM132 (revisão e medição): recurso SEM cópia recebe teto maior (20 s). Com 4 s, script novo de rede lenta (5 s e 8 s) falhava.
+// Teto finito: rede travada não espera indefinidamente.
+var UNCACHED_NETWORK_TIMEOUT_MS = 20000;
 var NETWORK_DEGRADED_MS = 60000;
 var networkDegradedUntil = 0;
-function fetchNetworkNow(request) {
+function fetchNetworkNow(request, timeoutMs) {
   return new Promise(function(resolve, reject) {
     var timer = setTimeout(function() {
       networkDegradedUntil = Date.now() + NETWORK_DEGRADED_MS;
       reject(new Error('NAV_NETWORK_TIMEOUT'));
-    }, NAV_NETWORK_TIMEOUT_MS);
+    }, timeoutMs);
     fetch(request, { cache: 'no-store' }).then(function(response) {
       clearTimeout(timer);
       if (response.status < 500) networkDegradedUntil = 0;
@@ -552,13 +555,13 @@ function fetchNetworkNow(request) {
     });
   });
 }
+// Recursos versionados (scripts, estilos, json, manifest). Com cópia exata: prazo de NAV_NETWORK_TIMEOUT_MS e cai no cache
+// (o chamador faz o fallback). Sem cópia: teto UNCACHED_NETWORK_TIMEOUT_MS. Disjuntor aberto: cópia exata responde direto.
 function fetchNetworkWithTimeout(request) {
-  if (Date.now() < networkDegradedUntil) {
-    return caches.match(request).then(function(cached) {
-      return cached || fetchNetworkNow(request);
-    });
-  }
-  return fetchNetworkNow(request);
+  return caches.match(request).then(function(cached) {
+    if (cached && Date.now() < networkDegradedUntil) return cached;
+    return fetchNetworkNow(request, cached ? NAV_NETWORK_TIMEOUT_MS : UNCACHED_NETWORK_TIMEOUT_MS);
+  });
 }
 
 self.addEventListener('fetch', function(event) {
@@ -576,7 +579,8 @@ self.addEventListener('fetch', function(event) {
 
   if (request.mode === 'navigate') {
     event.respondWith((function() {
-      return fetchNetworkWithTimeout(request).then(function(fresh) {
+      // Navegação não usa o atalho do disjuntor: sempre tenta a rede, com o prazo de 4 s, e cai no cache depois.
+      return fetchNetworkNow(request, NAV_NETWORK_TIMEOUT_MS).then(function(fresh) {
         if (fresh.ok) {
           return caches.open(CACHE_DYNAMIC).then(function(cache) {
             return cache.put(request, fresh.clone()).then(function() {

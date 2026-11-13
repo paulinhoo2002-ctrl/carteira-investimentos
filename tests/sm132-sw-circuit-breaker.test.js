@@ -17,6 +17,7 @@ const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascri
 function startServer() {
   let delayMs = 0;
   let delayPaths = [];
+  const hits = {}; // contagem de requisições que chegaram à origem, por caminho (prova de rede, não de cache)
   const server = http.createServer((req, res) => {
     const u = new URL(req.url, 'http://127.0.0.1');
     if (u.pathname === '/__delay') {
@@ -25,8 +26,13 @@ function startServer() {
       res.end('ok');
       return;
     }
+    if (u.pathname === '/__hits') {
+      res.end(String(hits[u.searchParams.get('path') || ''] || 0));
+      return;
+    }
     let p = decodeURIComponent(u.pathname);
     if (p === '/') p = '/index.html';
+    hits[p] = (hits[p] || 0) + 1;
     const file = path.join(repo, p);
     const send = () => fs.readFile(file, (err, data) => {
       if (err) { res.writeHead(404); res.end(); return; }
@@ -37,6 +43,7 @@ function startServer() {
   });
   return new Promise(resolve => server.listen(0, '127.0.0.1', () => resolve({
     base: `http://127.0.0.1:${server.address().port}`,
+    hits: p => hits[p] || 0,
     close: () => server.close(),
   })));
 }
@@ -114,7 +121,8 @@ test('rede continuamente travada: nenhuma espera indefinida; navegação cai no 
     assert.ok(navMs < 12000, `navegação esperou demais: ${navMs} ms`);
     const stuck = await probe(page, server.base, 'stuck');
     console.log('[SM132 medição] recurso sem cache com rede travada:', JSON.stringify(stuck));
-    assert.ok(stuck.ms < 10000, `requisição travada sem limite: ${stuck.ms} ms`);
+    // Teto de 20 s para recurso sem cópia (UNCACHED_NETWORK_TIMEOUT_MS): nunca espera indefinidamente.
+    assert.ok(stuck.ms < 25000, `requisição travada sem limite: ${stuck.ms} ms`);
     await setDelay(page, server.base, 0, '');
   });
 });
@@ -144,5 +152,41 @@ test('offline com cache aquecido: navegação renderiza', async () => {
     const rendered = await page.waitForFunction(() => (document.body.innerText || '').trim().length > 40, null, { timeout: 10000 }).then(() => true).catch(() => false);
     await ctx.setOffline(false);
     assert.equal(rendered, true, 'offline deve renderizar do cache');
+  });
+});
+
+// SM132 — rede lenta acima de 4 s em recurso SEM cópia em cache (regressão medida: PR falhava em 4 s; main = 200).
+for (const ms of [5000, 8000]) {
+  test(`recurso sem cópia com rede lenta de ${ms} ms responde 200 (prazo de 4 s não pode derrubar script novo)`, async () => {
+    await withApp(browser, server.base, async page => {
+      assert.equal(await primeServiceWorker(page, server.base), true);
+      await setDelay(page, server.base, ms, 'fase1c-export-hashes');
+      const slow = await page.evaluate(async b => {
+        const t0 = performance.now();
+        try { const r = await fetch(`${b}/tests/fixtures/fase1c-export-hashes.json?slow=${Date.now()}`); const body = await r.text(); return { ok: r.ok, status: r.status, bytes: body.length, ms: Math.round(performance.now() - t0) }; }
+        catch (error) { return { ok: false, error: String(error.message || error), ms: Math.round(performance.now() - t0) }; }
+      }, server.base);
+      await setDelay(page, server.base, 0, '');
+      console.log(`[SM132 medição] rede lenta ${ms} ms, sem cópia:`, JSON.stringify(slow));
+      assert.equal(slow.ok, true, `rede lenta de ${ms} ms derrubou o recurso: ${JSON.stringify(slow)}`);
+      assert.equal(slow.status, 200);
+    });
+  });
+}
+
+// SM132 — navegação dentro da janela do disjuntor deve consultar a rede quando ela responde (não servir cópia até 60 s).
+test('após timeout de navegação, a navegação seguinte consulta a rede saudável', async () => {
+  await withApp(browser, server.base, async page => {
+    assert.equal(await primeServiceWorker(page, server.base), true);
+    await setDelay(page, server.base, 5000, 'index.html');
+    await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => {});
+    await page.waitForTimeout(6000); // a resposta atrasada termina de chegar à origem
+    await setDelay(page, server.base, 0, '');
+    const before = server.hits('/index.html');
+    await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => {});
+    await page.waitForTimeout(1500);
+    const after = server.hits('/index.html');
+    console.log('[SM132 medição] navegação na janela do disjuntor: hits na origem', before, '→', after);
+    assert.ok(after > before, 'navegação com rede saudável não consultou a origem (serviu cópia em cache dentro da janela)');
   });
 });
