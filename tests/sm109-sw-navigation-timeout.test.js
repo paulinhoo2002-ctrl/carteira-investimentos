@@ -17,8 +17,12 @@ test('existe prazo limitado (NAV_NETWORK_TIMEOUT_MS) e helper de rede com fallba
 
 test('nenhuma rota network-first usa fetch sem prazo', () => {
   assert.equal(/return fetch\(request, \{ cache: 'no-store' \}\)\.then/.test(sw), false);
-  const uses = sw.match(/fetchNetworkWithTimeout\(request\)/g) || [];
-  assert.ok(uses.length >= 4, `esperado >=4 usos do helper, encontrado ${uses.length}`);
+  // Navegação (SM132) não passa pelo helper que consulta o cache: usa o prazo explícito em fetchNetworkNow.
+  const navStart = sw.indexOf("if (request.mode === 'navigate')");
+  assert.match(sw.slice(navStart, navStart + 600), /fetchNetworkNow\(request, NAV_NETWORK_TIMEOUT_MS\)/);
+  // Demais rotas de rede (críticas e versionadas) usam o helper com prazo; desconta a declaração da função.
+  const helperCalls = (sw.match(/fetchNetworkWithTimeout\(request\)/g) || []).length - 1;
+  assert.ok(helperCalls >= 2, `esperado >=2 rotas com prazo pelo helper, encontrado ${helperCalls}`);
 });
 
 test('navegação mantém fallback para cache antes do offline', () => {
