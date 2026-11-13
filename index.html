@@ -34318,11 +34318,12 @@ function assetReconciliationNote(a){
   const movs=(S.aportes||[]).filter(m=>!isNeutralMovement(m));
   const r=PR.reconcilePosition({ticker:a.ticker,qty:a.qty},movs,{});
   const st=PR.presentState(r);
+  // Ocultar valores: quantidades não aparecem na nota (mesma regra das demais quantidades da tela).
+  if(S.hideValues&&valueVisibilityDepth===0) return `<span class="recon-note" role="note" style="display:block;font-size:11px;line-height:1.35"><strong>${esc(st.label)}</strong></span>`;
   const diff=r.difference==null?'':` · diferença ${r.difference>0?'+':''}${formatQuantity(r.difference,a.type)}`;
   const derived=r.derivedQty==null?'':` · derivada dos lançamentos ${formatQuantity(r.derivedQty,a.type)}`;
   const ref=r.referenceDate?`último lançamento ${esc(r.referenceDate)}`:'data de referência desconhecida';
-  const color=st.key==='CONCILIADA'?'#15803d':'#b45309';
-  return `<span class="recon-note" role="note" style="display:block;font-size:11px;line-height:1.35;color:${color}"><strong>${esc(st.label)}</strong> · registrada ${formatQuantity(r.registeredQty,a.type)}${derived}${diff} · ${ref}<br>${esc(r.notice||'')}</span>`;
+  return `<span class="recon-note" role="note" style="display:block;font-size:11px;line-height:1.35"><strong>${esc(st.label)}</strong> · registrada ${formatQuantity(r.registeredQty,a.type)}${derived}${diff} · ${ref}<br>${esc(r.notice||'')}</span>`;
 }
 
 function ativos(){
