@@ -556,10 +556,20 @@ function fetchNetworkNow(request, timeoutMs) {
   });
 }
 // Recursos versionados (scripts, estilos, json, manifest). Com cópia exata: prazo de NAV_NETWORK_TIMEOUT_MS e cai no cache
-// (o chamador faz o fallback). Sem cópia: teto UNCACHED_NETWORK_TIMEOUT_MS. Disjuntor aberto: cópia exata responde direto.
+// (o chamador faz o fallback). Sem cópia: teto UNCACHED_NETWORK_TIMEOUT_MS. Disjuntor aberto: com cópia exata, tentar a rede
+// primeiro (teto de UNCACHED_NETWORK_TIMEOUT_MS) antes de servir a cópia em cache, para não misturar HTML novo com JS antigo
+// quando a rede demora mais que o prazo curto. Se a rede responder (status < 500), usar a rede e fechar o disjuntor; se não,
+// servir a cópia em cache (fallback offline verdadeiro).
 function fetchNetworkWithTimeout(request) {
   return caches.match(request).then(function(cached) {
-    if (cached && Date.now() < networkDegradedUntil) return cached;
+    if (cached && Date.now() < networkDegradedUntil) {
+      return fetchNetworkNow(request, UNCACHED_NETWORK_TIMEOUT_MS).then(function(fresh) {
+        if (fresh.status < 500) networkDegradedUntil = 0;
+        return fresh;
+      }).catch(function() {
+        return cached;
+      });
+    }
     return fetchNetworkNow(request, cached ? NAV_NETWORK_TIMEOUT_MS : UNCACHED_NETWORK_TIMEOUT_MS);
   });
 }
