@@ -531,8 +531,9 @@ function clearAllCaches() {
 
 // SM109: rotas network-first (navegação, scripts, estilos, json, manifest) com prazo. Sem prazo, uma rede que não responde
 // deixa a página em branco: os scripts síncronos do index.html ficam pendentes. Após NAV_NETWORK_TIMEOUT_MS cai para o cache.
-// Disjuntor: depois de um prazo esgotado, por NETWORK_DEGRADED_MS as próximas requisições com cópia EXATA em cache usam o
-// cache direto, e as sem cópia falham na hora, para não somar um prazo por script. Versão e URL (incl. ?v=) determinam a cópia.
+// Disjuntor (SM132): depois de um prazo esgotado, por NETWORK_DEGRADED_MS as requisições com cópia EXATA em cache usam o
+// cache direto. As sem cópia recebem UMA tentativa de rede com o mesmo prazo limitado (não falham na hora, para não
+// derrubar recursos saudáveis). Qualquer resposta da rede (status < 500) fecha o disjuntor. Versão e URL (incl. ?v=) determinam a cópia.
 var NAV_NETWORK_TIMEOUT_MS = 4000;
 var NETWORK_DEGRADED_MS = 60000;
 var networkDegradedUntil = 0;
@@ -543,7 +544,9 @@ function fetchNetworkNow(request) {
       reject(new Error('NAV_NETWORK_TIMEOUT'));
     }, NAV_NETWORK_TIMEOUT_MS);
     fetch(request, { cache: 'no-store' }).then(function(response) {
-      clearTimeout(timer); resolve(response);
+      clearTimeout(timer);
+      if (response.status < 500) networkDegradedUntil = 0;
+      resolve(response);
     }, function(error) {
       clearTimeout(timer); reject(error);
     });
@@ -552,7 +555,7 @@ function fetchNetworkNow(request) {
 function fetchNetworkWithTimeout(request) {
   if (Date.now() < networkDegradedUntil) {
     return caches.match(request).then(function(cached) {
-      return cached || Promise.reject(new Error('NETWORK_DEGRADED'));
+      return cached || fetchNetworkNow(request);
     });
   }
   return fetchNetworkNow(request);
