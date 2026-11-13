@@ -114,6 +114,17 @@ test('negativo: SHA diferente do manifesto reprova o guard', () => {
   assert.throws(() => checkDistribution(out, { sha: '1'.repeat(40), shortSha: '111111111111', projectId: HOMOLOG, uid: UID, email: EMAIL, cfg, manifestPath: out + '.manifest.json' }), /SHA/);
 });
 
+test('substituições independem do fim de linha: blob com LF (CI Linux) e CRLF (Windows) geram o mesmo conteúdo', () => {
+  const lf = execFileSync('git', ['-C', repo, 'show', 'HEAD:index.html'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  assert.equal(lf.includes('\r'), false, 'blob do git deve estar em LF');
+  const fromLf = applyHomologSubstitutions(lf, { sdk: SDK, uid: UID, email: EMAIL, shortSha: 'abc123' });
+  assert.match(fromLf, /homolog-email-form/);
+  assert.equal(fromLf.includes('\r'), false, 'entrada LF gera saída LF');
+  const fromCrlf = applyHomologSubstitutions(lf.replace(/\n/g, '\r\n'), { sdk: SDK, uid: UID, email: EMAIL, shortSha: 'abc123' });
+  assert.equal(fromCrlf.replace(/\r\n/g, '\n'), fromLf, 'mesmo conteúdo, independentemente do fim de linha');
+  assert.equal(fromCrlf.includes('\r\n'), true, 'entrada CRLF gera saída CRLF');
+});
+
 test('substituições falham fechado quando uma âncora não existe', () => {
   assert.throws(() => applyHomologSubstitutions('sem nada', { sdk: SDK, uid: UID, email: EMAIL, shortSha: 'abc' }), /âncora|configuração Firebase/);
 });

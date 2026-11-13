@@ -64,7 +64,10 @@ function crawl(src, dst) {
 
 // Substituições da homologação. Cada âncora deve existir exatamente o número de vezes esperado (fail-closed).
 function applyHomologSubstitutions(text, { sdk, uid, email, shortSha }) {
-  let t = text;
+  // Independente de plataforma: o git archive entrega CRLF no Windows e LF no Linux (CI).
+  // Trabalha em LF e devolve no fim de linha original, para o artefato ser o mesmo em qualquer máquina.
+  const hadCrlf = text.includes('\r\n');
+  let t = text.replace(/\r\n/g, '\n');
   const rep = (oldS, newS, n = 1) => {
     const c = t.split(oldS).length - 1;
     if (c !== n) throw new Error(`âncora inesperada (${c} ocorrências): ${oldS.slice(0, 60)}`);
@@ -85,7 +88,7 @@ function applyHomologSubstitutions(text, { sdk, uid, email, shortSha }) {
     `HOMOLOGAÇÃO — NÃO É A CARTEIRA DE PRODUÇÃO · SHA ${shortSha}</div>`;
   t = t.slice(0, bodyIdx) + '<body>' + banner + t.slice(bodyIdx + '<body>'.length);
   rep('Seus dados ficam na sua conta Google. Nenhuma senha é armazenada.', 'Seus dados ficam na sua conta. Nenhuma senha é armazenada pelo aplicativo.');
-  const CRLF = '\r\n';
+  const CRLF = '\n'; // inserções em LF; convertidas no fim
   const fn = [
     "/* HOMOLOG-ONLY: login por e-mail/senha existe somente na distribuição de homologação. */",
     'async function signInEmailHomolog(){',
@@ -104,6 +107,7 @@ function applyHomologSubstitutions(text, { sdk, uid, email, shortSha }) {
   const fa = 'async function signInGoogle(){';
   rep(fa, fn + fa);
   const btn = '<span>Entrar com Google</span>' + CRLF + '            </button>';
+  // âncora: a linha do botão precisa existir exatamente como no commit
   rep(btn, [btn,
     '            <!-- homolog-email-form: HOMOLOG-ONLY -->',
     '            <div id="homolog-email-form" style="margin-top:10px;display:grid;gap:6px">',
@@ -111,7 +115,7 @@ function applyHomologSubstitutions(text, { sdk, uid, email, shortSha }) {
     '              <input id="homolog-pass" type="password" autocomplete="current-password" placeholder="Senha" aria-label="Senha" style="min-height:40px;border-radius:10px;padding:8px 10px;border:1px solid #334155;background:#0b1220;color:#f5f8ff">',
     '              <button type="button" class="btn bgh" onclick="signInEmailHomolog()" style="min-height:40px;border-radius:12px">Entrar com e-mail e senha</button>',
     '            </div>'].join(CRLF));
-  return t;
+  return hadCrlf ? t.replace(/\n/g, '\r\n') : t;
 }
 
 function main() {
