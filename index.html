@@ -9078,6 +9078,7 @@ window.ensureXLSX=()=>{ if(window.__XLSX_PROMISE__) return window.__XLSX_PROMISE
 </script>
 <script src="finance-core.js"></script>
 <script src="persistence-core.js"></script>
+<script src="position-reconciliation.js"></script>
 <script src="backup-portability.js"></script>
 <script src="protected-local-cloud-authority.js?v=phase4i-authority-2"></script>
 <script src="analytics-monte-carlo-input.js"></script>
@@ -23041,6 +23042,19 @@ function irpfAlertItems(report){
   if(!assets.length) items.push({tone:'muted',label:'Sem ativos cadastrados',value:'—',hint:'Cadastre posições para gerar o relatório.'});
   return items;
 }
+// SM122: alerta de conciliação exibido somente na tela do IRPF. Não entra em irpfAlertItems (usado no CSV exportado).
+function irpfReconciliationAlerts(){
+  const items=[];
+  if(!window.PositionReconciliation) return items;
+  const PR=window.PositionReconciliation;
+  const movs=(S.aportes||[]).filter(m=>!isNeutralMovement(m));
+  (S.assets||[]).filter(a=>!isRendaFixaAsset(a)).slice(0,40).forEach(a=>{
+    const r=PR.reconcilePosition({ticker:a.ticker,qty:a.qty},movs,{});
+    const st=PR.presentState(r);
+    if(st.key!=='CONCILIADA') items.push({tone:'warn',label:st.label,value:String(a.ticker||'—'),hint:(r.notice||'Conferir antes de declarar.')});
+  });
+  return items;
+}
 function irpfSummaryMetrics(report, year){
   const byCat=report.provents.reduce((acc,p)=>{
     const cat=irpfProventoCategory(p).bucket;
@@ -23875,7 +23889,7 @@ function irpfTabPremium(){
   const assets=irpfAssetsByCategory(report);
   const proventos=irpfProventoSummary(report);
   const rfRows=irpfRendaFixaRows(report);
-  const alerts=irpfAlertItems(report);
+  const alerts=[...irpfAlertItems(report),...irpfReconciliationAlerts()];
   const totalCurrent=report.positions.reduce((sum,p)=>sum+Number(p.marketValue||0),0);
   const gain=totalCurrent-Number(summary.applied||0);
   const gainPct=summary.applied>0 ? (gain/summary.applied*100) : 0;
@@ -34297,6 +34311,20 @@ function rfMovementFromAssetsModal(){
     </div>
   </div>`;
 }
+function assetReconciliationNote(a){
+  if(!a||!window.PositionReconciliation) return '';
+  if(normalizeType(a.type||'Ação','Ação')==='Renda Fixa') return '';
+  const PR=window.PositionReconciliation;
+  const movs=(S.aportes||[]).filter(m=>!isNeutralMovement(m));
+  const r=PR.reconcilePosition({ticker:a.ticker,qty:a.qty},movs,{});
+  const st=PR.presentState(r);
+  const diff=r.difference==null?'':` · diferença ${r.difference>0?'+':''}${formatQuantity(r.difference,a.type)}`;
+  const derived=r.derivedQty==null?'':` · derivada dos lançamentos ${formatQuantity(r.derivedQty,a.type)}`;
+  const ref=r.referenceDate?`último lançamento ${esc(r.referenceDate)}`:'data de referência desconhecida';
+  const color=st.key==='CONCILIADA'?'#15803d':'#b45309';
+  return `<span class="recon-note" role="note" style="display:block;font-size:11px;line-height:1.35;color:${color}"><strong>${esc(st.label)}</strong> · registrada ${formatQuantity(r.registeredQty,a.type)}${derived}${diff} · ${ref}<br>${esc(r.notice||'')}</span>`;
+}
+
 function ativos(){
   const innerTab = ['analise','desempenho','renda-fixa','alocacao'].includes(String(S.assetsInnerTab||'patrimonio')) ? String(S.assetsInnerTab) : 'patrimonio';
   const ativosCategoryIcon = type => ({
@@ -34540,7 +34568,7 @@ function ativos(){
         </td>
         <td>${esc(sector)}</td>
         <td>${typeBadge}</td>
-        <td class="num">${qtyDisplay}</td>
+        <td class="num">${qtyDisplay}${assetReconciliationNote(a)}</td>
         <td class="num">${averagePriceDisplay}</td>
         <td class="num">${currentPriceDisplay}</td>
         <td class="num">${investedDisplay}</td>
@@ -34620,7 +34648,7 @@ function ativos(){
         </summary>
         <div class="asset-premium-card-details">
           <div class="asset-premium-card-row"><span>Setor</span><strong>${esc(sector)}</strong></div>
-          <div class="asset-premium-card-row"><span>Quantidade</span><strong>${qtyDisplay}</strong></div>
+          <div class="asset-premium-card-row"><span>Quantidade</span><strong>${qtyDisplay}</strong></div>${assetReconciliationNote(a)}
           <div class="asset-premium-card-row"><span>Preço médio</span><strong>${averagePriceDisplay}</strong></div>
           <div class="asset-premium-card-row"><span>Preço atual / posição</span><strong>${currentPriceDisplay}</strong></div>
           <div class="asset-premium-card-row"><span>Investido</span><strong>${investedDisplay}</strong></div>
