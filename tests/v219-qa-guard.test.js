@@ -19,14 +19,15 @@ function authorityApi() {
 
 test('versioned QA marker is part of the reproducible page identity contract', () => {
   assert.match(index, new RegExp(`<script src="${markerScript.replace(/[.?]/g, '\\$&')}"></script>`));
-  assert.ok(index.indexOf(markerScript) > index.indexOf('<script src="persistence-core.js"></script>'));
+  // SM110: o preload (<link rel="preload">) do mesmo arquivo aparece antes; a ordem de execução é da TAG <script>.
+  assert.ok(index.indexOf(`<script src="${markerScript}"></script>`) > index.indexOf('<script src="persistence-core.js"></script>'));
 });
 
 test('correct project marker passes while a sibling or missing marker fails closed', () => {
-  const hasMarker = html => html.includes(markerScript);
+  const hasMarker = html => html.includes(`<script src="${markerScript}"></script>`);
   assert.equal(hasMarker(index), true);
   assert.equal(hasMarker('<!doctype html><title>other project</title>'), false);
-  assert.equal(hasMarker(index.replace(markerScript, 'protected-local-cloud-authority.js?v=wrong')), false);
+  assert.equal(hasMarker(index.replace(`<script src="${markerScript}"></script>`, '<script src="protected-local-cloud-authority.js?v=wrong"></script>')), false);
 });
 
 test('authority marker is read-only and does not contain auth or persistence integration', () => {

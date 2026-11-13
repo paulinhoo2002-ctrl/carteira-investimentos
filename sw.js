@@ -529,6 +529,72 @@ function clearAllCaches() {
   });
 }
 
+// SM109: rotas network-first (navegação, scripts, estilos, json, manifest) com prazo. Sem prazo, uma rede que não responde
+// deixa a página em branco: os scripts síncronos do index.html ficam pendentes. Após NAV_NETWORK_TIMEOUT_MS cai para o cache.
+// Disjuntor (SM132): depois de um prazo esgotado, por NETWORK_DEGRADED_MS os recursos com cópia EXATA em cache usam o
+// cache direto. Os sem cópia não falham na hora: têm teto de UNCACHED_NETWORK_TIMEOUT_MS. Qualquer resposta da rede
+// com status < 500 fecha o disjuntor. Versão e URL (incl. ?v=) determinam a cópia. Navegação não usa o atalho.
+var NAV_NETWORK_TIMEOUT_MS = 4000;
+// SM132 (revisão e medição): recurso SEM cópia recebe teto maior (20 s). Com 4 s, script novo de rede lenta (5 s e 8 s) falhava.
+// Teto finito: rede travada não espera indefinidamente.
+var UNCACHED_NETWORK_TIMEOUT_MS = 20000;
+var NETWORK_DEGRADED_MS = 60000;
+var networkDegradedUntil = 0;
+function fetchNetworkNow(request, timeoutMs) {
+  return new Promise(function(resolve, reject) {
+    var timer = setTimeout(function() {
+      networkDegradedUntil = Date.now() + NETWORK_DEGRADED_MS;
+      reject(new Error('NAV_NETWORK_TIMEOUT'));
+    }, timeoutMs);
+    fetch(request, { cache: 'no-store' }).then(function(response) {
+      clearTimeout(timer);
+      if (response.status < 500) networkDegradedUntil = 0;
+      resolve(response);
+    }, function(error) {
+      clearTimeout(timer); reject(error);
+    });
+  });
+}
+// SM132: HTML novo da rede + script antigo do cache = mistura. Ao receber da rede um HTML diferente do guardado, grava-se o
+// marco da geração; o fallback de cache só serve cópia gravada a partir dele (Date da resposta, tolerância de 1 s). Sem marco,
+// ou sem cabeçalho Date, serve a cópia: o offline puro (HTML também do cache) segue igual.
+var HTML_GENERATION_KEY = './__html-generation';
+function markHtmlGeneration(cache, fresh) {
+  return cache.match('./index.html').then(function(old) {
+    if (!old) return;
+    return Promise.all([old.text(), fresh.text()]).then(function(t) {
+      if (t[0] !== t[1]) return cache.put(HTML_GENERATION_KEY, new Response(String(Date.now())));
+    });
+  }).catch(function() {});
+}
+function matchConsistent(cache, request) {
+  return Promise.all([cache.match(request), caches.match(HTML_GENERATION_KEY)]).then(function(r) {
+    var cached = r[0];
+    if (!cached) return Response.error();
+    if (!r[1]) return cached;
+    return r[1].text().then(function(at) {
+      var d = Date.parse(cached.headers.get('date') || '');
+      return (isNaN(d) || d + 1000 >= Number(at)) ? cached : Response.error();
+    });
+  });
+}
+// Recursos versionados (scripts, estilos, json, manifest). Com cópia exata: prazo de NAV_NETWORK_TIMEOUT_MS e cai no cache
+// (o chamador faz o fallback). Sem cópia: teto UNCACHED_NETWORK_TIMEOUT_MS. Disjuntor aberto: com cópia exata, tentar a rede
+// primeiro (teto de UNCACHED_NETWORK_TIMEOUT_MS) antes de servir a cópia em cache, para não misturar HTML novo com JS antigo
+// quando a rede demora mais que o prazo curto. Se a rede responder (status < 500), usar a rede e fechar o disjuntor; se não,
+// servir a cópia em cache (fallback offline verdadeiro).
+function fetchNetworkWithTimeout(request) {
+  return caches.match(request).then(function(cached) {
+    if (cached && Date.now() < networkDegradedUntil) {
+      return fetchNetworkNow(request, UNCACHED_NETWORK_TIMEOUT_MS).then(function(fresh) {
+        if (fresh.status < 500) networkDegradedUntil = 0;
+        return fresh;
+      });
+    }
+    return fetchNetworkNow(request, cached ? NAV_NETWORK_TIMEOUT_MS : UNCACHED_NETWORK_TIMEOUT_MS);
+  });
+}
+
 self.addEventListener('fetch', function(event) {
   var request = event.request;
 
@@ -544,10 +610,13 @@ self.addEventListener('fetch', function(event) {
 
   if (request.mode === 'navigate') {
     event.respondWith((function() {
-      return fetch(request, { cache: 'no-store' }).then(function(fresh) {
+      // Navegação não usa o atalho do disjuntor: sempre tenta a rede, com o prazo de 4 s, e cai no cache depois.
+      return fetchNetworkNow(request, NAV_NETWORK_TIMEOUT_MS).then(function(fresh) {
         if (fresh.ok) {
           return caches.open(CACHE_DYNAMIC).then(function(cache) {
-            return cache.put(request, fresh.clone()).then(function() {
+            return markHtmlGeneration(cache, fresh.clone()).then(function() {
+              return cache.put(request, fresh.clone());
+            }).then(function() {
               return cache.put('./index.html', fresh.clone());
             }).then(function() {
               return fresh;
@@ -568,13 +637,13 @@ self.addEventListener('fetch', function(event) {
   if (CRITICAL_RUNTIME_PATHS.has(url.pathname)) {
     event.respondWith((function() {
       return caches.open(CACHE_STATIC).then(function(cache) {
-        return fetch(request, { cache: 'no-store' }).then(function(fresh) {
+        return fetchNetworkWithTimeout(request).then(function(fresh) {
           if (fresh.ok && fresh.type === 'basic') {
             return cache.put(request, fresh.clone()).then(function() { return fresh; });
           }
           return fresh;
         }).catch(function(_) {
-          return cache.match(request).then(function(cached) { return cached || Response.error(); });
+          return matchConsistent(cache, request);
         });
       });
     })());
@@ -584,13 +653,13 @@ self.addEventListener('fetch', function(event) {
   if (isVersionSensitiveAsset(request, url)) {
     event.respondWith((function() {
       return caches.open(CACHE_STATIC).then(function(cache) {
-        return fetch(request, { cache: 'no-store' }).then(function(fresh) {
+        return fetchNetworkWithTimeout(request).then(function(fresh) {
           if (fresh.ok && fresh.type === 'basic') {
             return cache.put(request, fresh.clone()).then(function() { return fresh; });
           }
           return fresh;
         }).catch(function(_) {
-          return cache.match(request).then(function(cached) { return cached || Response.error(); });
+          return matchConsistent(cache, request);
         });
       });
     })());
