@@ -555,6 +555,29 @@ function fetchNetworkNow(request, timeoutMs) {
     });
   });
 }
+// SM132: HTML novo da rede + script antigo do cache = mistura. Ao receber da rede um HTML diferente do guardado, grava-se o
+// marco da geração; o fallback de cache só serve cópia gravada a partir dele (Date da resposta, tolerância de 1 s). Sem marco,
+// ou sem cabeçalho Date, serve a cópia: o offline puro (HTML também do cache) segue igual.
+var HTML_GENERATION_KEY = './__html-generation';
+function markHtmlGeneration(cache, fresh) {
+  return cache.match('./index.html').then(function(old) {
+    if (!old) return;
+    return Promise.all([old.text(), fresh.text()]).then(function(t) {
+      if (t[0] !== t[1]) return cache.put(HTML_GENERATION_KEY, new Response(String(Date.now())));
+    });
+  }).catch(function() {});
+}
+function matchConsistent(cache, request) {
+  return Promise.all([cache.match(request), caches.match(HTML_GENERATION_KEY)]).then(function(r) {
+    var cached = r[0];
+    if (!cached) return Response.error();
+    if (!r[1]) return cached;
+    return r[1].text().then(function(at) {
+      var d = Date.parse(cached.headers.get('date') || '');
+      return (isNaN(d) || d + 1000 >= Number(at)) ? cached : Response.error();
+    });
+  });
+}
 // Recursos versionados (scripts, estilos, json, manifest). Com cópia exata: prazo de NAV_NETWORK_TIMEOUT_MS e cai no cache
 // (o chamador faz o fallback). Sem cópia: teto UNCACHED_NETWORK_TIMEOUT_MS. Disjuntor aberto: com cópia exata, tentar a rede
 // primeiro (teto de UNCACHED_NETWORK_TIMEOUT_MS) antes de servir a cópia em cache, para não misturar HTML novo com JS antigo
@@ -566,8 +589,6 @@ function fetchNetworkWithTimeout(request) {
       return fetchNetworkNow(request, UNCACHED_NETWORK_TIMEOUT_MS).then(function(fresh) {
         if (fresh.status < 500) networkDegradedUntil = 0;
         return fresh;
-      }).catch(function() {
-        return cached;
       });
     }
     return fetchNetworkNow(request, cached ? NAV_NETWORK_TIMEOUT_MS : UNCACHED_NETWORK_TIMEOUT_MS);
@@ -593,7 +614,9 @@ self.addEventListener('fetch', function(event) {
       return fetchNetworkNow(request, NAV_NETWORK_TIMEOUT_MS).then(function(fresh) {
         if (fresh.ok) {
           return caches.open(CACHE_DYNAMIC).then(function(cache) {
-            return cache.put(request, fresh.clone()).then(function() {
+            return markHtmlGeneration(cache, fresh.clone()).then(function() {
+              return cache.put(request, fresh.clone());
+            }).then(function() {
               return cache.put('./index.html', fresh.clone());
             }).then(function() {
               return fresh;
@@ -620,7 +643,7 @@ self.addEventListener('fetch', function(event) {
           }
           return fresh;
         }).catch(function(_) {
-          return cache.match(request).then(function(cached) { return cached || Response.error(); });
+          return matchConsistent(cache, request);
         });
       });
     })());
@@ -636,7 +659,7 @@ self.addEventListener('fetch', function(event) {
           }
           return fresh;
         }).catch(function(_) {
-          return cache.match(request).then(function(cached) { return cached || Response.error(); });
+          return matchConsistent(cache, request);
         });
       });
     })());
