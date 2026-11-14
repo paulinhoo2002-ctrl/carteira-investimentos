@@ -12466,8 +12466,10 @@ function accessGateBox(){
   }
   const loading = !FB.authResolved || FB.access.loading;
   const reason = FB.access.reason || 'Faça login com um e-mail aprovado para acessar a carteira.';
-  const stateLabel = loading ? 'Verificando acesso' : (FB.user ? 'Acesso em validação' : 'Acesso restrito');
-  const title = loading ? 'Verificando sua conta...' : (FB.user ? 'Seu e-mail não está autorizado' : 'Entre com Google para continuar');
+  // SM144: sem internet a verificação da conta não termina; mostra o estado real em vez de "Verificando" indefinido.
+  const offlineWait = loading && typeof navigator!=='undefined' && navigator.onLine===false;
+  const stateLabel = offlineWait ? 'Sem conexão' : (loading ? 'Verificando acesso' : (FB.user ? 'Acesso em validação' : 'Acesso restrito'));
+  const title = offlineWait ? 'Conecte-se para verificar sua conta' : (loading ? 'Verificando sua conta...' : (FB.user ? 'Seu e-mail não está autorizado' : 'Entre com Google para continuar'));
   const chip = FB.user ? `<span class="note-pill" style="background:#111827;color:#c7d2fe;border-color:rgba(99,102,241,.22)">${esc(FB.user.email || '')}</span>` : '';
   return `
     <div${loading ? ' role="status" aria-live="polite"' : ''} style="min-height:calc(100vh - 86px);display:grid;place-items:center;padding:14px 16px 20px">

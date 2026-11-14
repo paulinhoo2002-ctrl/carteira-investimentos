@@ -101,8 +101,17 @@ function applyHomologSubstitutions(text, { sdk, uid, email, shortSha }) {
     '    await FB.auth.signInWithEmailAndPassword(em,pw);',
     '  }catch(e){',
     '    debugWarn(e);',
-    "    alert('Não foi possível entrar: '+String(e?.code||'erro desconhecido'));",
+    '    alert(homologAuthErrorMessage(e));',
     '  }',
+    '}',
+    '/* SM144: mensagem em português para erros do Firebase Auth. Não expõe código nem detalhe técnico. */',
+    'function homologAuthErrorMessage(e){',
+    "  const code=String(e?.code||'');",
+    "  if(['auth/invalid-credential','auth/wrong-password','auth/user-not-found','auth/invalid-email'].includes(code)) return 'E-mail ou senha incorretos.';",
+    "  if(code==='auth/too-many-requests') return 'Muitas tentativas. Aguarde alguns minutos e tente novamente.';",
+    "  if(code==='auth/network-request-failed') return 'Sem conexão com o servidor de autenticação. Verifique sua internet e tente novamente.';",
+    "  if(code==='auth/user-disabled') return 'Esta conta está desabilitada. Fale com o responsável pela carteira.';",
+    "  return 'Não foi possível entrar agora. Tente novamente em instantes.';",
     '}'].join(CRLF) + CRLF;
   const fa = 'async function signInGoogle(){';
   rep(fa, fn + fa);
