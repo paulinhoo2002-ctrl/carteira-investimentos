@@ -9239,7 +9239,9 @@ function isV250OfflineCachedSession(){
   const hasSnapshot=isProtectedReadOnlyQaBoot()
     ? Boolean(FB.readOnlyOfflineSnapshotReady && marker?.scope===FB.readOnlyOfflineSnapshotScope && marker?.snapshotSignature===FB.readOnlyOfflineSnapshotSignature)
     : window.V250OfflineSession?.snapshotHasData?.(localStorage,STOR)===true;
-  const eligible=window.V250OfflineSession?.eligible?.({online:navigator.onLine,marker,hasSnapshot})===true;
+  // SM173: a autorização offline vale só para a identidade que a gravou e para o civ5 dela (sem efeito colateral aqui).
+  const sameIdentity=isProtectedReadOnlyQaBoot() || (Boolean(CIV5_V250_SCOPE) && marker?.scope===CIV5_V250_SCOPE && civ5GateReadOnly()==='ok');
+  const eligible=sameIdentity && window.V250OfflineSession?.eligible?.({online:navigator.onLine,marker,hasSnapshot})===true;
   document.documentElement.dataset.v250OfflineCachedSession=String(eligible);
   return eligible;
 }
@@ -10254,6 +10256,11 @@ function save(){
     if(typeof isProtectedReadOnlyQaBoot==='function' && isProtectedReadOnlyQaBoot() && !protectedLocalRecoveryWrite) return false;
     if(typeof isAuthoritativeLocalRecoveryBoot==='function' && isAuthoritativeLocalRecoveryBoot() && !protectedLocalRecoveryWrite) return false;
     if(!protectedLocalRecoveryWrite && !canEditFromThisTab('salvar')) return false;
+    // SM173: nunca gravar o civ5 de outra identidade (ou antes de a identidade ser confirmada). Nada é apagado.
+    if(!isLocalTestMode() && civ5Gate()!=='ok'){
+      toast('Dados locais não confirmados para esta conta: gravação bloqueada. Nada foi apagado.','#fbbf24');
+      return false;
+    }
     if(S._rmpTrace) console.log('[rmP] save() chamado');
     syncWalletFromState();
     if(protectedLocalRecoveryWrite && !window.ProtectedLocalCloudAuthority) throw new Error('PROTECTED_AUTHORITY_RUNTIME_REQUIRED');
@@ -10668,6 +10675,68 @@ function syncHideValuesPreference(){
     else localStorage.setItem(HIDE_VALUES_STOR,String(!!S.hideValues));
   }catch(e){}
 }
+// SM173-BEGIN — isolamento do civ5 por identidade (fase 1, dono único). Não apaga dados. Bloqueia envio, gravação e uso
+// offline quando o civ5 não pertence à identidade autenticada. Chaves: civ5_owner, civ5_legacy_backup, civ5_pending_owner.
+const CIV5_OWNER_KEY='civ5_owner';
+const CIV5_BACKUP_KEY='civ5_legacy_backup';
+const CIV5_PENDING_KEY='civ5_pending_owner';
+let CIV5_SCOPE=null;       // escopo (ambiente Firebase + UID) da sessão atual; null até confirmar
+let CIV5_V250_SCOPE=null;  // escopo do marcador offline da sessão atual
+async function civ5ScopeFor(projectId,uid){
+  const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(`carteira-investimentos:civ5:${projectId}:${uid}`));
+  return [...new Uint8Array(d)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function civ5LegacyBind(){
+  // Legado = civ5 com dados e sem escopo. Só o dono; cópia de segurança verificada ANTES de associar; nada é removido.
+  if(!isAccessAdmin(FB.user)) return 'LEGACY_NOT_OWNER';
+  try{
+    const raw=localStorage.getItem(STOR);
+    const bk=localStorage.getItem(CIV5_BACKUP_KEY);
+    if(bk!==null && bk!==raw) return 'LEGACY_BACKUP_CONFLICT';
+    if(bk===null && raw!==null){
+      localStorage.setItem(CIV5_BACKUP_KEY,raw);
+      if(localStorage.getItem(CIV5_BACKUP_KEY)!==raw) return 'LEGACY_BACKUP_VERIFY_FAILED';
+    }
+    localStorage.setItem(CIV5_OWNER_KEY,CIV5_SCOPE);
+    return 'ok';
+  }catch(e){ return 'LEGACY_BACKUP_FAILED'; }
+}
+function civ5Gate(){
+  // 'ok' somente quando o civ5 pertence à identidade atual. Pode migrar legado do dono (com backup). Nunca apaga.
+  if(!CIV5_SCOPE) return 'IDENTITY_UNCONFIRMED';
+  let owner=null, raw=null;
+  try{ owner=localStorage.getItem(CIV5_OWNER_KEY); raw=localStorage.getItem(STOR); }catch(e){ return 'STORAGE_UNAVAILABLE'; }
+  if(owner===CIV5_SCOPE) return 'ok';
+  if(owner!==null) return 'FOREIGN_SCOPE';
+  if(raw===null){
+    try{ localStorage.setItem(CIV5_OWNER_KEY,CIV5_SCOPE); return 'ok'; }catch(e){ return 'STORAGE_UNAVAILABLE'; }
+  }
+  return civ5LegacyBind();
+}
+function civ5GateReadOnly(){
+  // Leitura sem efeito colateral (usada em checagens offline).
+  if(!CIV5_SCOPE) return 'IDENTITY_UNCONFIRMED';
+  try{ return localStorage.getItem(CIV5_OWNER_KEY)===CIV5_SCOPE ? 'ok' : 'NOT_BOUND'; }catch(e){ return 'STORAGE_UNAVAILABLE'; }
+}
+async function civ5BindIdentity(user){
+  CIV5_SCOPE=null; CIV5_V250_SCOPE=null;
+  if(!user) return;
+  const projectId=String(FB?.app?.options?.projectId||'');
+  if(!projectId || !globalThis.crypto?.subtle) return;
+  const scope=await civ5ScopeFor(projectId,user.uid);
+  const v250=window.V250OfflineSession?.scopeHash ? await window.V250OfflineSession.scopeHash(user) : '';
+  if(FB.user?.uid!==user.uid) return;   // sessão mudou durante o cálculo: não confirma
+  CIV5_SCOPE=scope; CIV5_V250_SCOPE=v250||null;
+  try{
+    // Alterações não enviadas desta mesma identidade sobreviveram a um recarregamento: restaura e reenvia.
+    if(localStorage.getItem(CIV5_PENDING_KEY)===scope && civ5Gate()==='ok'){
+      FB.pendingCloudSave=true;
+      load();
+    }
+  }catch(e){}
+  render();
+}
+// SM173-END
 function load(){
   if(isLocalTestMode()) return;
   const stateRead=safeGetLocalStorageItem(STOR, 'load leitura storage');
@@ -11727,6 +11796,7 @@ function initFirebase(){
       clearRealStateInMemory();
       FB.authResolved = true;
       FB.user = user || null;
+      civ5BindIdentity(FB.user);
       if(FB.user){
         FB.cloudStateModel=CloudSyncState.initial(CloudSyncState.STATES.AUTHENTICATING);
         FB.access.loading = true;
@@ -12214,8 +12284,11 @@ async function applyCloudData(d){
   if(!isProtectedReadOnlyQaBoot()){
     try{
       syncWalletFromState();
-      localStorage.setItem(STOR, JSON.stringify({wallets:S.wallets, activeWalletId:S.activeWalletId, assets:S.assets, aportes:S.aportes, proventos:S.proventos, rfEvents:S.rfEvents, tab:S.tab, divGoal:S.divGoal, goals:S.goals, dashPeriod:S.dashPeriod, dashType:S.dashType, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, learnMeta:S.learnMeta}));
-      localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal}));
+      // SM173: a nuvem só sobrescreve o civ5 quando ele pertence a esta identidade (legado do dono entra com backup antes).
+      if(civ5Gate()==='ok'){
+        localStorage.setItem(STOR, JSON.stringify({wallets:S.wallets, activeWalletId:S.activeWalletId, assets:S.assets, aportes:S.aportes, proventos:S.proventos, rfEvents:S.rfEvents, tab:S.tab, divGoal:S.divGoal, goals:S.goals, dashPeriod:S.dashPeriod, dashType:S.dashType, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, learnMeta:S.learnMeta}));
+        localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal}));
+      }
     }catch(e){}
   }
   FB.lastCloudUpdate = d.updatedAtLocal || new Date().toISOString();
@@ -12273,7 +12346,7 @@ function startCloudSync({readOnlyOnly=false}={}){
       FB.lastCloudError=null;
       await rememberV250TrustedSnapshot();
       bindProtectedRealPilotSession();
-      if(FB.pendingCloudSave && changed) queueCloudSave();
+      if(FB.pendingCloudSave) queueCloudSave();
       runV324PeriodicBackups();
       render();
     }catch(e){
@@ -12316,6 +12389,10 @@ function queueCloudSave(){
   // authenticated cloud snapshot. Cloud writes become eligible only after
   // the first snapshot has hydrated the active wallet.
   if(!FB.user || !FB.cloudLoaded || !FB.access.allowed) return;
+  // SM173: envio só para a identidade dona do civ5; a pendência fica marcada com o escopo para sobreviver a recarregamentos.
+  if(civ5Gate()!=='ok') return;
+  FB.civ5EditSeq=(FB.civ5EditSeq||0)+1;
+  try{ localStorage.setItem(CIV5_PENDING_KEY,CIV5_SCOPE); }catch(e){ return; }
   FB.pendingCloudSave=true;
   if(FB.applying || !FB.user || !FB.cloudLoaded || !FB.access.allowed) return;
   clearTimeout(FB.saveTimer);
@@ -12341,6 +12418,12 @@ async function uploadLocalToCloud(show=true, options={}){
     if(show) toast('Acesso não autorizado para sincronizar.','#fbbf24');
     return;
   }
+  // SM173: nunca enviar dados locais de outra identidade. Bloqueio sem apagar nada.
+  const civ5Status=civ5Gate();
+  if(civ5Status!=='ok'){
+    if(show) toast('Sincronização bloqueada: os dados locais não pertencem a esta conta. Nada foi enviado nem apagado.','#fbbf24');
+    return {pass:false,reason:civ5Status};
+  }
   const ref=portfolioRef();
   if(!ref) { if(show) toast('Entre com Google para sincronizar na nuvem.','#fbbf24'); return {pass:false,reason:'CLOUD_READBACK_UNAVAILABLE'}; }
   if(FB.syncInFlight){
@@ -12348,6 +12431,7 @@ async function uploadLocalToCloud(show=true, options={}){
     return;
   }
   FB.syncInFlight=true;
+  const civ5SeqAtStart=FB.civ5EditSeq||0;
   render();
   try{
     let currentCloud={};
@@ -12388,7 +12472,13 @@ async function uploadLocalToCloud(show=true, options={}){
     )) throw new Error('CLOUD_PERSISTED_STATE_MISMATCH');
     FB.lastCloudUpdate=new Date().toISOString();
     FB.lastCloudError=null;
-    FB.pendingCloudSave=false;
+    // SM173: só limpa a pendência se nenhuma edição ocorreu durante o envio; senão, reenvia.
+    if((FB.civ5EditSeq||0)===civ5SeqAtStart){
+      FB.pendingCloudSave=false;
+      try{ localStorage.removeItem(CIV5_PENDING_KEY); }catch(e){}
+    }else{
+      setTimeout(()=>queueCloudSave(),0);
+    }
     clearTimeout(FB.cloudRetryTimer);
     return {pass:true,cloudReadback:true,counts:cloudCounts,pendingCloudSave:false,syncInFlight:false};
   }catch(e){
@@ -12445,6 +12535,8 @@ async function signOutGoogle(){
   FB.authResolved=true;
   FB.access={loading:false,loaded:false,allowed:false,reason:'',cfg:null,lastDeniedAt:null};
   render();
+  // SM173: logout zera só a identidade confirmada em memória. Armazenamento local (civ5) permanece intacto.
+  CIV5_SCOPE=null; CIV5_V250_SCOPE=null;
   try{ await FB.auth.signOut(); toast('Sessão encerrada.'); }
   catch(e){ debugWarn('Não foi possível encerrar a sessão Firebase agora.',e); }
 }
