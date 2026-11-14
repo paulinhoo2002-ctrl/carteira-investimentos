@@ -25,6 +25,26 @@ let harness;
 let browser;
 const accounts = {};
 
+// Regras de produção (firestore.rules) aplicadas no emulador, com SOMENTE o UID e o e-mail do dono trocados pelos
+// valores sintéticos da conta A. A lógica de autorização permanece a real. Restaurada ao final.
+const RULES_PROD = path.join(__dirname, '..', 'firestore.rules');
+const RULES_FIXTURE = path.join(__dirname, 'fixtures', 'v311-firestore.rules');
+async function setEmulatorRules(content) {
+  const res = await fetch(`http://127.0.0.1:8080/emulator/v1/projects/${PROJECT}:securityRules`, {
+    method: 'PUT', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ rules: { files: [{ name: 'firestore.rules', content }] } }),
+    signal: AbortSignal.timeout(8000),
+  });
+  assert.equal(res.ok, true, `PUT securityRules: HTTP ${res.status}`);
+}
+function productionRulesForSyntheticOwner(uid, email) {
+  let rules = fs.readFileSync(RULES_PROD, 'utf8').split('\r\n').join('\n');
+  rules = rules.replace('"yaypxiiv7Ye7pwpDZ0nqhG3Yj7E3"', `"${uid}"`).replace('"paulinhoo2002@gmail.com"', `"${email}"`);
+  assert.ok(rules.includes(`"${uid}"`) && rules.includes(`"${email}"`), 'substituição de dono nas regras de produção');
+  assert.ok(!rules.includes('yaypxiiv7Ye7pwpDZ0nqhG3Yj7E3'), 'UID de produção removido das regras de teste');
+  return rules;
+}
+
 async function signUp(email) {
   const res = await fetch(`${AUTH}/identitytoolkit.googleapis.com/v1/accounts:signUp?key=demo-api-key`, {
     method: 'POST', headers: { 'content-type': 'application/json' },
@@ -129,10 +149,12 @@ before(async () => {
   await markEmailVerified(EMAIL_B, b.idToken);
   accounts.a = { uid: a.localId };
   accounts.b = { uid: b.localId };
+  await setEmulatorRules(productionRulesForSyntheticOwner(a.localId, EMAIL_A));
 });
 
 after(async () => {
   await browser?.close();
+  await setEmulatorRules(fs.readFileSync(RULES_FIXTURE, 'utf8')).catch(() => {});
 });
 
 test('SM173 duas contas sintéticas: B não lê, não grava e não sobrescreve o civ5 de A; A volta intacta', async () => {
