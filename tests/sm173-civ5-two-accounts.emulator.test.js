@@ -134,6 +134,11 @@ const readLocal = page => page.evaluate(() => ({
   backup: localStorage.getItem('civ5_legacy_backup'),
 }));
 
+// Leitura administrativa do emulador (Authorization: Bearer owner ignora regras). Só para verificação de teste.
+async function adminDocStatus(uid) {
+  const res = await fetch(`http://127.0.0.1:8080/v1/projects/${PROJECT}/databases/(default)/documents/portfolios/${uid}`, { headers: { authorization: 'Bearer owner' }, signal: AbortSignal.timeout(8000) });
+  return res.status;
+}
 async function cloudDoc(page, uid) {
   return page.evaluate(async uid => {
     const s = await FB.db.collection('portfolios').doc(uid).get({ source: 'server' });
@@ -209,7 +214,8 @@ test('SM173 duas contas sintéticas: B não lê, não grava e não sobrescreve o
     assert.equal((await readLocal(app.page)).civ5, aSnapshot, 'tentativa de gravação de B não altera o civ5 de A');
     const bUpload = await app.page.evaluate(() => uploadLocalToCloud(false));
     assert.ok(!(bUpload && bUpload.pass), 'B não envia dados locais');
-    assert.equal(await cloudDoc(app.page, accounts.b.uid), null, 'nenhum documento de B com dados de A');
+    // Verificação privilegiada do emulador (admin, sem conceder acesso à conta B): o documento de B não existe.
+    assert.equal(await adminDocStatus(accounts.b.uid), 404, 'nenhum documento de B criado com dados de A');
     const requestsWhileB = app.requests.slice(requestsBeforeB).filter(r => r.url.includes(`/portfolios/${accounts.a.uid}`));
     assert.equal(requestsWhileB.length, 0, 'B não lê nem grava o documento de A');
 
