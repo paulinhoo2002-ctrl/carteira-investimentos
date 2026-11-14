@@ -20,6 +20,7 @@ var APP_SHELL = [
   './manifest.json',
   './v250-offline-session.js',
   './v250-runtime.js',
+  './cloud-sync-state.js',
   './auth/account-mode.js',
   './auth/data-source.js',
   './auth/boot.js',
