@@ -40,7 +40,7 @@ function extractRoundtripBundle() {
     extractSnippet('function backupCorruptedStorageValue(storageKey, rawValue, error){', 'function markProventosDirty(){'),
     extractSnippet('function syncHideValuesPreference(){', 'function load(){'),
     extractSnippet('function load(){', 'function initFirebase(){')
-  ].join('\n');
+  ].join('\n') + '\n// SM173: identidade de teste declarada explicitamente (o bundle inclui o bloco de escopo do civ5).\nCIV5_SCOPE = "sm173-harness";\nif (localStorage.getItem("civ5_owner") === null) localStorage.setItem("civ5_owner", CIV5_SCOPE);';
 }
 
 function clone(value) {

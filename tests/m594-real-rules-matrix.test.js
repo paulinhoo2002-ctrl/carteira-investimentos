@@ -28,9 +28,10 @@
  *   R12 anonymous (no token) meta/access            => DENIED
  *   R14 unauthorized collection (default-deny)      => DENIED even for the owner
  *
- * Test order matters: the owner lifecycle test OWNS the OWNER_EMAIL account
- * (creates it UNVERIFIED, denies, verifies, then allows). Every other test
- * uses synthetic non-owner identities.
+ * Owner positives use an emulator-only authenticated context with the UID the
+ * canonical rules hardcode (ownerContext: verified and unverified claims). The
+ * emulator assigns random UIDs to signed-up accounts, so a real signup can never
+ * satisfy isOwnerAccount(). Other tests use synthetic non-owner identities.
  */
 
 const assert = require('node:assert/strict');
@@ -42,6 +43,18 @@ const FS = `http://127.0.0.1:8086/v1/projects/${PROJECT}/databases/(default)/doc
 const KEY = 'demo-api-key';
 const OWNER_EMAIL = 'paulinhoo2002@gmail.com'; // hardcoded in canonical firestore.rules (isOwnerAccount)
 const OWNER_PASS = 'M594-Pass-123';
+const OWNER_UID = require('../scripts/homolog/guard').readOwnerIdentifiers().uid; // lido de firestore.rules (fonte canônica)
+
+// Contexto autenticado com UID fixo: mesmo mecanismo do authenticatedContext de @firebase/rules-unit-testing
+// (JWT sem assinatura, aceito apenas pelo emulador). Não cria conta real nem contacta serviço hospedado.
+// Motivo de não usar a biblioteca: evitar nova dependência nesta integração (AGENTS: instalação exige autorização).
+function emulatorToken(uid, claims) {
+  const b64 = value => Buffer.from(JSON.stringify(value)).toString('base64url');
+  const now = Math.floor(Date.now() / 1000);
+  const payload = { iat: now, exp: now + 3600, auth_time: now, aud: PROJECT, iss: `https://securetoken.google.com/${PROJECT}`, sub: uid, user_id: uid, firebase: { identities: {}, sign_in_provider: 'custom' }, ...claims };
+  return `${b64({ alg: 'none', typ: 'JWT' })}.${b64(payload)}.`;
+}
+const ownerContext = verified => ({ localId: OWNER_UID, idToken: emulatorToken(OWNER_UID, { email: OWNER_EMAIL, email_verified: verified }) });
 
 async function request(url, options = {}) {
   return fetch(url, { ...options, signal: AbortSignal.timeout(12000) });
@@ -140,10 +153,15 @@ test('OWNER LIFECYCLE: unverified owner-email DENIED everywhere, verified owner 
   const unvMetaWrite = await fsWrite(unverifiedOwner.idToken, 'meta/access', { policy: { stringValue: 'hijack' } });
   denied(unvMetaWrite.status, 'R11 unverified owner-email write meta/access');
 
-  // Phase 2 — verify via the emulator oob flow, re-sign-in (fresh token mints
-  // email_verified=true): the positive authorization of the verified owner.
-  await markEmailVerified(unverifiedOwner.idToken);
-  const owner = await signIn(OWNER_EMAIL, OWNER_PASS);
+  // Phase 1b — UID fixo das regras com e-mail NÃO verificado: negado pelo gate email_verified.
+  const unverifiedFixed = ownerContext(false);
+  denied((await fsGet(unverifiedFixed.idToken, `portfolios/${OWNER_UID}`)).status, 'R05 fixed-uid unverified read own portfolio');
+  denied((await fsWrite(unverifiedFixed.idToken, `portfolios/${OWNER_UID}`, { probe: { stringValue: 'nope' } })).status, 'R05 fixed-uid unverified write own portfolio');
+  denied((await fsGet(unverifiedFixed.idToken, 'meta/access')).status, 'R11 fixed-uid unverified read meta/access');
+  denied((await fsWrite(unverifiedFixed.idToken, 'meta/access', { policy: { stringValue: 'hijack' } })).status, 'R11 fixed-uid unverified write meta/access');
+
+  // Phase 2 — proprietário fixo com email_verified=true: positive authorization (R02,R03,R03b,R08,R09).
+  const owner = ownerContext(true);
   const write = await fsWrite(owner.idToken, `portfolios/${owner.localId}`, { probe: { stringValue: 'owner-write-ok' } });
   allowed(write.status, 'R03 verified owner write own portfolio');
   const read = await fsGet(owner.idToken, `portfolios/${owner.localId}`);
@@ -157,7 +175,7 @@ test('OWNER LIFECYCLE: unverified owner-email DENIED everywhere, verified owner 
 });
 
 test('R13: verified owner on a FOREIGN uid path is denied (uid scoping still required)', async () => {
-  const owner = await signIn(OWNER_EMAIL, OWNER_PASS); // verified by the lifecycle test
+  const owner = ownerContext(true);
   const foreignRead = await fsGet(owner.idToken, 'portfolios/someone-else-uid');
   denied(foreignRead.status, 'R13 owner reads foreign uid');
   const foreignWrite = await fsWrite(owner.idToken, 'portfolios/someone-else-uid', { probe: { stringValue: 'hijack' } });
@@ -207,7 +225,7 @@ test('R12: anonymous (no token) meta/access is denied', async () => {
 test('R14: unauthorized collection is denied for everyone (default-deny)', async () => {
   // No match block exists for /unauthorized/* — Firestore default-denies it,
   // including for the verified owner.
-  const owner = await signIn(OWNER_EMAIL, OWNER_PASS);
+  const owner = ownerContext(true);
   const ownerWrite = await fsWrite(owner.idToken, 'unauthorized/doc', { probe: { stringValue: 'x' } });
   denied(ownerWrite.status, 'R14 owner write unauthorized collection');
   const anonWrite = await request(`${FS}/unauthorized/doc`, {
