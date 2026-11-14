@@ -141,11 +141,28 @@ test('SM173 duas contas sintéticas: B não lê, não grava e não sobrescreve o
     // 1) A (dono de teste) grava um lançamento e sincroniza.
     await signInWithEmail(app.page, EMAIL_A);
     await waitOwnerAllowed(app.page);
+    // Rastreio só de teste: início/fim das chamadas Firestore (sem alterar o app).
+    await app.page.evaluate(() => {
+      window.__TRACE = [];
+      const col = FB.db.collection.bind(FB.db);
+      FB.db.collection = name => {
+        const c = col(name);
+        const doc0 = c.doc.bind(c);
+        c.doc = id => {
+          const r = doc0(id);
+          const g = r.get.bind(r); const st = r.set.bind(r);
+          r.get = o => { window.__TRACE.push('get:start'); return g(o).then(v => { window.__TRACE.push('get:ok'); return v; }, e => { window.__TRACE.push('get:err ' + (e && e.code)); throw e; }); };
+          r.set = (d, o) => { window.__TRACE.push('set:start'); return st(d, o).then(v => { window.__TRACE.push('set:ok'); return v; }, e => { window.__TRACE.push('set:err ' + (e && e.code) + ' ' + String(e && e.message).slice(0, 80)); throw e; }); };
+          return r;
+        };
+        return c;
+      };
+    });
     await app.page.evaluate(mark => {
       S.aportes.push({ id: 'iso-sm173-a', ticker: mark, qty: 1, price: 10, date: '2026-11-14', operation: 'compra', type: 'Ação', sector: 'Teste' });
       save();
     }, MARK_A);
-    await app.page.waitForFunction(() => FB.pendingCloudSave === false, null, { timeout: 40000 }).catch(async e => { const d = await app.page.evaluate(() => ({ pending: FB.pendingCloudSave, inFlight: FB.syncInFlight, cloudLoaded: FB.cloudLoaded, seq: FB.civ5EditSeq, lastErr: FB.lastCloudError ? String(FB.lastCloudError.message || FB.lastCloudError).slice(0, 200) : null, state: cloudSyncState().status, scope: CIV5_SCOPE ? 'set' : null, owner: localStorage.getItem('civ5_owner') ? 'set' : null, pendKey: localStorage.getItem('civ5_pending_owner') ? 'set' : null, pageErr: [] })); throw new Error('DIAG ' + JSON.stringify(d) + ' :: ' + e.message.slice(0, 120)); });
+    await app.page.waitForFunction(() => FB.pendingCloudSave === false, null, { timeout: 40000 }).catch(async e => { const d = await app.page.evaluate(() => ({ pending: FB.pendingCloudSave, inFlight: FB.syncInFlight, cloudLoaded: FB.cloudLoaded, seq: FB.civ5EditSeq, lastErr: FB.lastCloudError ? String(FB.lastCloudError.message || FB.lastCloudError).slice(0, 200) : null, state: cloudSyncState().status, scope: CIV5_SCOPE ? 'set' : null, owner: localStorage.getItem('civ5_owner') ? 'set' : null, pendKey: localStorage.getItem('civ5_pending_owner') ? 'set' : null, pageErr: [], trace: (window.__TRACE || []).slice(-30), seqNow: FB.civ5EditSeq })); throw new Error('DIAG ' + JSON.stringify(d) + ' :: ' + e.message.slice(0, 120)); });
     const aLocal = await readLocal(app.page);
     assert.ok(aLocal.civ5 && aLocal.civ5.includes(MARK_A), 'A gravou no civ5');
     assert.ok(aLocal.owner, 'A vinculou o civ5 ao escopo');
