@@ -23107,7 +23107,10 @@ function irpfReconciliationAlerts(){
   (S.assets||[]).filter(a=>!isRendaFixaAsset(a)).slice(0,40).forEach(a=>{
     const r=PR.reconcilePosition({ticker:a.ticker,qty:a.qty},movs,{});
     const st=PR.presentState(r);
-    if(st.key!=='CONCILIADA') items.push({tone:'warn',label:st.label,value:String(a.ticker||'—'),hint:(r.notice||'Conferir antes de declarar.')});
+    // SM169 (R5): quantidades iguais com lançamentos completos não são divergência; a única lacuna é a cobertura
+    // histórica não comprovada, então o alerta é informativo. Divergência e dados incompletos seguem como aviso.
+    const tone=st.key==='COINCIDEM_NAO_COMPROVADA'?'muted':'warn';
+    if(st.key!=='CONCILIADA') items.push({tone,label:st.label,value:String(a.ticker||'—'),hint:(r.notice||'Conferir antes de declarar.')});
   });
   return items;
 }
