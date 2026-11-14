@@ -59,7 +59,13 @@ function makeEnv(options) {
           responses.forEach((res, i) => store.set(urls[i], res.clone()));
         });
       },
-      put(req, res) { store.set(absolute(req && req.url !== undefined ? req.url : req), res); return Promise.resolve(); },
+      put(req, res) {
+        const url = absolute(req && req.url !== undefined ? req.url : req);
+        // SM168: injeção de falha de gravação para testar o caminho em que o marco e o 'unknown' falham.
+        if (options.failPut && options.failPut(url)) return Promise.reject(new TypeError('cache.put falhou: ' + url));
+        store.set(url, res);
+        return Promise.resolve();
+      },
       match(req) { const r = store.get(absolute(req && req.url !== undefined ? req.url : req)); return Promise.resolve(r ? r.clone() : undefined); },
       keys() { return Promise.resolve([...store.keys()].map(u => new FakeRequest(u))); },
       _store: store,
@@ -231,4 +237,33 @@ test('SM167 sem marco e com Date válido: cópia continua servida (regressão pr
   const r = await fetchScriptFallback({ cachedDate: httpDate(T0), markAt: undefined, body: 'js-A' });
   assert.equal(r.status, 200);
   assert.equal(await r.text(), 'js-A');
+});
+
+// SM168: falha ao gravar o marco de geração. Nunca mistura HTML novo com JS antigo.
+test('SM168 marco e marco "unknown" falham: HTML novo NÃO é gravado e a navegação devolve a geração A consistente', async () => {
+  const env = makeEnv({
+    network: url => Promise.resolve(new FakeResponse(url.endsWith('/') ? 'B' : 'x', { status: 200 })),
+    failPut: url => url.endsWith('/__html-generation'),
+  });
+  const dyn = env.cacheOf(dynamicNameFromSource());
+  await dyn.put(new FakeRequest('./index.html'), new FakeResponse('A', { status: 200 }));
+  const response = await runEvent(env, 'fetch', new FakeRequest('/', { mode: 'navigate' }));
+  assert.equal(await response.text(), 'A', 'a navegação não pode servir HTML novo sem marco válido');
+  assert.equal(await (await dyn.match(new FakeRequest('./index.html'))).text(), 'A', 'o HTML novo não pode entrar no cache');
+});
+
+test('SM168 só a gravação do marco falha e o "unknown" passa: scripts do cache são recusados (fail-closed)', async () => {
+  let calls = 0;
+  const env = makeEnv({
+    network: url => (url.endsWith('/') ? Promise.resolve(new FakeResponse('B', { status: 200 })) : Promise.reject(new TypeError('offline'))),
+    failPut: url => url.endsWith('/__html-generation') && (calls++ === 0),
+  });
+  const dyn = env.cacheOf(dynamicNameFromSource());
+  await dyn.put(new FakeRequest('./index.html'), new FakeResponse('A', { status: 200 }));
+  await env.cacheOf(staticNameFromSource()).put(new FakeRequest('./app.js'), new FakeResponse('js-A', { status: 200, headers: { date: httpDate(T0) } }));
+  await runEvent(env, 'fetch', new FakeRequest('/', { mode: 'navigate' }));
+  const marker = await env.caches.match(new FakeRequest(MARK_KEY));
+  assert.equal(marker && await marker.text(), 'unknown', 'o marco inválido foi gravado');
+  const script = await runEvent(env, 'fetch', new FakeRequest('./app.js', { destination: 'script' }));
+  assert.equal(script.ok, false, 'com geração desconhecida, o script do cache não pode ser servido');
 });

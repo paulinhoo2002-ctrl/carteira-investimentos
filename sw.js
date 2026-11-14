@@ -566,10 +566,11 @@ function markHtmlGeneration(cache, fresh) {
     return Promise.all([old.text(), fresh.text()]).then(function(t) {
       if (t[0] !== t[1]) return cache.put(HTML_GENERATION_KEY, new Response(String(Date.now())));
     });
-  }).catch(function() {
-    // SM167: falha ao gravar o marco deixa a geração desconhecida. Grava um marco inválido ('unknown'), que faz
-    // matchConsistent recusar o fallback de cache (falha fechada), em vez de servir cache sem verificação.
-    return cache.put(HTML_GENERATION_KEY, new Response('unknown')).catch(function() {});
+  }).catch(function(err) {
+    // SM168: sem marco válido a geração não pode ser garantida. Tenta gravar 'unknown' (fail-closed para scripts) e, em
+    // qualquer caso, PROPAGA a falha: o HTML novo não é gravado no cache e a navegação cai no fallback consistente.
+    // Antes, a segunda falha era engolida e o HTML novo era gravado sem marco válido (mistura HTML novo + JS antigo).
+    return cache.put(HTML_GENERATION_KEY, new Response('unknown')).then(function() { throw err; }, function() { throw err; });
   });
 }
 function matchConsistent(cache, request) {
