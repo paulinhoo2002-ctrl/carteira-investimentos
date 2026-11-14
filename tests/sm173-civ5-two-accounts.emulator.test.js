@@ -224,7 +224,12 @@ test('SM173 duas contas sintéticas: B não lê, não grava e não sobrescreve o
     await waitOwnerAllowed(app.page);
     const aBack = await readLocal(app.page);
     assert.equal(aBack.civ5, aSnapshot, 'civ5 de A preservado após o retorno');
-    assert.equal((aBack.civ5.match(new RegExp(MARK_A, 'g')) || []).length, 1, 'lançamento de A aparece uma vez no local');
+    // O civ5 guarda o mesmo lançamento na carteira ativa e na raiz (espelho). Conta cada lista, não o texto.
+    const stored = JSON.parse(aBack.civ5);
+    const rootCount = (stored.aportes || []).filter(a => a.ticker === MARK_A).length;
+    const walletCount = (stored.wallets || []).flatMap(w => w.aportes || []).filter(a => a.ticker === MARK_A).length;
+    assert.equal(rootCount, 1, 'lançamento de A aparece uma vez na lista raiz');
+    assert.equal(walletCount, 1, 'lançamento de A aparece uma vez na carteira ativa');
     const aCloud2 = await cloudDoc(app.page, accounts.a.uid);
     assert.equal((JSON.stringify(aCloud2.aportes).match(new RegExp(MARK_A, 'g')) || []).length, 1, 'nuvem de A com um único lançamento');
     assert.deepEqual(app.pageErrors.filter(m => /civ5|Cannot read/.test(m)), [], 'sem erros de persistência');
