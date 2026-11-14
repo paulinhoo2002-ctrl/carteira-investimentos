@@ -73,8 +73,17 @@ function applyHomologSubstitutions(text, { sdk, uid, email, shortSha }) {
     if (c !== n) throw new Error(`âncora inesperada (${c} ocorrências): ${oldS.slice(0, 60)}`);
     t = t.split(oldS).join(newS);
   };
-  rep("const OWNER_FIREBASE_UID = 'yaypxiiv7Ye7pwpDZ0nqhG3Yj7E3';", `const OWNER_FIREBASE_UID = '${uid}';`);
-  rep("const OWNER_FIREBASE_EMAIL = 'paulinhoo2002@gmail.com';", `const OWNER_FIREBASE_EMAIL = '${email}';`);
+  // Substitui a constante do proprietário sem copiar seu valor neste arquivo. Exige uma ocorrência; o guard
+  // depois confirma que o valor de produção (lido de firestore.rules) não restou no artefato (fail-closed).
+  const ownerConst = (name, value) => {
+    if (/['\\\r\n]/.test(value)) throw new Error(`valor inseguro para ${name}`);
+    const rx = new RegExp(`const ${name} = '[^'\\n]*';`, 'g');
+    const c = (t.match(rx) || []).length;
+    if (c !== 1) throw new Error(`âncora inesperada (${c} ocorrências): ${name}`);
+    t = t.replace(rx, () => `const ${name} = '${value}';`);
+  };
+  ownerConst('OWNER_FIREBASE_UID', uid);
+  ownerConst('OWNER_FIREBASE_EMAIL', email);
   const pat = /(apiKey|authDomain|projectId|storageBucket|messagingSenderId|appId)(\s*:\s*)"[^"]*"/g;
   const found = t.match(pat) || [];
   if (found.length < 6) throw new Error('bloco de configuração Firebase não encontrado');

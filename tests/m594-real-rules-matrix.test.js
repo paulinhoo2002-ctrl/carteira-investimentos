@@ -43,7 +43,7 @@ const FS = `http://127.0.0.1:8086/v1/projects/${PROJECT}/databases/(default)/doc
 const KEY = 'demo-api-key';
 const OWNER_EMAIL = 'paulinhoo2002@gmail.com'; // hardcoded in canonical firestore.rules (isOwnerAccount)
 const OWNER_PASS = 'M594-Pass-123';
-const OWNER_UID = 'yaypxiiv7Ye7pwpDZ0nqhG3Yj7E3'; // hardcoded in canonical firestore.rules (isOwnerAccount)
+const OWNER_UID = require('../scripts/homolog/guard').readOwnerIdentifiers().uid; // lido de firestore.rules (fonte canônica)
 
 // Contexto autenticado com UID fixo: mesmo mecanismo do authenticatedContext de @firebase/rules-unit-testing
 // (JWT sem assinatura, aceito apenas pelo emulador). Não cria conta real nem contacta serviço hospedado.

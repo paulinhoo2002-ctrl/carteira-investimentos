@@ -9,7 +9,10 @@ const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
 const { applyHomologSubstitutions } = require('../scripts/homolog/build-homolog');
-const { checkDistribution, validateIdentity, validateSdkConfig, PROD_PROJECT } = require('../scripts/homolog/guard');
+const { checkDistribution, validateIdentity, validateSdkConfig, readOwnerIdentifiers, PROD_PROJECT } = require('../scripts/homolog/guard');
+
+// Identidade de produção lida de firestore.rules em tempo de execução: este arquivo não contém cópia literal.
+const PROD = readOwnerIdentifiers();
 
 const repo = path.join(__dirname, '..');
 const HEAD = execFileSync('git', ['-C', repo, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
@@ -62,8 +65,8 @@ test('negativo: configuração Firebase incompleta é recusada', () => {
 });
 
 test('negativo: identidade de produção (UID real do proprietário) é recusada', () => {
-  assert.throws(() => validateIdentity('yaypxiiv7Ye7pwpDZ0nqhG3Yj7E3', EMAIL), /produção/);
-  assert.throws(() => validateIdentity(UID, 'paulinhoo2002@gmail.com'), /produção/);
+  assert.throws(() => validateIdentity(PROD.uid, EMAIL), /produção/);
+  assert.throws(() => validateIdentity(UID, PROD.email), /produção/);
 });
 
 test('negativo: UID ausente ou inválido e e-mail inválido são recusados', () => {
@@ -127,4 +130,29 @@ test('substituições independem do fim de linha: blob com LF (CI Linux) e CRLF 
 
 test('substituições falham fechado quando uma âncora não existe', () => {
   assert.throws(() => applyHomologSubstitutions('sem nada', { sdk: SDK, uid: UID, email: EMAIL, shortSha: 'abc' }), /âncora|configuração Firebase/);
+});
+
+test('fail-closed: firestore.rules sem identidade do proprietário impede o guard de validar', () => {
+  const dir = tmpDir();
+  const rules = path.join(dir, 'firestore.rules');
+  fs.writeFileSync(rules, 'rules_version = "2";\n');
+  assert.throws(() => readOwnerIdentifiers(rules), /fail-closed/);
+  assert.throws(() => readOwnerIdentifiers(path.join(dir, 'ausente.rules')));
+});
+
+test('negativo: distribuição que ainda contém o e-mail de produção é reprovada pelo guard', () => {
+  const dir = tmpDir();
+  const out = buildTo(dir);
+  const indexPath = path.join(out, 'index.html');
+  fs.appendFileSync(indexPath, `\n<!-- ${PROD.email} -->\n`);
+  assert.throws(() => checkDistribution(out, { sha: HEAD, shortSha: HEAD.slice(0, 12), projectId: HOMOLOG, uid: UID, email: EMAIL, cfg: SDK, manifestPath: out + '.manifest.json' }), /GUARD FALHOU/);
+});
+
+test('arquivos de homologação não repetem o UID nem o e-mail do proprietário de produção', () => {
+  const files = ['scripts/homolog/build-homolog.js', 'scripts/homolog/guard.js', 'tests/homolog-build-guard.test.js'];
+  for (const rel of files) {
+    const text = fs.readFileSync(path.join(repo, rel), 'utf8');
+    assert.equal(text.includes(PROD.uid), false, `UID de produção literal em ${rel}`);
+    assert.equal(text.includes(PROD.email), false, `e-mail de produção literal em ${rel}`);
+  }
 });

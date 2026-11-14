@@ -7,7 +7,20 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const PROD_PROJECT = 'carteira-de-investimento-16725';
-const PROD_IDENTIFIERS = [PROD_PROJECT, 'paulinhoo2002@gmail.com', 'yaypxiiv7Ye7pwpDZ0nqhG3Yj7E3'];
+// Identidade do proprietário de produção: lida de firestore.rules (fonte canônica), sem cópia literal neste arquivo.
+const RULES_PATH = path.join(__dirname, '..', '..', 'firestore.rules');
+let prodOwner = null;
+function readOwnerIdentifiers(rulesPath = RULES_PATH) {
+  const text = fs.readFileSync(rulesPath, 'utf8'); // ausente = erro (fail-closed)
+  const uid = (text.match(/request\.auth\.uid\s*==\s*"([A-Za-z0-9]{20,40})"/) || [])[1];
+  const email = (text.match(/request\.auth\.token\.email\s*==\s*"([^"\s@]+@[^"\s@]+)"/) || [])[1];
+  if (!uid || !email) throw new Error('GUARD: identidade do proprietário não encontrada em firestore.rules (fail-closed)');
+  return { uid, email };
+}
+function prodIdentifiers() {
+  if (!prodOwner) prodOwner = readOwnerIdentifiers();
+  return [PROD_PROJECT, prodOwner.email, prodOwner.uid];
+}
 const PROD_HOSTS = /controle-financeiro|investidor10|carteira-2\b/;
 const SDK_FIELDS = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'];
 const FORBIDDEN_FILES = [/^\.firebaserc$/, /^\.env/, /^\.vercel(\/|$)/, /^\.git(\/|$)/, /^\.gitignore$/, /^node_modules(\/|$)/,
@@ -33,7 +46,7 @@ function validateSdkConfig(cfg, expectedProject) {
 function validateIdentity(uid, email) {
   if (!/^[A-Za-z0-9]{20,40}$/.test(String(uid || ''))) throw new Error('GUARD: UID sintético ausente ou inválido');
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(email || ''))) throw new Error('GUARD: e-mail de homologação ausente ou inválido');
-  for (const id of PROD_IDENTIFIERS) if (uid === id || email === id) throw new Error('GUARD: identidade de produção informada');
+  for (const id of prodIdentifiers()) if (uid === id || email === id) throw new Error('GUARD: identidade de produção informada');
   return { uid, email };
 }
 
@@ -47,7 +60,7 @@ function checkDistribution(dir, expected) {
   const cfg = expected.cfg;
 
   if (!html.includes(`projectId: "${expected.projectId}"`)) fail('projectId de homologação ausente no index.html');
-  for (const id of [PROD_PROJECT, ...PROD_IDENTIFIERS.slice(1)]) if (html.includes(id)) fail(`identificador de produção presente: ${id.slice(0, 6)}…`);
+  for (const id of prodIdentifiers()) if (html.includes(id)) fail(`identificador de produção presente: ${id.slice(0, 6)}…`);
   if (PROD_HOSTS.test(html)) fail('referência a host operacional de outro projeto');
   if (!html.includes(`const OWNER_FIREBASE_UID = '${expected.uid}';`)) fail('UID autorizado não corresponde ao build');
   if (!html.includes(`const OWNER_FIREBASE_EMAIL = '${expected.email}';`)) fail('e-mail autorizado não corresponde ao build');
@@ -91,4 +104,4 @@ function walk(dir, base = dir) {
   return out;
 }
 
-module.exports = { checkDistribution, validateSdkConfig, validateIdentity, PROD_PROJECT, sha256, walk };
+module.exports = { checkDistribution, validateSdkConfig, validateIdentity, readOwnerIdentifiers, PROD_PROJECT, sha256, walk };
