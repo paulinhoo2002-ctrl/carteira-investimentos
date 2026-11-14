@@ -248,7 +248,8 @@ test('SM168 marco e marco "unknown" falham: HTML novo NÃO é gravado e a navega
   const dyn = env.cacheOf(dynamicNameFromSource());
   await dyn.put(new FakeRequest('./index.html'), new FakeResponse('A', { status: 200 }));
   const response = await runEvent(env, 'fetch', new FakeRequest('/', { mode: 'navigate' }));
-  assert.equal(await response.text(), 'A', 'a navegação não pode servir HTML novo sem marco válido');
+  // SM172 (R-A): sem marco, o usuário recebe a rede (B), consistente com o JS da rede; o cache de HTML permanece A.
+  assert.equal(await response.text(), 'B', 'sem marco, a navegação devolve a página da rede');
   assert.equal(await (await dyn.match(new FakeRequest('./index.html'))).text(), 'A', 'o HTML novo não pode entrar no cache');
 });
 
@@ -266,4 +267,29 @@ test('SM168 só a gravação do marco falha e o "unknown" passa: scripts do cach
   assert.equal(marker && await marker.text(), 'unknown', 'o marco inválido foi gravado');
   const script = await runEvent(env, 'fetch', new FakeRequest('./app.js', { destination: 'script' }));
   assert.equal(script.ok, false, 'com geração desconhecida, o script do cache não pode ser servido');
+});
+
+// SM172 (R-A): marco de geração não gravado + JS novo na rede. A página nunca pode executar HTML A com JS B,
+// nem online nem offline. Antes da correção: navegação devolve A e o script B é buscado e gravado (falha).
+test('SM172 R-A: marco falha e JS novo está na rede: nunca HTML A com JS B, online nem offline', async () => {
+  let online = true;
+  const env = makeEnv({
+    network: url => {
+      if (!online) return Promise.reject(new TypeError('offline'));
+      if (url.endsWith('/')) return Promise.resolve(new FakeResponse('B', { status: 200 }));
+      return Promise.resolve(new FakeResponse('js-B', { status: 200, headers: { date: httpDate(T0 + 120000) } }));
+    },
+    failPut: url => url.endsWith('/__html-generation'),
+  });
+  await env.cacheOf(getDynamicName(env)).put(new FakeRequest('./index.html'), new FakeResponse('A', { status: 200 }));
+  await env.cacheOf(getStaticName(env)).put(new FakeRequest('./app.js'), new FakeResponse('js-A', { status: 200, headers: { date: httpDate(T0) } }));
+  const pageOnline = await (await runEvent(env, 'fetch', new FakeRequest('/', { mode: 'navigate' }))).text();
+  const scriptOnline = await (await runEvent(env, 'fetch', new FakeRequest('./app.js', { destination: 'script' }))).text();
+  assert.ok((pageOnline === 'B' && scriptOnline === 'js-B') || (pageOnline === 'A' && scriptOnline === 'js-A'),
+    'online: combinação incompatível HTML ' + pageOnline + ' + JS ' + scriptOnline);
+  online = false;
+  const pageOffline = await (await runEvent(env, 'fetch', new FakeRequest('/', { mode: 'navigate' }))).text();
+  const scriptOffline = await (await runEvent(env, 'fetch', new FakeRequest('./app.js', { destination: 'script' }))).text();
+  assert.ok((pageOffline === 'B' && scriptOffline === 'js-B') || (pageOffline === 'A' && scriptOffline === 'js-A'),
+    'offline: combinação incompatível HTML ' + pageOffline + ' + JS ' + scriptOffline);
 });

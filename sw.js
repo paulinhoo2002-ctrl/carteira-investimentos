@@ -560,6 +560,8 @@ function fetchNetworkNow(request, timeoutMs) {
 // marco da geração; o fallback de cache só serve cópia gravada a partir dele (Date da resposta, tolerância de 1 s). Sem marco,
 // serve a cópia: o offline puro (HTML também do cache) segue igual. Com marco e sem Date, falha fechada (SM156, R4).
 var HTML_GENERATION_KEY = './__html-generation';
+// SM172 (R-A): falso quando o marco ou o HTML novo não foram gravados. Enquanto falso, scripts da rede não entram no cache.
+var htmlGenerationCommitted = true;
 function markHtmlGeneration(cache, fresh) {
   return cache.match('./index.html').then(function(old) {
     if (!old) return;
@@ -626,6 +628,11 @@ self.addEventListener('fetch', function(event) {
             }).then(function() {
               return cache.put('./index.html', fresh.clone());
             }).then(function() {
+              htmlGenerationCommitted = true;
+              return fresh;
+            }, function() {
+              // SM172 (R-A): sem marco, o usuário recebe a página da rede (consistente com o JS da rede); nada novo é gravado.
+              htmlGenerationCommitted = false;
               return fresh;
             });
           });
@@ -645,7 +652,7 @@ self.addEventListener('fetch', function(event) {
     event.respondWith((function() {
       return caches.open(CACHE_STATIC).then(function(cache) {
         return fetchNetworkWithTimeout(request).then(function(fresh) {
-          if (fresh.ok && fresh.type === 'basic') {
+          if (fresh.ok && fresh.type === 'basic' && htmlGenerationCommitted) {
             return cache.put(request, fresh.clone()).then(function() { return fresh; });
           }
           return fresh;
@@ -661,7 +668,7 @@ self.addEventListener('fetch', function(event) {
     event.respondWith((function() {
       return caches.open(CACHE_STATIC).then(function(cache) {
         return fetchNetworkWithTimeout(request).then(function(fresh) {
-          if (fresh.ok && fresh.type === 'basic') {
+          if (fresh.ok && fresh.type === 'basic' && htmlGenerationCommitted) {
             return cache.put(request, fresh.clone()).then(function() { return fresh; });
           }
           return fresh;
