@@ -566,7 +566,11 @@ function markHtmlGeneration(cache, fresh) {
     return Promise.all([old.text(), fresh.text()]).then(function(t) {
       if (t[0] !== t[1]) return cache.put(HTML_GENERATION_KEY, new Response(String(Date.now())));
     });
-  }).catch(function() {});
+  }).catch(function() {
+    // SM167: falha ao gravar o marco deixa a geração desconhecida. Grava um marco inválido ('unknown'), que faz
+    // matchConsistent recusar o fallback de cache (falha fechada), em vez de servir cache sem verificação.
+    return cache.put(HTML_GENERATION_KEY, new Response('unknown')).catch(function() {});
+  });
 }
 function matchConsistent(cache, request) {
   return Promise.all([cache.match(request), caches.match(HTML_GENERATION_KEY)]).then(function(r) {

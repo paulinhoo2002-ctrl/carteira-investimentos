@@ -34,7 +34,8 @@ test('o carregamento do Firebase não bloqueia o parser: scripts são inseridos 
   const html = fs.readFileSync(path.join(repo, 'index.html'), 'utf8');
   assert.equal(/document\.write\(\s*\[\s*'<script src="https:\/\/www\.gstatic\.com/.test(html), false, 'document.write síncrono de Firebase não pode voltar');
   assert.match(html, /window\.__FIREBASE_READY__=new Promise/);
-  assert.match(html, /setTimeout\(\(\)=>\{ timedOut=true;/);
+  // SM156/SM167: o timeout sinaliza só o estado real do SDK (sdkComplete()); o contrato antigo 'timedOut=true' foi substituído.
+  assert.match(html, /setTimeout\(\(\)=>\{ settle\(sdkComplete\(\)\); \},8000\)/);
   assert.match(html, /<link rel="stylesheet" href="https:\/\/fonts\.googleapis\.com\/css2\?family=Inter[^"]*" media="print" onload="this\.media='all'">/);
 });
 

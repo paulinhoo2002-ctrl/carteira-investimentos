@@ -9059,7 +9059,8 @@ window.__FIREBASE_READY__=new Promise(resolve=>{
   let attempt=0, restarts=0, bootSettled=false;
   const settle=value=>{ if(!bootSettled){ bootSettled=true; resolve(value); } };
   const sdkComplete=()=>!!window.firebase && typeof firebase.auth==='function' && typeof firebase.firestore==='function';
-  const timer=setTimeout(()=>{ settle(!!window.firebase); },8000);
+  // SM167: o contrato de prontidão é "SDK completo". No timeout, sinaliza o estado real (parcial = false), não sucesso.
+  const timer=setTimeout(()=>{ settle(sdkComplete()); },8000);
   const complete=()=>{
     window.__FIREBASE_SDK_STATE__='complete';
     clearTimeout(timer);

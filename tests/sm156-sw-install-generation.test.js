@@ -219,3 +219,16 @@ function dynamicNameFromSource() {
   const ver = /var SW_VERSION = '([^']+)'/.exec(SW_SOURCE)[1];
   return prefix + 'dynamic-' + ver;
 }
+
+// SM167: falha ao gravar o marco de geração deixa a geração desconhecida ('unknown'). O fallback deve falhar fechado,
+// mesmo com Date válido; sem marco e com Date válido, a cópia continua sendo servida (comportamento preservado).
+test('SM167 marco de geração inválido (falha ao gravar): fallback recusado mesmo com Date válido', async () => {
+  const r = await fetchScriptFallback({ cachedDate: httpDate(T0 + 120000), markAt: 'unknown', body: 'js-A' });
+  assert.equal(r.ok, false, 'geração desconhecida nunca serve cache sem verificação');
+});
+
+test('SM167 sem marco e com Date válido: cópia continua servida (regressão preservada)', async () => {
+  const r = await fetchScriptFallback({ cachedDate: httpDate(T0), markAt: undefined, body: 'js-A' });
+  assert.equal(r.status, 200);
+  assert.equal(await r.text(), 'js-A');
+});
