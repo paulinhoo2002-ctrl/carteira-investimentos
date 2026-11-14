@@ -145,7 +145,7 @@ test('SM173 duas contas sintéticas: B não lê, não grava e não sobrescreve o
       S.aportes.push({ id: 'iso-sm173-a', ticker: mark, qty: 1, price: 10, date: '2026-11-14', operation: 'compra', type: 'Ação', sector: 'Teste' });
       save();
     }, MARK_A);
-    await app.page.waitForFunction(() => FB.pendingCloudSave === false, null, { timeout: 40000 });
+    await app.page.waitForFunction(() => FB.pendingCloudSave === false, null, { timeout: 40000 }).catch(async e => { const d = await app.page.evaluate(() => ({ pending: FB.pendingCloudSave, inFlight: FB.syncInFlight, cloudLoaded: FB.cloudLoaded, seq: FB.civ5EditSeq, lastErr: FB.lastCloudError ? String(FB.lastCloudError.message || FB.lastCloudError).slice(0, 200) : null, state: cloudSyncState().status, scope: CIV5_SCOPE ? 'set' : null, owner: localStorage.getItem('civ5_owner') ? 'set' : null, pendKey: localStorage.getItem('civ5_pending_owner') ? 'set' : null, pageErr: [] })); throw new Error('DIAG ' + JSON.stringify(d) + ' :: ' + e.message.slice(0, 120)); });
     const aLocal = await readLocal(app.page);
     assert.ok(aLocal.civ5 && aLocal.civ5.includes(MARK_A), 'A gravou no civ5');
     assert.ok(aLocal.owner, 'A vinculou o civ5 ao escopo');
