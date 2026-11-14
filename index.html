@@ -9045,6 +9045,9 @@ summary:focus-visible,
 <script>
 /* SM95: Firebase carregado sem bloquear o parser (document.write travava a abertura com rede lenta/travada).
    Espera limitada: após 8 s segue sem Firebase, e initFirebase trata a ausência como antes. */
+/* SM156 (R1/R2): o SDK completo é a única condição de inicialização. Se ele chega depois do timeout, initFirebase roda
+   de novo (idempotente, por FB.bootstrapped). Falhas são retentadas com limite (3 por ciclo, 2 ciclos por evento online). */
+window.__FIREBASE_SDK_STATE__='loading';
 window.__FIREBASE_READY__=new Promise(resolve=>{
   if(window.__LOCAL_TEST_MODE__){ resolve(false); return; }
   const urls=[
@@ -9052,16 +9055,54 @@ window.__FIREBASE_READY__=new Promise(resolve=>{
     'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js',
     'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js'
   ];
-  let pending=urls.length;
-  let timedOut=false;
-  const timer=setTimeout(()=>{ timedOut=true; resolve(!!window.firebase); },8000);
-  urls.forEach(src=>{
-    const s=document.createElement('script');
-    s.src=src; s.async=false;
-    s.onload=()=>{ if(--pending===0){ clearTimeout(timer); if(timedOut){ window.__FIREBASE_LATE__=true; if(!FB.app && window.firebase){ try{ initFirebase(); render(); }catch(e){ console.error("firebase tardio:",e); } } } else resolve(!!window.firebase); } };
-    s.onerror=()=>{ clearTimeout(timer); resolve(false); };
-    document.head.appendChild(s);
-  });
+  const MAX_ATTEMPTS=3, MAX_RESTARTS=2;
+  let attempt=0, restarts=0, bootSettled=false;
+  const settle=value=>{ if(!bootSettled){ bootSettled=true; resolve(value); } };
+  const sdkComplete=()=>!!window.firebase && typeof firebase.auth==='function' && typeof firebase.firestore==='function';
+  const timer=setTimeout(()=>{ settle(!!window.firebase); },8000);
+  const complete=()=>{
+    window.__FIREBASE_SDK_STATE__='complete';
+    clearTimeout(timer);
+    const late=bootSettled;
+    settle(true);
+    if(late && !FB.bootstrapped){ try{ initFirebase(); render(); }catch(e){ console.error('firebase tardio:',e); } }
+  };
+  const giveUp=()=>{
+    window.__FIREBASE_SDK_STATE__='failed';
+    clearTimeout(timer);
+    const late=bootSettled;
+    settle(false);
+    if(late && !FB.bootstrapped){ try{ initFirebase(); render(); }catch(e){ console.error('firebase falhou:',e); } }
+    if(restarts<MAX_RESTARTS){
+      restarts++;
+      window.addEventListener('online',()=>{ attempt=0; window.__FIREBASE_SDK_STATE__='loading'; loadFrom(0); },{once:true});
+    }
+  };
+  const retry=from=>{
+    if(attempt>=MAX_ATTEMPTS){ giveUp(); return; }
+    if(navigator.onLine===false){ window.addEventListener('online',()=>loadFrom(from),{once:true}); return; }
+    setTimeout(()=>loadFrom(from),1500*attempt);
+  };
+  // Recarrega a partir do primeiro SDK que falhou: os anteriores já executaram em ordem e seus globais permanecem.
+  const loadFrom=from=>{
+    attempt++;
+    let remaining=urls.length-from, firstFailed=-1;
+    const done=()=>{
+      if(--remaining>0) return;
+      if(firstFailed>=0) retry(firstFailed);
+      else if(sdkComplete()) complete();
+      else retry(0);
+    };
+    urls.slice(from).forEach((src,k)=>{
+      const index=from+k;
+      const s=document.createElement('script');
+      s.src=src; s.async=false;
+      s.onload=done;
+      s.onerror=()=>{ if(firstFailed<0 || index<firstFailed) firstFailed=index; done(); };
+      document.head.appendChild(s);
+    });
+  };
+  loadFrom(0);
 });
 </script>
 <script>
@@ -11619,12 +11660,16 @@ function initFirebase(){
     FB.access.reason='Configuração local de emuladores incompleta.';
     return;
   }
+  // SM156 (R1): inicialização única. Chamadas extras (boot, SDK tardio, retentativas) não repetem app, listeners nem assinaturas.
+  if(FB.bootstrapped) return;
   try{
-    if(!window.firebase){
+    if(!window.firebase || typeof firebase.auth!=='function' || typeof firebase.firestore!=='function'){
+      // SDK ausente ou parcial não é inicialização concluída: nega acesso e aguarda o SDK completo (ou a falha definitiva).
       FB.authResolved = true;
       FB.access.loading = false;
       FB.access.loaded = false;
       FB.access.allowed = false;
+      FB.access.reason = window.__FIREBASE_SDK_STATE__==='failed' ? 'Não foi possível carregar a autenticação. Recarregue a página quando a conexão voltar.' : '';
       return;
     }
     const emulatorMode=isLocalAuthEmulatorMode();
@@ -11632,15 +11677,18 @@ function initFirebase(){
         const appConfig = (emulatorMode || isLocalTestMode())
           ? {apiKey: 'demo-api-key', authDomain: 'localhost', projectId: 'demo-carteira-qa-emulator'}
           : firebaseConfig;
-    FB.app=firebase.initializeApp(appConfig);
-    FB.auth=firebase.auth();
-    FB.db=firebase.firestore();
-    if(emulatorMode){
+    if(!FB.app) FB.app=firebase.initializeApp(appConfig);
+    if(!FB.auth) FB.auth=firebase.auth();
+    if(!FB.db) FB.db=firebase.firestore();
+    if(emulatorMode && !FB.emulatorsConfigured){
       if(typeof FB.auth.useEmulator!=='function' || typeof FB.db.useEmulator!=='function') throw new Error('Firebase emulator connectors unavailable.');
       FB.auth.useEmulator('http://127.0.0.1:9099');
       FB.db.useEmulator('127.0.0.1',8080);
+      FB.emulatorsConfigured=true;
     }
     FB.ready=true;
+    if(!FB.listenersAttached){
+    FB.listenersAttached=true;
 
         // Keep session persistence under Firebase's own authority so a legitimate
         // auth session can be restored after an offline reload without copying
@@ -11767,6 +11815,8 @@ function initFirebase(){
       FB.access = {loading:false,loaded:true,allowed:false,reason:'Não foi possível validar o acesso agora.',cfg:null,lastDeniedAt:new Date().toISOString()};
       render();
     });
+    }
+    FB.bootstrapped=true;
     if(!FB.authResolved){
       FB.access.loading = true;
       FB.access.loaded = false;

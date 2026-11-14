@@ -38,8 +38,11 @@ test('o carregamento do Firebase não bloqueia o parser: scripts são inseridos 
   assert.match(html, /<link rel="stylesheet" href="https:\/\/fonts\.googleapis\.com\/css2\?family=Inter[^"]*" media="print" onload="this\.media='all'">/);
 });
 
-test('carregamento tardio do Firebase não reinicializa o app (guarda FB.app)', () => {
+// SM156: o contrato antigo (guarda `!FB.app`) impedia a recuperação quando FB.app já existia com SDK parcial (R1).
+// A garantia correta é a idempotência de initFirebase: a inicialização tardia não duplica app, listeners nem assinaturas.
+test('carregamento tardio do Firebase não reinicializa o app (initFirebase idempotente por FB.bootstrapped)', () => {
   const fs = require('node:fs');
   const html = fs.readFileSync(path.join(repo, 'index.html'), 'utf8');
-  assert.ok(html.includes('!FB.app && window.firebase'), 'a inicialização tardia precisa checar FB.app antes de chamar initFirebase');
+  assert.ok(html.includes('if(FB.bootstrapped) return;'), 'initFirebase precisa ser idempotente antes de chamar o SDK');
+  assert.ok(html.includes('if(!FB.listenersAttached){'), 'listeners e assinaturas de autenticação só podem ser anexados uma vez');
 });

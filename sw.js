@@ -179,9 +179,9 @@ self.addEventListener('install', function(event) {
       var requests = APP_SHELL.map(function(url) {
         return new Request(url, { credentials: 'same-origin', cache: 'reload' });
       });
-      return cache.addAll(requests).catch(function(err) {
-        console.warn('[SW v252] Some app shell assets failed to cache:', err);
-      });
+      // SM156 (R3): APP_SHELL é obrigatório e tudo-ou-nada. Falha propaga: a instalação não conclui,
+      // skipWaiting não é chamado e o SW anterior (com seus caches) continua no controle.
+      return cache.addAll(requests);
     }).then(function() {
       return caches.open(CACHE_ANALYTICS);
     }).then(function(cache) {
@@ -558,7 +558,7 @@ function fetchNetworkNow(request, timeoutMs) {
 }
 // SM132: HTML novo da rede + script antigo do cache = mistura. Ao receber da rede um HTML diferente do guardado, grava-se o
 // marco da geração; o fallback de cache só serve cópia gravada a partir dele (Date da resposta, tolerância de 1 s). Sem marco,
-// ou sem cabeçalho Date, serve a cópia: o offline puro (HTML também do cache) segue igual.
+// serve a cópia: o offline puro (HTML também do cache) segue igual. Com marco e sem Date, falha fechada (SM156, R4).
 var HTML_GENERATION_KEY = './__html-generation';
 function markHtmlGeneration(cache, fresh) {
   return cache.match('./index.html').then(function(old) {
@@ -575,7 +575,8 @@ function matchConsistent(cache, request) {
     if (!r[1]) return cached;
     return r[1].text().then(function(at) {
       var d = Date.parse(cached.headers.get('date') || '');
-      return (isNaN(d) || d + 1000 >= Number(at)) ? cached : Response.error();
+      // SM156 (R4): com marco e sem Date confiável não há como provar a geração: falha fechada, sem mistura HTML/JS.
+      return (!isNaN(d) && d + 1000 >= Number(at)) ? cached : Response.error();
     });
   });
 }

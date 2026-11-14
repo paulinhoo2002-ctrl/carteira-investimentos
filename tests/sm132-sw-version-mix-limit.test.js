@@ -46,7 +46,9 @@ function startServer() {
       let body;
       if (p === '/index.html') body = serveVersion === 'B' ? INDEX_B : INDEX_A;
       else if (p === '/app.js') body = serveVersion === 'B' ? APP_B : APP_A;
-      else { res.writeHead(404); res.end(); return; }
+      // SM156 (R3): o SW exige todo o APP_SHELL. O fixture serve os demais recursos do shell com 200 (conteúdo neutro),
+      // como uma aplicação real; um 404 aqui faria a instalação ser recusada e o teste aguardar um SW que nunca ativa.
+      else body = '/* fixture asset */';
       res.writeHead(200, { 'content-type': MIME[path.extname(p)] || 'application/octet-stream', 'cache-control': 'no-cache' });
       res.end(body);
     };
