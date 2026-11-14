@@ -708,12 +708,23 @@ test('V2 tablet navigation stays in one reachable row without page overflow', as
     const navigationItems = runtime.page.locator('.tabs-mobile > button.tab');
     const lastNavigationItem = navigationItems.last();
     await lastNavigationItem.focus();
-    await lastNavigationItem.evaluate(element => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-    const lastItemReachable = await lastNavigationItem.evaluate(element => {
+    // A rolagem por foco é suave e termina depois de 2 quadros: espera a condição real (com teto), sem relaxar a asserção.
+    const lastItemInView = (element) => {
       const viewport = element.parentElement.getBoundingClientRect();
       const item = element.getBoundingClientRect();
       return item.left >= viewport.left && item.right <= viewport.right;
-    });
+    };
+    await lastNavigationItem.evaluate(element => new Promise(resolve => {
+      const start = performance.now();
+      const tick = () => {
+        const vp = element.parentElement.getBoundingClientRect();
+        const it = element.getBoundingClientRect();
+        if ((it.left >= vp.left && it.right <= vp.right) || performance.now() - start > 3000) resolve();
+        else requestAnimationFrame(tick);
+      };
+      tick();
+    }));
+    const lastItemReachable = await lastNavigationItem.evaluate(lastItemInView);
     assert.equal(lastItemReachable, true, 'keyboard focus must scroll the last navigation destination fully into view');
 
     await runtime.page.getByRole('button', { name: /Patrimônio/ }).click();
