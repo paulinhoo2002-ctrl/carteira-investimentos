@@ -12438,7 +12438,9 @@ async function uploadLocalToCloud(show=true, options={}){
     if(options.preserveReferenceEvents !== false){
       try{ currentCloud=await readFreshCloudPayload(); }
       catch(error){
-        if(FB.cloudLoaded || options.allowMissingCloud!==true) throw new Error('CLOUD_PREWRITE_READBACK_UNAVAILABLE');
+        // SM173: documento inexistente = nada na nuvem a sobrescrever (primeira gravação da conta). Outros erros continuam fail-closed.
+        if(String(error?.message||'')==='CLOUD_DOCUMENT_MISSING'){ currentCloud={}; }
+        else if(FB.cloudLoaded || options.allowMissingCloud!==true) throw new Error('CLOUD_PREWRITE_READBACK_UNAVAILABLE');
       }
     }
     const payload=mergeCloudReferencePayload(cloudPayload(), currentCloud);

@@ -67,7 +67,12 @@ function makeApp({ storage, user, admin = true, cloud }) {
     load: () => { app.loadCalls++; },
     cloudPayload: () => ({ aportes: JSON.parse(JSON.stringify(ctx.S.aportes)) }),
     mergeCloudReferencePayload: p => p,
-    readFreshCloudPayload: async () => (cloud.doc || {}),
+    // Leitura prévia real: documento inexistente lança CLOUD_DOCUMENT_MISSING; erro de rede é outro erro.
+    readFreshCloudPayload: async () => {
+      if (cloud.readError) throw cloud.readError;
+      if (!cloud.doc) throw new Error('CLOUD_DOCUMENT_MISSING');
+      return cloud.doc;
+    },
     portfolioRef: () => ({
       set: async payload => {
         cloud.sets.push(payload);
@@ -281,4 +286,33 @@ test('logout zera a identidade em memória e preserva o armazenamento', async ()
   assert.equal(app.api.civ5Gate(), 'IDENTITY_UNCONFIRMED', 'sem identidade, nenhuma gravação');
   assert.equal(storage.getItem('civ5'), RAW_BEFORE, 'armazenamento local preservado após logout');
   assert.ok(storage.getItem('civ5_owner'), 'vínculo persistido para a próxima entrada do dono');
+});
+
+test('primeira gravação de conta sem documento na nuvem é aceita (leitura prévia não bloqueia)', async () => {
+  const storage = new MemStorage();
+  const cloud = { doc: null, failSet: false, delayMs: 0, sets: [] };
+  const app = makeApp({ storage, user: { uid: OWNER }, cloud });
+  await app.api.civ5BindIdentity({ uid: OWNER });
+  app.ctx.FB.cloudLoaded = true;
+  app.ctx.S.aportes.push({ id: 'a1', ticker: 'PETR4', qty: 2 });
+  app.api.queueCloudSave();
+  const r = await app.api.uploadLocalToCloud(false);
+  assert.equal(r.pass, true, 'primeira gravação concluída');
+  assert.equal(app.ctx.FB.pendingCloudSave, false, 'pendência limpa após confirmação');
+  assert.deepEqual(cloud.doc.aportes.map(a => a.ticker), ['PETR4']);
+});
+
+test('erro real de leitura prévia continua fail-closed e preserva a pendência', async () => {
+  const storage = new MemStorage();
+  const cloud = { doc: null, failSet: false, delayMs: 0, sets: [], readError: new Error('network-request-failed') };
+  const app = makeApp({ storage, user: { uid: OWNER }, cloud });
+  await app.api.civ5BindIdentity({ uid: OWNER });
+  app.ctx.FB.cloudLoaded = true;
+  app.ctx.S.aportes.push({ id: 'a1', ticker: 'PETR4', qty: 2 });
+  app.api.queueCloudSave();
+  const r = await app.api.uploadLocalToCloud(false);
+  assert.equal(r.pass, false, 'sem leitura confiável não há gravação');
+  assert.equal(cloud.sets.length, 0, 'nenhuma escrita sem leitura prévia');
+  assert.equal(app.ctx.FB.pendingCloudSave, true, 'pendência preservada');
+  assert.equal(storage.getItem('civ5_pending_owner'), app.api.getScope());
 });
