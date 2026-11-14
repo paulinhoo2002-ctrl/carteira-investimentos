@@ -9,14 +9,9 @@ const test = require('node:test');
 const { chromium } = require('playwright-core');
 
 const repo = path.join(__dirname, '..');
-const CHROME_CANDIDATES = [
-  'C:/Program Files/Google/Chrome/Application/chrome.exe',
-  'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
-  'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
-  'C:/Program Files/Microsoft/Edge/Application/msedge.exe',
-  '/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser',
-];
-const EXE = CHROME_CANDIDATES.find(p => fs.existsSync(p));
+const { resolveChromePath } = require('./helpers/chrome-path');
+// Ausência de navegador falha de forma explícita (regra do helper): nunca vira teste pulado.
+const EXE = resolveChromePath();
 const SDK = { app: 'firebase-app-compat.js', auth: 'firebase-auth-compat.js', firestore: 'firebase-firestore-compat.js' };
 
 // Mocks mínimos: app registra inicializações, auth registra assinaturas e chamadas; firestore expõe a instância.
@@ -96,8 +91,6 @@ async function scenario(browser, port, plan, { settleMs = 14000, offlineStart = 
   return { state, seen, errors };
 }
 
-const SKIP = EXE ? {} : { skip: 'Chrome/Edge ausente' };
-
 // Estado final esperado de uma sessão recuperada: login disponível, sem acesso concedido, sem duplicação.
 function assertRecoveredLoginReady(state) {
   assert.equal(state.hasApp, true, 'FB.app deve existir');
@@ -110,7 +103,7 @@ function assertRecoveredLoginReady(state) {
   assert.equal(state.authSubs, 1, 'uma única assinatura de autenticação');
 }
 
-test('R1 tudo rápido: inicialização normal, sem duplicação', SKIP, async t => {
+test('R1 tudo rápido: inicialização normal, sem duplicação', async t => {
   const browser = await chromium.launch({ executablePath: EXE, headless: true });
   try {
     const r = await scenario(browser, 4641, { app: { delay: 0 }, auth: { delay: 0 }, firestore: { delay: 0 } }, { settleMs: 3000 });
@@ -118,7 +111,7 @@ test('R1 tudo rápido: inicialização normal, sem duplicação', SKIP, async t 
   } finally { await browser.close(); }
 });
 
-test('R1 App antes de 8 s; Auth e Firestore depois do timeout: recupera sem recarga', SKIP, async () => {
+test('R1 App antes de 8 s; Auth e Firestore depois do timeout: recupera sem recarga', async () => {
   const browser = await chromium.launch({ executablePath: EXE, headless: true });
   try {
     const r = await scenario(browser, 4642, { app: { delay: 500 }, auth: { delay: 9500 }, firestore: { delay: 9700 } });
@@ -126,7 +119,7 @@ test('R1 App antes de 8 s; Auth e Firestore depois do timeout: recupera sem reca
   } finally { await browser.close(); }
 });
 
-test('R1 Auth antes de 8 s; Firestore depois do timeout: recupera sem recarga', SKIP, async () => {
+test('R1 Auth antes de 8 s; Firestore depois do timeout: recupera sem recarga', async () => {
   const browser = await chromium.launch({ executablePath: EXE, headless: true });
   try {
     const r = await scenario(browser, 4643, { app: { delay: 0 }, auth: { delay: 0 }, firestore: { delay: 9500 } });
@@ -134,7 +127,7 @@ test('R1 Auth antes de 8 s; Firestore depois do timeout: recupera sem recarga', 
   } finally { await browser.close(); }
 });
 
-test('R1 todos depois de 8 s: recupera sem recarga', SKIP, async () => {
+test('R1 todos depois de 8 s: recupera sem recarga', async () => {
   const browser = await chromium.launch({ executablePath: EXE, headless: true });
   try {
     const r = await scenario(browser, 4644, { app: { delay: 9500 }, auth: { delay: 9500 }, firestore: { delay: 9500 } });
@@ -142,7 +135,7 @@ test('R1 todos depois de 8 s: recupera sem recarga', SKIP, async () => {
   } finally { await browser.close(); }
 });
 
-test('R1 rede sem resposta: nenhum acesso concedido e nenhuma inicialização', SKIP, async () => {
+test('R1 rede sem resposta: nenhum acesso concedido e nenhuma inicialização', async () => {
   const browser = await chromium.launch({ executablePath: EXE, headless: true });
   try {
     const r = await scenario(browser, 4645, { app: { hang: true }, auth: { hang: true }, firestore: { hang: true } }, { settleMs: 12000 });
@@ -152,7 +145,7 @@ test('R1 rede sem resposta: nenhum acesso concedido e nenhuma inicialização', 
   } finally { await browser.close(); }
 });
 
-test('R1 repetição da inicialização: chamadas extras não duplicam app, listeners nem assinaturas', SKIP, async () => {
+test('R1 repetição da inicialização: chamadas extras não duplicam app, listeners nem assinaturas', async () => {
   const browser = await chromium.launch({ executablePath: EXE, headless: true });
   const origin = 'http://127.0.0.1:4646';
   const server = serveRepo(4646);
@@ -178,7 +171,7 @@ test('R1 repetição da inicialização: chamadas extras não duplicam app, list
   } finally { await browser.close(); server.close(); }
 });
 
-test('R2 falha de App (uma vez): recupera automaticamente sem recarga', SKIP, async () => {
+test('R2 falha de App (uma vez): recupera automaticamente sem recarga', async () => {
   const browser = await chromium.launch({ executablePath: EXE, headless: true });
   try {
     const r = await scenario(browser, 4647, { app: { fail: 'once' }, auth: { delay: 0 }, firestore: { delay: 0 } });
@@ -186,7 +179,7 @@ test('R2 falha de App (uma vez): recupera automaticamente sem recarga', SKIP, as
   } finally { await browser.close(); }
 });
 
-test('R2 falha de Auth (uma vez): recupera automaticamente sem recarga', SKIP, async () => {
+test('R2 falha de Auth (uma vez): recupera automaticamente sem recarga', async () => {
   const browser = await chromium.launch({ executablePath: EXE, headless: true });
   try {
     const r = await scenario(browser, 4648, { app: { delay: 0 }, auth: { fail: 'once' }, firestore: { delay: 0 } });
@@ -194,7 +187,7 @@ test('R2 falha de Auth (uma vez): recupera automaticamente sem recarga', SKIP, a
   } finally { await browser.close(); }
 });
 
-test('R2 falha de Firestore (uma vez): recupera automaticamente sem recarga', SKIP, async () => {
+test('R2 falha de Firestore (uma vez): recupera automaticamente sem recarga', async () => {
   const browser = await chromium.launch({ executablePath: EXE, headless: true });
   try {
     const r = await scenario(browser, 4649, { app: { delay: 0 }, auth: { delay: 0 }, firestore: { fail: 'once' } });
@@ -202,7 +195,7 @@ test('R2 falha de Firestore (uma vez): recupera automaticamente sem recarga', SK
   } finally { await browser.close(); }
 });
 
-test('R2 falha permanente: retentativas limitadas, sem loop, e estado de falha sem acesso', SKIP, async () => {
+test('R2 falha permanente: retentativas limitadas, sem loop, e estado de falha sem acesso', async () => {
   const browser = await chromium.launch({ executablePath: EXE, headless: true });
   try {
     const r = await scenario(browser, 4650, { app: { delay: 0 }, auth: { fail: 'always' }, firestore: { delay: 0 } }, { settleMs: 14000 });
@@ -214,7 +207,7 @@ test('R2 falha permanente: retentativas limitadas, sem loop, e estado de falha s
   } finally { await browser.close(); }
 });
 
-test('R2 queda de conectividade durante o carregamento do SDK: recupera ao voltar', SKIP, async () => {
+test('R2 queda de conectividade durante o carregamento do SDK: recupera ao voltar', async () => {
   const browser = await chromium.launch({ executablePath: EXE, headless: true });
   try {
     const r = await scenario(browser, 4651, { app: { delay: 0 }, auth: { delay: 0 }, firestore: { delay: 0 } }, { offlineStart: true, goOnlineAt: 3000, settleMs: 6000 });
