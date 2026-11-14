@@ -56,8 +56,11 @@ function validateLoginHint(hint) {
 function validateIdentity(uid, email) {
   if (!/^[A-Za-z0-9]{20,40}$/.test(String(uid || ''))) throw new Error('GUARD: UID sintético ausente ou inválido');
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(email || ''))) throw new Error('GUARD: e-mail de homologação ausente ou inválido');
-  for (const id of prodIdentifiers()) if (uid === id || email === id) throw new Error('GUARD: identidade de produção informada');
-  return { uid, email };
+  // SM165: o app compara o e-mail normalizado (minúsculas, sem espaços) em isAccessAdmin. A constante gravada no build
+  // precisa estar normalizada; caso contrário o proprietário nunca passa no gate.
+  const normalized = String(email).trim().toLowerCase();
+  for (const id of prodIdentifiers()) if (uid === id || normalized === String(id).toLowerCase()) throw new Error('GUARD: identidade de produção informada');
+  return { uid, email: normalized };
 }
 
 // Verifica o diretório gerado. `expected` = { sha, shortSha, projectId, uid, email, cfg }.

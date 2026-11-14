@@ -86,7 +86,7 @@ function applyHomologSubstitutions(text, { sdk, uid, email, shortSha, loginHint 
     t = t.replace(rx, () => `const ${name} = '${value}';`);
   };
   ownerConst('OWNER_FIREBASE_UID', uid);
-  ownerConst('OWNER_FIREBASE_EMAIL', email);
+  ownerConst('OWNER_FIREBASE_EMAIL', String(email).trim().toLowerCase()); // SM165: normalizado como o gate do app (isAccessAdmin)
   const pat = /(apiKey|authDomain|projectId|storageBucket|messagingSenderId|appId)(\s*:\s*)"[^"]*"/g;
   const found = t.match(pat) || [];
   if (found.length < 6) throw new Error('bloco de configuração Firebase não encontrado');
