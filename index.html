@@ -40484,6 +40484,8 @@ if(isActiveWalletHostMode()){
   render();
 }else{
   initEditProtection();
+  // SM169: configuração de emulador parcial é decidida de forma síncrona e nega sem depender do CDN do SDK.
+  if(window.__LOCAL_AUTH_EMULATOR_CONFIG_ERROR__===true) initFirebase();
   window.__FIREBASE_READY__.then(()=>{ initFirebase(); render(); });
   render();
   const schedulePublicEventsSync=()=>{
