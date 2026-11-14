@@ -42,6 +42,16 @@ function validateSdkConfig(cfg, expectedProject) {
   return cfg;
 }
 
+// Dica de e-mail do login da homologação (opcional, via --login-hint). Só caracteres de e-mail simples: sem aspas,
+// espaços ou marcação, para não quebrar o atributo HTML. Não pode ser a identidade de produção.
+function validateLoginHint(hint) {
+  const h = String(hint || '');
+  if (!/^[A-Za-z0-9._+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/.test(h)) throw new Error('GUARD: dica de e-mail de login inválida');
+  const owner = readOwnerIdentifiers().email.toLowerCase();
+  if (h.toLowerCase() === owner) throw new Error('GUARD: dica de login não pode ser o e-mail de produção');
+  return h;
+}
+
 // Valida a identidade sintética autorizada. Lança erro se ausente, inválida ou igual à identidade de produção.
 function validateIdentity(uid, email) {
   if (!/^[A-Za-z0-9]{20,40}$/.test(String(uid || ''))) throw new Error('GUARD: UID sintético ausente ou inválido');
@@ -61,6 +71,14 @@ function checkDistribution(dir, expected) {
 
   if (!html.includes(`projectId: "${expected.projectId}"`)) fail('projectId de homologação ausente no index.html');
   for (const id of prodIdentifiers()) if (html.includes(id)) fail(`identificador de produção presente: ${id.slice(0, 6)}…`);
+  if (expected.loginHint) {
+    // Dica presente, editável (sem readonly/disabled) e sem senha preenchida.
+    const emailTag = /<input id="homolog-email"[^>]*>/.exec(html);
+    const passTag = /<input id="homolog-pass"[^>]*>/.exec(html);
+    if (!emailTag || !emailTag[0].includes(` value="${expected.loginHint}"`)) fail('dica de e-mail de login ausente no campo homolog-email');
+    if (emailTag && /\b(readonly|disabled)\b/.test(emailTag[0])) fail('campo de e-mail de login não pode ser somente leitura');
+    if (passTag && /\svalue=/.test(passTag[0])) fail('campo de senha não pode ser preenchido');
+  }
   if (PROD_HOSTS.test(html)) fail('referência a host operacional de outro projeto');
   if (!html.includes(`const OWNER_FIREBASE_UID = '${expected.uid}';`)) fail('UID autorizado não corresponde ao build');
   if (!html.includes(`const OWNER_FIREBASE_EMAIL = '${expected.email}';`)) fail('e-mail autorizado não corresponde ao build');
@@ -104,4 +122,4 @@ function walk(dir, base = dir) {
   return out;
 }
 
-module.exports = { checkDistribution, validateSdkConfig, validateIdentity, readOwnerIdentifiers, PROD_PROJECT, sha256, walk };
+module.exports = { checkDistribution, validateSdkConfig, validateIdentity, validateLoginHint, readOwnerIdentifiers, PROD_PROJECT, sha256, walk };

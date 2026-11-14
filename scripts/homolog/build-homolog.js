@@ -11,7 +11,7 @@ const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { checkDistribution, validateIdentity, validateSdkConfig, sha256, walk } = require('./guard');
+const { checkDistribution, validateIdentity, validateSdkConfig, sha256, walk, validateLoginHint } = require('./guard');
 
 const HOMOLOG_PROJECT = 'carteira-homolog-sm118';
 
@@ -63,7 +63,10 @@ function crawl(src, dst) {
 }
 
 // Substituições da homologação. Cada âncora deve existir exatamente o número de vezes esperado (fail-closed).
-function applyHomologSubstitutions(text, { sdk, uid, email, shortSha }) {
+function applyHomologSubstitutions(text, { sdk, uid, email, shortSha, loginHint = null }) {
+  // Dica de e-mail do login: SOMENTE na homologação, passada por argumento de build (não versionada).
+  // Preenche o campo, que continua editável. Nunca preenche senha.
+  const hintAttr = loginHint ? ` value="${validateLoginHint(loginHint)}"` : '';
   // Independente de plataforma: o git archive entrega CRLF no Windows e LF no Linux (CI).
   // Trabalha em LF e devolve no fim de linha original, para o artefato ser o mesmo em qualquer máquina.
   const hadCrlf = text.includes('\r\n');
@@ -129,7 +132,7 @@ function applyHomologSubstitutions(text, { sdk, uid, email, shortSha }) {
   rep(btn, [btn,
     '            <!-- homolog-email-form: HOMOLOG-ONLY -->',
     '            <div id="homolog-email-form" style="margin-top:10px;display:grid;gap:6px">',
-    '              <input id="homolog-email" type="email" autocomplete="username" placeholder="E-mail" aria-label="E-mail" style="min-height:40px;border-radius:10px;padding:8px 10px;border:1px solid #334155;background:#0b1220;color:#f5f8ff">',
+    '              <input id="homolog-email" type="email" autocomplete="username"' + hintAttr + ' placeholder="E-mail" aria-label="E-mail" style="min-height:40px;border-radius:10px;padding:8px 10px;border:1px solid #334155;background:#0b1220;color:#f5f8ff">',
     '              <input id="homolog-pass" type="password" autocomplete="current-password" placeholder="Senha" aria-label="Senha" style="min-height:40px;border-radius:10px;padding:8px 10px;border:1px solid #334155;background:#0b1220;color:#f5f8ff">',
     '              <button type="button" class="btn bgh" onclick="signInEmailHomolog()" style="min-height:40px;border-radius:12px">Entrar com e-mail e senha</button>',
     '            </div>'].join(CRLF));
@@ -158,14 +161,15 @@ function main() {
     const crawled = crawl(src, out + '.stage');
     const indexOriginal = fs.readFileSync(path.join(out + '.stage', 'index.html'), 'utf8');
     const shortSha = sha.slice(0, 12);
-    const indexHomolog = applyHomologSubstitutions(indexOriginal, { sdk, uid, email, shortSha });
+    const loginHint = args['login-hint'] ? validateLoginHint(args['login-hint']) : null;
+    const indexHomolog = applyHomologSubstitutions(indexOriginal, { sdk, uid, email, shortSha, loginHint });
     fs.writeFileSync(path.join(out + '.stage', 'index.html'), indexHomolog, 'utf8');
     fs.renameSync(out + '.stage', out);
     const files = walk(out).sort().map(p => ({ path: p, sha256: sha256(fs.readFileSync(path.join(out, p))) }));
     const manifest = { sha, shortSha, project: HOMOLOG_PROJECT, identity: { uid, email }, unresolved: crawled.unresolved, files };
     const manifestPath = out + '.manifest.json';
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 1));
-    const result = checkDistribution(out, { sha, shortSha, projectId: HOMOLOG_PROJECT, uid, email, cfg: sdk, manifestPath });
+    const result = checkDistribution(out, { sha, shortSha, projectId: HOMOLOG_PROJECT, uid, email, cfg: sdk, manifestPath, loginHint });
     console.log(`build homolog ok: ${files.length} arquivos, SHA ${shortSha}, guard ${result.checks.length} verificações PASS`);
     console.log(`manifesto: ${manifestPath}`);
   } finally {
