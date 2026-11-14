@@ -36,7 +36,7 @@ class FakeRequest {
 }
 
 function makeEnv(options) {
-  const storage = new Map();   // nome -> Map(url -> FakeResponse)
+  const storage = options.storage || new Map();   // nome -> Map(url -> FakeResponse); compartilhável entre instâncias (reinício)
   const log = { skipWaiting: 0 };
   const listeners = {};
   const network = options.network || (() => Promise.reject(new TypeError('offline')));
@@ -292,4 +292,33 @@ test('SM172 R-A: marco falha e JS novo está na rede: nunca HTML A com JS B, onl
   const scriptOffline = await (await runEvent(env, 'fetch', new FakeRequest('./app.js', { destination: 'script' }))).text();
   assert.ok((pageOffline === 'B' && scriptOffline === 'js-B') || (pageOffline === 'A' && scriptOffline === 'js-A'),
     'offline: combinação incompatível HTML ' + pageOffline + ' + JS ' + scriptOffline);
+});
+
+// SM172 (reinício): o estado em memória do SW se perde. Nova instância, mesmo armazenamento, marco falhando.
+// O par servido (HTML, JS) precisa ser de uma única geração, online e offline.
+test('SM172 reinício do SW após falha do marco: HTML e JS nunca de gerações diferentes, online nem offline', async () => {
+  let online = true;
+  const network = url => {
+    if (!online) return Promise.reject(new TypeError('offline'));
+    if (url.endsWith('/')) return Promise.resolve(new FakeResponse('B', { status: 200 }));
+    return Promise.resolve(new FakeResponse('js-B', { status: 200, headers: { date: httpDate(T0 + 120000) } }));
+  };
+  const failPut = url => url.endsWith('/__html-generation');
+  const first = makeEnv({ network, failPut });
+  await first.cacheOf(getDynamicName(first)).put(new FakeRequest('./index.html'), new FakeResponse('A', { status: 200 }));
+  await first.cacheOf(getStaticName(first)).put(new FakeRequest('./app.js'), new FakeResponse('js-A', { status: 200, headers: { date: httpDate(T0) } }));
+  await (await runEvent(first, 'fetch', new FakeRequest('/', { mode: 'navigate' }))).text();
+  const second = makeEnv({ network, failPut, storage: first.storage });
+  const pairOf = async env => {
+    const page = await (await runEvent(env, 'fetch', new FakeRequest('/', { mode: 'navigate' }))).text();
+    const script = await (await runEvent(env, 'fetch', new FakeRequest('./app.js', { destination: 'script' }))).text();
+    return { page, script };
+  };
+  // Scripts chegam antes de qualquer navegação na nova instância (página carregada antes do reinício).
+  const onlineScript = await (await runEvent(second, 'fetch', new FakeRequest('./app.js', { destination: 'script' }))).text();
+  assert.equal(onlineScript, 'js-B', 'online: script da rede, da geração da página carregada antes do reinício');
+  online = false;
+  const offlinePair = await pairOf(second);
+  assert.ok((offlinePair.page === 'B' && offlinePair.script === 'js-B') || (offlinePair.page === 'A' && offlinePair.script === 'js-A'),
+    'offline após reinício: HTML ' + offlinePair.page + ' + JS ' + offlinePair.script);
 });

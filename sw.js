@@ -560,8 +560,9 @@ function fetchNetworkNow(request, timeoutMs) {
 // marco da geração; o fallback de cache só serve cópia gravada a partir dele (Date da resposta, tolerância de 1 s). Sem marco,
 // serve a cópia: o offline puro (HTML também do cache) segue igual. Com marco e sem Date, falha fechada (SM156, R4).
 var HTML_GENERATION_KEY = './__html-generation';
-// SM172 (R-A): falso quando o marco ou o HTML novo não foram gravados. Enquanto falso, scripts da rede não entram no cache.
-var htmlGenerationCommitted = true;
+// SM172 (R-A): estado por instância do SW. Começa falso (após reinício, o estado se perde) e só vira verdadeiro com um HTML
+// novo gravado com marco nesta instância. Enquanto falso, scripts da rede não entram no cache (evita HTML antigo + JS novo offline).
+var htmlGenerationCommitted = false;
 function markHtmlGeneration(cache, fresh) {
   return cache.match('./index.html').then(function(old) {
     if (!old) return;
