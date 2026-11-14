@@ -9099,7 +9099,9 @@ window.__FIREBASE_READY__=new Promise(resolve=>{
       const s=document.createElement('script');
       s.src=src; s.async=false;
       s.onload=done;
-      s.onerror=()=>{ if(firstFailed<0 || index<firstFailed) firstFailed=index; done(); };
+      // SM167: a primeira falha libera o boot como antes (estado negado imediato); as retentativas seguem em segundo
+      // plano e, ao completar, initFirebase roda de novo pelo caminho tardio (idempotente).
+      s.onerror=()=>{ if(firstFailed<0 || index<firstFailed) firstFailed=index; settle(false); done(); };
       document.head.appendChild(s);
     });
   };
