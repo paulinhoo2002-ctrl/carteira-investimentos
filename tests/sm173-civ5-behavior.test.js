@@ -76,6 +76,7 @@ function makeApp({ storage, user, admin = true, cloud }) {
     portfolioRef: () => ({
       set: async payload => {
         cloud.sets.push(payload);
+        if (cloud.onSet) cloud.onSet(ctx);
         if (cloud.delayMs) await new Promise(r => setTimeout(r, cloud.delayMs));
         if (cloud.failSet) throw new Error('network-request-failed');
         cloud.doc = JSON.parse(JSON.stringify(payload));
@@ -315,4 +316,60 @@ test('erro real de leitura prévia continua fail-closed e preserva a pendência'
   assert.equal(cloud.sets.length, 0, 'nenhuma escrita sem leitura prévia');
   assert.equal(app.ctx.FB.pendingCloudSave, true, 'pendência preservada');
   assert.equal(storage.getItem('civ5_pending_owner'), app.api.getScope());
+});
+
+test('eco local da própria gravação não reenfileira durante o envio (convergência)', async () => {
+  const storage = new MemStorage();
+  const cloud = { doc: null, failSet: false, delayMs: 5, sets: [] };
+  // Eco do listener: só reenfileira quando o envio NÃO está em andamento (guarda do app em startCloudSync).
+  cloud.onSet = ctx => { if (ctx.FB.pendingCloudSave && !ctx.FB.syncInFlight) ctx.__api.queueCloudSave(); };
+  const app = makeApp({ storage, user: { uid: OWNER }, cloud });
+  await app.api.civ5BindIdentity({ uid: OWNER });
+  app.ctx.FB.cloudLoaded = true;
+  app.ctx.S.aportes.push({ id: 'a1', ticker: 'PETR4', qty: 2 });
+  app.api.queueCloudSave();
+  const seqAtQueue = app.ctx.FB.civ5EditSeq;
+  const r = await app.api.uploadLocalToCloud(false);
+  assert.equal(r.pass, true, 'envio concluído');
+  assert.equal(app.ctx.FB.pendingCloudSave, false, 'pendência fechou');
+  assert.equal(app.ctx.FB.civ5EditSeq, seqAtQueue, 'contador não cresceu com eco do próprio envio');
+  assert.equal(cloud.sets.length, 1, 'uma única gravação');
+});
+
+test('reprodução do ciclo: eco sem guarda reenfileira durante o envio e a pendência não fecha', async () => {
+  const storage = new MemStorage();
+  const cloud = { doc: null, failSet: false, delayMs: 2, sets: [] };
+  // Comportamento anterior à correção: eco sem a guarda de envio em andamento.
+  let echoes = 0;
+  cloud.onSet = ctx => { if (ctx.FB.pendingCloudSave && echoes < 3) { echoes++; ctx.__api.queueCloudSave(); } };
+  const app = makeApp({ storage, user: { uid: OWNER }, cloud });
+  await app.api.civ5BindIdentity({ uid: OWNER });
+  app.ctx.FB.cloudLoaded = true;
+  app.ctx.S.aportes.push({ id: 'a1', ticker: 'PETR4', qty: 2 });
+  app.api.queueCloudSave();
+  await app.api.uploadLocalToCloud(false);
+  await new Promise(r => globalThis.setTimeout(r, 1500));
+  assert.ok(app.ctx.FB.civ5EditSeq >= 3, 'contador cresce a cada eco (reprodução)');
+  assert.ok(cloud.sets.length >= 2, 'envios se repetem sem fechar a pendência (reprodução)');
+  assert.equal(app.ctx.FB.pendingCloudSave, true, 'pendência não fecha no ciclo (reprodução)');
+  clearTimeout(app.ctx.FB.saveTimer);
+});
+
+test('edição real durante o envio: reagenda e fecha a pendência no envio seguinte', async () => {
+  const storage = new MemStorage();
+  const cloud = { doc: null, failSet: false, delayMs: 30, sets: [] };
+  const app = makeApp({ storage, user: { uid: OWNER }, cloud });
+  await app.api.civ5BindIdentity({ uid: OWNER });
+  app.ctx.FB.cloudLoaded = true;
+  app.ctx.S.aportes.push({ id: 'a1', ticker: 'PETR4', qty: 2 });
+  app.api.queueCloudSave();
+  const first = app.api.uploadLocalToCloud(false);
+  await new Promise(r => globalThis.setTimeout(r, 5));
+  app.ctx.S.aportes.push({ id: 'a2', ticker: 'VALE3', qty: 3 });
+  app.api.queueCloudSave();
+  await first;
+  assert.equal(app.ctx.FB.pendingCloudSave, true, 'edição posterior mantém a pendência');
+  await new Promise(r => globalThis.setTimeout(r, 1500));
+  assert.equal(app.ctx.FB.pendingCloudSave, false, 'reenvio concluiu e fechou a pendência');
+  assert.deepEqual(cloud.doc.aportes.map(a => a.ticker), ['PETR4', 'VALE3'], 'nuvem com as duas edições, sem duplicação');
 });

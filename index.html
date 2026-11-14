@@ -12346,7 +12346,8 @@ function startCloudSync({readOnlyOnly=false}={}){
       FB.lastCloudError=null;
       await rememberV250TrustedSnapshot();
       bindProtectedRealPilotSession();
-      if(FB.pendingCloudSave) queueCloudSave();
+      // SM173: o eco local da própria gravação não reenfileira enquanto o envio está em andamento (evita ciclo).
+      if(FB.pendingCloudSave && !FB.syncInFlight) queueCloudSave();
       runV324PeriodicBackups();
       render();
     }catch(e){
@@ -12479,7 +12480,9 @@ async function uploadLocalToCloud(show=true, options={}){
       FB.pendingCloudSave=false;
       try{ localStorage.removeItem(CIV5_PENDING_KEY); }catch(e){}
     }else{
-      setTimeout(()=>queueCloudSave(),0);
+      // SM173: reenvio agendado sem contar como nova edição (o contador só registra edições reais do usuário).
+      clearTimeout(FB.saveTimer);
+      FB.saveTimer=setTimeout(()=>uploadLocalToCloud(true),900);
     }
     clearTimeout(FB.cloudRetryTimer);
     return {pass:true,cloudReadback:true,counts:cloudCounts,pendingCloudSave:false,syncInFlight:false};
