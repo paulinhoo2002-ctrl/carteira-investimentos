@@ -14,7 +14,7 @@ const CHROME_CANDIDATES = [
 ];
 const CHROME = process.env.CHROME_PATH || CHROME_CANDIDATES.find(candidate => fs.existsSync(candidate));
 
-test('SM183 demo usa fixture e persist�ncia local isolada, sem inicializar Firebase', { skip: !CHROME && 'Chrome/Chromium indispon�vel' }, async t => {
+test('SM183 demo usa fixture e persistência local isolada, sem inicializar Firebase', { skip: !CHROME && 'Chrome/Chromium indisponível' }, async t => {
   const harness = await startLocalHttpServer(ROOT, 0, { syntheticQa: true, demo: true });
   let browser;
   try {
@@ -53,13 +53,13 @@ test('SM183 demo usa fixture e persist�ncia local isolada, sem inicializar Fir
     assert.equal(initial.demo, true);
     assert.deepEqual(initial.firebase, { app: null, auth: null, db: null, user: null });
     assert.ok(initial.fixture.assets > 0 && initial.fixture.aportes > 0 && initial.fixture.proventos > 0 && initial.fixture.rfEvents > 0);
-    assert.ok(['A��o', 'FII', 'Renda Fixa'].every(type => initial.fixture.assetTypes.includes(type)), 'demo fixture should cover stocks, FIIs and fixed income');
+    assert.ok(['Ação', 'FII', 'Renda Fixa'].every(type => initial.fixture.assetTypes.includes(type)), 'demo fixture should cover stocks, FIIs and fixed income');
     assert.deepEqual(initial.localStorageKeys.filter(key => key === 'civ5'), []);
     assert.match(initial.banner, /DEMO LOCAL/);
     assert.equal(initial.viewportHasHorizontalOverflow, false);
 
     const mutation = await page.evaluate(() => {
-      S.aportes.push({ id: 'sm183-demo-aporte', date: '2026-11-15', ticker: 'DEMO1', name: 'Ativo sint�tico', type: 'A��o', asset_type: 'A��o', qty: 2, price: 10, operation: 'compra' });
+      S.aportes.push({ id: 'sm183-demo-aporte', date: '2026-11-15', ticker: 'DEMO1', name: 'Ativo sintético', type: 'Ação', asset_type: 'Ação', qty: 2, price: 10, operation: 'compra' });
       const saved = save();
       const snapshot = JSON.parse(localStorage.getItem('carteira_demo_local_v1'));
       return { saved, snapshotVersion: snapshot?.version, storedTicker: snapshot?.wallet?.aportes?.find(item => item.id === 'sm183-demo-aporte')?.ticker, civ5: localStorage.getItem('civ5') };
@@ -83,4 +83,3 @@ test('SM183 demo usa fixture e persist�ncia local isolada, sem inicializar Fir
     await new Promise(resolve => harness.server.close(resolve));
   }
 });
-
