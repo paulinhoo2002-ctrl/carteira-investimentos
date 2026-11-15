@@ -53,7 +53,10 @@ test('hosting policy revalidates the worker and navigation shell', () => {
 });
 
 test('modern preview entry redirects around the Vite source index without replacing the legacy root', () => {
-  assert.equal(vercelSource.outputDirectory, '.');
+  // Contrato de 15/11: vercel.json não define build nem saída; o projeto QA usa o build de homologação.
+  // Antes do merge, o projeto de produção precisa definir buildCommand e outputDirectory "." no dashboard.
+  assert.equal(vercelSource.outputDirectory, undefined);
+  assert.equal(vercelSource.buildCommand, undefined);
   assert.deepEqual(
     vercelSource.redirects.filter(rule => ['/modern', '/modern/'].includes(rule.source)),
     [
