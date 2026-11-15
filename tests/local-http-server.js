@@ -30,7 +30,7 @@ async function listenOnBrowserSafePort(server) {
   }
 }
 
-async function startLocalHttpServer(root, port = 0, { syntheticQa = true } = {}) {
+async function startLocalHttpServer(root, port = 0, { syntheticQa = true, demo = false } = {}) {
   const documentRoot = path.resolve(root);
   const server = http.createServer(async (req, res) => {
     try {
@@ -53,7 +53,28 @@ async function startLocalHttpServer(root, port = 0, { syntheticQa = true } = {})
         const html = content.toString('utf8');
         const head = /<head(?:\s[^>]*)?>/i;
         if (!head.test(html)) throw new Error('Synthetic QA runtime marker could not be injected.');
-        content = Buffer.from(html.replace(head, match => `${match}\n<script>Object.defineProperty(window,'__LOCAL_QA_RUNTIME__',{value:'local-synthetic-v1',writable:false,configurable:false});</script>`), 'utf8');
+        const marker = `<script>Object.defineProperty(window,'__LOCAL_QA_RUNTIME__',{value:'local-synthetic-v1',writable:false,configurable:false});${demo ? "Object.defineProperty(window,'__LOCAL_DEMO_RUNTIME__',{value:'local-demo-v1',writable:false,configurable:false});" : ''}</script>`;
+        let servedHtml = html.replace(head, match => `${match}\n${marker}`);
+        if (demo) {
+          if (!/<\/body>/i.test(servedHtml)) throw new Error('Local demo adapter could not be appended to the document.');
+          const adapter = `<script>
+(()=>{
+  const enabled=window.__LOCAL_QA_RUNTIME__==='local-synthetic-v1'&&window.__LOCAL_DEMO_RUNTIME__==='local-demo-v1'&&window.__LOCAL_TEST_MODE__===true&&['localhost','127.0.0.1'].includes(location.hostname)&&new URLSearchParams(location.search).get('demoMode')==='1';
+  const key='carteira_demo_local_v1';
+  Object.defineProperty(window,'__LOCAL_DEMO_ADAPTER__',{value:Object.freeze({enabled,key}),writable:false,configurable:false});
+  if(!enabled)return;
+  const label=()=>{const title=document.querySelector('.test-mode-banner-title'),status=document.querySelector('.test-mode-banner-text');if(title)title.textContent='DEMO LOCAL';if(status)status.textContent='Dados fict�cios persistidos somente neste navegador. Sem Firebase ou sincroniza��o.';};
+  const persist=()=>{try{const wallet=activeWallet();if(!wallet)return false;localStorage.setItem(key,JSON.stringify({version:1,wallet}));return true;}catch(error){console.error('Falha ao persistir dados fict�cios DEMO.',error);return false;}};
+  try{const snapshot=JSON.parse(localStorage.getItem(key)||'null');if(snapshot?.version===1&&snapshot.wallet&&typeof snapshot.wallet==='object'){const wallet=normalizeWalletEntry(snapshot.wallet,'Carteira DEMO');if(Array.isArray(wallet.assets)&&Array.isArray(wallet.aportes)&&Array.isArray(wallet.proventos)){S.wallets=[wallet];S.activeWalletId=wallet.id;syncStateFromWallet(wallet);render();}}}catch(error){console.warn('Dados DEMO inv�lidos; a fixture sint�tica padr�o foi mantida.',error);}
+  if(typeof window.save==='function'){const save=window.save;window.save=function(...args){const result=save.apply(this,args);return result===true?persist():result;};}
+  if(typeof window.restoreLocalTestData==='function'){const restore=window.restoreLocalTestData;window.restoreLocalTestData=function(...args){const result=restore.apply(this,args);persist();return result;};}
+  if(typeof window.render==='function'){const render=window.render;window.render=function(...args){const result=render.apply(this,args);label();return result;};}
+  label();
+})();
+</script>`;
+          servedHtml = servedHtml.replace(/<\/body>/i, `${adapter}</body>`);
+        }
+        content = Buffer.from(servedHtml, 'utf8');
       }
       const CSP_HEADER = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' http://127.0.0.1:* ws://127.0.0.1:* https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://brapi.dev https://fonts.googleapis.com https://fonts.gstatic.com; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
 
@@ -102,7 +123,7 @@ async function startLocalHttpServer(root, port = 0, { syntheticQa = true } = {})
       server.listen(port, '127.0.0.1', resolve);
     });
   }
-  const query = syntheticQa ? '?testMode=1' : '';
+  const query = demo ? '?testMode=1&demoMode=1' : syntheticQa ? '?testMode=1' : '';
   return { server, url: `http://127.0.0.1:${server.address().port}/index.html${query}` };
 }
 
@@ -111,12 +132,13 @@ module.exports = { startLocalHttpServer, isUnsafeChromePort };
 if (require.main === module) {
   const portIndex = process.argv.indexOf('--port');
   const port = portIndex >= 0 ? Number(process.argv[portIndex + 1]) : 4173;
-  const syntheticQa = process.argv.includes('--synthetic-qa');
+  const demo = process.argv.includes('--demo');
+  const syntheticQa = demo || process.argv.includes('--synthetic-qa');
   if (!Number.isInteger(port) || port < 0 || port > 65535) {
     console.error('Port must be an integer between 0 and 65535.');
     process.exitCode = 1;
   } else {
-    startLocalHttpServer(process.cwd(), port, { syntheticQa })
+    startLocalHttpServer(process.cwd(), port, { syntheticQa, demo })
       .then(({ url }) => console.log(`QA server listening: ${url}`))
       .catch(error => {
         console.error(`QA server failed to start: ${error.message}`);
@@ -124,3 +146,4 @@ if (require.main === module) {
       });
   }
 }
+

@@ -74,6 +74,9 @@ jobs:
           echo "Using browser: $CHROME_BIN"
           echo "CHROME_PATH=$CHROME_BIN" >> "$GITHUB_ENV"
 
+      - name: Local DEMO CRUD and persistence QA
+        run: npm run test:demo
+
       - name: Auth access browser QA
         run: npm run test:auth-access-browser
 
@@ -180,3 +183,4 @@ jobs:
 
       - name: Run fixed owner Firestore policy matrix
         run: firebase emulators:exec --config firebase.m592-owner-only-emulator.json --only auth,firestore --project demo-owner-only-rules "node --test tests/m592-owner-only-rules-emulator.test.js"
+

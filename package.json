@@ -31,6 +31,8 @@
     "pretest": "npm run build:modern",
     "test:roundtrip": "node --test tests/save-load-roundtrip.test.js",
     "qa:serve:legacy": "node tests/local-http-server.js --port 4173 --synthetic-qa",
+    "dev:demo": "node tests/local-http-server.js --port 4173 --demo",
+    "test:demo": "node --test tests/sm183-demo-isolation.test.js tests/sm183-demo.browser.test.js tests/v317-financial-action-e2e.test.js tests/m567-functional-coverage.e2e.test.js tests/m568-provento-edit.e2e.test.js",
     "qa:local-synthetic": "node tests/local-http-server.js --port 8765 --synthetic-qa",
     "qa:smoke": "node scripts/qa/run-smoke-with-lifecycle.js",
     "test:skills-routing": "node --test tests/governance-skills-policy.test.js tests/skills-router.test.js tests/skills-routing.test.js",
@@ -87,3 +89,4 @@
     "websocket": "^1.0.35"
   }
 }
+
