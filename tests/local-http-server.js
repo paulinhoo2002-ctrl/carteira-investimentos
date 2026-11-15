@@ -30,7 +30,7 @@ async function listenOnBrowserSafePort(server) {
   }
 }
 
-async function startLocalHttpServer(root, port = 0, { syntheticQa = true, demo = false } = {}) {
+async function startLocalHttpServer(root, port = 0, { syntheticQa = true, demo = process.env.SM183_DEMO_TEST === '1' } = {}) {
   const documentRoot = path.resolve(root);
   const server = http.createServer(async (req, res) => {
     try {
@@ -63,9 +63,9 @@ async function startLocalHttpServer(root, port = 0, { syntheticQa = true, demo =
   const key='carteira_demo_local_v1';
   Object.defineProperty(window,'__LOCAL_DEMO_ADAPTER__',{value:Object.freeze({enabled,key}),writable:false,configurable:false});
   if(!enabled)return;
-  const label=()=>{const title=document.querySelector('.test-mode-banner-title'),status=document.querySelector('.test-mode-banner-text');if(title)title.textContent='DEMO LOCAL';if(status)status.textContent='Dados fict�cios persistidos somente neste navegador. Sem Firebase ou sincroniza��o.';};
-  const persist=()=>{try{const wallet=activeWallet();if(!wallet)return false;localStorage.setItem(key,JSON.stringify({version:1,wallet}));return true;}catch(error){console.error('Falha ao persistir dados fict�cios DEMO.',error);return false;}};
-  try{const snapshot=JSON.parse(localStorage.getItem(key)||'null');if(snapshot?.version===1&&snapshot.wallet&&typeof snapshot.wallet==='object'){const wallet=normalizeWalletEntry(snapshot.wallet,'Carteira DEMO');if(Array.isArray(wallet.assets)&&Array.isArray(wallet.aportes)&&Array.isArray(wallet.proventos)){S.wallets=[wallet];S.activeWalletId=wallet.id;syncStateFromWallet(wallet);render();}}}catch(error){console.warn('Dados DEMO inv�lidos; a fixture sint�tica padr�o foi mantida.',error);}
+  const label=()=>{const title=document.querySelector('.test-mode-banner-title'),status=document.querySelector('.test-mode-banner-text');if(title)title.textContent='DEMO LOCAL';if(status)status.textContent='Dados fictícios persistidos somente neste navegador. Sem Firebase ou sincronização.';};
+  const persist=()=>{try{const wallet=activeWallet();if(!wallet)return false;localStorage.setItem(key,JSON.stringify({version:1,wallet}));return true;}catch(error){console.error('Falha ao persistir dados fictícios DEMO.',error);return false;}};
+  try{const snapshot=JSON.parse(localStorage.getItem(key)||'null');if(snapshot?.version===1&&snapshot.wallet&&typeof snapshot.wallet==='object'){const wallet=normalizeWalletEntry(snapshot.wallet,'Carteira DEMO');if(Array.isArray(wallet.assets)&&Array.isArray(wallet.aportes)&&Array.isArray(wallet.proventos)){S.wallets=[wallet];S.activeWalletId=wallet.id;syncStateFromWallet(wallet);render();}}}catch(error){console.warn('Dados DEMO inválidos; a fixture sintética padrão foi mantida.',error);}
   if(typeof window.save==='function'){const save=window.save;window.save=function(...args){const result=save.apply(this,args);return result===true?persist():result;};}
   if(typeof window.restoreLocalTestData==='function'){const restore=window.restoreLocalTestData;window.restoreLocalTestData=function(...args){const result=restore.apply(this,args);persist();return result;};}
   if(typeof window.render==='function'){const render=window.render;window.render=function(...args){const result=render.apply(this,args);label();return result;};}
@@ -146,4 +146,3 @@ if (require.main === module) {
       });
   }
 }
-

@@ -9,6 +9,7 @@ const vm = require('node:vm');
 const root = path.join(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8').replace(/\r\n/g, '\n');
 const server = fs.readFileSync(path.join(__dirname, 'local-http-server.js'), 'utf8');
+const demoTestRunner = fs.readFileSync(path.join(__dirname, 'run-sm183-demo-tests.js'), 'utf8');
 const vercelIgnore = fs.readFileSync(path.join(root, '.vercelignore'), 'utf8');
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 const ciWorkflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'ci.yml'), 'utf8').replace(/\r\n/g, '\n');
@@ -21,11 +22,30 @@ test('SM183 DEMO exige marcador criado pelo servidor e host loopback', () => {
   assert.ok(server.includes("const query = demo ? '?testMode=1&demoMode=1' : syntheticQa ? '?testMode=1' : ''"));
   assert.ok(server.includes("${demo ? \"Object.defineProperty(window,'__LOCAL_DEMO_RUNTIME__'"));
   assert.ok(server.includes("if (demo) {"));
+  assert.ok(server.includes("demo = process.env.SM183_DEMO_TEST === '1'"));
   assert.ok(server.includes("const enabled=window.__LOCAL_QA_RUNTIME__==='local-synthetic-v1'&&window.__LOCAL_DEMO_RUNTIME__==='local-demo-v1'"));
   assert.doesNotMatch(html, /LOCAL_DEMO|__LOCAL_DEMO_RUNTIME__|demoMode=1/, 'production HTML must not contain the local DEMO adapter');
+  assert.equal(packageJson.scripts['test:demo'], 'node tests/run-sm183-demo-tests.js');
+  assert.match(demoTestRunner, /SM183_DEMO_TEST: '1'/, 'the browser regressions must run with the DEMO adapter enabled');
 });
 
-test('DEMO usa storage fict�cio separado e nunca grava a chave financeira civ5', () => {
+test('parâmetros de URL sozinhos não ativam DEMO nem o modo de teste no host publicado', () => {
+  const boot = html.match(/<title>[\s\S]*?<\/title>\s*<script>([\s\S]*?__EXPECTED_SERVICE_WORKER_CACHE__[^<]*)<\/script>/)?.[1];
+  assert.ok(boot, 'production bootstrap script should be discoverable');
+  const root = { dataset: {}, style: {} };
+  const context = {
+    window: {},
+    location: { hostname: 'carteira-homolog-c5785e6.vercel.app', search: '?testMode=1&demoMode=1' },
+    URLSearchParams,
+    document: { documentElement: root, querySelector: () => null },
+    localStorage: { getItem: () => null },
+  };
+  vm.runInNewContext(boot, context);
+  assert.equal(context.window.__LOCAL_TEST_MODE__, false);
+  assert.equal(context.window.__LOCAL_DEMO_RUNTIME__, undefined);
+});
+
+test('DEMO usa storage fictício separado e nunca grava a chave financeira civ5', () => {
   assert.ok(server.includes("const key='carteira_demo_local_v1'"));
   assert.ok(server.includes('localStorage.setItem(key,JSON.stringify({version:1,wallet}))'));
   assert.ok(server.includes("if(typeof window.save==='function'){const save=window.save;window.save=function(...args){const result=save.apply(this,args);return result===true?persist():result;};}"));
@@ -33,7 +53,7 @@ test('DEMO usa storage fict�cio separado e nunca grava a chave financeira civ5
   assert.match(html, /function initFirebase\(\)\{\s*if\(isLocalTestMode\(\)\)/);
 });
 
-test('adaptador DEMO hidrata, salva e restaura somente a carteira sint�tica', () => {
+test('adaptador DEMO hidrata, salva e restaura somente a carteira sintética', () => {
   const script = server.match(/const adapter = `<script>([\s\S]*?)<\/script>`;/)?.[1];
   assert.ok(script, 'the isolated local server must define its runtime adapter');
   const storage = new Map([['carteira_demo_local_v1', JSON.stringify({ version: 1, wallet: { id: 'wallet-demo', assets: [], aportes: [{ id: 'seed-demo' }], proventos: [], rfEvents: [] } })]]);
@@ -82,10 +102,11 @@ test('adaptador DEMO fica inativo fora do loopback', () => {
 
 test('SM183 entrega comandos dedicados sem alterar o pipeline de release', () => {
   assert.equal(packageJson.scripts['dev:demo'], 'node tests/local-http-server.js --port 4173 --demo');
-  assert.equal(packageJson.scripts['test:demo'], 'node --test tests/sm183-demo-isolation.test.js tests/sm183-demo.browser.test.js tests/v317-financial-action-e2e.test.js tests/m567-functional-coverage.e2e.test.js tests/m568-provento-edit.e2e.test.js');
+  assert.equal(packageJson.scripts['test:demo'], 'node tests/run-sm183-demo-tests.js');
   assert.doesNotMatch(packageJson.scripts.build, /demo/i);
   assert.match(vercelIgnore, /^tests\/local-http-server\.js$/m);
-  assert.match(vercelIgnore, /^tests\/sm183-demo-\*\.test\.js$/m);
+  assert.match(vercelIgnore, /^tests\/sm183-demo-isolation\.test\.js$/m);
+  assert.match(vercelIgnore, /^tests\/sm183-demo\.browser\.test\.js$/m);
+  assert.match(vercelIgnore, /^tests\/run-sm183-demo-tests\.js$/m);
   assert.match(ciWorkflow, /Resolve Chromium[\s\S]*?Local DEMO CRUD and persistence QA\n\s+run: npm run test:demo/);
 });
-

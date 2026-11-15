@@ -3,3 +3,4 @@ index.m1959-before.html
 tests/local-http-server.js
 tests/sm183-demo-isolation.test.js
 tests/sm183-demo.browser.test.js
+tests/run-sm183-demo-tests.js
