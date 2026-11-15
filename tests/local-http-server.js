@@ -72,7 +72,9 @@ async function startLocalHttpServer(root, port = 0, { syntheticQa = true, demo =
   label();
 })();
 </script>`;
-          servedHtml = servedHtml.replace(/<\/body>/i, `${adapter}</body>`);
+          // Último </body> = fechamento real; o primeiro pode estar dentro de string JS (gerador de PDF).
+          const closeAt = servedHtml.toLowerCase().lastIndexOf('</body>');
+          servedHtml = servedHtml.slice(0, closeAt) + adapter + servedHtml.slice(closeAt);
         }
         content = Buffer.from(servedHtml, 'utf8');
       }
