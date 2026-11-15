@@ -1,6 +1,4 @@
 {
-  "buildCommand": "npm run build:modern && npm run build",
-  "outputDirectory": ".",
   "framework": null,
   "redirects": [
     {

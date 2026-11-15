@@ -3,7 +3,7 @@
 // SM132 — build reproduzível da HOMOLOGAÇÃO (carteira-homolog-sm118). Não é build de produção.
 // Uso:
 //   node scripts/homolog/build-homolog.js --sha <sha-40> --out <dir-novo> --sdk-config <json-publico> \
-//        --uid <uid-sintetico> --email <email-de-homologacao>
+//        --uid <uid-sintetico> --email <email-de-homologacao> --mode <bootstrap|authenticated>
 // O --sdk-config é a configuração PÚBLICA do app web de homologação (não é segredo). Nunca use a de produção.
 // O script não grava nada no repositório. Gera o artefato em --out e um manifesto ao lado (<out>.manifest.json),
 // fora do artefato publicado. Roda o guard antes de considerar o build válido (fail-closed).
@@ -19,6 +19,9 @@ function parseArgs(argv) {
   const args = {};
   for (let i = 0; i < argv.length; i += 2) args[argv[i].replace(/^--/, '')] = argv[i + 1];
   for (const k of ['sha', 'out', 'sdk-config', 'uid', 'email']) if (!args[k]) throw new Error(`uso: falta --${k}`);
+  // Modo explícito: 'bootstrap' só para o primeiro login Google; 'authenticated' é o build de homologação.
+  if (!['bootstrap', 'authenticated'].includes(args.mode)) throw new Error('--mode deve ser bootstrap ou authenticated');
+  if (/^Bootstrap/.test(args.uid) && args.mode !== 'bootstrap') throw new Error('UID de bootstrap (placeholder) não pode entrar em build autenticado');
   return args;
 }
 
@@ -165,6 +168,8 @@ function main() {
     const indexHomolog = applyHomologSubstitutions(indexOriginal, { sdk, uid, email, shortSha, loginHint });
     fs.writeFileSync(path.join(out + '.stage', 'index.html'), indexHomolog, 'utf8');
     fs.renameSync(out + '.stage', out);
+    // Marcador publicado: prova que este build (e não o fonte) foi o que a Vercel serviu.
+    fs.writeFileSync(path.join(out, 'homolog-build.json'), JSON.stringify({ sha, mode: args.mode, project: HOMOLOG_PROJECT, builtAt: new Date().toISOString() }) + '\n', 'utf8');
     const files = walk(out).sort().map(p => ({ path: p, sha256: sha256(fs.readFileSync(path.join(out, p))) }));
     const manifest = { sha, shortSha, project: HOMOLOG_PROJECT, identity: { uid, email }, unresolved: crawled.unresolved, files };
     const manifestPath = out + '.manifest.json';

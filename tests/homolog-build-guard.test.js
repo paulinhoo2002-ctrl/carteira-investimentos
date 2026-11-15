@@ -32,7 +32,7 @@ function sdkFile(dir, cfg) {
 
 function buildTo(dir, cfg = SDK, uid = UID, email = EMAIL, sha = HEAD) {
   const out = path.join(dir, 'out');
-  const args = ['scripts/homolog/build-homolog.js', '--sha', sha, '--out', out, '--sdk-config', sdkFile(dir, cfg), '--uid', uid, '--email', email];
+  const args = ['scripts/homolog/build-homolog.js', '--sha', sha, '--out', out, '--sdk-config', sdkFile(dir, cfg), '--uid', uid, '--email', email, '--mode', 'authenticated'];
   execFileSync('node', args, { cwd: repo, encoding: 'utf8', stdio: 'pipe' });
   return out;
 }
