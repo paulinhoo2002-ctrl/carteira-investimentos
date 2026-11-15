@@ -49,3 +49,41 @@ test('build de homologação grava o marcador homolog-build.json com SHA e modo'
   assert.equal(marker.mode, 'authenticated');
   assert.equal(marker.project, 'carteira-homolog-sm118');
 });
+
+// CSP do artefato QA: só o domínio de autenticação de homologação, nunca o de produção.
+function cspOf(rule) {
+  return rule.headers.find(h => h.key === 'Content-Security-Policy').value;
+}
+function directive(csp, name) {
+  return csp.split(';').map(s => s.trim()).find(s => s.startsWith(name + ' ')) || '';
+}
+const QA_RULES = () => JSON.parse(fs.readFileSync(path.join(repo, 'vercel.json'), 'utf8')).headers
+  .filter(h => h.has && h.has.some(c => c.type === 'host' && c.value && c.value.pre === 'carteira-homolog-c5785e'));
+const PROD_RULES = () => JSON.parse(fs.readFileSync(path.join(repo, 'vercel.json'), 'utf8')).headers
+  .filter(h => h.headers && h.headers.some(x => x.key === 'Content-Security-Policy') && !(h.has));
+
+test('CSP QA: frame-src aceita o domínio de homologação e não herda o de produção', () => {
+  const rules = QA_RULES();
+  assert.equal(rules.length, 2, 'esperava as regras QA de /index.html e /(.*)');
+  for (const r of rules) {
+    const fs_ = directive(cspOf(r), 'frame-src');
+    assert.match(fs_, /https:\/\/carteira-homolog-sm118\.firebaseapp\.com/);
+    assert.doesNotMatch(fs_, /16725/, 'frame-src QA herdou domínio de produção');
+  }
+});
+
+test('CSP QA: connect-src libera vercel.com somente para o host QA (Vercel Authentication)', () => {
+  for (const r of QA_RULES()) assert.match(directive(cspOf(r), 'connect-src'), /https:\/\/vercel\.com/);
+});
+
+test('CSP de produção: regras inalteradas e sem domínio QA', () => {
+  const rules = PROD_RULES();
+  assert.equal(rules.length, 2);
+  for (const r of rules) {
+    const csp = cspOf(r);
+    assert.match(directive(csp, 'frame-src'), /https:\/\/carteira-de-investimento-16725\.firebaseapp\.com/);
+    assert.doesNotMatch(csp, /carteira-homolog-sm118/, 'produção não pode receber domínio QA');
+    assert.doesNotMatch(directive(csp, 'connect-src'), /vercel\.com/, 'produção não recebe vercel.com em connect-src');
+    assert.equal(JSON.stringify(r.missing), JSON.stringify([{ type: 'host', value: { pre: 'carteira-homolog-c5785e' } }]));
+  }
+});
