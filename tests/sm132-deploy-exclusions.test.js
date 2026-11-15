@@ -14,8 +14,13 @@ test('.vercelignore exclui o índice histórico e o .firebaserc do deploy', () =
   assert.ok(ignored.includes('.firebaserc'), 'falta .firebaserc em .vercelignore');
 });
 
+// Privados locais (existem só na máquina de desenvolvimento, nunca no CI) e padrões glob
+// (backup-users*.json) não são arquivos do repositório: ficam fora da checagem de existência.
+const LOCAL_ONLY_PRIVATE = new Set(['.codex/', 'qa-users.json']);
+
 test('os arquivos excluídos existem no repositório (a regra é real, não um nome inventado)', () => {
   for (const file of ignored) {
+    if (file.startsWith('#') || file.includes('*') || LOCAL_ONLY_PRIVATE.has(file)) continue;
     assert.equal(fs.existsSync(path.join(root, file)), true, `${file} listado mas ausente`);
   }
 });
