@@ -1,5 +1,5 @@
 index.m1959-before.html
 .firebaserc
 tests/local-http-server.js
-tests/sm183-demo-*.test.js
-
+tests/sm183-demo-isolation.test.js
+tests/sm183-demo.browser.test.js
