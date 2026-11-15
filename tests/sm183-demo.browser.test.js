@@ -44,7 +44,7 @@ test('SM183 demo usa fixture e persist�ncia local isolada, sem inicializar Fir
     const initial = await page.evaluate(() => ({
       demo: window.__LOCAL_DEMO_ADAPTER__?.enabled === true,
       firebase: { app: FB.app, auth: FB.auth, db: FB.db, user: FB.user },
-      fixture: { assets: S.assets.length, aportes: S.aportes.length, proventos: S.proventos.length, rfEvents: S.rfEvents.length },
+      fixture: { assets: S.assets.length, assetTypes: [...new Set(S.assets.map(asset => asset.type))], aportes: S.aportes.length, proventos: S.proventos.length, rfEvents: S.rfEvents.length },
       localStorageKeys: Object.keys(localStorage),
       civ5: localStorage.getItem('civ5'),
       banner: document.querySelector('.test-mode-banner')?.innerText || '',
@@ -53,6 +53,7 @@ test('SM183 demo usa fixture e persist�ncia local isolada, sem inicializar Fir
     assert.equal(initial.demo, true);
     assert.deepEqual(initial.firebase, { app: null, auth: null, db: null, user: null });
     assert.ok(initial.fixture.assets > 0 && initial.fixture.aportes > 0 && initial.fixture.proventos > 0 && initial.fixture.rfEvents > 0);
+    assert.ok(['A��o', 'FII', 'Renda Fixa'].every(type => initial.fixture.assetTypes.includes(type)), 'demo fixture should cover stocks, FIIs and fixed income');
     assert.deepEqual(initial.localStorageKeys.filter(key => key === 'civ5'), []);
     assert.match(initial.banner, /DEMO LOCAL/);
     assert.equal(initial.viewportHasHorizontalOverflow, false);
