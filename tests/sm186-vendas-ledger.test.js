@@ -264,3 +264,20 @@ it('SM186 arredondamento: 3 @ 10,10 e venda de 1 mantém precisão do custo', as
     close(e.vendas[0].realizado, 10.3 - 10.1, 'resultado realizado exato');
   } finally { await closeApp(app); }
 });
+
+it('SM187 desempenho: resultado realizado das vendas aparece no dashboard sem alterar o patrimônio', async () => {
+  const app = await openApp();
+  try {
+    await comprar(app.page, 'BBAS3', 10, 10.8);
+    await vender(app.page, 'BBAS3', 4, 15);
+    await app.page.waitForFunction(() => S.aportes.filter(item => item.operation === 'venda').length === 1);
+    await vender(app.page, 'BBAS3', 6, 15);
+    await app.page.waitForFunction(() => S.aportes.filter(item => item.operation === 'venda').length === 2);
+    const patrimonio = await app.page.evaluate(() => cx().tC);
+    const posicoes = await app.page.evaluate(() => S.assets.reduce((s, a) => s + Number(a.qty) * Number(a.current_price), 0));
+    close(patrimonio, posicoes, 'patrimônio = somente posições atuais (não soma o realizado)');
+    const texto = await app.page.evaluate(() => { go('dashboard'); return new Promise(r => setTimeout(() => r(document.body.innerText), 700)); });
+    assert.match(texto, /resultado realizado em vendas \+?\s*R\$\s?42,00/, 'realizado de 16,80 + 25,20 informado no desempenho');
+    assert.deepEqual(app.problems, []);
+  } finally { await closeApp(app); }
+});

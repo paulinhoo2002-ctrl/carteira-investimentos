@@ -19982,7 +19982,7 @@ function quickMovementBuildAporteFromFields(kind){
         qty:preview.quantityToSell,
         price:preview.unitPrice,
         fees,
-        date:brDate(dt),
+        date:dt, // SM187: novos registros de venda em ISO (como compras); registros antigos dd/mm/aaaa continuam legíveis
         decision:note,
         type:normalizeType(asset.type,'Ação'),
         sector:asset.sector||'',
@@ -21267,8 +21267,8 @@ function inferTickerMetadata(ticker){
   const t=normalizeMetadataTicker(ticker);
   if(isRendaFixaText(t)) return rfMetaFromText(t);
   if(META[t]) return{type:META[t][0],sector:META[t][1]};
-  if(/^[A-Z]{4}11$/.test(t)) return{type:'FII',sector:'FII'};
-  if(/^[A-Z]{4}[34]$/.test(t)) return{type:'Ação',sector:'Ação'};
+  // SM187: classe nunca é inferida pelo sufixo (11 pode ser FII, unit ou ETF; 34 pode ser BDR).
+  // Sem catálogo, a classe fica vazia e o usuário escolhe no formulário.
   return{type:'',sector:''};
 }
 function resolveAssetMetadata(ticker, options={}){
@@ -34057,13 +34057,23 @@ function dashboardEconomicResultStatus(summary){
     const returnText=typeof summary.certifiedReturnPct==='number'&&Number.isFinite(summary.certifiedReturnPct)?` · retorno simples ${formatReturn(summary.certifiedReturnPct)}`:'';
     return `<div class="dashboard-total-result-status" role="status"><strong class="dashboard-total-result-value ${tone(summary.certifiedEconomicResult)}">Subtotal certificado: ${formatMoney(summary.certifiedEconomicResult)}${returnText}</strong><span>Apenas posições com histórico completo; o resultado total da carteira permanece em consolidação.</span></div>`;
   }
-  return '<div class="dashboard-total-result-status" role="status"><strong>Resultado total: Em consolidação</strong><span>Resultado econômico ainda não disponível para o escopo completo.</span></div>';
+  // Presenter autocontido (testado isoladamente): calcula o realizado sem depender de outras funções.
+  const realizedSales=((typeof S!=='undefined'&&S&&S.aportes)||[]).filter(a=>String(a?.operation||'').toLowerCase()==='venda' && a?.reconciliationStatus==='LEDGER_RECONCILED' && Number.isFinite(Number(a?.realizedResult)));
+  const realizedTotal=Math.round(realizedSales.reduce((sum,a)=>sum+Number(a.realizedResult),0)*100)/100;
+  const realizedText=realizedSales.length?` · resultado realizado em vendas ${formatMoney(realizedTotal)} (${realizedSales.length} venda(s); não altera o patrimônio)`:'';
+  return `<div class="dashboard-total-result-status" role="status"><strong>Resultado total: Em consolidação</strong><span>Resultado econômico ainda não disponível para o escopo completo.${realizedText}</span></div>`;
 }
 function dashboardHasEconomicCertification(summary){
   const complete=summary?.status==='COMPLETE'&&typeof summary.totalEconomicResult==='number'&&Number.isFinite(summary.totalEconomicResult);
   const subset=Array.isArray(summary?.certifiedAssets)&&summary.certifiedAssets.length>0
     &&typeof summary.certifiedEconomicResult==='number'&&Number.isFinite(summary.certifiedEconomicResult);
   return complete||subset;
+}
+/* SM187: soma dos resultados realizados gravados nas vendas aplicadas (LEDGER_RECONCILED).
+   Informação de desempenho separada: não entra no patrimônio nem no resultado não realizado. */
+function realizedSalesResultSummary(){
+  const sales=((typeof S!=='undefined'&&S&&S.aportes)||[]).filter(a=>String(a?.operation||'').toLowerCase()==='venda' && a?.reconciliationStatus==='LEDGER_RECONCILED' && Number.isFinite(Number(a?.realizedResult)));
+  return {total: Math.round(sales.reduce((sum,a)=>sum+Number(a.realizedResult),0)*100)/100, count: sales.length};
 }
 function package2FiniteNumber(value){
   if(typeof value==='number') return Number.isFinite(value);
@@ -34191,7 +34201,7 @@ function dashboardExecutiveKPIs(data, showTotalStatus=true){
       package2Cards=`
       ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado certificado da RV',gainValue,`${gainNote} · valor indicativo, não é lucro realizado`,gainTone,gainGlow)}
       ${dashboardMetricCard(dashboardMetricIcon('cash'),'Renda recebida',incomeValue,incomeNote,incomeTone,incomeGlow)}
-      ${showTotalStatus?dashboardMetricCard(dashboardMetricIcon('info'),'Resultado total','Em consolidação','Combinação de escopos ainda não certificada','var(--semantic-official)','var(--semantic-official-bg)'):''}`;
+      ${showTotalStatus?dashboardMetricCard(dashboardMetricIcon('info'),'Resultado total','Em consolidação',`Combinação de escopos ainda não certificada${(()=>{const rs=typeof realizedSalesResultSummary==='function'?realizedSalesResultSummary():{count:0,total:0};return rs.count?` · realizado em vendas ${formatMoney(rs.total)} (informativo, fora do patrimônio)`:'';})()}`,'var(--semantic-official)','var(--semantic-official-bg)'):''}`;
       hasPackage2Cards=true;
     }
   }

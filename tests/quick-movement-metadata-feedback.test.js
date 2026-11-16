@@ -63,10 +63,11 @@ test('learned mostra Identificado pelo histórico', () => {
   assert.match(html, /Identificado pelo histórico/);
 });
 
-test('inference mostra Identificado automaticamente', () => {
+test('SM187: sufixo 11 não identifica FII automaticamente (unit/ETF/FII exigem catálogo ou escolha do usuário)', () => {
   const context = makeContext();
   const html = context.feedback('ZZZZ11', '', '', false, false);
-  assert.match(html, /Identificado automaticamente/);
+  assert.doesNotMatch(html, /Identificado automaticamente/);
+  assert.match(html, /Ticker não reconhecido/);
 });
 
 test('manual mostra Definido manualmente', () => {
