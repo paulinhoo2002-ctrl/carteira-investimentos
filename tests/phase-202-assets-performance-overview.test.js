@@ -94,7 +94,8 @@ function loadAssetPerformanceOverviewRows(assets) {
     },
   };
 
-  return vm.runInNewContext(`${analysisSource}\n${hasOwnFiniteNumberSource}\n${rowsSource}\nassetPerformanceOverviewRows;`, context);
+  const quoteSource = extractFunctionBlock(indexHtml, 'function quoteTrustMeta(asset){', 'function shouldApplyQuoteUpdate(asset, providerTimeMs){');
+  return vm.runInNewContext(`${analysisSource}\n${quoteSource}\n${hasOwnFiniteNumberSource}\n${rowsSource}\nassetPerformanceOverviewRows;`, context);
 }
 
 function loadAssetPerformanceOverviewRowsFromAnalysis(assets, analysisRowsOrFactory) {
@@ -153,7 +154,8 @@ function loadAssetPerformanceOverviewRowsFromAnalysis(assets, analysisRowsOrFact
     },
   };
 
-  return vm.runInNewContext(`${hasOwnFiniteNumberSource}\n${rowsSource}\nassetPerformanceOverviewRows;`, context);
+  const quoteSource = extractFunctionBlock(indexHtml, 'function quoteTrustMeta(asset){', 'function shouldApplyQuoteUpdate(asset, providerTimeMs){');
+  return vm.runInNewContext(`${quoteSource}\n${hasOwnFiniteNumberSource}\n${rowsSource}\nassetPerformanceOverviewRows;`, context);
 }
 
 test('fase 202 painel de desempenho usa fontes oficiais e roteiro correto', () => {
@@ -215,7 +217,7 @@ test('fase 202 painel de desempenho usa fontes oficiais e roteiro correto', () =
   assert.match(indexHtml, /Painel consolidado de desempenho dos ativos/);
   assert.match(indexHtml, /Melhores ativos/);
   assert.match(indexHtml, /Piores ativos/);
-  assert.match(indexHtml, /Resultado consolidado/);
+  assert.match(indexHtml, /Resultado não realizado/);
   assert.match(indexHtml, /Sem base/);
   assert.match(indexHtml, /Filtros oficiais/);
   assert.match(indexHtml, /Ordenacao/);

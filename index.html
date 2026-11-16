@@ -1812,6 +1812,9 @@ html[data-theme="light"] .rf-movement-summary-title{color:#1d4ed8}
 .perf-pct{font-size:14px;font-weight:900;white-space:nowrap}
 .perf-amt{font-size:11px;color:var(--muted);margin-top:2px;text-align:right}
 .perf-empty{font-size:12px;color:var(--muted);padding:18px 0;text-align:center}
+/* SM193: textos de cotação e valores quebram dentro da coluna, sem invadir o cartão vizinho. */
+.asset-inner-panel .perf-val{white-space:normal;overflow-wrap:anywhere;line-height:1.35}
+@media(max-width:900px){.asset-inner-panel .perf-grid{grid-template-columns:minmax(0,1fr)} .asset-inner-panel .perf-row{grid-template-columns:minmax(0,1fr)} .asset-inner-panel .perf-row>div:last-child{text-align:left}}
 .perf-card.hi .perf-pct{color:#34d399}
 .perf-card.lo .perf-pct{color:#f87171}
 .perf-card.hi .perf-fill{background:linear-gradient(90deg,#34d399,#86efac)}
@@ -26623,6 +26626,19 @@ function quoteTrustMeta(asset){
   const labels={FRESH:'Atualizado',DELAYED:'Com atraso',STALE:'Desatualizado',UNKNOWN:'Data desconhecida',ERROR:'Fonte indisponível'};
   return {status:finalStatus,label:labels[finalStatus]||'Fonte indisponível',source:String(asset?.quoteSource||'UNKNOWN'),lastKnownGood:asset?.quoteLastKnownGood===true};
 }
+/* SM193: estado, fonte e horários da cotação para leitura. Não altera preço nem status; só rotula. */
+function quoteStatusInfo(asset){
+  const meta=quoteTrustMeta(asset);
+  const price=Number(asset?.current_price);
+  const states={FRESH:'Atualizada',DELAYED:'Atrasada',STALE:'Antiga'};
+  const hasTime=Boolean(asset?.quoteMarketTime||asset?.quoteUpdatedAt);
+  // Sem preço válido ou erro = indisponível; sem horário não há como provar frescor: "Sem data".
+  const label=!(price>0)||meta.status==='ERROR' ? 'Indisponível' : !hasTime ? 'Sem data' : (states[meta.status]||'Sem data');
+  const sources={yahoo:'Yahoo Finance',brapi:'brapi.dev',manual:'manual',importado:'importado'};
+  const src=String(asset?.quoteSource||'').trim().toLowerCase();
+  const timeText=iso=>{const t=Date.parse(String(iso||'')); return Number.isFinite(t)?new Date(t).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';};
+  return {label, source:sources[src]||(src||'fonte não informada'), marketAt:timeText(asset?.quoteMarketTime), checkedAt:timeText(asset?.quoteUpdatedAt)};
+}
 function shouldApplyQuoteUpdate(asset, providerTimeMs){
   const currentTimeMs = Number(new Date(asset?.quoteMarketTime || 0).getTime()) || 0;
   if(providerTimeMs > 0 && currentTimeMs > 0 && providerTimeMs < currentTimeMs) return false;
@@ -27715,7 +27731,8 @@ function assetPerformanceOverviewRows(){
       hasAnyFinancialSource,
       hasPerformanceData,
       statusLabel,
-      statusTone
+      statusTone,
+      quoteMeta:isRF?null:quoteStatusInfo(asset)
     };
   });
 }
@@ -27768,6 +27785,7 @@ function assetPerformanceOverviewRowHtml(row, compact=false){
       <div class="perf-pct">${resultPctText}</div>
       <div class="perf-amt">${resultText}</div>
       <div class="perf-val" style="margin-top:2px">${esc(sourceLine)} · ${shareText} da carteira</div>
+      ${row.quoteMeta ? `<div class="perf-val perf-quote" style="margin-top:2px">Cotação ${esc(row.quoteMeta.label)} · ${esc(row.quoteMeta.source)} · negociação ${esc(row.quoteMeta.marketAt||'não informada')} · consulta ${esc(row.quoteMeta.checkedAt||'não informada')}</div>` : ''}
       <div class="analysis-pill ${esc(row.statusTone)}" style="display:inline-flex;margin-top:6px">${esc(row.statusLabel)}</div>
     </div>
   </div>`;
@@ -27779,17 +27797,20 @@ function assetPerformanceOverviewPanel(){
   const filteredRows=rows.filter(row=>classFilter==='all' || row.type===classFilter);
   const orderedRows=assetPerformanceOverviewSortRows(filteredRows, sortBy);
   const validRows=orderedRows.filter(row=>row.hasPerformanceData);
-  const positiveRows=validRows.filter(row=>Number.isFinite(row.result) && row.result>0).slice(0,4);
-  const negativeRows=validRows.filter(row=>Number.isFinite(row.result) && row.result<0).slice(0,4);
+  // SM193: melhores em ordem decrescente e piores em ordem crescente (maior perda primeiro), sempre numérico.
+  const positiveRows=validRows.filter(row=>Number.isFinite(row.result) && row.result>0).sort((a,b)=>b.result-a.result || (b.resultPct||0)-(a.resultPct||0)).slice(0,4);
+  const negativeRows=validRows.filter(row=>Number.isFinite(row.result) && row.result<0).sort((a,b)=>a.result-b.result || (a.resultPct||0)-(b.resultPct||0)).slice(0,4);
   const insufficientRows=rows.filter(row=>!row.hasPerformanceData);
   const zeroRows=validRows.filter(row=>Number.isFinite(row.result) && row.result===0);
   const topPositive=[...validRows].filter(row=>Number.isFinite(row.result) && row.result>0).sort((a,b)=>b.result-a.result || (b.resultPct||0)-(a.resultPct||0))[0] || null;
   const topNegative=[...validRows].filter(row=>Number.isFinite(row.result) && row.result<0).sort((a,b)=>a.result-b.result || (a.resultPct||0)-(b.resultPct||0))[0] || null;
   const portfolio=cx();
+  const realized=realizedSalesResultSummary();
   const summaryCards=[
     { label:'Carteira atual', value:fmt(portfolio.tC), sub:'Valor oficial da carteira', tone:'info' },
-    { label:'Resultado consolidado', value:fmt(portfolio.tG), sub:'Diferença entre atual e aplicado', tone:portfolio.tG>=0 ? 'ok' : 'danger' },
-    { label:'Rentabilidade', value:portfolio.tI>0 ? fmtP(portfolio.tGP) : '—', sub:'Baseada no capital aplicado', tone:portfolio.tGP>=0 ? 'ok' : 'danger' },
+    { label:'Resultado não realizado', value:fmt(portfolio.tG), sub:'Atual − aplicado nas posições abertas', tone:portfolio.tG>=0 ? 'ok' : 'danger' },
+    { label:'Resultado realizado', value:realized.count ? fmt(realized.total) : '—', sub:realized.count ? `${realized.count} venda(s) reconciliada(s) · fora do patrimônio` : 'Nenhuma venda reconciliada', tone:realized.total>0 ? 'ok' : realized.total<0 ? 'danger' : 'muted' },
+    { label:'Rentabilidade das posições', value:portfolio.tI>0 ? fmtP(portfolio.tGP) : '—', sub:'Resultado não realizado ÷ capital aplicado', tone:portfolio.tGP>=0 ? 'ok' : 'danger' },
     { label:'Sem base', value:String(insufficientRows.length), sub:'Ativos sem leitura oficial suficiente', tone:insufficientRows.length ? 'warn' : 'muted' }
   ];
   const classOptions=['all', ...TYPE_ORDER].filter((type,idx,arr)=>arr.indexOf(type)===idx);
@@ -27849,7 +27870,7 @@ function assetPerformanceOverviewPanel(){
           <div class="analysis-pill muted" style="justify-content:center;min-height:38px;align-items:center">${validRows.length} linhas consolidadas${zeroRows.length ? ` · ${zeroRows.length} empate(s)` : ''}</div>
         </div>
       </div>
-      <div class="mu" style="font-size:11px;line-height:1.4;margin-top:2px">Fontes oficiais: aplicado, atual, resultado e rentabilidade do legado. Nao duplica calculo financeiro; so lê o que ja existe.</div>
+      <div class="mu" style="font-size:11px;line-height:1.4;margin-top:2px">Não realizado = atual − aplicado nas posições abertas. Realizado = resultado reconciliado das vendas, fora do patrimônio. Rentabilidade = não realizado ÷ capital aplicado. Só lê cálculos já existentes.</div>
     </div>
     <div class="perf-grid">
       <div class="perf-card hi">
