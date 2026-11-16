@@ -135,7 +135,7 @@ test('CIV5 diagnostics are inert when evaluated without a browser window', () =>
   };
   ctx.globalThis = ctx;
   vm.createContext(ctx);
-  vm.runInContext(`${civ5Block}\\nthis.__api={civ5QaTrace,civ5QaDiagnosticsEnabled};`, ctx);
+  vm.runInContext(`${civ5Block}\nthis.__api={civ5QaTrace,civ5QaDiagnosticsEnabled};`, ctx);
 
   assert.equal(ctx.__api.civ5QaDiagnosticsEnabled(), false);
   assert.doesNotThrow(() => ctx.__api.civ5QaTrace('save_blocked', 'IDENTITY_UNCONFIRMED'));
