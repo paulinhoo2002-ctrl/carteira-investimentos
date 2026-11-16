@@ -19517,7 +19517,10 @@ function quickMovementModal(){
     <button type="button" role="tab" aria-selected="${rfTab==='resgatar'}" class="rf-quick-tab ${rfTab==='resgatar'?'on':''}" onclick="setRfQuickTab('resgatar')">Resgatar</button>
     <button type="button" role="tab" aria-selected="${rfTab==='novo'}" class="rf-quick-tab ${rfTab==='novo'?'on':''}" onclick="setRfQuickTab('novo')">Novo título</button>
   </div>`;
-  const assetTypes=quickMovementKindOptions().map(t=>`<option ${normalizeType(draft.type||'Ação','Ação')===t?'selected':''}>${esc(t)}</option>`).join('');
+  // SM188: sem classe conhecida, o select não pré-seleciona "Ação" como se tivesse sido identificado.
+  const knownType=String(draft.type||'').trim();
+  const typePlaceholder=knownType?'':'<option value="" selected disabled>Escolha o tipo</option>';
+  const assetTypes=typePlaceholder+quickMovementKindOptions().map(t=>`<option ${knownType&&normalizeType(knownType,'Ação')===t?'selected':''}>${esc(t)}</option>`).join('');
   const eventTypes=['Rendimento','Dividendo','JCP','Amortização','Outro'].map(t=>`<option ${String(draft.eventType||'Rendimento')===t?'selected':''}>${esc(t)}</option>`).join('');
   const rfSubtypes=['CDB','LCI','LCA','Tesouro Direto','CRI','CRA','Debênture','Letra Financeira','Outro'].map(t=>`<option ${String(draft.rfSubtype||'CDB')===t?'selected':''}>${esc(t)}</option>`).join('');
   const commonHeader=`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
@@ -26633,7 +26636,8 @@ async function fetchQuotes(manual=false){
   S.qInFlight=true;
   S.qLoad=true;
   if(!bodyModalLockActive()) snapshotQuoteUi();
-  render();
+  // SM188: não reconstruir a tela com formulário aberto (a troca do elemento tira o foco do campo que está sendo digitado).
+  if(!S.quickMovementOpen) render();
 
   const eligibleAssets=(S.assets||[]).filter(a=>{
     return isMarketQuoteEligibleAsset(a);
@@ -26776,7 +26780,7 @@ async function fetchQuotes(manual=false){
   S.qInFlight=false;
   S.qLoad=false; S.cd=QI;
   try{ if(!isLocalTestMode()) { const snapshot=captureV76DailySnapshot(); if(snapshot.ok) window.__V76_RUNTIME_STATUS__=window.PortfolioRuntimeStores.prospectiveStatus(window.__V76_RUNTIME__.snapshots); } }catch(error){ debugWarn('V76 snapshot:',error); }
-  render();
+  if(!S.quickMovementOpen) render(); // SM188: mesma proteção do início; ao fechar o formulário a tela é atualizada
   disarmQuoteUi();
 }
 async function fetchAutoProventos(){
@@ -40726,7 +40730,7 @@ function startPendingCountPolling(){
       channel.port1.onmessage = function(event) {
         if (event.data && typeof event.data.count === 'number' && event.data.count > 0) {
           window.__pendingSyncCount = event.data.count;
-          if (typeof render === 'function') render();
+          if (typeof render === 'function' && !S.quickMovementOpen) render(); // SM188: sem re-render com formulário aberto
         }
       };
       window.__pwaRegistration.active.postMessage({ type: 'GET_PENDING_COUNT' }, [channel.port2]);
