@@ -18903,6 +18903,12 @@ function quickMovementSuccessText(reg,kind){
   const asset=String(reg?.ticker||reg?.name||'Movimentação').trim();
   const date=String(reg?.date||'').trim() || 'sem data';
   const amount=kind==='provento' ? Number(reg?.value)||0 : Number(reg?.qty||0)*Number(reg?.price||0);
+  if(kind==='venda' && reg?.reconciliationStatus==='LEDGER_RECONCILED'){
+    return `✅ Venda registrada · ${asset} · ${fmt(amount)} · resultado realizado ${fmt(Number(reg.realizedResult)||0)} · ${date}`;
+  }
+  if(kind==='venda' && reg?.saleBlockReason){
+    return `⚠️ Venda registrada como pendente · ${asset} · ${reg.saleBlockReason}`;
+  }
   return `✅ Lançamento registrado · ${label} · ${asset} · ${fmt(amount)} · ${date}`;
 }
 function quickMovementDefaultDraft(kind='compra'){
@@ -19329,6 +19335,8 @@ function openQuickMovement(kind='compra'){
   S.quickMovementError=null;
   S.quickMovementErrorField='';
   const nextDraft={...quickMovementDefaultDraft(next), ...current, kind:next};
+  // SM186: chave da operação do formulário; repetir a gravação da mesma abertura não cria venda duplicada.
+  if(!nextDraft.nonce) nextDraft.nonce=Date.now().toString(36)+Math.random().toString(36).slice(2,10);
   if(next==='venda'){
     nextDraft.ticker='';
     nextDraft.assetName='';
@@ -19673,6 +19681,29 @@ function hasPendingSaleForTicker(ticker,excludeId=''){
   const normalized=cleanAssetCode(ticker);
   return Boolean(normalized&&(S.aportes||[]).some(row=>cleanAssetCode(row?.ticker)===normalized
     && isReconciliationPendingMovement(row)&&String(row.id)!==String(excludeId)));
+}
+// SM186: venda de posição LEDGER só é aplicada quando o histórico de OPERAÇÕES do ativo é verificável no ledger
+// (derivação completa, sem duplicidade, quantidade igual à registrada). A cobertura histórica de mercado continua
+// UNPROVEN e NÃO entra nesta decisão. Posição legada ou histórico incompleto permanece pendente, com motivo explícito.
+function ledgerSaleEligibility(reg){
+  const code=cleanAssetCode(reg?.ticker);
+  const assets=(S.assets||[]).filter(a=>cleanAssetCode(a?.ticker)===code);
+  if(assets.length!==1) return {ok:false,reason:'Posição ausente ou duplicada: venda fica pendente de conciliação.'};
+  const asset=assets[0];
+  if(asset.position_source!=='LEDGER') return {ok:false,reason:'Posição legada sem histórico reconciliável: venda fica pendente de conciliação.'};
+  // Datas gravadas podem estar em BR (dd/mm/aaaa) ou ISO; o motor ordena por texto, então normaliza antes.
+  const movements=(S.aportes||[]).filter(m=>cleanAssetCode(m?.ticker)===code && !isReconciliationPendingMovement(m) && !isNeutralMovement(m))
+    .map(m=>{ const parsed=parseAnyDate(m.date); return {...m, date: parsed ? toISODate(parsed) : String(m.date||'')}; });
+  const derived=window.PositionReconciliation?.deriveFromMovements?.(movements);
+  if(!derived||!derived.hasMovements||!derived.complete) return {ok:false,reason:'Histórico de operações incompleto: venda fica pendente de conciliação.'};
+  if(Math.abs(derived.qty-Number(asset.qty))>1e-9) return {ok:false,reason:'Quantidade registrada difere do histórico de operações: venda fica pendente de conciliação.'};
+  const q=Math.abs(Number(reg.qty)||0);
+  const price=Number(reg.price)||0;
+  const fees=Number(reg.fees)||0;
+  const avg=derived.avgPrice;
+  const gross=q*price;
+  const costReleased=avg*q;
+  return {ok:true,avg,gross,costReleased,realized:gross-fees-costReleased};
 }
 function pendingSaleIdentityBlocker(ticker,excludeId=''){
   const normalized=cleanAssetCode(ticker);
@@ -20037,6 +20068,25 @@ function saveQuickMovement(){
       return;
     }
     reg.reconciliationStatus='PENDING_RECONCILIATION';
+    // SM186: idempotência — a mesma abertura do formulário não grava a mesma venda duas vezes.
+    reg.opKey=String(S.quickMovementDraft?.nonce||'');
+    if(reg.opKey && (S.aportes||[]).some(a=>String(a?.opKey||'')===reg.opKey)){
+      S.quickMovementSaving=false;
+      S.quickMovementError='Esta venda já foi registrada. Nada foi gravado novamente.';
+      S.quickMovementErrorField='';
+      render();
+      return;
+    }
+    const eligibility=ledgerSaleEligibility(reg);
+    if(eligibility.ok){
+      reg.reconciliationStatus='LEDGER_RECONCILED';
+      reg.avgPriceAtSale=eligibility.avg;
+      reg.saleGross=eligibility.gross;
+      reg.costReleased=eligibility.costReleased;
+      reg.realizedResult=eligibility.realized;
+    }else{
+      reg.saleBlockReason=eligibility.reason;
+    }
   }
   // Validação local antes de gravar (sem consulta de cotação): ativo já na carteira ou código do catálogo B3
   // local. Formato sozinho e ticker só "aprendido" de digitação não contam.

@@ -96,12 +96,13 @@ it('Lançamentos premium - compra, venda, edição e exclusão com dados sintét
     await page.evaluate(() => go('aportes'));
     const venda = (await registro(page, ticker)).find(item => item.op === 'venda');
     const cartaoVenda = page.locator('.aporte-history-card', { hasText: 'Venda' }).filter({ hasText: ticker }).first();
+    // SM186: a venda de posição LEDGER foi aplicada (não pendente); excluí-la desfaz o efeito e recalcula a posição.
+    assert.equal(await page.evaluate(id => S.aportes.find(item => String(item.id) === String(id))?.reconciliationStatus, venda.id), 'LEDGER_RECONCILED', 'venda aplicada ao ledger');
+    assert.equal(await page.evaluate(symbol => S.assets.find(item => item.ticker === symbol)?.qty, ticker), 4, 'posição após a venda de 1 (5 − 1)');
     await page.evaluate(id => rmP(id), venda.id);
-    await page.waitForFunction(id => S.aportes.some(item => String(item.id) === String(id) && item.reconciliationStatus === 'PENDING_RECONCILIATION'), venda.id);
-    await page.evaluate(symbol => deleteAssetFull(symbol), ticker);
-    assert.deepEqual((await registro(page, ticker)).map(item => item.op), ['venda', 'compra']);
-    assert.equal(await page.evaluate(id => S.aportes.find(item => String(item.id) === String(id))?.reconciliationStatus, venda.id), 'PENDING_RECONCILIATION', 'exclusão não remove a venda pendente do ledger');
-    assert.equal(await page.evaluate(symbol => S.assets.find(item => item.ticker === symbol)?.qty, ticker), 4, 'posição existente é preservada durante reconciliação pendente');
+    await page.waitForFunction(id => !S.aportes.some(item => String(item.id) === String(id)), venda.id);
+    assert.deepEqual((await registro(page, ticker)).map(item => item.op), ['compra'], 'exclusão remove só a venda');
+    assert.equal(await page.evaluate(symbol => S.assets.find(item => item.ticker === symbol)?.qty, ticker), 5, 'posição recalculada pelo ledger após excluir a venda');
     assert.deepEqual(app.problems, [], 'sem erros de página nem escrita externa');
   } finally {
     await closeApp(app);

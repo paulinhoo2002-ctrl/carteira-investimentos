@@ -125,9 +125,10 @@ it('SM185 4 (parcial): venda é validada contra a posição e fica pendente de c
     await app.page.getByRole('button', { name: 'Confirmar venda' }).click();
     await app.page.waitForFunction(() => S.aportes.some(item => item.ticker === 'BBAS3' && item.operation === 'venda'));
     const vendas = (await lancamentos(app.page, 'BBAS3')).filter(item => item.op === 'venda');
-    assert.deepEqual(vendas, [{ op: 'venda', qty: 3, price: 12, status: 'PENDING_RECONCILIATION' }]);
-    // Limitação registrada: nesta versão não há fluxo de conciliação; a venda não reduz a posição até lá.
-    assert.equal((await posicao(app.page, 'BBAS3')).qty, 10, 'posição preservada até a conciliação');
+    assert.deepEqual(vendas, [{ op: 'venda', qty: 3, price: 12, status: 'LEDGER_RECONCILED' }]);
+    // SM186: venda aplicada reduz quantidade; resultado realizado = 3 × 12 − 3 × 10,80 = 3,60.
+    assert.equal((await posicao(app.page, 'BBAS3')).qty, 7, 'quantidade após venda de 3');
+    assert.ok(Math.abs(await app.page.evaluate(() => S.aportes.find(a => a.operation === 'venda' && a.ticker === 'BBAS3').realizedResult) - 3.6) < 1e-9, 'resultado realizado');
     assert.deepEqual(app.problems, []);
   } finally { await closeApp(app); }
 });
