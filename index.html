@@ -34470,7 +34470,7 @@ function assetActionMenuHtml(asset, isRF, context='default'){
       <div class="asset-action-menu-panel" id="${esc(menuId)}" role="menu" aria-label="Ações para ${esc(asset.ticker||asset.name||'ativo')}">
       ${menuPrimary}${menuSecondary}
       <button type="button" role="menuitem" aria-label="Editar ${esc(asset.ticker||asset.name||'ativo')}" onclick='edA(${JSON.stringify(id)})'>Editar</button>
-      <button type="button" role="menuitem" class="asset-action-danger" aria-label="Excluir ${esc(asset.ticker||asset.name||'ativo')} e todo o histórico" onclick='deleteAssetFull(${JSON.stringify(String(asset.ticker||''))})'>Excluir ativo</button>
+      <button type="button" role="menuitem" class="asset-action-danger" aria-label="Excluir ${esc(asset.ticker||asset.name||'ativo')} e todo o histórico" onclick='${isRF ? `deleteRfPosition(${JSON.stringify(rfAssetEventId(asset))})` : `deleteAssetFull(${JSON.stringify(String(asset.ticker||''))})`}'>Excluir ativo</button>
     </div>
   </div>`;
 }
@@ -34497,6 +34497,28 @@ function deleteAssetFull(ticker){
   S.assets=(S.assets||[]).filter(a=>!matchTicker(a.ticker));
   save();
   toast(`🗑️ ${normalized} e seu histórico foram excluídos.`);
+  render();
+}
+// Renda fixa não tem ticker: a exclusão usa o id do título e remove junto seus lançamentos e proventos vinculados.
+function deleteRfPosition(assetId){
+  if(!canEditFromThisTab('excluir ativo')) return;
+  const asset=getRfAssetByEventId(assetId);
+  if(!asset){ toast('⚠️ Título de renda fixa não encontrado.','#f87171'); return; }
+  const events=rfEventsForAsset(asset);
+  const eventKeys=new Set(events.map(e=>e.autoKey||rfEventDuplicateKey(e)));
+  const eventIds=new Set(events.map(e=>String(e.id||'').trim()).filter(Boolean));
+  const incomes=(S.proventos||[]).filter(p=>String(p?.sourceEventKind||'').trim().toLowerCase()==='rf' && eventIds.has(String(p?.sourceEventId||'').trim()));
+  const name=assetRfName(asset)||String(asset.name||asset.ticker||'título').trim();
+  if(!confirm(`Excluir ${name} da carteira?\n\nIsso remove permanentemente o título, ${events.length} movimentação(ões) e ${incomes.length} provento(s) vinculado(s). Esta ação não pode ser desfeita.`)) return;
+  const beforeSave=snapshotFinancialImportState(['rfEvents','assets','proventos','rfMovementEditor']);
+  if(!beforeSave){ toast('⚠️ Não foi possível preparar a gravação. Nada foi excluído.','#f87171'); return; }
+  S.rfEvents=normalizeRfEvents(S.rfEvents||[]).filter(e=>!eventKeys.has(e.autoKey||rfEventDuplicateKey(e)));
+  S.proventos=(S.proventos||[]).filter(p=>!incomes.includes(p));
+  S.assets=(S.assets||[]).filter(a=>rfAssetEventId(a)!==rfAssetEventId(asset));
+  if(S.rfMovementEditor?.assetId===rfAssetEventId(asset)) S.rfMovementEditor=null;
+  rememberScroll();
+  if(!persistFinancialImportState(beforeSave)){ toast('⚠️ Falha ao gravar. Estado anterior restaurado.','#f87171'); render(); return; }
+  toast(`🗑️ ${name} e seu histórico foram excluídos.`);
   render();
 }
 function assetEditModal(){
@@ -40581,8 +40603,9 @@ function startPendingCountPolling(){
 function startPublicEventsSync(){
   if(window.__PUBLIC_EVENTS_SYNC_STARTED__||!window.PublicEventsRuntime||!window.PublicEventsStore||!window.CorporateEventsSync||!window.MarketDataProviders||!window.CorporateEventsProviders)return;
   if(isLocalTestMode()||isProtectedShadowBoot()||isProtectedReadOnlyQaBoot())return;
-  const yahoo=window.MarketDataProviders.createYahooProvider();
-  const registry={getEvents:(symbol,from,to)=>yahoo.getEvents(symbol,{from:from||'2025-01-01',to:to||'2099-12-31'}).then(result=>({ok:result.ok,events:result.events||[],providers:[{provider:result.provider||'yahoo-chart',ok:Boolean(result.ok),error:result.error||null}]}))};
+  // O Yahoo não é chamado direto do navegador: a CSP bloqueia o host de cotações e o app não deve
+  // disparar essa requisição. Sem proxy compatível com o formato de eventos, o estado fica honesto (sem eventos).
+  const registry={getEvents:()=>Promise.resolve({ok:false,events:[],providers:[{provider:'yahoo-chart',ok:false,error:'BROWSER_CORS_UNAVAILABLE'}]})};
   const provider={syncPortfolio:()=>window.CorporateEventsSync.syncPortfolio({assets:S.assets,transactions:financialMovementsForCalculations(),from:'2025-01-01',to:'2099-12-31',registry})};
   const publicAssets=(S.assets||[]).filter(a=>!String(a.type||'').toLowerCase().includes('renda fixa'));
   const runtime=window.PublicEventsRuntime.create({store:window.PublicEventsStore,storage:window.localStorage,provider,assets:publicAssets,transactions:financialMovementsForCalculations(),onUpdate:()=>{if(typeof render==='function')render();}});
