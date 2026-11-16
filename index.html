@@ -12419,7 +12419,9 @@ function startCloudSync({readOnlyOnly=false}={}){
     try{
       if(FB.cloudStateModel?.attempt!==syncAttempt) return;
       if(!snap.exists){
-        if(!readOnlyOnly && hasLocalData()) await uploadLocalToCloud(false,{allowMissingCloud:true});
+        // SM173.8: documento ausente NUNCA autoriza upload automático. A inicialização da nuvem exige ato explícito (FB.initialCloudUploadApproved).
+        if(!readOnlyOnly && hasLocalData() && FB.initialCloudUploadApproved===true) await uploadLocalToCloud(false,{allowMissingCloud:true});
+        else if(!readOnlyOnly && hasLocalData()) debugWarn('[SM173.8] documento ausente: upload inicial bloqueado até aprovação explícita');
         FB.package2=null;
         FB.cloudLoaded=true;
         clearTimeout(FB.cloudSyncTimeoutTimer);
