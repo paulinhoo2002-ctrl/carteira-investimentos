@@ -13,6 +13,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { checkDistribution, validateIdentity, validateSdkConfig, sha256, walk, validateLoginHint } = require('./guard');
+const { materialize } = require('./materialize-qa-rules');
 
 const HOMOLOG_PROJECT = 'carteira-homolog-sm118';
 
@@ -143,8 +144,7 @@ function applyHomologSubstitutions(text, { sdk, uid, email, shortSha, loginHint 
   return hadCrlf ? t.replace(/\n/g, '\r\n') : t;
 }
 
-function main() {
-  const args = parseArgs(process.argv.slice(2));
+function build(args) {
   const sha = args.sha;
   if (!/^[0-9a-f]{40}$/.test(sha)) throw new Error('--sha deve ter 40 caracteres hexadecimais');
   const out = path.resolve(args.out);
@@ -183,6 +183,21 @@ function main() {
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
+}
+
+// SM173.10B: regras QA vindas de HOMOLOG_QA_RULES_B64 (env só existe na branch de preview autorizada). Temporárias, fora do repo.
+function qaRulesFromEnv(args) {
+  if (args['qa-owner-rules'] || !process.env.HOMOLOG_QA_RULES_B64) return null;
+  const tmp = path.join(os.tmpdir(), `homolog-qa-rules-${process.pid}-${Date.now()}.tmp`);
+  materialize(tmp, process.env.HOMOLOG_QA_RULES_B64);
+  return tmp;
+}
+
+function main() {
+  const args = parseArgs(process.argv.slice(2));
+  const qaTmp = qaRulesFromEnv(args);
+  if (qaTmp) args['qa-owner-rules'] = qaTmp;
+  try { build(args); } finally { if (qaTmp) fs.rmSync(qaTmp, { force: true }); }
 }
 
 if (require.main === module) {
