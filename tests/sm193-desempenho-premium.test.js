@@ -206,3 +206,54 @@ test('piores ativos listam a maior perda primeiro (ordenação numérica crescen
   const block = indexHtml.slice(indexHtml.indexOf('const negativeRows=validRows'), indexHtml.indexOf('const negativeRows=validRows') + 260);
   assert.match(block, /sort\(\(a,b\)=>a\.result-b\.result/);
 });
+
+// ---- SM193.2: estados de cotação e regressões visuais ----
+
+test('mercado fechado com última cotação válida não vira Antiga nem erro (só consulta recente)', () => {
+  const ctx = makeContext();
+  const info = ctx.quoteStatusInfo({ current_price: 40, quoteStatus: 'FRESH', quoteSource: 'yahoo', quoteMarketTime: '2026-11-13T20:00:00.000Z', quoteUpdatedAt: '2026-11-16T12:00:00.000Z' });
+  assert.equal(info.label, 'Atualizada');
+  assert.ok(info.marketAt && info.checkedAt && info.marketAt !== info.checkedAt, 'horário de mercado antigo preservado, sem trocar pelo da consulta');
+});
+
+test('horário de consulta ausente não é inventado (fica vazio), estado segue o status', () => {
+  const ctx = makeContext();
+  const info = ctx.quoteStatusInfo({ current_price: 14.71, quoteStatus: 'DELAYED', quoteSource: 'yahoo', quoteMarketTime: '2026-11-16T16:05:00.000Z' });
+  assert.equal(info.label, 'Atrasada');
+  assert.equal(info.checkedAt, '');
+  assert.ok(info.marketAt);
+});
+
+test('horário de mercado ausente com consulta presente: negociação vazia, não copia a consulta', () => {
+  const ctx = makeContext();
+  const info = ctx.quoteStatusInfo({ current_price: 14.71, quoteStatus: 'FRESH', quoteSource: 'yahoo', quoteUpdatedAt: '2026-11-16T16:20:00.000Z' });
+  assert.equal(info.marketAt, '');
+  assert.ok(info.checkedAt);
+});
+
+test('STALE com horário mostra Antiga; UNKNOWN ou sem horário mostra Sem data', () => {
+  const ctx = makeContext();
+  assert.equal(ctx.quoteStatusInfo({ current_price: 8.68, quoteStatus: 'STALE', quoteSource: 'brapi', quoteUpdatedAt: '2026-11-13T18:20:00.000Z' }).label, 'Antiga');
+  assert.equal(ctx.quoteStatusInfo({ current_price: 8.68, quoteStatus: 'UNKNOWN', quoteUpdatedAt: '2026-11-13T18:20:00.000Z' }).label, 'Sem data');
+  assert.equal(ctx.quoteStatusInfo({ current_price: 8.68, quoteStatus: 'STALE' }).label, 'Sem data', 'STALE sem horário não prova idade');
+});
+
+test('regressão SM193.2: cartões de categoria em 320-390 px usam 2 colunas iguais e botão fora da grade (sem trilha implícita)', () => {
+  assert.match(indexHtml, /@media\(max-width:767px\)\{[\s\S]*?details\.ag>summary\.accordion-header\{display:grid;grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\);/);
+  assert.match(indexHtml, /html body #ativosAccordion details\.ag>summary\.accordion-header\{grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\);position:relative\}/);
+  assert.match(indexHtml, /html body #ativosAccordion details\.ag>summary\.accordion-header>\.acc-toggle\{position:absolute;/, 'botão de expandir fora da grade de métricas');
+  assert.match(indexHtml, /overflow-wrap:normal;word-break:normal\}/, 'valores monetários quebram só nos espaços');
+});
+
+test('regressão SM193.2: nome de ativo nunca fica estreito demais (mínimo 7em) e quebra em até 2 linhas', () => {
+  assert.match(indexHtml, /\.asset-inner-panel \.perf-ticker\{flex:1 1 7em;min-width:7em;/);
+  assert.match(indexHtml, /-webkit-line-clamp:2/);
+});
+
+test('regressão SM193.2: cartões de ranking empilham a linha (nome não disputa largura com valores)', () => {
+  assert.match(indexHtml, /\.asset-inner-panel \.perf-card\.hi \.perf-row,\.asset-inner-panel \.perf-card\.lo \.perf-row\{grid-template-columns:minmax\(0,1fr\)\}/);
+});
+
+test('nome completo do ativo fica acessível em title quando truncado', () => {
+  assert.match(indexHtml, /<div class="perf-ticker" title="\$\{esc\(row\.label\)\}">/);
+});

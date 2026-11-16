@@ -1814,6 +1814,11 @@ html[data-theme="light"] .rf-movement-summary-title{color:#1d4ed8}
 .perf-empty{font-size:12px;color:var(--muted);padding:18px 0;text-align:center}
 /* SM193: textos de cotação e valores quebram dentro da coluna, sem invadir o cartão vizinho. */
 .asset-inner-panel .perf-val{white-space:normal;overflow-wrap:anywhere;line-height:1.35}
+/* SM193.2: nome do ativo quebra em até 2 linhas antes de cortar; nome completo fica em title. */
+.asset-inner-panel .perf-card.hi .perf-row,.asset-inner-panel .perf-card.lo .perf-row{grid-template-columns:minmax(0,1fr)}
+.asset-inner-panel .perf-card.hi .perf-row>div:last-child,.asset-inner-panel .perf-card.lo .perf-row>div:last-child{text-align:left}
+.asset-inner-panel .perf-top{flex-wrap:wrap}
+.asset-inner-panel .perf-ticker{flex:1 1 7em;min-width:7em;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;line-height:1.25}
 @media(max-width:900px){.asset-inner-panel .perf-grid{grid-template-columns:minmax(0,1fr)} .asset-inner-panel .perf-row{grid-template-columns:minmax(0,1fr)} .asset-inner-panel .perf-row>div:last-child{text-align:left}}
 .perf-card.hi .perf-pct{color:#34d399}
 .perf-card.lo .perf-pct{color:#f87171}
@@ -7986,7 +7991,7 @@ html[data-theme="light"] .acc-metric-goal-gap.below{color:#1d4ed8}
   .assets-premium-shell>.sh>div:last-child .btn{min-width:0;min-height:44px;padding:7px 5px!important;font-size:10px!important}
   .assets-premium-shell .ag-wrap{display:flex;flex-direction:column;gap:7px}
   .assets-premium-shell .asset-inner-tabs{margin:2px 0 7px}
-  .assets-premium-shell details.ag>summary.accordion-header{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) 44px;grid-template-rows:auto auto auto;gap:7px 8px;padding:9px 10px}
+  .assets-premium-shell details.ag>summary.accordion-header{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto auto;gap:7px 8px;padding:9px 10px;position:relative}
   .assets-premium-shell details.ag>summary.accordion-header>.acc-info{grid-column:1/3;grid-row:1;min-width:0}
   .assets-premium-shell details.ag>summary.accordion-header>div:nth-child(2){display:none}
   .assets-premium-shell details.ag>summary.accordion-header>div:nth-child(3){grid-column:1;grid-row:2}
@@ -7997,6 +8002,13 @@ html[data-theme="light"] .acc-metric-goal-gap.below{color:#1d4ed8}
   .assets-premium-shell details.ag>summary.accordion-header .acc-metric-label{font-size:11px;line-height:1.2;letter-spacing:normal;text-transform:none}
   .assets-premium-shell details.ag>summary.accordion-header .acc-metric-value{font-size:13px;line-height:1.25;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
   .assets-premium-shell .ag-body{padding:0 10px 10px}
+  /* SM193.2: a regra ≤1100px de #ativosAccordion .accordion-header define 2 trilhas e cria colunas implícitas (28px/122px). */
+  /* SM193.2: a regra ≤1100px de #ativosAccordion .accordion-header cria trilhas implícitas; aqui a grade de métricas usa 2 trilhas iguais
+     e o botão de expandir sai do fluxo (canto superior direito), para que "R$ 32.904,00" caiba sem invadir a coluna vizinha. */
+  html body #ativosAccordion details.ag>summary.accordion-header{grid-template-columns:minmax(0,1fr) minmax(0,1fr);position:relative}
+  html body #ativosAccordion details.ag>summary.accordion-header>.acc-info{grid-column:1/-1;padding-right:48px}
+  html body #ativosAccordion details.ag>summary.accordion-header>.acc-toggle{position:absolute;top:9px;right:10px;grid-column:auto;grid-row:auto;margin:0}
+  html body #ativosAccordion details.ag>summary.accordion-header .acc-metric-value{overflow-wrap:normal;word-break:normal}
   /* New filter bar responsive */
   .assets-premium-filters-bar{gap:8px}
   .assets-filter-group{flex:1 1 calc(50% - 4px);min-width:0}
@@ -27776,7 +27788,7 @@ function assetPerformanceOverviewRowHtml(row, compact=false){
   return `<div class="perf-row ${compact ? 'comp' : ''}">
     <div class="perf-left">
       <div class="perf-top">
-        <div class="perf-ticker">${esc(row.label)}</div>
+        <div class="perf-ticker" title="${esc(row.label)}">${esc(row.label)}</div>
         <div class="perf-val">${esc(subLine)}</div>
       </div>
       <div class="perf-bar"><div class="perf-fill" style="width:${resultWidth.toFixed(0)}%"></div></div>
