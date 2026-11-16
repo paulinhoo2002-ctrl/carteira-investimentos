@@ -125,3 +125,18 @@ test('CIV5 diagnostics are QA-host-only and contain status codes but no identity
   assert.equal(prod.logs.length, 0);
   assert.equal(prod.window.__CIV5_QA_DIAGNOSTIC__, undefined);
 });
+
+test('CIV5 diagnostics are inert when evaluated without a browser window', () => {
+  const ctx = {
+    STOR: 'civ5',
+    localStorage: storage(),
+    FB: {},
+    Promise, Object, String, Number, Array, JSON, Map, Set, Error,
+  };
+  ctx.globalThis = ctx;
+  vm.createContext(ctx);
+  vm.runInContext(`${civ5Block}\\nthis.__api={civ5QaTrace,civ5QaDiagnosticsEnabled};`, ctx);
+
+  assert.equal(ctx.__api.civ5QaDiagnosticsEnabled(), false);
+  assert.doesNotThrow(() => ctx.__api.civ5QaTrace('save_blocked', 'IDENTITY_UNCONFIRMED'));
+});
