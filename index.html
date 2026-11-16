@@ -20036,6 +20036,19 @@ function saveQuickMovement(){
     }
     reg.reconciliationStatus='PENDING_RECONCILIATION';
   }
+  // Validação local antes de gravar (sem consulta de cotação): ação/FII precisa ser reconhecido pelo
+  // ativo já existente, pelo catálogo ou pelo formato B3. Ticker só "aprendido" de digitação manual não conta.
+  if(kind==='compra'||kind==='venda'){
+    const known=String(resolveAssetMetadata(reg.ticker).source||'');
+    if(!['asset','catalog','inference'].includes(known)){
+      S.quickMovementSaving=false;
+      S.quickMovementError='Ativo não reconhecido. Verifique o código informado.';
+      S.quickMovementErrorField='ticker';
+      render();
+      focusQuickMovementError();
+      return;
+    }
+  }
   const draftBeforeClose=S.quickMovementDraft;
   const financialSnapshot=snapshotFinancialImportState(['aportes','proventos','assets','wallets','activeWalletId','learnMeta']);
   S.quickMovementOpen=false;
@@ -20082,6 +20095,18 @@ function saveQuickMovement(){
     }
     learnTickerMeta(reg.ticker, reg.type, reg.sector, true);
     const syncResult=syncAssetsFromAportes(false,false);
+    // Compra nunca fica sem posição correspondente: se a sincronização não criou o ativo, nada é gravado.
+    if(kind==='compra' && !(S.assets||[]).some(a=>normalizeMetadataTicker(a?.ticker||'')===normalizeMetadataTicker(reg.ticker))){
+      Object.keys(financialSnapshot).forEach(key=>{ if(financialSnapshot[key].present) S[key]=financialSnapshot[key].value; else delete S[key]; });
+      S.quickMovementOpen=true;
+      S.quickMovementDraft=draftBeforeClose;
+      S.quickMovementError='Não foi possível criar a posição deste ativo. Nada foi gravado.';
+      S.quickMovementErrorField='ticker';
+      S.quickMovementSaving=false;
+      render();
+      focusQuickMovementError();
+      return;
+    }
     if(!persistFinancialImportState(financialSnapshot)) throw new Error('QUICK_MOVEMENT_PERSIST_FAILED');
     toast(isReconciliationPendingMovement(reg) ? 'Venda registrada como PENDENTE DE RECONCILIAÇÃO. Quantidade, custo médio e patrimônio foram preservados.'
       : !financialSyncUpdatedAllTickers(syncResult,[reg.ticker]) ? 'Movimentação salva no histórico; posição e custo médio preservados porque a cobertura não foi comprovada.' : quickMovementSuccessText(reg,kind));
