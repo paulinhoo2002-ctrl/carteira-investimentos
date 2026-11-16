@@ -9,6 +9,7 @@
 <link rel="preload" as="script" href="v250-offline-session.js">
 <link rel="preload" as="script" href="v250-runtime.js">
 <link rel="preload" as="script" href="ir2026/ui/readiness.js">
+<link rel="preload" as="script" href="b3-catalog.js">
 <link rel="preload" as="script" href="finance-core.js">
 <link rel="preload" as="script" href="persistence-core.js">
 <link rel="preload" as="script" href="position-reconciliation.js">
@@ -9121,6 +9122,7 @@ window.ensureXLSX=()=>{ if(window.__XLSX_PROMISE__) return window.__XLSX_PROMISE
     document.head.appendChild(s); });
   return window.__XLSX_PROMISE__; };
 </script>
+<script src="b3-catalog.js"></script>
 <script src="finance-core.js"></script>
 <script src="persistence-core.js"></script>
 <script src="position-reconciliation.js"></script>
@@ -20036,21 +20038,20 @@ function saveQuickMovement(){
     }
     reg.reconciliationStatus='PENDING_RECONCILIATION';
   }
-  // Validação local antes de gravar (sem consulta de cotação): só ativo já existente na carteira ou no
-  // catálogo conhecido. Formato B3 sozinho (inference) e ticker só "aprendido" de digitação não contam.
+  // Validação local antes de gravar (sem consulta de cotação): ativo já na carteira ou código do catálogo B3
+  // local. Formato sozinho e ticker só "aprendido" de digitação não contam.
   if(kind==='compra'||kind==='venda'){
-    const tk=normalizeMetadataTicker(reg.ticker);
-    const inPortfolio=(S.assets||[]).some(a=>normalizeMetadataTicker(a?.ticker||'')===tk);
-    const inCatalog=!!META[tk];
-    if(!inPortfolio && !inCatalog){
+    const check=marketTickerValidation(reg.ticker);
+    if(!check.ok){
       S.quickMovementSaving=false;
-      S.quickMovementError='Ativo não reconhecido. Verifique o código informado.';
+      S.quickMovementError=check.message;
       S.quickMovementErrorField='ticker';
       render();
       focusQuickMovementError();
       return;
     }
   }
+  const qtyBeforeSync=assetQtyForTicker(reg.ticker);
   const draftBeforeClose=S.quickMovementDraft;
   const financialSnapshot=snapshotFinancialImportState(['aportes','proventos','assets','wallets','activeWalletId','learnMeta']);
   S.quickMovementOpen=false;
@@ -20097,12 +20098,21 @@ function saveQuickMovement(){
     }
     learnTickerMeta(reg.ticker, reg.type, reg.sector, true);
     const syncResult=syncAssetsFromAportes(false,false);
-    // Compra nunca fica sem posição correspondente: se a sincronização não criou o ativo, nada é gravado.
-    if(kind==='compra' && !(S.assets||[]).some(a=>normalizeMetadataTicker(a?.ticker||'')===normalizeMetadataTicker(reg.ticker))){
+    // Movimento nunca fica sem posição consistente: a quantidade precisa mudar exatamente pelo lançamento.
+    // Posição legada congelada (cobertura não comprovada) não aceita compra/venda em silêncio.
+    const qtyAfterSync=assetQtyForTicker(reg.ticker);
+    const movedQty=Math.abs(Number(reg.qty)||0);
+    // Venda pendente de conciliação não move a posição (regra existente): quantidade fica igual até a conciliação.
+    const expectedQty=kind==='compra' ? qtyBeforeSync+movedQty
+      : (reg.reconciliationStatus==='PENDING_RECONCILIATION' ? qtyBeforeSync : Math.max(0,qtyBeforeSync-movedQty));
+    const positionConsistent=Math.abs(qtyAfterSync-expectedQty)<1e-9 && (kind!=='compra' || qtyAfterSync>0);
+    if((kind==='compra'||kind==='venda') && !positionConsistent){
       Object.keys(financialSnapshot).forEach(key=>{ if(financialSnapshot[key].present) S[key]=financialSnapshot[key].value; else delete S[key]; });
       S.quickMovementOpen=true;
       S.quickMovementDraft=draftBeforeClose;
-      S.quickMovementError='Não foi possível criar a posição deste ativo. Nada foi gravado.';
+      S.quickMovementError=kind==='compra' && qtyAfterSync<=0
+        ? 'Não foi possível criar a posição deste ativo. Nada foi gravado.'
+        : 'A posição existente não pode ser atualizada por esta movimentação. Nada foi gravado.';
       S.quickMovementErrorField='ticker';
       S.quickMovementSaving=false;
       render();
@@ -26178,6 +26188,33 @@ function financialSyncUpdatedAllTickers(syncResult,tickers){
   const expected=[...new Set((tickers||[]).map(cleanAssetCode).filter(Boolean))];
   return expected.length>0 && expected.every(ticker=>updated.has(ticker));
 }
+// SM185: validação de ticker sem Yahoo. Posição já na carteira ou código do catálogo B3 local; formato sozinho não basta.
+function isKnownB3Code(ticker){
+  const code=normalizeMetadataTicker(ticker);
+  if(!code) return false;
+  if(META[code]) return true;
+  return !!globalThis.B3Catalog?.has?.(code);
+}
+function marketTickerValidation(ticker){
+  const code=normalizeMetadataTicker(ticker);
+  if((S.assets||[]).some(a=>normalizeMetadataTicker(a?.ticker||'')===code)) return {ok:true,code:'PORTFOLIO'};
+  if(!/^[A-Z0-9]{4,7}$/.test(code)||!/[A-Z]/.test(code)||!/\d/.test(code)) return {ok:false,code:'INVALID_FORMAT',message:'Ativo não reconhecido. Verifique o código informado.'};
+  if(isKnownB3Code(code)) return {ok:true,code:'CATALOG'};
+  const version=globalThis.B3Catalog?.version||'indisponível';
+  return {ok:false,code:'NOT_IN_CATALOG',message:`Código não encontrado no catálogo B3 local (versão ${version}). Confira o código ou atualize o catálogo. Nada foi gravado.`};
+}
+function assetQtyForTicker(ticker){
+  const code=normalizeMetadataTicker(ticker);
+  return (S.assets||[]).filter(a=>normalizeMetadataTicker(a?.ticker||'')===code).reduce((sum,a)=>sum+(Number(a.qty)||0),0);
+}
+function isLedgerPosition(asset){
+  return asset?.position_source==='LEDGER';
+}
+// Posição LEDGER sem cotação real valoriza-se pelo custo médio atual (não por um preço antigo); cotação real é preservada.
+function ledgerCurrentPrice(old,avg,ledgerPos){
+  const hadQuote=['FRESH','STALE','DELAYED'].includes(String(old?.quoteStatus||'').toUpperCase());
+  return ledgerPos && !hadQuote ? avg : (Number(old?.current_price)||avg);
+}
 function syncAssetsFromAportes(showMsg=false,persistState=true,coverageByTicker={}){
   if(typeof isLocalTestReadOnlyMode==='function' && isLocalTestReadOnlyMode()) return;
   if(isProtectedReadOnlyQaBoot()) return;
@@ -26230,7 +26267,8 @@ function syncAssetsFromAportes(showMsg=false,persistState=true,coverageByTicker=
     keep[ticker]={...asset};
     if(!hasCompleteCoverage(ticker)){
       markIncomplete(ticker,coverageByTicker?.[ticker]?.history?.openingPosition==='KNOWN'?'OPENING_POSITION_RECONSTRUCTION_UNSUPPORTED':'HISTORY_COVERAGE_UNPROVEN');
-      blockedTickers.add(ticker);
+      // Posição criada pelo lançamento (LEDGER) segue o próprio ledger; só posição legada congelada fica preservada.
+      if(!isLedgerPosition(asset)) blockedTickers.add(ticker);
     }
   });
   existingAssetsByTicker.forEach((assets,ticker)=>{
@@ -26244,7 +26282,10 @@ function syncAssetsFromAportes(showMsg=false,persistState=true,coverageByTicker=
     if(!ticker||isNeutralMovement(movement)) return;
     if(!hasCompleteCoverage(ticker)){
       markIncomplete(ticker,coverageByTicker?.[ticker]?.history?.openingPosition==='KNOWN'?'OPENING_POSITION_RECONSTRUCTION_UNSUPPORTED':'HISTORY_COVERAGE_UNPROVEN');
-      blockedTickers.add(ticker);
+      // Cobertura não comprovada não impede criar posição de ação/FII válida (catálogo B3 local); RF e legado seguem como antes.
+      const movementType=normalizeType(String(movement.type||movement.asset_type||'').trim()||'Ação','Ação');
+      const ledgerCreatable=movementType!=='Renda Fixa' && isKnownB3Code(ticker) && (existingAssetsByTicker.get(ticker)||[]).every(isLedgerPosition);
+      if(!ledgerCreatable) blockedTickers.add(ticker);
     }
     const type=String(movement.type||movement.asset_type||'').trim();
     const isRF=normalizeType(type||'Ação','Ação')==='Renda Fixa';
@@ -26367,7 +26408,7 @@ function syncAssetsFromAportes(showMsg=false,persistState=true,coverageByTicker=
       qty:isRF?Math.max(1, Number(g.qty)||1):g.qty,
       avg_price:isRF?(rfApplied||old.fixed_initial_value||old.avg_price||avg):(old.avg_manual?Number(old.avg_price)||avg:avg),
       avg_manual:isRF?true:!!old.avg_manual,
-      current_price:isRF?(rfLiquid||old.fixed_current_value||old.current_price||old.avg_price||avg):(Number(old.current_price)||avg),
+      current_price:isRF?(rfLiquid||old.fixed_current_value||old.current_price||old.avg_price||avg):ledgerCurrentPrice(old,avg,!isRF&&(isLedgerPosition(old)||(!existingAssetsByTicker.has(g.ticker)&&!hasCompleteCoverage(g.ticker)))),
       fixed_initial_value:isRF?(rfApplied||old.fixed_initial_value||oldApplied||0):old.fixed_initial_value,
       fixed_current_value:isRF?(rfLiquid||old.fixed_current_value||oldCurrent||0):old.fixed_current_value,
       fixed_gross_value:isRF?(rfGross||old.fixed_gross_value||0):old.fixed_gross_value,
@@ -26396,7 +26437,11 @@ function syncAssetsFromAportes(showMsg=false,persistState=true,coverageByTicker=
       quoteSource:isRF?(old.quoteSource||g.quoteSource||'manual'):old.quoteSource,
       quoteUpdatedAt:old.quoteUpdatedAt||g.quoteUpdatedAt||'',
       source:isRF?(g.source||old.source||'manual-rf'):old.source,
-      decision:isRF?(g.decision||old.decision||old.note||old.observation||''):old.decision
+      decision:isRF?(g.decision||old.decision||old.note||old.observation||''):old.decision,
+      // Posição LEDGER: quantidade e preço médio vêm do ledger; cobertura histórica fica marcada; sem cotação = Fonte indisponível.
+      ...(!isRF && (isLedgerPosition(old) || (!existingAssetsByTicker.has(g.ticker) && !hasCompleteCoverage(g.ticker)))
+        ? {position_source:'LEDGER',history_coverage:hasCompleteCoverage(g.ticker)?'COMPLETE':'UNPROVEN',quoteStatus:old.quoteStatus||'ERROR'}
+        : {})
     };
   }).sort((a,b)=>a.ticker.localeCompare(b.ticker));
   if(window.ProtectedRfReconstruction?.reconstructRfPosition){

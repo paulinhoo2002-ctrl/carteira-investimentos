@@ -93,8 +93,7 @@ it('compra sintética altera apenas sessão QA e não persiste dados financeiros
   const app = await openApp();
   try {
     const storageBefore = await app.page.evaluate(() => localStorage.getItem('civ5'));
-    // Ticker do catálogo com posição sintética pré-existente (SM184: compra sem posição é recusada).
-    await app.page.evaluate(() => { S.assets = [...S.assets, { id: 'V317_KNOWN_BBAS3', ticker: 'BBAS3', type: 'Ação', qty: 2, avg_price: 10.25, current_price: 10.25 }]; render(); });
+    // Ticker do catálogo B3 local: a compra cria a posição pelo ledger (SM185), sem depender de Yahoo.
     await fillPurchase(app.page, 'BBAS3');
     await app.page.evaluate(() => {
       window.__v317SaveCalls = 0;
@@ -136,7 +135,6 @@ it('falha de persistência reverte compra e mantém revisão visível', async ()
   const app = await openApp();
   try {
     const before = await app.page.evaluate(() => S.aportes.length);
-    await app.page.evaluate(() => { S.assets = [...S.assets, { id: 'V317_KNOWN_BBAS3_FAIL', ticker: 'BBAS3', type: 'Ação', qty: 2, avg_price: 10.25, current_price: 10.25 }]; render(); });
     await fillPurchase(app.page, 'BBAS3');
     await app.page.evaluate(() => { save = () => false; });
     await app.page.locator('.quick-movement-modal button.btn.bsv').click();
@@ -340,7 +338,7 @@ it('formulário clássico registra venda pendente e bloqueia repetição do ativ
   } finally { await closeApp(app); }
 });
 
-it('compra sem posição comprovada é recusada e não grava lançamento nem posição (SM184)', async () => {
+it('compra de catálogo sem cobertura cria posição LEDGER sem gravar fantasma (SM185)', async () => {
   const app = await openApp();
   const ticker = 'BBAS3';
   try {
@@ -355,10 +353,15 @@ it('compra sem posição comprovada é recusada e não grava lançamento nem pos
     const portfolioBefore = await app.page.evaluate(() => cx().tC);
     await fillPurchase(app.page, ticker);
     await app.page.locator('.quick-movement-modal button.btn.bsv').click();
-    await app.page.waitForFunction(() => /Nada foi gravado/.test(document.querySelector('.quick-movement-modal')?.innerText || ''));
-    assert.equal(await app.page.evaluate(() => S.aportes.length), 0, 'compra sem posição comprovada não grava lançamento');
-    assert.equal(await app.page.evaluate(() => S.assets.length), 0, 'nenhuma posição é criada');
-    assert.equal(await app.page.evaluate(() => cx().tC), portfolioBefore, 'o dashboard não incorpora a compra recusada');
+    await app.page.waitForFunction(() => S.assets.some(item => item.ticker === 'BBAS3'));
+    assert.equal(await app.page.evaluate(() => S.aportes.filter(item => item.ticker === 'BBAS3').length), 1, 'um único lançamento');
+    const posicao = await app.page.evaluate(() => S.assets.find(item => item.ticker === 'BBAS3'));
+    assert.equal(posicao.position_source, 'LEDGER');
+    assert.equal(Number(posicao.qty), 2, 'quantidade do formulário padrão');
+    assert.equal(Number(posicao.avg_price), 10.25, 'preço informado preservado como custo médio');
+    // Sem cotação, a posição é valorizada a custo e marcada como Fonte indisponível (não aparece como ganho).
+    assert.equal(posicao.quoteStatus, 'ERROR');
+    assert.equal(await app.page.evaluate(() => cx().tC) - portfolioBefore, Number(posicao.qty) * Number(posicao.avg_price), 'patrimônio a custo, sem resultado inventado');
     assertNoOutboundWrites(app.outboundRequests);
   } finally { await closeApp(app); }
 });

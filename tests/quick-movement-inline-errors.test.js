@@ -227,12 +227,14 @@ function saveContext({ draft = makeDraft(), builder = null, save = () => true, o
     save,
     learnTickerMeta: () => {},
     META: { PETR4: ['Ação', 'Petróleo'] },
+    // Catálogo B3 local de teste (SM185): só PETR4 existe; a validação não depende de rede.
+    B3Catalog: { version: 'sandbox', has: code => code === 'PETR4' },
     // Sincronização de sucesso: a posição do ativo passa a existir (a cobertura real é coberta em outros testes).
     syncAssetsFromAportes: () => { context.S.assets = [{ id: 'stk-petr4', ticker: 'PETR4', type: 'Ação', qty: 1 }]; },
     fetchQuotes: () => {},
     scheduleAutoProventosGratis: () => {},
     markProventosDirty: () => {},
-    quickMovementBuildAporteFromFields: builder || (() => ({ reg: { id: 'r1', ticker: 'PETR4', operation: 'compra', movementKind: 'compra', type: 'Ação', sector: 'Petróleo' } })),
+    quickMovementBuildAporteFromFields: builder || (() => ({ reg: { id: 'r1', ticker: 'PETR4', qty: 1, operation: 'compra', movementKind: 'compra', type: 'Ação', sector: 'Petróleo' } })),
     quickMovementSuccessText: () => 'Movimentação salva.',
     document: {
       getElementById: (id) => ({ value: '', focus: () => focuses.push(id) }),
@@ -243,6 +245,10 @@ function saveContext({ draft = makeDraft(), builder = null, save = () => true, o
   const persistenceHelpers = [
     extractFunctionSource('cleanAssetCode', '\nfunction '),
     extractFunctionSource('normalizeMetadataTicker', '\nfunction '),
+    extractFunctionSource('isKnownB3Code', '\nfunction '),
+    extractFunctionSource('marketTickerValidation', '\nfunction '),
+    extractFunctionSource('assetQtyForTicker', '\nfunction '),
+    extractFunctionSource('isLedgerPosition', '\nfunction '),
     extractFunctionSource('snapshotFinancialImportState', 'function restoreFinancialImportState'),
     extractFunctionSource('restoreFinancialImportState', 'function persistFinancialImportState'),
     extractFunctionSource('persistFinancialImportState', 'function save'),

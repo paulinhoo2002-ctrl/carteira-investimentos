@@ -55,10 +55,6 @@ it('Lançamentos premium - compra, venda, edição e exclusão com dados sintét
     assert.ok(await page.locator('.aporte-premium').count(), 'tela de Lançamentos renderizada');
     assert.equal(await page.locator('.aporte-primary-toolbar .btn.bp').count(), 1, 'uma única ação primária de cadastro');
 
-    // Posição sintética pré-existente: a compra só é aceita quando já existe posição do ativo (SM184, contenção A).
-    // A cobertura histórica do provedor não é simulada aqui; ver teste "sem cobertura histórica".
-    await page.evaluate(symbol => { S.assets = [...S.assets, { id: 'V16_KNOWN_POSITION', ticker: symbol, type: 'Ação', qty: 4, avg_price: 10.5, current_price: 10.5 }]; render(); }, ticker);
-
     // COMPRA pela interface
     await page.locator('.aporte-primary-toolbar .btn.bp').click();
     await page.locator('.quick-movement-modal').waitFor({ state: 'visible' });
@@ -112,7 +108,7 @@ it('Lançamentos premium - compra, venda, edição e exclusão com dados sintét
   }
 });
 
-it('Lançamentos premium - ticker sem cobertura histórica é recusado sem lançamento órfão (SM184)', async () => {
+it('Lançamentos premium - compra de ticker do catálogo sem Yahoo cria posição LEDGER (SM185)', async () => {
   const app = await openApp();
   const { page } = app;
   try {
@@ -124,9 +120,15 @@ it('Lançamentos premium - ticker sem cobertura histórica é recusado sem lanç
     await page.locator('#qm-qty').fill('4');
     await page.locator('#qm-price').fill('10,50');
     await page.locator('.quick-movement-modal button.btn.bsv').click();
-    await page.waitForFunction(() => /Nada foi gravado/.test(document.querySelector('.quick-movement-modal')?.innerText || ''));
-    assert.deepEqual(await page.evaluate(() => ({ aportes: S.aportes.length, assets: S.assets.length })), antes, 'compra recusada não grava lançamento nem posição');
-    assert.equal(await page.evaluate(() => S.aportes.some(item => item.ticker === 'BBAS3')), false, 'sem lançamento órfão');
+    await page.waitForFunction(() => S.assets.some(item => item.ticker === 'BBAS3'));
+    const posicao = await page.evaluate(() => S.assets.find(item => item.ticker === 'BBAS3'));
+    assert.equal(posicao.position_source, 'LEDGER', 'posição criada pelo ledger');
+    assert.equal(Number(posicao.qty), 4);
+    assert.equal(Number(posicao.avg_price), 10.5);
+    assert.equal(posicao.history_coverage, 'UNPROVEN', 'cobertura histórica explícita');
+    assert.equal(posicao.quoteStatus, 'ERROR', 'sem cotação = fonte indisponível');
+    assert.equal(await page.evaluate(() => S.aportes.filter(item => item.ticker === 'BBAS3').length), 1, 'um único lançamento');
+    assert.ok(antes.aportes >= 0);
     assert.deepEqual(app.problems, [], 'sem erros de página');
   } finally {
     await closeApp(app);
@@ -145,7 +147,8 @@ it('Lançamentos premium - ticker inexistente (formato válido) é bloqueado ant
     await page.locator('#qm-qty').fill('4');
     await page.locator('#qm-price').fill('10,50');
     await page.locator('.quick-movement-modal button.btn.bsv').click();
-    await page.waitForFunction(() => /Ativo não reconhecido/.test(document.querySelector('.quick-movement-modal')?.innerText || ''));
+    // Formato válido porém fora do catálogo B3 local: mensagem de catálogo, não de formato (SM185).
+    await page.waitForFunction(() => /Código não encontrado no catálogo B3 local/.test(document.querySelector('.quick-movement-modal')?.innerText || ''));
     assert.equal(await page.evaluate(() => S.aportes.length), antes, 'ticker inexistente não gera lançamento');
     assert.equal(await page.evaluate(() => S.assets.some(item => item.ticker === 'ZZNX3')), false, 'sem posição fantasma');
   } finally {
