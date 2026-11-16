@@ -2,7 +2,8 @@
   'use strict';
 
   const APP_BUILD_ID = 'phase4i-runtime-v2';
-  const SW_CACHE = 'carteira-investimentos-v250.3';
+  // SM172: deve ser igual ao CACHE_NAME do sw.js (CACHE_PREFIX + SW_VERSION). Coberto por tests/sm172-version-handshake.test.js.
+  const SW_CACHE = 'carteira-investimentos-v252.0';
   const STATUS_ID = 'v250-runtime-status';
   const WRITE_HANDLER_PATTERN = /(?:^|[.(])(?:save|saveConfig|uploadLocalToCloud|confirmBackupImport|applyBackupData|add[A-Z]|delete[A-Z]|remove[A-Z]|sync[A-Z])/;
   const WRITE_TEXT_PATTERN = /\b(?:salvar|registrar|comprar|vender|excluir|remover|aplicar|confirmar restauração|sincronizar)\b/i;
@@ -84,7 +85,7 @@
     const response = await new Promise(resolve => {
       const timer = setTimeout(() => resolve(null), 800);
       channel.port1.onmessage = event => { clearTimeout(timer); resolve(event.data || null); };
-      worker.postMessage({ type: 'GET_V250_VERSION' }, [channel.port2]);
+      worker.postMessage({ type: 'GET_SW_VERSION' }, [channel.port2]);
     });
     const pass = response?.cacheName === SW_CACHE;
     document.documentElement.dataset.v250VersionSkew = String(!pass);

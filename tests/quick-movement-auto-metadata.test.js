@@ -116,3 +116,12 @@ test('fluxos usam o resolvedor sem alterar contratos de compra, venda e provento
   assert.match(indexHtml.slice(saveStart, indexHtml.indexOf('function isRendaFixaAsset', saveStart)), /S\.proventos\.unshift\(reg\)/);
   assert.match(indexHtml.slice(saveStart, indexHtml.indexOf('function isRendaFixaAsset', saveStart)), /S\.aportes\.unshift\(reg\)/);
 });
+
+test('SM187: classe nunca é inferida pelo sufixo (BPAC11 unit e AAPL34 BDR ficam sem tipo)', () => {
+  const context = makeContext();
+  // Sem catálogo a origem é 'unknown' (padrão de exibição), nunca 'inference'.
+  assert.equal(context.resolve('BPAC11').source, 'unknown', 'unit de banco não é inferida como FII pelo sufixo 11');
+  assert.equal(context.resolve('AAPL34').source, 'unknown', 'BDR com sufixo 34 não é inferida como Ação');
+  assert.notEqual(context.resolve('BPAC11').type, 'FII', 'nunca FII por sufixo');
+  assert.equal(context.resolve('MXRF11').type, 'FII', 'FII conhecido continua pelo catálogo');
+});

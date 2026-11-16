@@ -1,6 +1,98 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<!-- SM110: preload dos scripts síncronos (ordem de execução inalterada) -->
+<link rel="preload" as="script" href="readonly-report-page-contract.js">
+<link rel="preload" as="script" href="portfolio-movement-contract.js">
+<link rel="preload" as="script" href="portfolio-movement-preview.js">
+<link rel="preload" as="script" href="cloud-sync-state.js">
+<link rel="preload" as="script" href="v250-offline-session.js">
+<link rel="preload" as="script" href="v250-runtime.js">
+<link rel="preload" as="script" href="ir2026/ui/readiness.js">
+<link rel="preload" as="script" href="b3-catalog.js">
+<link rel="preload" as="script" href="finance-core.js">
+<link rel="preload" as="script" href="persistence-core.js">
+<link rel="preload" as="script" href="position-reconciliation.js">
+<link rel="preload" as="script" href="backup-portability.js">
+<link rel="preload" as="script" href="protected-local-cloud-authority.js?v=phase4i-authority-2">
+<link rel="preload" as="script" href="analytics-monte-carlo-input.js">
+<link rel="preload" as="script" href="analytics-passive-income-projection.js">
+<link rel="preload" as="script" href="analytics-dividend-evolution.js">
+<link rel="preload" as="script" href="analytics-asset-class-comparison.js">
+<link rel="preload" as="script" href="analytics-wealth-goals.js">
+<link rel="preload" as="script" href="analytics-financial-insights.js">
+<link rel="preload" as="script" href="analytics-code-splitter.js">
+<link rel="preload" as="script" href="analytics-memory-profiler.js">
+<link rel="preload" as="script" href="analytics-bundle-analyzer.js">
+<link rel="preload" as="script" href="rf-reconstruction.js">
+<link rel="preload" as="script" href="income-linkage-reconciliation.js">
+<link rel="preload" as="script" href="corporate-events-core.js">
+<link rel="preload" as="script" href="corporate-events-providers.js">
+<link rel="preload" as="script" href="corporate-events-sync.js">
+<link rel="preload" as="script" href="corporate-events-parity.js">
+<link rel="preload" as="script" href="corporate-events-shadow.js">
+<link rel="preload" as="script" href="corporate-events-center.js">
+<link rel="preload" as="script" href="market-data-providers.js">
+<link rel="preload" as="script" href="market-data-2.js">
+<link rel="preload" as="script" href="portfolio-intelligence.js">
+<link rel="preload" as="script" href="portfolio-allocation-intelligence.js?v=v329-1">
+<link rel="preload" as="script" href="portfolio-performance.js">
+<link rel="preload" as="script" href="portfolio-cash-flow-classifier.js">
+<link rel="preload" as="script" href="portfolio-history-sufficiency.js">
+<link rel="preload" as="script" href="historical-performance-engine.js">
+<link rel="preload" as="script" href="performance-intelligence.js">
+<link rel="preload" as="script" href="dividend-intelligence.js">
+<link rel="preload" as="script" href="tax-cost-basis-intelligence.js">
+<link rel="preload" as="script" href="data-quality-remediation.js">
+<link rel="preload" as="script" href="portfolio-monitoring.js?v=v258-1">
+<link rel="preload" as="script" href="asset-detail-intelligence.js">
+<link rel="preload" as="script" href="portfolio-report-readiness.js">
+<link rel="preload" as="script" href="portfolio-report-model.js">
+<link rel="preload" as="script" href="executive-reporting.js">
+<link rel="preload" as="script" href="portfolio-event-timeline.js?v=v228-1">
+<link rel="preload" as="script" href="portfolio-data-trust.js?v=v329-1">
+<link rel="preload" as="script" href="portfolio-runtime-stores.js">
+<link rel="preload" as="script" href="fixed-income-benchmark-provider.js">
+<link rel="preload" as="script" href="official-events-provider.js">
+<link rel="preload" as="script" href="issuer-mapping.js">
+<link rel="preload" as="script" href="official-document-parser.js">
+<link rel="preload" as="script" href="official-document-fetcher.js">
+<link rel="preload" as="script" href="official-document-pipeline.js">
+<link rel="preload" as="script" href="public-events-store.js">
+<link rel="preload" as="script" href="public-events-runtime.js">
+<link rel="preload" as="script" href="auth/account-mode.js">
+<link rel="preload" as="script" href="auth/data-source.js">
+<link rel="preload" as="script" href="auth/boot.js">
+<link rel="preload" as="script" href="auth/boot-ui.js">
+<link rel="preload" as="script" href="canonical-fingerprint-engine.js?v=phase4h-canonical-fp-v1">
+<link rel="preload" as="script" href="report-asset-row.js">
+<link rel="preload" as="script" href="legacy/reports-readonly-source.js">
+<link rel="preload" as="script" href="import-foundation.js">
+<link rel="preload" as="script" href="import-center-core.js">
+<link rel="preload" as="script" href="import-center-workflow.js">
+<link rel="preload" as="script" href="historical-import-preview.js">
+<link rel="preload" as="script" href="historical-reconstruction.js">
+<link rel="preload" as="script" href="brokerage-professional.js">
+<link rel="preload" as="script" href="historical-reconstruction-hardening.js">
+<link rel="preload" as="script" href="v210-income-quality.js">
+<link rel="preload" as="script" href="v213-transaction-trust.js">
+<link rel="preload" as="script" href="fixed-income-valuation.js">
+<link rel="preload" as="script" href="fixed-income-economic-result.js">
+<link rel="preload" as="script" href="fixed-income-economic-result-adapter.js">
+<link rel="preload" as="script" href="financial-evidence-provenance.js">
+<link rel="preload" as="script" href="historical-coverage-engine.js">
+<link rel="preload" as="script" href="fixed-income-economic-evidence-provider.js">
+<link rel="preload" as="script" href="financial-truth-reconciliation.js">
+<link rel="preload" as="script" href="fixed-income-display.js">
+<link rel="preload" as="script" href="fixed-income-trust.js">
+<link rel="preload" as="script" href="import-center-context.js">
+<link rel="preload" as="script" href="import-center-preview-renderer.js">
+<link rel="preload" as="script" href="import-center-file-list-renderer.js">
+<link rel="preload" as="script" href="import-center-source-list-renderer.js">
+<link rel="preload" as="script" href="import-center-view.js">
+<link rel="preload" as="script" href="import-center-events.js">
+<link rel="preload" as="script" href="import-center-bootstrap.js">
+<link rel="preload" as="script" href="v283-rentability-adapter.js">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' http://127.0.0.1:* ws://127.0.0.1:* https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://brapi.dev https://fonts.googleapis.com https://fonts.gstatic.com; frame-src 'self' https://carteira-de-investimento-16725.firebaseapp.com https://accounts.google.com; base-uri 'self'; form-action 'self'">
@@ -11,8 +103,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://apis.google.com" crossorigin>
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=arrow_back,arrow_forward,home,settings,person,attach_money,trending_up,trending_down,account_balance,analytics,receipt,credit_card,savings,pie_chart,bar_chart,show_chart,assessment,flag,warning,error,check_circle,cancel,help,info,menu,close,search,filter_list,sort,download,upload,cloud,cloud_off,sync,refresh,autorenew,lock,lock_open,visibility,visibility_off,edit,delete,add,remove,create,star,star_border,favorite,favorite_border,thumb_up,thumb_down,share,link,copy,print,mail,chat,phone,call,video_call,videocam,photo_camera,image,music_note,video_library,movie,live_tv,ondemand_video,playlist_play,queue_music,radio,mic,mic_off,volume_up,volume_down,volume_off,volume_mute,playlist_add,queue,skip_next,skip_previous,repeat,shuffle,loop,fast_forward,fast_rewind,play_circle,pause_circle,stop,replay,replay_10,replay_30,forward_10,forward_30&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=arrow_back,arrow_forward,home,settings,person,attach_money,trending_up,trending_down,account_balance,analytics,receipt,credit_card,savings,pie_chart,bar_chart,show_chart,assessment,flag,warning,error,check_circle,cancel,help,info,menu,close,search,filter_list,sort,download,upload,cloud,cloud_off,sync,refresh,autorenew,lock,lock_open,visibility,visibility_off,edit,delete,add,remove,create,star,star_border,favorite,favorite_border,thumb_up,thumb_down,share,link,copy,print,mail,chat,phone,call,video_call,videocam,photo_camera,image,music_note,video_library,movie,live_tv,ondemand_video,playlist_play,queue_music,radio,mic,mic_off,volume_up,volume_down,volume_off,volume_mute,playlist_add,queue,skip_next,skip_previous,repeat,shuffle,loop,fast_forward,fast_rewind,play_circle,pause_circle,stop,replay,replay_10,replay_30,forward_10,forward_30&display=swap" media="print" onload="this.media='all'">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
@@ -53,7 +145,7 @@ window.go = function(t) {
   window.__AUTHORITATIVE_LOCAL_RECOVERY_BOOT__=authoritativeLocalRecovery;
   window.__APP_BUILD_ID__='phase4i-runtime-v2';
   window.__EXPECTED_AUTHORITY_RUNTIME_VERSION__='local-cloud-authority-v2';
-  window.__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v250.3';
+  window.__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v252.0';
   window.__AUTHORITATIVE_LOCAL_STATUS_BRIDGE__='http://127.0.0.1:9245/status';
   if(testMode || emulatorRequested){
     document.documentElement.dataset.theme='light';
@@ -1720,6 +1812,14 @@ html[data-theme="light"] .rf-movement-summary-title{color:#1d4ed8}
 .perf-pct{font-size:14px;font-weight:900;white-space:nowrap}
 .perf-amt{font-size:11px;color:var(--muted);margin-top:2px;text-align:right}
 .perf-empty{font-size:12px;color:var(--muted);padding:18px 0;text-align:center}
+/* SM193: textos de cotação e valores quebram dentro da coluna, sem invadir o cartão vizinho. */
+.asset-inner-panel .perf-val{white-space:normal;overflow-wrap:anywhere;line-height:1.35}
+/* SM193.2: nome do ativo quebra em até 2 linhas antes de cortar; nome completo fica em title. */
+.asset-inner-panel .perf-card.hi .perf-row,.asset-inner-panel .perf-card.lo .perf-row{grid-template-columns:minmax(0,1fr)}
+.asset-inner-panel .perf-card.hi .perf-row>div:last-child,.asset-inner-panel .perf-card.lo .perf-row>div:last-child{text-align:left}
+.asset-inner-panel .perf-top{flex-wrap:wrap}
+.asset-inner-panel .perf-ticker{flex:1 1 7em;min-width:7em;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;line-height:1.25}
+@media(max-width:900px){.asset-inner-panel .perf-grid{grid-template-columns:minmax(0,1fr)} .asset-inner-panel .perf-row{grid-template-columns:minmax(0,1fr)} .asset-inner-panel .perf-row>div:last-child{text-align:left}}
 .perf-card.hi .perf-pct{color:#34d399}
 .perf-card.lo .perf-pct{color:#f87171}
 .perf-card.hi .perf-fill{background:linear-gradient(90deg,#34d399,#86efac)}
@@ -7891,7 +7991,7 @@ html[data-theme="light"] .acc-metric-goal-gap.below{color:#1d4ed8}
   .assets-premium-shell>.sh>div:last-child .btn{min-width:0;min-height:44px;padding:7px 5px!important;font-size:10px!important}
   .assets-premium-shell .ag-wrap{display:flex;flex-direction:column;gap:7px}
   .assets-premium-shell .asset-inner-tabs{margin:2px 0 7px}
-  .assets-premium-shell details.ag>summary.accordion-header{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) 44px;grid-template-rows:auto auto auto;gap:7px 8px;padding:9px 10px}
+  .assets-premium-shell details.ag>summary.accordion-header{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto auto;gap:7px 8px;padding:9px 10px;position:relative}
   .assets-premium-shell details.ag>summary.accordion-header>.acc-info{grid-column:1/3;grid-row:1;min-width:0}
   .assets-premium-shell details.ag>summary.accordion-header>div:nth-child(2){display:none}
   .assets-premium-shell details.ag>summary.accordion-header>div:nth-child(3){grid-column:1;grid-row:2}
@@ -7902,6 +8002,13 @@ html[data-theme="light"] .acc-metric-goal-gap.below{color:#1d4ed8}
   .assets-premium-shell details.ag>summary.accordion-header .acc-metric-label{font-size:11px;line-height:1.2;letter-spacing:normal;text-transform:none}
   .assets-premium-shell details.ag>summary.accordion-header .acc-metric-value{font-size:13px;line-height:1.25;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
   .assets-premium-shell .ag-body{padding:0 10px 10px}
+  /* SM193.2: a regra ≤1100px de #ativosAccordion .accordion-header define 2 trilhas e cria colunas implícitas (28px/122px). */
+  /* SM193.2: a regra ≤1100px de #ativosAccordion .accordion-header cria trilhas implícitas; aqui a grade de métricas usa 2 trilhas iguais
+     e o botão de expandir sai do fluxo (canto superior direito), para que "R$ 32.904,00" caiba sem invadir a coluna vizinha. */
+  html body #ativosAccordion details.ag>summary.accordion-header{grid-template-columns:minmax(0,1fr) minmax(0,1fr);position:relative}
+  html body #ativosAccordion details.ag>summary.accordion-header>.acc-info{grid-column:1/-1;padding-right:48px}
+  html body #ativosAccordion details.ag>summary.accordion-header>.acc-toggle{position:absolute;top:9px;right:10px;grid-column:auto;grid-row:auto;margin:0}
+  html body #ativosAccordion details.ag>summary.accordion-header .acc-metric-value{overflow-wrap:normal;word-break:normal}
   /* New filter bar responsive */
   .assets-premium-filters-bar{gap:8px}
   .assets-filter-group{flex:1 1 calc(50% - 4px);min-width:0}
@@ -8952,12 +9059,70 @@ summary:focus-visible,
 <input type="file" id="nota-file" accept=".xlsx,.xls,.csv" style="display:none">
 <input type="file" id="broker-note-pdf-file" accept=".pdf,application/pdf" style="display:none">
 <script>
-(()=>{if(window.__LOCAL_TEST_MODE__) return;
-document.write([
-  '<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"><\/script>',
-  '<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"><\/script>',
-  '<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"><\/script>'
-].join(''));})();
+/* SM95: Firebase carregado sem bloquear o parser (document.write travava a abertura com rede lenta/travada).
+   Espera limitada: após 8 s segue sem Firebase, e initFirebase trata a ausência como antes. */
+/* SM156 (R1/R2): o SDK completo é a única condição de inicialização. Se ele chega depois do timeout, initFirebase roda
+   de novo (idempotente, por FB.bootstrapped). Falhas são retentadas com limite (3 por ciclo, 2 ciclos por evento online). */
+window.__FIREBASE_SDK_STATE__='loading';
+window.__FIREBASE_READY__=new Promise(resolve=>{
+  if(window.__LOCAL_TEST_MODE__){ resolve(false); return; }
+  const urls=[
+    'https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js',
+    'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js',
+    'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js'
+  ];
+  const MAX_ATTEMPTS=3, MAX_RESTARTS=2;
+  let attempt=0, restarts=0, bootSettled=false;
+  const settle=value=>{ if(!bootSettled){ bootSettled=true; resolve(value); } };
+  const sdkComplete=()=>!!window.firebase && typeof firebase.auth==='function' && typeof firebase.firestore==='function';
+  // SM167: o contrato de prontidão é "SDK completo". No timeout, sinaliza o estado real (parcial = false), não sucesso.
+  const timer=setTimeout(()=>{ settle(sdkComplete()); },8000);
+  const complete=()=>{
+    window.__FIREBASE_SDK_STATE__='complete';
+    clearTimeout(timer);
+    const late=bootSettled;
+    settle(true);
+    if(late && !FB.bootstrapped){ try{ initFirebase(); render(); }catch(e){ console.error('firebase tardio:',e); } }
+  };
+  const giveUp=()=>{
+    window.__FIREBASE_SDK_STATE__='failed';
+    clearTimeout(timer);
+    const late=bootSettled;
+    settle(false);
+    if(late && !FB.bootstrapped){ try{ initFirebase(); render(); }catch(e){ console.error('firebase falhou:',e); } }
+    if(restarts<MAX_RESTARTS){
+      restarts++;
+      window.addEventListener('online',()=>{ attempt=0; window.__FIREBASE_SDK_STATE__='loading'; loadFrom(0); },{once:true});
+    }
+  };
+  const retry=from=>{
+    if(attempt>=MAX_ATTEMPTS){ giveUp(); return; }
+    if(navigator.onLine===false){ window.addEventListener('online',()=>loadFrom(from),{once:true}); return; }
+    setTimeout(()=>loadFrom(from),1500*attempt);
+  };
+  // Recarrega a partir do primeiro SDK que falhou: os anteriores já executaram em ordem e seus globais permanecem.
+  const loadFrom=from=>{
+    attempt++;
+    let remaining=urls.length-from, firstFailed=-1;
+    const done=()=>{
+      if(--remaining>0) return;
+      if(firstFailed>=0) retry(firstFailed);
+      else if(sdkComplete()) complete();
+      else retry(0);
+    };
+    urls.slice(from).forEach((src,k)=>{
+      const index=from+k;
+      const s=document.createElement('script');
+      s.src=src; s.async=false;
+      s.onload=done;
+      // SM167: a primeira falha libera o boot como antes (estado negado imediato); as retentativas seguem em segundo
+      // plano e, ao completar, initFirebase roda de novo pelo caminho tardio (idempotente).
+      s.onerror=()=>{ if(firstFailed<0 || index<firstFailed) firstFailed=index; settle(false); done(); };
+      document.head.appendChild(s);
+    });
+  };
+  loadFrom(0);
+});
 </script>
 <script>
 // M1022-M1025: xlsx (269KB na rede, 26% da carga fria) carregado SOB DEMANDA — usado
@@ -8972,8 +9137,10 @@ window.ensureXLSX=()=>{ if(window.__XLSX_PROMISE__) return window.__XLSX_PROMISE
     document.head.appendChild(s); });
   return window.__XLSX_PROMISE__; };
 </script>
+<script src="b3-catalog.js"></script>
 <script src="finance-core.js"></script>
 <script src="persistence-core.js"></script>
+<script src="position-reconciliation.js"></script>
 <script src="backup-portability.js"></script>
 <script src="protected-local-cloud-authority.js?v=phase4i-authority-2"></script>
 <script src="analytics-monte-carlo-input.js"></script>
@@ -9089,7 +9256,9 @@ function isV250OfflineCachedSession(){
   const hasSnapshot=isProtectedReadOnlyQaBoot()
     ? Boolean(FB.readOnlyOfflineSnapshotReady && marker?.scope===FB.readOnlyOfflineSnapshotScope && marker?.snapshotSignature===FB.readOnlyOfflineSnapshotSignature)
     : window.V250OfflineSession?.snapshotHasData?.(localStorage,STOR)===true;
-  const eligible=window.V250OfflineSession?.eligible?.({online:navigator.onLine,marker,hasSnapshot})===true;
+  // SM173: a autorização offline vale só para a identidade que a gravou e para o civ5 dela (sem efeito colateral aqui).
+  const sameIdentity=isProtectedReadOnlyQaBoot() || (Boolean(CIV5_V250_SCOPE) && marker?.scope===CIV5_V250_SCOPE && civ5GateReadOnly()==='ok');
+  const eligible=sameIdentity && window.V250OfflineSession?.eligible?.({online:navigator.onLine,marker,hasSnapshot})===true;
   document.documentElement.dataset.v250OfflineCachedSession=String(eligible);
   return eligible;
 }
@@ -10104,6 +10273,16 @@ function save(){
     if(typeof isProtectedReadOnlyQaBoot==='function' && isProtectedReadOnlyQaBoot() && !protectedLocalRecoveryWrite) return false;
     if(typeof isAuthoritativeLocalRecoveryBoot==='function' && isAuthoritativeLocalRecoveryBoot() && !protectedLocalRecoveryWrite) return false;
     if(!protectedLocalRecoveryWrite && !canEditFromThisTab('salvar')) return false;
+    // SM173: nunca gravar o civ5 de outra identidade (ou antes de a identidade ser confirmada). Nada é apagado.
+    if(!isLocalTestMode()){
+      const civ5SaveGate=civ5Gate();
+      if(civ5SaveGate!=='ok'){
+        civ5QaTrace('save_blocked',civ5SaveGate);
+        toast('Dados locais não confirmados para esta conta: gravação bloqueada. Nada foi apagado.','#fbbf24');
+        return false;
+      }
+      civ5QaTrace('save_allowed',civ5SaveGate);
+    }
     if(S._rmpTrace) console.log('[rmP] save() chamado');
     syncWalletFromState();
     if(protectedLocalRecoveryWrite && !window.ProtectedLocalCloudAuthority) throw new Error('PROTECTED_AUTHORITY_RUNTIME_REQUIRED');
@@ -10518,6 +10697,98 @@ function syncHideValuesPreference(){
     else localStorage.setItem(HIDE_VALUES_STOR,String(!!S.hideValues));
   }catch(e){}
 }
+// SM173-BEGIN — isolamento do civ5 por identidade (fase 1, dono único). Não apaga dados. Bloqueia envio, gravação e uso
+// offline quando o civ5 não pertence à identidade autenticada. Chaves: civ5_owner, civ5_legacy_backup, civ5_pending_owner.
+const CIV5_OWNER_KEY='civ5_owner';
+const CIV5_BACKUP_KEY='civ5_legacy_backup';
+const CIV5_PENDING_KEY='civ5_pending_owner';
+let CIV5_SCOPE=null;       // escopo (ambiente Firebase + UID) da sessão atual; null até confirmar
+let CIV5_V250_SCOPE=null;  // escopo do marcador offline da sessão atual
+const CIV5_QA_TRACE=[];
+let CIV5_QA_SEQUENCE=0;
+function civ5QaDiagnosticsEnabled(){
+  if(typeof window==='undefined' || !window?.location) return false;
+  const hostname=String(window.location.hostname||'');
+  return hostname==='carteira-homolog-c5785e6.vercel.app' || (hostname.startsWith('carteira-homolog-c5785e6-') && hostname.endsWith('.vercel.app'));
+}
+function civ5QaTrace(event,gateCode=''){
+  if(!civ5QaDiagnosticsEnabled()) return;
+  let storageAvailable=true;
+  try{ localStorage.getItem(CIV5_OWNER_KEY); }catch(e){ storageAvailable=false; }
+  const entry={
+    sequence:++CIV5_QA_SEQUENCE,
+    event:String(event),
+    authResolved:FB.authResolved===true,
+    identityBound:Boolean(CIV5_SCOPE),
+    localHydrated:FB.localPortfolioLoaded===true,
+    cloudHydrated:FB.cloudLoaded===true,
+    storageAvailable,
+    gateCode:String(gateCode||'')
+  };
+  CIV5_QA_TRACE.push(entry);
+  if(CIV5_QA_TRACE.length>50) CIV5_QA_TRACE.shift();
+  if(typeof window.__CIV5_QA_DIAGNOSTIC__!=='function'){
+    window.__CIV5_QA_DIAGNOSTIC__=()=>CIV5_QA_TRACE.map(item=>({...item}));
+  }
+  try{ console.info('[CIV5 QA]',entry); }catch(e){}
+}
+async function civ5ScopeFor(projectId,uid){
+  const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(`carteira-investimentos:civ5:${projectId}:${uid}`));
+  return [...new Uint8Array(d)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function civ5LegacyBind(){
+  // Legado = civ5 com dados e sem escopo. Só o dono; cópia de segurança verificada ANTES de associar; nada é removido.
+  if(!isAccessAdmin(FB.user)) return 'LEGACY_NOT_OWNER';
+  try{
+    const raw=localStorage.getItem(STOR);
+    const bk=localStorage.getItem(CIV5_BACKUP_KEY);
+    if(bk!==null && bk!==raw) return 'LEGACY_BACKUP_CONFLICT';
+    if(bk===null && raw!==null){
+      localStorage.setItem(CIV5_BACKUP_KEY,raw);
+      if(localStorage.getItem(CIV5_BACKUP_KEY)!==raw) return 'LEGACY_BACKUP_VERIFY_FAILED';
+    }
+    localStorage.setItem(CIV5_OWNER_KEY,CIV5_SCOPE);
+    return 'ok';
+  }catch(e){ return 'LEGACY_BACKUP_FAILED'; }
+}
+function civ5Gate(){
+  // 'ok' somente quando o civ5 pertence à identidade atual. Pode migrar legado do dono (com backup). Nunca apaga.
+  if(!CIV5_SCOPE) return 'IDENTITY_UNCONFIRMED';
+  let owner=null, raw=null;
+  try{ owner=localStorage.getItem(CIV5_OWNER_KEY); raw=localStorage.getItem(STOR); }catch(e){ return 'STORAGE_UNAVAILABLE'; }
+  if(owner===CIV5_SCOPE) return 'ok';
+  if(owner!==null) return 'FOREIGN_SCOPE';
+  if(raw===null){
+    try{ localStorage.setItem(CIV5_OWNER_KEY,CIV5_SCOPE); return 'ok'; }catch(e){ return 'STORAGE_UNAVAILABLE'; }
+  }
+  return civ5LegacyBind();
+}
+function civ5GateReadOnly(){
+  // Leitura sem efeito colateral (usada em checagens offline).
+  if(!CIV5_SCOPE) return 'IDENTITY_UNCONFIRMED';
+  try{ return localStorage.getItem(CIV5_OWNER_KEY)===CIV5_SCOPE ? 'ok' : 'NOT_BOUND'; }catch(e){ return 'STORAGE_UNAVAILABLE'; }
+}
+async function civ5BindIdentity(user){
+  CIV5_SCOPE=null; CIV5_V250_SCOPE=null;
+  civ5QaTrace('identity_bind_start',user?'AUTH_PRESENT':'AUTH_ABSENT');
+  if(!user) return;
+  const projectId=String(FB?.app?.options?.projectId||'');
+  if(!projectId || !globalThis.crypto?.subtle){ civ5QaTrace('identity_bind_unavailable','IDENTITY_UNCONFIRMED'); return; }
+  const scope=await civ5ScopeFor(projectId,user.uid);
+  const v250=window.V250OfflineSession?.scopeHash ? await window.V250OfflineSession.scopeHash(user) : '';
+  if(FB.user?.uid!==user.uid){ civ5QaTrace('identity_bind_stale','IDENTITY_UNCONFIRMED'); return; }   // sessão mudou durante o cálculo: não confirma
+  CIV5_SCOPE=scope; CIV5_V250_SCOPE=v250||null;
+  civ5QaTrace('identity_scope_ready',civ5GateReadOnly());
+  try{
+    // Alterações não enviadas desta mesma identidade sobreviveram a um recarregamento: restaura e reenvia.
+    if(localStorage.getItem(CIV5_PENDING_KEY)===scope && civ5Gate()==='ok'){
+      FB.pendingCloudSave=true;
+      load();
+    }
+  }catch(e){ civ5QaTrace('pending_state_check_failed','STORAGE_UNAVAILABLE'); }
+  render();
+}
+// SM173-END
 function load(){
   if(isLocalTestMode()) return;
   const stateRead=safeGetLocalStorageItem(STOR, 'load leitura storage');
@@ -11513,12 +11784,16 @@ function initFirebase(){
     FB.access.reason='Configuração local de emuladores incompleta.';
     return;
   }
+  // SM156 (R1): inicialização única. Chamadas extras (boot, SDK tardio, retentativas) não repetem app, listeners nem assinaturas.
+  if(FB.bootstrapped) return;
   try{
-    if(!window.firebase){
+    if(!window.firebase || typeof firebase.auth!=='function' || typeof firebase.firestore!=='function'){
+      // SDK ausente ou parcial não é inicialização concluída: nega acesso e aguarda o SDK completo (ou a falha definitiva).
       FB.authResolved = true;
       FB.access.loading = false;
       FB.access.loaded = false;
       FB.access.allowed = false;
+      FB.access.reason = window.__FIREBASE_SDK_STATE__==='failed' ? 'Não foi possível carregar a autenticação. Recarregue a página quando a conexão voltar.' : '';
       return;
     }
     const emulatorMode=isLocalAuthEmulatorMode();
@@ -11526,15 +11801,18 @@ function initFirebase(){
         const appConfig = (emulatorMode || isLocalTestMode())
           ? {apiKey: 'demo-api-key', authDomain: 'localhost', projectId: 'demo-carteira-qa-emulator'}
           : firebaseConfig;
-    FB.app=firebase.initializeApp(appConfig);
-    FB.auth=firebase.auth();
-    FB.db=firebase.firestore();
-    if(emulatorMode){
+    if(!FB.app) FB.app=firebase.initializeApp(appConfig);
+    if(!FB.auth) FB.auth=firebase.auth();
+    if(!FB.db) FB.db=firebase.firestore();
+    if(emulatorMode && !FB.emulatorsConfigured){
       if(typeof FB.auth.useEmulator!=='function' || typeof FB.db.useEmulator!=='function') throw new Error('Firebase emulator connectors unavailable.');
       FB.auth.useEmulator('http://127.0.0.1:9099');
       FB.db.useEmulator('127.0.0.1',8080);
+      FB.emulatorsConfigured=true;
     }
     FB.ready=true;
+    if(!FB.listenersAttached){
+    FB.listenersAttached=true;
 
         // Keep session persistence under Firebase's own authority so a legitimate
         // auth session can be restored after an offline reload without copying
@@ -11577,6 +11855,31 @@ function initFirebase(){
         FB.access.allowed = false;
         FB.access.reason = '';
         render();
+        try{ await civ5BindIdentity(FB.user); }
+        catch(error){
+          civ5QaTrace('identity_bind_failed','IDENTITY_UNCONFIRMED');
+          FB.accountMode='BLOCKED';
+          FB.access.loading=false;
+          FB.access.loaded=true;
+          FB.access.allowed=false;
+          FB.access.reason='IDENTITY_UNCONFIRMED';
+          toast('Não foi possível confirmar a identidade local. Os dados foram preservados e as gravações continuam bloqueadas.','#f87171');
+          render();
+          return;
+        }
+        if(!authSession.isCurrent() || FB.user?.uid !== user.uid) return;
+        if(!CIV5_SCOPE){
+          civ5QaTrace('identity_bind_incomplete','IDENTITY_UNCONFIRMED');
+          FB.accountMode='BLOCKED';
+          FB.access.loading=false;
+          FB.access.loaded=true;
+          FB.access.allowed=false;
+          FB.access.reason='IDENTITY_UNCONFIRMED';
+          toast('A identidade local ainda não pôde ser confirmada. Os dados foram preservados e as gravações continuam bloqueadas.','#f87171');
+          render();
+          return;
+        }
+        civ5QaTrace('identity_bind_complete',civ5GateReadOnly());
         const ok = await loadAccessControl(user,authSession);
         if(!authSession.isCurrent() || FB.user?.uid !== user.uid) return;
         // Phase 2: protected offline cached session wins before any mode routing
@@ -11636,6 +11939,7 @@ function initFirebase(){
         }
         startCloudSync({readOnlyOnly: isProtectedReadOnlyQaBoot() || !isEditOwner()});
       }else{
+        civ5BindIdentity(null);
         // Clear every portfolio reference before rendering the login screen.
         clearRealStateInMemory();
         FB.localPortfolioLoaded = false;
@@ -11648,6 +11952,7 @@ function initFirebase(){
         FB.access.cfg = null;
         FB.access.lastDeniedAt = null;
         stopCloudSync();
+        civ5QaTrace('auth_signed_out','IDENTITY_UNCONFIRMED');
       }
       render();
     }, error=>{
@@ -11661,6 +11966,8 @@ function initFirebase(){
       FB.access = {loading:false,loaded:true,allowed:false,reason:'Não foi possível validar o acesso agora.',cfg:null,lastDeniedAt:new Date().toISOString()};
       render();
     });
+    }
+    FB.bootstrapped=true;
     if(!FB.authResolved){
       FB.access.loading = true;
       FB.access.loaded = false;
@@ -11699,7 +12006,7 @@ async function recordAccessAttempt(user, allowed, reason=''){
   try{
     if(!FB.db || !user?.uid) return;
     const ref = FB.db.collection('users').doc(user.uid);
-    await ref.set({
+    ref.set({
       email: user.email || '',
       displayName: user.displayName || '',
       photoURL: user.photoURL || '',
@@ -11709,7 +12016,7 @@ async function recordAccessAttempt(user, allowed, reason=''){
       loginCount: firebase.firestore.FieldValue.increment(1),
       lastReason: String(reason || ''),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge:true });
+    }, { merge:true }).catch(e=>debugWarn('log acesso:', e));
   }catch(e){
     debugWarn('log acesso:', e);
   }
@@ -12055,8 +12362,11 @@ async function applyCloudData(d){
   if(!isProtectedReadOnlyQaBoot()){
     try{
       syncWalletFromState();
-      localStorage.setItem(STOR, JSON.stringify({wallets:S.wallets, activeWalletId:S.activeWalletId, assets:S.assets, aportes:S.aportes, proventos:S.proventos, rfEvents:S.rfEvents, tab:S.tab, divGoal:S.divGoal, goals:S.goals, dashPeriod:S.dashPeriod, dashType:S.dashType, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, learnMeta:S.learnMeta}));
-      localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal}));
+      // SM173: a nuvem só sobrescreve o civ5 quando ele pertence a esta identidade (legado do dono entra com backup antes).
+      if(civ5Gate()==='ok'){
+        localStorage.setItem(STOR, JSON.stringify({wallets:S.wallets, activeWalletId:S.activeWalletId, assets:S.assets, aportes:S.aportes, proventos:S.proventos, rfEvents:S.rfEvents, tab:S.tab, divGoal:S.divGoal, goals:S.goals, dashPeriod:S.dashPeriod, dashType:S.dashType, rentPeriod:S.rentPeriod, rentType:S.rentType, rentBench:S.rentBench, learnMeta:S.learnMeta}));
+        localStorage.setItem(STOR+'_cfg', JSON.stringify({brapiToken:S.brapiToken, divGoal:S.divGoal}));
+      }
     }catch(e){}
   }
   FB.lastCloudUpdate = d.updatedAtLocal || new Date().toISOString();
@@ -12114,7 +12424,8 @@ function startCloudSync({readOnlyOnly=false}={}){
       FB.lastCloudError=null;
       await rememberV250TrustedSnapshot();
       bindProtectedRealPilotSession();
-      if(FB.pendingCloudSave && changed) queueCloudSave();
+      // SM173: o eco local da própria gravação não reenfileira enquanto o envio está em andamento (evita ciclo).
+      if(FB.pendingCloudSave && !FB.syncInFlight) queueCloudSave();
       runV324PeriodicBackups();
       render();
     }catch(e){
@@ -12157,6 +12468,10 @@ function queueCloudSave(){
   // authenticated cloud snapshot. Cloud writes become eligible only after
   // the first snapshot has hydrated the active wallet.
   if(!FB.user || !FB.cloudLoaded || !FB.access.allowed) return;
+  // SM173: envio só para a identidade dona do civ5; a pendência fica marcada com o escopo para sobreviver a recarregamentos.
+  if(civ5Gate()!=='ok') return;
+  FB.civ5EditSeq=(FB.civ5EditSeq||0)+1;
+  try{ localStorage.setItem(CIV5_PENDING_KEY,CIV5_SCOPE); }catch(e){ return; }
   FB.pendingCloudSave=true;
   if(FB.applying || !FB.user || !FB.cloudLoaded || !FB.access.allowed) return;
   clearTimeout(FB.saveTimer);
@@ -12182,6 +12497,12 @@ async function uploadLocalToCloud(show=true, options={}){
     if(show) toast('Acesso não autorizado para sincronizar.','#fbbf24');
     return;
   }
+  // SM173: nunca enviar dados locais de outra identidade. Bloqueio sem apagar nada.
+  const civ5Status=civ5Gate();
+  if(civ5Status!=='ok'){
+    if(show) toast('Sincronização bloqueada: os dados locais não pertencem a esta conta. Nada foi enviado nem apagado.','#fbbf24');
+    return {pass:false,reason:civ5Status};
+  }
   const ref=portfolioRef();
   if(!ref) { if(show) toast('Entre com Google para sincronizar na nuvem.','#fbbf24'); return {pass:false,reason:'CLOUD_READBACK_UNAVAILABLE'}; }
   if(FB.syncInFlight){
@@ -12189,13 +12510,16 @@ async function uploadLocalToCloud(show=true, options={}){
     return;
   }
   FB.syncInFlight=true;
+  const civ5SeqAtStart=FB.civ5EditSeq||0;
   render();
   try{
     let currentCloud={};
     if(options.preserveReferenceEvents !== false){
       try{ currentCloud=await readFreshCloudPayload(); }
       catch(error){
-        if(FB.cloudLoaded || options.allowMissingCloud!==true) throw new Error('CLOUD_PREWRITE_READBACK_UNAVAILABLE');
+        // SM173: documento inexistente = nada na nuvem a sobrescrever (primeira gravação da conta). Outros erros continuam fail-closed.
+        if(String(error?.message||'')==='CLOUD_DOCUMENT_MISSING'){ currentCloud={}; }
+        else if(FB.cloudLoaded || options.allowMissingCloud!==true) throw new Error('CLOUD_PREWRITE_READBACK_UNAVAILABLE');
       }
     }
     const payload=mergeCloudReferencePayload(cloudPayload(), currentCloud);
@@ -12229,7 +12553,15 @@ async function uploadLocalToCloud(show=true, options={}){
     )) throw new Error('CLOUD_PERSISTED_STATE_MISMATCH');
     FB.lastCloudUpdate=new Date().toISOString();
     FB.lastCloudError=null;
-    FB.pendingCloudSave=false;
+    // SM173: só limpa a pendência se nenhuma edição ocorreu durante o envio; senão, reenvia.
+    if((FB.civ5EditSeq||0)===civ5SeqAtStart){
+      FB.pendingCloudSave=false;
+      try{ localStorage.removeItem(CIV5_PENDING_KEY); }catch(e){}
+    }else{
+      // SM173: reenvio agendado sem contar como nova edição (o contador só registra edições reais do usuário).
+      clearTimeout(FB.saveTimer);
+      FB.saveTimer=setTimeout(()=>uploadLocalToCloud(true),900);
+    }
     clearTimeout(FB.cloudRetryTimer);
     return {pass:true,cloudReadback:true,counts:cloudCounts,pendingCloudSave:false,syncInFlight:false};
   }catch(e){
@@ -12286,6 +12618,8 @@ async function signOutGoogle(){
   FB.authResolved=true;
   FB.access={loading:false,loaded:false,allowed:false,reason:'',cfg:null,lastDeniedAt:null};
   render();
+  // SM173: logout zera só a identidade confirmada em memória. Armazenamento local (civ5) permanece intacto.
+  CIV5_SCOPE=null; CIV5_V250_SCOPE=null;
   try{ await FB.auth.signOut(); toast('Sessão encerrada.'); }
   catch(e){ debugWarn('Não foi possível encerrar a sessão Firebase agora.',e); }
 }
@@ -12360,8 +12694,10 @@ function accessGateBox(){
   }
   const loading = !FB.authResolved || FB.access.loading;
   const reason = FB.access.reason || 'Faça login com um e-mail aprovado para acessar a carteira.';
-  const stateLabel = loading ? 'Verificando acesso' : (FB.user ? 'Acesso em validação' : 'Acesso restrito');
-  const title = loading ? 'Verificando sua conta...' : (FB.user ? 'Seu e-mail não está autorizado' : 'Entre com Google para continuar');
+  // SM144: sem internet a verificação da conta não termina; mostra o estado real em vez de "Verificando" indefinido.
+  const offlineWait = loading && typeof navigator!=='undefined' && navigator.onLine===false;
+  const stateLabel = offlineWait ? 'Sem conexão' : (loading ? 'Verificando acesso' : (FB.user ? 'Acesso em validação' : 'Acesso restrito'));
+  const title = offlineWait ? 'Conecte-se para verificar sua conta' : (loading ? 'Verificando sua conta...' : (FB.user ? 'Seu e-mail não está autorizado' : 'Entre com Google para continuar'));
   const chip = FB.user ? `<span class="note-pill" style="background:#111827;color:#c7d2fe;border-color:rgba(99,102,241,.22)">${esc(FB.user.email || '')}</span>` : '';
   return `
     <div${loading ? ' role="status" aria-live="polite"' : ''} style="min-height:calc(100vh - 86px);display:grid;place-items:center;padding:14px 16px 20px">
@@ -12371,7 +12707,7 @@ function accessGateBox(){
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
             <div style="width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#2f3b70,#4040c0 54%,#6ee7b7);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 28px rgba(79,70,229,.28);flex-shrink:0;font-size:16px">📈</div>
             <div>
-              <div class="cl" style="font-size:9px;margin-bottom:4px;letter-spacing:.16em">${stateLabel}</div>
+              <div class="cl" style="font-size:11px;margin-bottom:4px;letter-spacing:.16em">${stateLabel}</div>
               <div style="font-size:22px;line-height:1.05;font-weight:900;letter-spacing:-.05em;color:#f5f8ff;max-width:360px">${title}</div>
             </div>
           </div>
@@ -12388,13 +12724,13 @@ function accessGateBox(){
             ${FB.user ? `<button class="btn bgh" onclick="signOutGoogle()" style="width:100%;margin-top:7px;min-height:38px;border-radius:12px">Sair</button>` : ''}
           </div>
         </div>
-        <div style="border-top:1px solid #182234;padding:9px 22px 10px;display:flex;align-items:center;gap:8px;color:#94a3b8;font-size:9px;line-height:1.25">
+        <div style="border-top:1px solid #182234;padding:9px 22px 10px;display:flex;align-items:center;gap:8px;color:#94a3b8;font-size:12px;line-height:1.25">
           <span style="font-size:14px">🔒</span>
           <span>Seus dados ficam na sua conta Google. Nenhuma senha é armazenada.</span>
         </div>
       </div>
     </div>
-    <div style="text-align:center;color:#94a3b8;font-size:9px;letter-spacing:.12em;padding:0 18px 10px">CARTEIRA DE INVESTIMENTOS · Dados seguros e privados</div>
+    <div style="text-align:center;color:#94a3b8;font-size:11px;letter-spacing:.12em;padding:0 18px 10px">CARTEIRA DE INVESTIMENTOS · Dados seguros e privados</div>
   `;
 }
 function shouldShowAccessGate(){
@@ -13424,7 +13760,7 @@ async function loadPdfJs(){
     window.__pdfjsPromise = import('https://cdn.jsdelivr.net/npm/pdfjs-dist@5.6.205/legacy/build/pdf.mjs')
       .then(mod=>{
         try{
-          mod.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@5.6.205/legacy/build/pdf.worker.mjs';
+          mod.GlobalWorkerOptions.workerSrc='./vendor/pdfjs-dist@5.6.205/pdf.worker.mjs';
         }catch(e){}
         window.__pdfjsLib = mod;
         return mod;
@@ -16963,7 +17299,7 @@ function b3ReviewModal(){
         </div>
       </div>
       <div class="note-body">
-        ${b3ConferenceSummaryHtml(proventoSummaryCards||[
+        ${b3ConferenceSummaryHtml([
           {label:'Registros lidos',value:valid+ignored,sub:'Posições identificadas'},
           {label:'Válidos',value:valid,sub:'Ativos reais da posição'},
           {label:'Ignorados',value:ignored,sub:'Totais, resumos ou inválidos'},
@@ -18582,6 +18918,12 @@ function quickMovementSuccessText(reg,kind){
   const asset=String(reg?.ticker||reg?.name||'Movimentação').trim();
   const date=String(reg?.date||'').trim() || 'sem data';
   const amount=kind==='provento' ? Number(reg?.value)||0 : Number(reg?.qty||0)*Number(reg?.price||0);
+  if(kind==='venda' && reg?.reconciliationStatus==='LEDGER_RECONCILED'){
+    return `✅ Venda registrada · ${asset} · ${fmt(amount)} · resultado realizado ${fmt(Number(reg.realizedResult)||0)} · ${date}`;
+  }
+  if(kind==='venda' && reg?.saleBlockReason){
+    return `⚠️ Venda registrada como pendente · ${asset} · ${reg.saleBlockReason}`;
+  }
   return `✅ Lançamento registrado · ${label} · ${asset} · ${fmt(amount)} · ${date}`;
 }
 function quickMovementDefaultDraft(kind='compra'){
@@ -19008,6 +19350,8 @@ function openQuickMovement(kind='compra'){
   S.quickMovementError=null;
   S.quickMovementErrorField='';
   const nextDraft={...quickMovementDefaultDraft(next), ...current, kind:next};
+  // SM186: chave da operação do formulário; repetir a gravação da mesma abertura não cria venda duplicada.
+  if(!nextDraft.nonce) nextDraft.nonce=Date.now().toString(36)+Math.random().toString(36).slice(2,10);
   if(next==='venda'){
     nextDraft.ticker='';
     nextDraft.assetName='';
@@ -19188,7 +19532,13 @@ function quickMovementModal(){
     <button type="button" role="tab" aria-selected="${rfTab==='resgatar'}" class="rf-quick-tab ${rfTab==='resgatar'?'on':''}" onclick="setRfQuickTab('resgatar')">Resgatar</button>
     <button type="button" role="tab" aria-selected="${rfTab==='novo'}" class="rf-quick-tab ${rfTab==='novo'?'on':''}" onclick="setRfQuickTab('novo')">Novo título</button>
   </div>`;
-  const assetTypes=quickMovementKindOptions().map(t=>`<option ${normalizeType(draft.type||'Ação','Ação')===t?'selected':''}>${esc(t)}</option>`).join('');
+  // SM188: sem classe conhecida, o select não pré-seleciona "Ação" como se tivesse sido identificado.
+  // Classe conhecida = origem real (carteira, histórico ou catálogo) ou escolha manual. O padrão do rascunho não conta.
+  const classSource=draft.manualType?'manual':(draft.ticker?resolveAssetMetadata(draft.ticker).source:'unknown');
+  const classUnknown=classSource==='unknown';
+  const typePlaceholder=classUnknown?'<option value="" selected disabled>Escolha o tipo</option>':'';
+  const selectedType=classUnknown?'':normalizeType(draft.type||'Ação','Ação');
+  const assetTypes=typePlaceholder+quickMovementKindOptions().map(t=>`<option ${selectedType===t?'selected':''}>${esc(t)}</option>`).join('');
   const eventTypes=['Rendimento','Dividendo','JCP','Amortização','Outro'].map(t=>`<option ${String(draft.eventType||'Rendimento')===t?'selected':''}>${esc(t)}</option>`).join('');
   const rfSubtypes=['CDB','LCI','LCA','Tesouro Direto','CRI','CRA','Debênture','Letra Financeira','Outro'].map(t=>`<option ${String(draft.rfSubtype||'CDB')===t?'selected':''}>${esc(t)}</option>`).join('');
   const commonHeader=`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
@@ -19352,6 +19702,29 @@ function hasPendingSaleForTicker(ticker,excludeId=''){
   const normalized=cleanAssetCode(ticker);
   return Boolean(normalized&&(S.aportes||[]).some(row=>cleanAssetCode(row?.ticker)===normalized
     && isReconciliationPendingMovement(row)&&String(row.id)!==String(excludeId)));
+}
+// SM186: venda de posição LEDGER só é aplicada quando o histórico de OPERAÇÕES do ativo é verificável no ledger
+// (derivação completa, sem duplicidade, quantidade igual à registrada). A cobertura histórica de mercado continua
+// UNPROVEN e NÃO entra nesta decisão. Posição legada ou histórico incompleto permanece pendente, com motivo explícito.
+function ledgerSaleEligibility(reg){
+  const code=cleanAssetCode(reg?.ticker);
+  const assets=(S.assets||[]).filter(a=>cleanAssetCode(a?.ticker)===code);
+  if(assets.length!==1) return {ok:false,reason:'Posição ausente ou duplicada: venda fica pendente de conciliação.'};
+  const asset=assets[0];
+  if(asset.position_source!=='LEDGER') return {ok:false,reason:'Posição legada sem histórico reconciliável: venda fica pendente de conciliação.'};
+  // Datas gravadas podem estar em BR (dd/mm/aaaa) ou ISO; o motor ordena por texto, então normaliza antes.
+  const movements=(S.aportes||[]).filter(m=>cleanAssetCode(m?.ticker)===code && !isReconciliationPendingMovement(m) && !isNeutralMovement(m))
+    .map(m=>{ const parsed=parseAnyDate(m.date); return {...m, date: parsed ? toISODate(parsed) : String(m.date||'')}; });
+  const derived=window.PositionReconciliation?.deriveFromMovements?.(movements);
+  if(!derived||!derived.hasMovements||!derived.complete) return {ok:false,reason:'Histórico de operações incompleto: venda fica pendente de conciliação.'};
+  if(Math.abs(derived.qty-Number(asset.qty))>1e-9) return {ok:false,reason:'Quantidade registrada difere do histórico de operações: venda fica pendente de conciliação.'};
+  const q=Math.abs(Number(reg.qty)||0);
+  const price=Number(reg.price)||0;
+  const fees=Number(reg.fees)||0;
+  const avg=derived.avgPrice;
+  const gross=q*price;
+  const costReleased=avg*q;
+  return {ok:true,avg,gross,costReleased,realized:gross-fees-costReleased};
 }
 function pendingSaleIdentityBlocker(ticker,excludeId=''){
   const normalized=cleanAssetCode(ticker);
@@ -19630,7 +20003,7 @@ function quickMovementBuildAporteFromFields(kind){
         qty:preview.quantityToSell,
         price:preview.unitPrice,
         fees,
-        date:brDate(dt),
+        date:dt, // SM187: novos registros de venda em ISO (como compras); registros antigos dd/mm/aaaa continuam legíveis
         decision:note,
         type:normalizeType(asset.type,'Ação'),
         sector:asset.sector||'',
@@ -19716,7 +20089,40 @@ function saveQuickMovement(){
       return;
     }
     reg.reconciliationStatus='PENDING_RECONCILIATION';
+    // SM186: idempotência — a mesma abertura do formulário não grava a mesma venda duas vezes.
+    reg.opKey=String(S.quickMovementDraft?.nonce||'');
+    if(reg.opKey && (S.aportes||[]).some(a=>String(a?.opKey||'')===reg.opKey)){
+      S.quickMovementSaving=false;
+      S.quickMovementError='Esta venda já foi registrada. Nada foi gravado novamente.';
+      S.quickMovementErrorField='';
+      render();
+      return;
+    }
+    const eligibility=ledgerSaleEligibility(reg);
+    if(eligibility.ok){
+      reg.reconciliationStatus='LEDGER_RECONCILED';
+      reg.avgPriceAtSale=eligibility.avg;
+      reg.saleGross=eligibility.gross;
+      reg.costReleased=eligibility.costReleased;
+      reg.realizedResult=eligibility.realized;
+    }else{
+      reg.saleBlockReason=eligibility.reason;
+    }
   }
+  // Validação local antes de gravar (sem consulta de cotação): ativo já na carteira ou código do catálogo B3
+  // local. Formato sozinho e ticker só "aprendido" de digitação não contam.
+  if(kind==='compra'||kind==='venda'){
+    const check=marketTickerValidation(reg.ticker);
+    if(!check.ok){
+      S.quickMovementSaving=false;
+      S.quickMovementError=check.message;
+      S.quickMovementErrorField='ticker';
+      render();
+      focusQuickMovementError();
+      return;
+    }
+  }
+  const qtyBeforeSync=assetQtyForTicker(reg.ticker);
   const draftBeforeClose=S.quickMovementDraft;
   const financialSnapshot=snapshotFinancialImportState(['aportes','proventos','assets','wallets','activeWalletId','learnMeta']);
   S.quickMovementOpen=false;
@@ -19763,6 +20169,27 @@ function saveQuickMovement(){
     }
     learnTickerMeta(reg.ticker, reg.type, reg.sector, true);
     const syncResult=syncAssetsFromAportes(false,false);
+    // Movimento nunca fica sem posição consistente: a quantidade precisa mudar exatamente pelo lançamento.
+    // Posição legada congelada (cobertura não comprovada) não aceita compra/venda em silêncio.
+    const qtyAfterSync=assetQtyForTicker(reg.ticker);
+    const movedQty=Math.abs(Number(reg.qty)||0);
+    // Venda pendente de conciliação não move a posição (regra existente): quantidade fica igual até a conciliação.
+    const expectedQty=kind==='compra' ? qtyBeforeSync+movedQty
+      : (reg.reconciliationStatus==='PENDING_RECONCILIATION' ? qtyBeforeSync : Math.max(0,qtyBeforeSync-movedQty));
+    const positionConsistent=Math.abs(qtyAfterSync-expectedQty)<1e-9 && (kind!=='compra' || qtyAfterSync>0);
+    if((kind==='compra'||kind==='venda') && !positionConsistent){
+      Object.keys(financialSnapshot).forEach(key=>{ if(financialSnapshot[key].present) S[key]=financialSnapshot[key].value; else delete S[key]; });
+      S.quickMovementOpen=true;
+      S.quickMovementDraft=draftBeforeClose;
+      S.quickMovementError=kind==='compra' && qtyAfterSync<=0
+        ? 'Não foi possível criar a posição deste ativo. Nada foi gravado.'
+        : 'A posição existente não pode ser atualizada por esta movimentação. Nada foi gravado.';
+      S.quickMovementErrorField='ticker';
+      S.quickMovementSaving=false;
+      render();
+      focusQuickMovementError();
+      return;
+    }
     if(!persistFinancialImportState(financialSnapshot)) throw new Error('QUICK_MOVEMENT_PERSIST_FAILED');
     toast(isReconciliationPendingMovement(reg) ? 'Venda registrada como PENDENTE DE RECONCILIAÇÃO. Quantidade, custo médio e patrimônio foram preservados.'
       : !financialSyncUpdatedAllTickers(syncResult,[reg.ticker]) ? 'Movimentação salva no histórico; posição e custo médio preservados porque a cobertura não foi comprovada.' : quickMovementSuccessText(reg,kind));
@@ -20861,8 +21288,8 @@ function inferTickerMetadata(ticker){
   const t=normalizeMetadataTicker(ticker);
   if(isRendaFixaText(t)) return rfMetaFromText(t);
   if(META[t]) return{type:META[t][0],sector:META[t][1]};
-  if(/^[A-Z]{4}11$/.test(t)) return{type:'FII',sector:'FII'};
-  if(/^[A-Z]{4}[34]$/.test(t)) return{type:'Ação',sector:'Ação'};
+  // SM187: classe nunca é inferida pelo sufixo (11 pode ser FII, unit ou ETF; 34 pode ser BDR).
+  // Sem catálogo, a classe fica vazia e o usuário escolhe no formulário.
   return{type:'',sector:''};
 }
 function resolveAssetMetadata(ticker, options={}){
@@ -22937,6 +23364,22 @@ function irpfAlertItems(report){
   if(!assets.length) items.push({tone:'muted',label:'Sem ativos cadastrados',value:'—',hint:'Cadastre posições para gerar o relatório.'});
   return items;
 }
+// SM122: alerta de conciliação exibido somente na tela do IRPF. Não entra em irpfAlertItems (usado no CSV exportado).
+function irpfReconciliationAlerts(){
+  const items=[];
+  if(!window.PositionReconciliation) return items;
+  const PR=window.PositionReconciliation;
+  const movs=(S.aportes||[]).filter(m=>!isNeutralMovement(m));
+  (S.assets||[]).filter(a=>!isRendaFixaAsset(a)).slice(0,40).forEach(a=>{
+    const r=PR.reconcilePosition({ticker:a.ticker,qty:a.qty},movs,{});
+    const st=PR.presentState(r);
+    // SM169 (R5): quantidades iguais com lançamentos completos não são divergência; a única lacuna é a cobertura
+    // histórica não comprovada, então o alerta é informativo. Divergência e dados incompletos seguem como aviso.
+    const tone=st.key==='COINCIDEM_NAO_COMPROVADA'?'muted':'warn';
+    if(st.key!=='CONCILIADA') items.push({tone,label:st.label,value:String(a.ticker||'—'),hint:(r.notice||'Conferir antes de declarar.')});
+  });
+  return items;
+}
 function irpfSummaryMetrics(report, year){
   const byCat=report.provents.reduce((acc,p)=>{
     const cat=irpfProventoCategory(p).bucket;
@@ -23771,7 +24214,7 @@ function irpfTabPremium(){
   const assets=irpfAssetsByCategory(report);
   const proventos=irpfProventoSummary(report);
   const rfRows=irpfRendaFixaRows(report);
-  const alerts=irpfAlertItems(report);
+  const alerts=[...irpfAlertItems(report),...irpfReconciliationAlerts()];
   const totalCurrent=report.positions.reduce((sum,p)=>sum+Number(p.marketValue||0),0);
   const gain=totalCurrent-Number(summary.applied||0);
   const gainPct=summary.applied>0 ? (gain/summary.applied*100) : 0;
@@ -25816,6 +26259,33 @@ function financialSyncUpdatedAllTickers(syncResult,tickers){
   const expected=[...new Set((tickers||[]).map(cleanAssetCode).filter(Boolean))];
   return expected.length>0 && expected.every(ticker=>updated.has(ticker));
 }
+// SM185: validação de ticker sem Yahoo. Posição já na carteira ou código do catálogo B3 local; formato sozinho não basta.
+function isKnownB3Code(ticker){
+  const code=normalizeMetadataTicker(ticker);
+  if(!code) return false;
+  if(META[code]) return true;
+  return !!globalThis.B3Catalog?.has?.(code);
+}
+function marketTickerValidation(ticker){
+  const code=normalizeMetadataTicker(ticker);
+  if((S.assets||[]).some(a=>normalizeMetadataTicker(a?.ticker||'')===code)) return {ok:true,code:'PORTFOLIO'};
+  if(!/^[A-Z0-9]{4,7}$/.test(code)||!/[A-Z]/.test(code)||!/\d/.test(code)) return {ok:false,code:'INVALID_FORMAT',message:'Ativo não reconhecido. Verifique o código informado.'};
+  if(isKnownB3Code(code)) return {ok:true,code:'CATALOG'};
+  const version=globalThis.B3Catalog?.version||'indisponível';
+  return {ok:false,code:'NOT_IN_CATALOG',message:`Código não encontrado no catálogo B3 local (versão ${version}). Confira o código ou atualize o catálogo. Nada foi gravado.`};
+}
+function assetQtyForTicker(ticker){
+  const code=normalizeMetadataTicker(ticker);
+  return (S.assets||[]).filter(a=>normalizeMetadataTicker(a?.ticker||'')===code).reduce((sum,a)=>sum+(Number(a.qty)||0),0);
+}
+function isLedgerPosition(asset){
+  return asset?.position_source==='LEDGER';
+}
+// Posição LEDGER sem cotação real valoriza-se pelo custo médio atual (não por um preço antigo); cotação real é preservada.
+function ledgerCurrentPrice(old,avg,ledgerPos){
+  const hadQuote=['FRESH','STALE','DELAYED'].includes(String(old?.quoteStatus||'').toUpperCase());
+  return ledgerPos && !hadQuote ? avg : (Number(old?.current_price)||avg);
+}
 function syncAssetsFromAportes(showMsg=false,persistState=true,coverageByTicker={}){
   if(typeof isLocalTestReadOnlyMode==='function' && isLocalTestReadOnlyMode()) return;
   if(isProtectedReadOnlyQaBoot()) return;
@@ -25868,7 +26338,8 @@ function syncAssetsFromAportes(showMsg=false,persistState=true,coverageByTicker=
     keep[ticker]={...asset};
     if(!hasCompleteCoverage(ticker)){
       markIncomplete(ticker,coverageByTicker?.[ticker]?.history?.openingPosition==='KNOWN'?'OPENING_POSITION_RECONSTRUCTION_UNSUPPORTED':'HISTORY_COVERAGE_UNPROVEN');
-      blockedTickers.add(ticker);
+      // Posição criada pelo lançamento (LEDGER) segue o próprio ledger; só posição legada congelada fica preservada.
+      if(!isLedgerPosition(asset)) blockedTickers.add(ticker);
     }
   });
   existingAssetsByTicker.forEach((assets,ticker)=>{
@@ -25882,7 +26353,10 @@ function syncAssetsFromAportes(showMsg=false,persistState=true,coverageByTicker=
     if(!ticker||isNeutralMovement(movement)) return;
     if(!hasCompleteCoverage(ticker)){
       markIncomplete(ticker,coverageByTicker?.[ticker]?.history?.openingPosition==='KNOWN'?'OPENING_POSITION_RECONSTRUCTION_UNSUPPORTED':'HISTORY_COVERAGE_UNPROVEN');
-      blockedTickers.add(ticker);
+      // Cobertura não comprovada não impede criar posição de ação/FII válida (catálogo B3 local); RF e legado seguem como antes.
+      const movementType=normalizeType(String(movement.type||movement.asset_type||'').trim()||'Ação','Ação');
+      const ledgerCreatable=movementType!=='Renda Fixa' && isKnownB3Code(ticker) && (existingAssetsByTicker.get(ticker)||[]).every(isLedgerPosition);
+      if(!ledgerCreatable) blockedTickers.add(ticker);
     }
     const type=String(movement.type||movement.asset_type||'').trim();
     const isRF=normalizeType(type||'Ação','Ação')==='Renda Fixa';
@@ -26005,7 +26479,7 @@ function syncAssetsFromAportes(showMsg=false,persistState=true,coverageByTicker=
       qty:isRF?Math.max(1, Number(g.qty)||1):g.qty,
       avg_price:isRF?(rfApplied||old.fixed_initial_value||old.avg_price||avg):(old.avg_manual?Number(old.avg_price)||avg:avg),
       avg_manual:isRF?true:!!old.avg_manual,
-      current_price:isRF?(rfLiquid||old.fixed_current_value||old.current_price||old.avg_price||avg):(Number(old.current_price)||avg),
+      current_price:isRF?(rfLiquid||old.fixed_current_value||old.current_price||old.avg_price||avg):ledgerCurrentPrice(old,avg,!isRF&&(isLedgerPosition(old)||(!existingAssetsByTicker.has(g.ticker)&&!hasCompleteCoverage(g.ticker)))),
       fixed_initial_value:isRF?(rfApplied||old.fixed_initial_value||oldApplied||0):old.fixed_initial_value,
       fixed_current_value:isRF?(rfLiquid||old.fixed_current_value||oldCurrent||0):old.fixed_current_value,
       fixed_gross_value:isRF?(rfGross||old.fixed_gross_value||0):old.fixed_gross_value,
@@ -26034,7 +26508,11 @@ function syncAssetsFromAportes(showMsg=false,persistState=true,coverageByTicker=
       quoteSource:isRF?(old.quoteSource||g.quoteSource||'manual'):old.quoteSource,
       quoteUpdatedAt:old.quoteUpdatedAt||g.quoteUpdatedAt||'',
       source:isRF?(g.source||old.source||'manual-rf'):old.source,
-      decision:isRF?(g.decision||old.decision||old.note||old.observation||''):old.decision
+      decision:isRF?(g.decision||old.decision||old.note||old.observation||''):old.decision,
+      // Posição LEDGER: quantidade e preço médio vêm do ledger; cobertura histórica fica marcada; sem cotação = Fonte indisponível.
+      ...(!isRF && (isLedgerPosition(old) || (!existingAssetsByTicker.has(g.ticker) && !hasCompleteCoverage(g.ticker)))
+        ? {position_source:'LEDGER',history_coverage:hasCompleteCoverage(g.ticker)?'COMPLETE':'UNPROVEN',quoteStatus:old.quoteStatus||'ERROR'}
+        : {})
     };
   }).sort((a,b)=>a.ticker.localeCompare(b.ticker));
   if(window.ProtectedRfReconstruction?.reconstructRfPosition){
@@ -26160,6 +26638,19 @@ function quoteTrustMeta(asset){
   const labels={FRESH:'Atualizado',DELAYED:'Com atraso',STALE:'Desatualizado',UNKNOWN:'Data desconhecida',ERROR:'Fonte indisponível'};
   return {status:finalStatus,label:labels[finalStatus]||'Fonte indisponível',source:String(asset?.quoteSource||'UNKNOWN'),lastKnownGood:asset?.quoteLastKnownGood===true};
 }
+/* SM193: estado, fonte e horários da cotação para leitura. Não altera preço nem status; só rotula. */
+function quoteStatusInfo(asset){
+  const meta=quoteTrustMeta(asset);
+  const price=Number(asset?.current_price);
+  const states={FRESH:'Atualizada',DELAYED:'Atrasada',STALE:'Antiga'};
+  const hasTime=Boolean(asset?.quoteMarketTime||asset?.quoteUpdatedAt);
+  // Sem preço válido ou erro = indisponível; sem horário não há como provar frescor: "Sem data".
+  const label=!(price>0)||meta.status==='ERROR' ? 'Indisponível' : !hasTime ? 'Sem data' : (states[meta.status]||'Sem data');
+  const sources={yahoo:'Yahoo Finance',brapi:'brapi.dev',manual:'manual',importado:'importado'};
+  const src=String(asset?.quoteSource||'').trim().toLowerCase();
+  const timeText=iso=>{const t=Date.parse(String(iso||'')); return Number.isFinite(t)?new Date(t).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';};
+  return {label, source:sources[src]||(src||'fonte não informada'), marketAt:timeText(asset?.quoteMarketTime), checkedAt:timeText(asset?.quoteUpdatedAt)};
+}
 function shouldApplyQuoteUpdate(asset, providerTimeMs){
   const currentTimeMs = Number(new Date(asset?.quoteMarketTime || 0).getTime()) || 0;
   if(providerTimeMs > 0 && currentTimeMs > 0 && providerTimeMs < currentTimeMs) return false;
@@ -26176,7 +26667,8 @@ async function fetchQuotes(manual=false){
   S.qInFlight=true;
   S.qLoad=true;
   if(!bodyModalLockActive()) snapshotQuoteUi();
-  render();
+  // SM188: não reconstruir a tela com formulário aberto (a troca do elemento tira o foco do campo que está sendo digitado).
+  if(!S.quickMovementOpen) render();
 
   const eligibleAssets=(S.assets||[]).filter(a=>{
     return isMarketQuoteEligibleAsset(a);
@@ -26319,7 +26811,7 @@ async function fetchQuotes(manual=false){
   S.qInFlight=false;
   S.qLoad=false; S.cd=QI;
   try{ if(!isLocalTestMode()) { const snapshot=captureV76DailySnapshot(); if(snapshot.ok) window.__V76_RUNTIME_STATUS__=window.PortfolioRuntimeStores.prospectiveStatus(window.__V76_RUNTIME__.snapshots); } }catch(error){ debugWarn('V76 snapshot:',error); }
-  render();
+  if(!S.quickMovementOpen) render(); // SM188: mesma proteção do início; ao fechar o formulário a tela é atualizada
   disarmQuoteUi();
 }
 async function fetchAutoProventos(){
@@ -27251,7 +27743,8 @@ function assetPerformanceOverviewRows(){
       hasAnyFinancialSource,
       hasPerformanceData,
       statusLabel,
-      statusTone
+      statusTone,
+      quoteMeta:isRF?null:quoteStatusInfo(asset)
     };
   });
 }
@@ -27295,7 +27788,7 @@ function assetPerformanceOverviewRowHtml(row, compact=false){
   return `<div class="perf-row ${compact ? 'comp' : ''}">
     <div class="perf-left">
       <div class="perf-top">
-        <div class="perf-ticker">${esc(row.label)}</div>
+        <div class="perf-ticker" title="${esc(row.label)}">${esc(row.label)}</div>
         <div class="perf-val">${esc(subLine)}</div>
       </div>
       <div class="perf-bar"><div class="perf-fill" style="width:${resultWidth.toFixed(0)}%"></div></div>
@@ -27304,6 +27797,7 @@ function assetPerformanceOverviewRowHtml(row, compact=false){
       <div class="perf-pct">${resultPctText}</div>
       <div class="perf-amt">${resultText}</div>
       <div class="perf-val" style="margin-top:2px">${esc(sourceLine)} · ${shareText} da carteira</div>
+      ${row.quoteMeta ? `<div class="perf-val perf-quote" style="margin-top:2px">Cotação ${esc(row.quoteMeta.label)} · ${esc(row.quoteMeta.source)} · negociação ${esc(row.quoteMeta.marketAt||'não informada')} · consulta ${esc(row.quoteMeta.checkedAt||'não informada')}</div>` : ''}
       <div class="analysis-pill ${esc(row.statusTone)}" style="display:inline-flex;margin-top:6px">${esc(row.statusLabel)}</div>
     </div>
   </div>`;
@@ -27315,17 +27809,20 @@ function assetPerformanceOverviewPanel(){
   const filteredRows=rows.filter(row=>classFilter==='all' || row.type===classFilter);
   const orderedRows=assetPerformanceOverviewSortRows(filteredRows, sortBy);
   const validRows=orderedRows.filter(row=>row.hasPerformanceData);
-  const positiveRows=validRows.filter(row=>Number.isFinite(row.result) && row.result>0).slice(0,4);
-  const negativeRows=validRows.filter(row=>Number.isFinite(row.result) && row.result<0).slice(0,4);
+  // SM193: melhores em ordem decrescente e piores em ordem crescente (maior perda primeiro), sempre numérico.
+  const positiveRows=validRows.filter(row=>Number.isFinite(row.result) && row.result>0).sort((a,b)=>b.result-a.result || (b.resultPct||0)-(a.resultPct||0)).slice(0,4);
+  const negativeRows=validRows.filter(row=>Number.isFinite(row.result) && row.result<0).sort((a,b)=>a.result-b.result || (a.resultPct||0)-(b.resultPct||0)).slice(0,4);
   const insufficientRows=rows.filter(row=>!row.hasPerformanceData);
   const zeroRows=validRows.filter(row=>Number.isFinite(row.result) && row.result===0);
   const topPositive=[...validRows].filter(row=>Number.isFinite(row.result) && row.result>0).sort((a,b)=>b.result-a.result || (b.resultPct||0)-(a.resultPct||0))[0] || null;
   const topNegative=[...validRows].filter(row=>Number.isFinite(row.result) && row.result<0).sort((a,b)=>a.result-b.result || (a.resultPct||0)-(b.resultPct||0))[0] || null;
   const portfolio=cx();
+  const realized=realizedSalesResultSummary();
   const summaryCards=[
     { label:'Carteira atual', value:fmt(portfolio.tC), sub:'Valor oficial da carteira', tone:'info' },
-    { label:'Resultado consolidado', value:fmt(portfolio.tG), sub:'Diferença entre atual e aplicado', tone:portfolio.tG>=0 ? 'ok' : 'danger' },
-    { label:'Rentabilidade', value:portfolio.tI>0 ? fmtP(portfolio.tGP) : '—', sub:'Baseada no capital aplicado', tone:portfolio.tGP>=0 ? 'ok' : 'danger' },
+    { label:'Resultado não realizado', value:fmt(portfolio.tG), sub:'Atual − aplicado nas posições abertas', tone:portfolio.tG>=0 ? 'ok' : 'danger' },
+    { label:'Resultado realizado', value:realized.count ? fmt(realized.total) : '—', sub:realized.count ? `${realized.count} venda(s) reconciliada(s) · fora do patrimônio` : 'Nenhuma venda reconciliada', tone:realized.total>0 ? 'ok' : realized.total<0 ? 'danger' : 'muted' },
+    { label:'Rentabilidade das posições', value:portfolio.tI>0 ? fmtP(portfolio.tGP) : '—', sub:'Resultado não realizado ÷ capital aplicado', tone:portfolio.tGP>=0 ? 'ok' : 'danger' },
     { label:'Sem base', value:String(insufficientRows.length), sub:'Ativos sem leitura oficial suficiente', tone:insufficientRows.length ? 'warn' : 'muted' }
   ];
   const classOptions=['all', ...TYPE_ORDER].filter((type,idx,arr)=>arr.indexOf(type)===idx);
@@ -27385,7 +27882,7 @@ function assetPerformanceOverviewPanel(){
           <div class="analysis-pill muted" style="justify-content:center;min-height:38px;align-items:center">${validRows.length} linhas consolidadas${zeroRows.length ? ` · ${zeroRows.length} empate(s)` : ''}</div>
         </div>
       </div>
-      <div class="mu" style="font-size:11px;line-height:1.4;margin-top:2px">Fontes oficiais: aplicado, atual, resultado e rentabilidade do legado. Nao duplica calculo financeiro; so lê o que ja existe.</div>
+      <div class="mu" style="font-size:11px;line-height:1.4;margin-top:2px">Não realizado = atual − aplicado nas posições abertas. Realizado = resultado reconciliado das vendas, fora do patrimônio. Rentabilidade = não realizado ÷ capital aplicado. Só lê cálculos já existentes.</div>
     </div>
     <div class="perf-grid">
       <div class="perf-card hi">
@@ -33600,13 +34097,23 @@ function dashboardEconomicResultStatus(summary){
     const returnText=typeof summary.certifiedReturnPct==='number'&&Number.isFinite(summary.certifiedReturnPct)?` · retorno simples ${formatReturn(summary.certifiedReturnPct)}`:'';
     return `<div class="dashboard-total-result-status" role="status"><strong class="dashboard-total-result-value ${tone(summary.certifiedEconomicResult)}">Subtotal certificado: ${formatMoney(summary.certifiedEconomicResult)}${returnText}</strong><span>Apenas posições com histórico completo; o resultado total da carteira permanece em consolidação.</span></div>`;
   }
-  return '<div class="dashboard-total-result-status" role="status"><strong>Resultado total: Em consolidação</strong><span>Resultado econômico ainda não disponível para o escopo completo.</span></div>';
+  // Presenter autocontido (testado isoladamente): calcula o realizado sem depender de outras funções.
+  const realizedSales=((typeof S!=='undefined'&&S&&S.aportes)||[]).filter(a=>String(a?.operation||'').toLowerCase()==='venda' && a?.reconciliationStatus==='LEDGER_RECONCILED' && Number.isFinite(Number(a?.realizedResult)));
+  const realizedTotal=Math.round(realizedSales.reduce((sum,a)=>sum+Number(a.realizedResult),0)*100)/100;
+  const realizedText=realizedSales.length?` · resultado realizado em vendas ${formatMoney(realizedTotal)} (${realizedSales.length} venda(s); não altera o patrimônio)`:'';
+  return `<div class="dashboard-total-result-status" role="status"><strong>Resultado total: Em consolidação</strong><span>Resultado econômico ainda não disponível para o escopo completo.${realizedText}</span></div>`;
 }
 function dashboardHasEconomicCertification(summary){
   const complete=summary?.status==='COMPLETE'&&typeof summary.totalEconomicResult==='number'&&Number.isFinite(summary.totalEconomicResult);
   const subset=Array.isArray(summary?.certifiedAssets)&&summary.certifiedAssets.length>0
     &&typeof summary.certifiedEconomicResult==='number'&&Number.isFinite(summary.certifiedEconomicResult);
   return complete||subset;
+}
+/* SM187: soma dos resultados realizados gravados nas vendas aplicadas (LEDGER_RECONCILED).
+   Informação de desempenho separada: não entra no patrimônio nem no resultado não realizado. */
+function realizedSalesResultSummary(){
+  const sales=((typeof S!=='undefined'&&S&&S.aportes)||[]).filter(a=>String(a?.operation||'').toLowerCase()==='venda' && a?.reconciliationStatus==='LEDGER_RECONCILED' && Number.isFinite(Number(a?.realizedResult)));
+  return {total: Math.round(sales.reduce((sum,a)=>sum+Number(a.realizedResult),0)*100)/100, count: sales.length};
 }
 function package2FiniteNumber(value){
   if(typeof value==='number') return Number.isFinite(value);
@@ -33734,7 +34241,7 @@ function dashboardExecutiveKPIs(data, showTotalStatus=true){
       package2Cards=`
       ${dashboardMetricCard(dashboardMetricIcon('trend'),'Resultado certificado da RV',gainValue,`${gainNote} · valor indicativo, não é lucro realizado`,gainTone,gainGlow)}
       ${dashboardMetricCard(dashboardMetricIcon('cash'),'Renda recebida',incomeValue,incomeNote,incomeTone,incomeGlow)}
-      ${showTotalStatus?dashboardMetricCard(dashboardMetricIcon('info'),'Resultado total','Em consolidação','Combinação de escopos ainda não certificada','var(--semantic-official)','var(--semantic-official-bg)'):''}`;
+      ${showTotalStatus?dashboardMetricCard(dashboardMetricIcon('info'),'Resultado total','Em consolidação',`Combinação de escopos ainda não certificada${(()=>{const rs=typeof realizedSalesResultSummary==='function'?realizedSalesResultSummary():{count:0,total:0};return rs.count?` · realizado em vendas ${formatMoney(rs.total)} (informativo, fora do patrimônio)`:'';})()}`,'var(--semantic-official)','var(--semantic-official-bg)'):''}`;
       hasPackage2Cards=true;
     }
   }
@@ -34135,7 +34642,7 @@ function assetActionMenuHtml(asset, isRF, context='default'){
       <div class="asset-action-menu-panel" id="${esc(menuId)}" role="menu" aria-label="Ações para ${esc(asset.ticker||asset.name||'ativo')}">
       ${menuPrimary}${menuSecondary}
       <button type="button" role="menuitem" aria-label="Editar ${esc(asset.ticker||asset.name||'ativo')}" onclick='edA(${JSON.stringify(id)})'>Editar</button>
-      <button type="button" role="menuitem" class="asset-action-danger" aria-label="Excluir ${esc(asset.ticker||asset.name||'ativo')} e todo o histórico" onclick='deleteAssetFull(${JSON.stringify(String(asset.ticker||''))})'>Excluir ativo</button>
+      <button type="button" role="menuitem" class="asset-action-danger" aria-label="Excluir ${esc(asset.ticker||asset.name||'ativo')} e todo o histórico" onclick='${isRF ? `deleteRfPosition(${JSON.stringify(rfAssetEventId(asset))})` : `deleteAssetFull(${JSON.stringify(String(asset.ticker||''))})`}'>Excluir ativo</button>
     </div>
   </div>`;
 }
@@ -34162,6 +34669,30 @@ function deleteAssetFull(ticker){
   S.assets=(S.assets||[]).filter(a=>!matchTicker(a.ticker));
   save();
   toast(`🗑️ ${normalized} e seu histórico foram excluídos.`);
+  render();
+}
+// Renda fixa não tem ticker: a exclusão usa o id do título e remove junto seus lançamentos e proventos vinculados.
+function deleteRfPosition(assetId){
+  if(!canEditFromThisTab('excluir ativo')) return;
+  const asset=getRfAssetByEventId(assetId);
+  if(!asset){ toast('⚠️ Título de renda fixa não encontrado.','#f87171'); return; }
+  const events=rfEventsForAsset(asset);
+  const eventKeys=new Set(events.map(e=>e.autoKey||rfEventDuplicateKey(e)));
+  const eventIds=new Set(events.map(e=>String(e.id||'').trim()).filter(Boolean));
+  const incomes=(S.proventos||[]).filter(p=>String(p?.sourceEventKind||'').trim().toLowerCase()==='rf' && eventIds.has(String(p?.sourceEventId||'').trim()));
+  const name=assetRfName(asset)||String(asset.name||asset.ticker||'título').trim();
+  if(!confirm(`Excluir ${name} da carteira?\n\nIsso remove permanentemente o título, ${events.length} movimentação(ões) e ${incomes.length} provento(s) vinculado(s). Esta ação não pode ser desfeita.`)) return;
+  const beforeSave=snapshotFinancialImportState(['rfEvents','assets','proventos','aportes','rfMovementEditor']);
+  if(!beforeSave){ toast('⚠️ Não foi possível preparar a gravação. Nada foi excluído.','#f87171'); return; }
+  S.rfEvents=normalizeRfEvents(S.rfEvents||[]).filter(e=>!eventKeys.has(e.autoKey||rfEventDuplicateKey(e)));
+  S.proventos=(S.proventos||[]).filter(p=>!incomes.includes(p));
+  // Lançamento de cadastro (aportes) do título tem o mesmo id do ativo: sem remover, sobra registro órfão.
+  S.aportes=(S.aportes||[]).filter(a=>String(a?.id||'')!==rfAssetEventId(asset));
+  S.assets=(S.assets||[]).filter(a=>rfAssetEventId(a)!==rfAssetEventId(asset));
+  if(S.rfMovementEditor?.assetId===rfAssetEventId(asset)) S.rfMovementEditor=null;
+  rememberScroll();
+  if(!persistFinancialImportState(beforeSave)){ toast('⚠️ Falha ao gravar. Estado anterior restaurado.','#f87171'); render(); return; }
+  toast(`🗑️ ${name} e seu histórico foram excluídos.`);
   render();
 }
 function assetEditModal(){
@@ -34193,6 +34724,21 @@ function rfMovementFromAssetsModal(){
     </div>
   </div>`;
 }
+function assetReconciliationNote(a){
+  if(!a||!window.PositionReconciliation) return '';
+  if(normalizeType(a.type||'Ação','Ação')==='Renda Fixa') return '';
+  const PR=window.PositionReconciliation;
+  const movs=(S.aportes||[]).filter(m=>!isNeutralMovement(m));
+  const r=PR.reconcilePosition({ticker:a.ticker,qty:a.qty},movs,{});
+  const st=PR.presentState(r);
+  // Ocultar valores: quantidades não aparecem na nota (mesma regra das demais quantidades da tela).
+  if(S.hideValues&&valueVisibilityDepth===0) return `<span class="recon-note" role="note" style="display:block;font-size:11px;line-height:1.35"><strong>${esc(st.label)}</strong></span>`;
+  const diff=r.difference==null?'':` · diferença ${r.difference>0?'+':''}${formatQuantity(r.difference,a.type)}`;
+  const derived=r.derivedQty==null?'':` · derivada dos lançamentos ${formatQuantity(r.derivedQty,a.type)}`;
+  const ref=r.referenceDate?`último lançamento ${esc(r.referenceDate)}`:'data de referência desconhecida';
+  return `<span class="recon-note" role="note" style="display:block;font-size:11px;line-height:1.35"><strong>${esc(st.label)}</strong> · registrada ${formatQuantity(r.registeredQty,a.type)}${derived}${diff} · ${ref}<br>${esc(r.notice||'')}</span>`;
+}
+
 function ativos(){
   const innerTab = ['analise','desempenho','renda-fixa','alocacao'].includes(String(S.assetsInnerTab||'patrimonio')) ? String(S.assetsInnerTab) : 'patrimonio';
   const ativosCategoryIcon = type => ({
@@ -34436,7 +34982,7 @@ function ativos(){
         </td>
         <td>${esc(sector)}</td>
         <td>${typeBadge}</td>
-        <td class="num">${qtyDisplay}</td>
+        <td class="num">${qtyDisplay}${assetReconciliationNote(a)}</td>
         <td class="num">${averagePriceDisplay}</td>
         <td class="num">${currentPriceDisplay}</td>
         <td class="num">${investedDisplay}</td>
@@ -34516,7 +35062,7 @@ function ativos(){
         </summary>
         <div class="asset-premium-card-details">
           <div class="asset-premium-card-row"><span>Setor</span><strong>${esc(sector)}</strong></div>
-          <div class="asset-premium-card-row"><span>Quantidade</span><strong>${qtyDisplay}</strong></div>
+          <div class="asset-premium-card-row"><span>Quantidade</span><strong>${qtyDisplay}</strong></div>${assetReconciliationNote(a)}
           <div class="asset-premium-card-row"><span>Preço médio</span><strong>${averagePriceDisplay}</strong></div>
           <div class="asset-premium-card-row"><span>Preço atual / posição</span><strong>${currentPriceDisplay}</strong></div>
           <div class="asset-premium-card-row"><span>Investido</span><strong>${investedDisplay}</strong></div>
@@ -40220,7 +40766,7 @@ function startPendingCountPolling(){
       channel.port1.onmessage = function(event) {
         if (event.data && typeof event.data.count === 'number' && event.data.count > 0) {
           window.__pendingSyncCount = event.data.count;
-          if (typeof render === 'function') render();
+          if (typeof render === 'function' && !S.quickMovementOpen) render(); // SM188: sem re-render com formulário aberto
         }
       };
       window.__pwaRegistration.active.postMessage({ type: 'GET_PENDING_COUNT' }, [channel.port2]);
@@ -40231,8 +40777,9 @@ function startPendingCountPolling(){
 function startPublicEventsSync(){
   if(window.__PUBLIC_EVENTS_SYNC_STARTED__||!window.PublicEventsRuntime||!window.PublicEventsStore||!window.CorporateEventsSync||!window.MarketDataProviders||!window.CorporateEventsProviders)return;
   if(isLocalTestMode()||isProtectedShadowBoot()||isProtectedReadOnlyQaBoot())return;
-  const yahoo=window.MarketDataProviders.createYahooProvider();
-  const registry={getEvents:(symbol,from,to)=>yahoo.getEvents(symbol,{from:from||'2025-01-01',to:to||'2099-12-31'}).then(result=>({ok:result.ok,events:result.events||[],providers:[{provider:result.provider||'yahoo-chart',ok:Boolean(result.ok),error:result.error||null}]}))};
+  // O Yahoo não é chamado direto do navegador: a CSP bloqueia o host de cotações e o app não deve
+  // disparar essa requisição. Sem proxy compatível com o formato de eventos, o estado fica honesto (sem eventos).
+  const registry={getEvents:()=>Promise.resolve({ok:false,events:[],providers:[{provider:'yahoo-chart',ok:false,error:'BROWSER_CORS_UNAVAILABLE'}]})};
   const provider={syncPortfolio:()=>window.CorporateEventsSync.syncPortfolio({assets:S.assets,transactions:financialMovementsForCalculations(),from:'2025-01-01',to:'2099-12-31',registry})};
   const publicAssets=(S.assets||[]).filter(a=>!String(a.type||'').toLowerCase().includes('renda fixa'));
   const runtime=window.PublicEventsRuntime.create({store:window.PublicEventsStore,storage:window.localStorage,provider,assets:publicAssets,transactions:financialMovementsForCalculations(),onUpdate:()=>{if(typeof render==='function')render();}});
@@ -40292,7 +40839,9 @@ if(isActiveWalletHostMode()){
   render();
 }else{
   initEditProtection();
-  initFirebase();
+  // SM169: configuração de emulador parcial é decidida de forma síncrona e nega sem depender do CDN do SDK.
+  if(window.__LOCAL_AUTH_EMULATOR_CONFIG_ERROR__===true) initFirebase();
+  window.__FIREBASE_READY__.then(()=>{ initFirebase(); render(); });
   render();
   const schedulePublicEventsSync=()=>{
     if(!navigator.onLine) return;

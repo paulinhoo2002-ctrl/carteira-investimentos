@@ -285,7 +285,7 @@ test('quickMovementBuildAporteFromFields monta o registro de venda parcial (asse
   assert.equal(built.reg.ticker, 'PETR4');
   assert.equal(built.reg.qty, 30);
   assert.equal(built.reg.price, 34.25);
-  assert.equal(built.reg.date, '05/08/2026');
+  assert.equal(built.reg.date, '2026-08-05', 'SM187: venda grava data ISO canônica');
   assert.equal(built.reg.decision, 'Venda parcial para rebalancear');
   assert.equal(built.reg.type, 'Ação');
   assert.equal(built.reg.saleType, 'partial');

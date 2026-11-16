@@ -5,8 +5,8 @@ const { randomUUID } = require('node:crypto');
 const { before, test } = require('node:test');
 
 const PROJECT = 'demo-carteira-qa-emulator';
-const AUTH_EMULATOR = 'http://127.0.0.1:9099';
-const FIRESTORE_EMULATOR = `http://127.0.0.1:8080/v1/projects/${PROJECT}/databases/(default)/documents`;
+const AUTH_EMULATOR = `http://${process.env.FIREBASE_AUTH_EMULATOR_HOST || '127.0.0.1:9099'}`;
+const FIRESTORE_EMULATOR = `http://${process.env.FIRESTORE_EMULATOR_HOST || '127.0.0.1:8080'}/v1/projects/${PROJECT}/databases/(default)/documents`;
 
 async function request(url, options = {}) {
   return fetch(url, { ...options, signal: AbortSignal.timeout(8000) });

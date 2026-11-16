@@ -16,7 +16,7 @@ test('V250 versiona app shell e evita cache indefinido de HTML e scripts', () =>
   assert.match(sw, /request\.destination === 'script'/);
   assert.match(sw, /GET_SW_VERSION/);
   assert.match(sw, /carteira-investimentos-backup/);
-  assert.match(index, /__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v250\.3'/);
+  assert.match(index, /__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v252\.0'/);
 });
 
 test('V250 runtime expõe telemetria sanitizada e bloqueia writes offline', () => {

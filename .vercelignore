@@ -1,0 +1,12 @@
+index.m1959-before.html
+.firebaserc
+tests/local-http-server.js
+tests/sm183-demo-isolation.test.js
+tests/sm183-demo.browser.test.js
+tests/run-sm183-demo-tests.js
+# Dados pessoais e backups: nunca publicar (SM-release 15/11)
+backup-users*.json
+qa-users.json
+# Artefatos internos de desenvolvimento (handoffs, planos, configurações de agentes)
+.codex/
+.superpowers/

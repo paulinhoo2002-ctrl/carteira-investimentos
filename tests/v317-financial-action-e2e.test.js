@@ -93,15 +93,16 @@ it('compra sintética altera apenas sessão QA e não persiste dados financeiros
   const app = await openApp();
   try {
     const storageBefore = await app.page.evaluate(() => localStorage.getItem('civ5'));
-    await fillPurchase(app.page, 'V317QA');
+    // Ticker do catálogo B3 local: a compra cria a posição pelo ledger (SM185), sem depender de Yahoo.
+    await fillPurchase(app.page, 'BBAS3');
     await app.page.evaluate(() => {
       window.__v317SaveCalls = 0;
       const originalSave = window.save;
       window.save = function (...args) { window.__v317SaveCalls += 1; return originalSave.apply(this, args); };
     });
     await app.page.locator('.quick-movement-modal button.btn.bsv').click();
-    await app.page.waitForFunction(() => S.aportes.some(item => item.ticker === 'V317QA'));
-    const afterSave = await app.page.evaluate(() => S.aportes.filter(item => item.ticker === 'V317QA').map(item => ({
+    await app.page.waitForFunction(() => S.aportes.some(item => item.ticker === 'BBAS3'));
+    const afterSave = await app.page.evaluate(() => S.aportes.filter(item => item.ticker === 'BBAS3').map(item => ({
       operation: item.operation,
       qty: Number(item.qty),
       price: Number(item.price),
@@ -134,13 +135,13 @@ it('falha de persistência reverte compra e mantém revisão visível', async ()
   const app = await openApp();
   try {
     const before = await app.page.evaluate(() => S.aportes.length);
-    await fillPurchase(app.page, 'V317FAIL');
+    await fillPurchase(app.page, 'BBAS3');
     await app.page.evaluate(() => { save = () => false; });
     await app.page.locator('.quick-movement-modal button.btn.bsv').click();
     await app.page.locator('.quick-movement-modal').waitFor({ state: 'visible' });
     assert.match(await app.page.locator('.quick-movement-modal').innerText(), /Erro ao salvar/i);
     assert.equal(await app.page.evaluate(() => S.aportes.length), before);
-    assert.equal(await app.page.evaluate(() => S.aportes.some(item => item.ticker === 'V317FAIL')), false);
+    assert.equal(await app.page.evaluate(() => S.aportes.some(item => item.ticker === 'BBAS3')), false);
     assert.equal(await app.page.evaluate(() => S._financialWriteQuarantined), true);
     assertNoOutboundWrites(app.outboundRequests);
   } finally { await closeApp(app); }
@@ -337,9 +338,9 @@ it('formulário clássico registra venda pendente e bloqueia repetição do ativ
   } finally { await closeApp(app); }
 });
 
-it('compra manual sem cobertura grava apenas no ledger e não inventa posição', async () => {
+it('compra de catálogo sem cobertura cria posição LEDGER sem gravar fantasma (SM185)', async () => {
   const app = await openApp();
-  const ticker = 'M579LIFE';
+  const ticker = 'BBAS3';
   try {
     app.page.on('dialog', dialog => dialog.accept());
     await app.page.evaluate(() => {
@@ -352,13 +353,15 @@ it('compra manual sem cobertura grava apenas no ledger e não inventa posição'
     const portfolioBefore = await app.page.evaluate(() => cx().tC);
     await fillPurchase(app.page, ticker);
     await app.page.locator('.quick-movement-modal button.btn.bsv').click();
-    await app.page.waitForFunction(symbol => S.aportes.some(item => item.ticker === symbol && item.operation === 'compra'), ticker);
-    assert.equal(await app.page.evaluate(symbol => S.assets.some(item => item.ticker === symbol), ticker), false, 'sem posição inicial comprovada, o aporte não cria quantidade ou custo médio');
-    assert.equal(await app.page.evaluate(() => cx().tC), portfolioBefore, 'o dashboard não incorpora uma posição incompleta');
-    await app.page.evaluate(() => openQuickMovement('venda'));
-    assert.match(await app.page.locator('#qm-sale-asset').innerText(), /Nenhum ativo vendável/, 'venda fica indisponível sem posição comprovada');
-    await app.page.getByRole('button', { name: 'Cancelar', exact: true }).click();
-    assert.equal(await app.page.evaluate(symbol => S.aportes.filter(item => item.ticker === symbol).length, ticker), 1, 'a compra confirmada permanece no ledger');
+    await app.page.waitForFunction(() => S.assets.some(item => item.ticker === 'BBAS3'));
+    assert.equal(await app.page.evaluate(() => S.aportes.filter(item => item.ticker === 'BBAS3').length), 1, 'um único lançamento');
+    const posicao = await app.page.evaluate(() => S.assets.find(item => item.ticker === 'BBAS3'));
+    assert.equal(posicao.position_source, 'LEDGER');
+    assert.equal(Number(posicao.qty), 2, 'quantidade do formulário padrão');
+    assert.equal(Number(posicao.avg_price), 10.25, 'preço informado preservado como custo médio');
+    // Sem cotação, a posição é valorizada a custo e marcada como Fonte indisponível (não aparece como ganho).
+    assert.equal(posicao.quoteStatus, 'ERROR');
+    assert.equal(await app.page.evaluate(() => cx().tC) - portfolioBefore, Number(posicao.qty) * Number(posicao.avg_price), 'patrimônio a custo, sem resultado inventado');
     assertNoOutboundWrites(app.outboundRequests);
   } finally { await closeApp(app); }
 });

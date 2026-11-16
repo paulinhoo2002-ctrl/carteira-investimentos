@@ -1,0 +1,36 @@
+{
+  "_nota": "Fixtures 100% sintéticas (tickers fictícios e valores de exemplo). Nenhum registro financeiro real.",
+  "suzb3_two_buys": [
+    {"id":"s1","ticker":"SUZB3","type":"Ação","operation":"compra","qty":15,"price":42.33,"totalValue":634.95,"date":"2026-03-10"},
+    {"id":"s2","ticker":"SUZB3","type":"Ação","operation":"compra","qty":21,"price":42.85,"totalValue":899.85,"date":"2026-05-12"}
+  ],
+  "buys_different_prices": [
+    {"id":"p1","ticker":"TSTE3","type":"Ação","operation":"compra","qty":10,"price":10,"date":"2026-01-05"},
+    {"id":"p2","ticker":"TSTE3","type":"Ação","operation":"compra","qty":10,"price":20,"date":"2026-02-05"}
+  ],
+  "buy_then_sell_all": [
+    {"id":"v1","ticker":"TSTB4","type":"Ação","operation":"compra","qty":10,"price":10,"date":"2026-01-05"},
+    {"id":"v2","ticker":"TSTB4","type":"Ação","operation":"venda","qty":10,"price":15,"date":"2026-02-05"}
+  ],
+  "buy_then_partial_sale": [
+    {"id":"q1","ticker":"TSTC3","type":"Ação","operation":"compra","qty":20,"price":10,"date":"2026-01-05"},
+    {"id":"q2","ticker":"TSTC3","type":"Ação","operation":"venda","qty":5,"price":12,"date":"2026-02-05"}
+  ],
+  "duplicate_movement": [
+    {"id":"d1","ticker":"TSTD3","type":"Ação","operation":"compra","qty":5,"price":10,"date":"2026-01-05"},
+    {"id":"d1","ticker":"TSTD3","type":"Ação","operation":"compra","qty":5,"price":10,"date":"2026-01-05"}
+  ],
+  "inconsistent_identifier": [
+    {"ticker":"TSTE4","type":"Ação","operation":"compra","qty":5,"price":10,"date":"2026-01-05"}
+  ],
+  "incomplete_price": [
+    {"id":"i1","ticker":"TSTF3","type":"Ação","operation":"compra","qty":5,"date":"2026-01-05"}
+  ],
+  "b3_vs_lancamentos": {
+    "registeredQty": 21,
+    "movements": [
+      {"id":"b1","ticker":"TSTG3","type":"Ação","operation":"compra","qty":15,"price":42.33,"date":"2026-03-10"},
+      {"id":"b2","ticker":"TSTG3","type":"Ação","operation":"compra","qty":21,"price":42.85,"date":"2026-05-12"}
+    ]
+  }
+}

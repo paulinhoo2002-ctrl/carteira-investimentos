@@ -22,7 +22,7 @@ function resolveBrowser() {
 
 test('service worker owns a versioned cache and never clears app data', () => {
   assert.match(swSource, /SW_VERSION = 'v252\.0'/);
-  assert.match(indexSource, /__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v250.3'/);
+  assert.match(indexSource, /__EXPECTED_SERVICE_WORKER_CACHE__='carteira-investimentos-v252.0'/);
   assert.match(swSource, /cacheName\.startsWith\('carteira-investimentos-'\)/);
   assert.doesNotMatch(swSource, /localStorage\.clear\s*\(/);
   assert.doesNotMatch(swSource, /indexedDB\.deleteDatabase\s*\(/);
@@ -53,7 +53,10 @@ test('hosting policy revalidates the worker and navigation shell', () => {
 });
 
 test('modern preview entry redirects around the Vite source index without replacing the legacy root', () => {
-  assert.equal(vercelSource.outputDirectory, '.');
+  // Contrato de 15/11: vercel.json não define build nem saída; o projeto QA usa o build de homologação.
+  // Antes do merge, o projeto de produção precisa definir buildCommand e outputDirectory "." no dashboard.
+  assert.equal(vercelSource.outputDirectory, undefined);
+  assert.equal(vercelSource.buildCommand, undefined);
   assert.deepEqual(
     vercelSource.redirects.filter(rule => ['/modern', '/modern/'].includes(rule.source)),
     [

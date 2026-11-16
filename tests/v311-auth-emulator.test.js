@@ -8,7 +8,11 @@ const { chromium } = require('playwright-core');
 const { startLocalHttpServer } = require('./local-http-server');
 
 const PROJECT = 'demo-carteira-qa-emulator';
-const AUTH = 'http://127.0.0.1:9099';
+// Portas do emulador deste teste. Padrão = portas canônicas. O app (index.html, modo de teste) usa as canônicas;
+// quando a porta configurada difere, o teste reencaminha essas requisições (somente no harness do Playwright).
+const AUTH_PORT = process.env.V311_AUTH_PORT || '9099';
+const FIRESTORE_PORT = process.env.V311_FIRESTORE_PORT || '8080';
+const AUTH = `http://127.0.0.1:${AUTH_PORT}`;
 const EMAIL = 'qa.synthetic@example.invalid';
 const CHROME = process.env.CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const QUERY = '?qaAuthEmulator=1&qaFirestoreEmulator=1&protectedReadOnlyQa=1';
@@ -87,6 +91,10 @@ async function newPage({ query = QUERY, hostname = '127.0.0.1', viewport = VIEWP
     blockedProductionRequests.push(route.request().url());
     return route.abort();
   });
+  for (const [canonical, actual] of [['9099', AUTH_PORT], ['8080', FIRESTORE_PORT]]) {
+    if (canonical === actual) continue;
+    await page.route(`http://127.0.0.1:${canonical}/**`, route => route.continue({ url: route.request().url().replace(`127.0.0.1:${canonical}/`, `127.0.0.1:${actual}/`) }));
+  }
   if (unavailableEmulators) {
     await page.route('http://127.0.0.1:9099/**', route => route.abort());
     await page.route('http://127.0.0.1:8080/**', route => route.abort());

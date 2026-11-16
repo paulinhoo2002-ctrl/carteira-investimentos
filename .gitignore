@@ -52,6 +52,9 @@ skills-lock.json
 # Vercel
 .vercel/
 
+# Backup files with sensitive data
+backup-users*.json
+
 # Cache
 .cache/
 
@@ -95,3 +98,4 @@ playwright-report/
 # Skill install artifacts (npx skills add)
 .claude/
 agent/
+.vercel

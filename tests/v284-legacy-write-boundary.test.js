@@ -139,6 +139,10 @@ function installSyntheticLocalPersistence(context, { failStorage = false, failQu
     if (failQueueNow) throw new Error('SYNTHETIC_CLOUD_QUEUE_FAILURE');
   };
   context.debugError = () => {};
+  // SM173: identidade confirmada neste harness de escrita; o escopo do civ5 é coberto por tests/sm173-civ5-isolation.test.js.
+  context.civ5Gate = () => 'ok';
+  // CIV5 diagnostics have dedicated tests; this harness isolates persistence.
+  context.civ5QaTrace = () => {};
   context.toast = () => {};
   const saveStart = html.indexOf('function save(){');
   const saveEnd = html.indexOf('async function releaseCloudSyncAfterSuccessfulReconciliation', saveStart);
