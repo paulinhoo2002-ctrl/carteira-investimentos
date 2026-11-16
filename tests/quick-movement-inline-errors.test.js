@@ -226,7 +226,9 @@ function saveContext({ draft = makeDraft(), builder = null, save = () => true, o
     toast: (m) => { toasts.push(m); },
     save,
     learnTickerMeta: () => {},
-    syncAssetsFromAportes: () => {},
+    META: { PETR4: ['Ação', 'Petróleo'] },
+    // Sincronização de sucesso: a posição do ativo passa a existir (a cobertura real é coberta em outros testes).
+    syncAssetsFromAportes: () => { context.S.assets = [{ id: 'stk-petr4', ticker: 'PETR4', type: 'Ação', qty: 1 }]; },
     fetchQuotes: () => {},
     scheduleAutoProventosGratis: () => {},
     markProventosDirty: () => {},
@@ -237,7 +239,10 @@ function saveContext({ draft = makeDraft(), builder = null, save = () => true, o
     },
     setTimeout: (fn) => { fn(); },
   };
+  // SM184: gate de ticker usa o normalizador real e o catálogo; PETR4 é o ativo do catálogo usado pelo builder.
   const persistenceHelpers = [
+    extractFunctionSource('cleanAssetCode', '\nfunction '),
+    extractFunctionSource('normalizeMetadataTicker', '\nfunction '),
     extractFunctionSource('snapshotFinancialImportState', 'function restoreFinancialImportState'),
     extractFunctionSource('restoreFinancialImportState', 'function persistFinancialImportState'),
     extractFunctionSource('persistFinancialImportState', 'function save'),
