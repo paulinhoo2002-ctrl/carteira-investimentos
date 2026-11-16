@@ -41,12 +41,12 @@ jobs:
           SM173_RULES_FILE: .sm173/candidate.rules
           SM173_OWNER_UID: SyntheticOwnerSm173Ci0001
         run: |
-          firebase emulators:exec --config firebase.sm173-candidate.emulator.json --only auth,firestore --project demo-sm173-candidate "node --test tests/sm173-owner-only-candidate-matrix.test.js" > matrix.log 2>&1 || { cat matrix.log; exit 1; }
+          firebase emulators:exec --config firebase.sm173-candidate.emulator.json --only auth,firestore --project demo-sm173-candidate "node --test --test-reporter=tap tests/sm173-owner-only-candidate-matrix.test.js" > matrix.log 2>&1 || { cat matrix.log; exit 1; }
           cat matrix.log
           PASS=$(grep -E '^# pass ' matrix.log | awk '{print $3}')
           FAIL=$(grep -E '^# fail ' matrix.log | awk '{print $3}')
           SKIP=$(grep -E '^# skipped ' matrix.log | awk '{print $3}')
-          echo "pass=$PASS fail=$FAIL skipped=$SKIP"
-          test "${PASS:-0}" -ge 1
+          echo "pass=$PASS fail=$FAIL skipped=$SKIP (esperado: 25/0/0)"
+          test "${PASS:-0}" -eq 25
           test "${FAIL:-1}" -eq 0
           test "${SKIP:-1}" -eq 0
