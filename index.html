@@ -10690,7 +10690,8 @@ let CIV5_V250_SCOPE=null;  // escopo do marcador offline da sessão atual
 const CIV5_QA_TRACE=[];
 let CIV5_QA_SEQUENCE=0;
 function civ5QaDiagnosticsEnabled(){
-  const hostname=String(window?.location?.hostname||'');
+  if(typeof window==='undefined' || !window?.location) return false;
+  const hostname=String(window.location.hostname||'');
   return hostname==='carteira-homolog-c5785e6.vercel.app' || (hostname.startsWith('carteira-homolog-c5785e6-') && hostname.endsWith('.vercel.app'));
 }
 function civ5QaTrace(event,gateCode=''){
