@@ -1,0 +1,52 @@
+name: SM173 owner-only matrix (temporary validation)
+
+on:
+  push:
+    branches:
+      - tmp/sm173-3b-owner-only-matrix
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  owner-only-matrix:
+    name: Owner-only candidate rules matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install pinned Firebase CLI
+        run: npm install --global firebase-tools@15.32.1
+
+      - name: Generate candidate rules with a synthetic CI owner UID
+        env:
+          # UID SINTÉTICO de CI. Não é o UID do Firebase QA nem de produção.
+          OWNER_UID: SyntheticOwnerSm173Ci0001
+        run: |
+          mkdir -p .sm173
+          node scripts/security/build-owner-only-rules.js --project carteira-homolog-sm118 --out .sm173/candidate.rules
+          grep -q 'request.auth.uid == "SyntheticOwnerSm173Ci0001"' .sm173/candidate.rules
+
+      - name: Run matrix against the candidate rules in the Firestore emulator
+        env:
+          SM173_RULES_FILE: .sm173/candidate.rules
+          SM173_OWNER_UID: SyntheticOwnerSm173Ci0001
+        run: |
+          firebase emulators:exec --config firebase.sm173-candidate.emulator.json --only auth,firestore --project demo-sm173-candidate "node --test tests/sm173-owner-only-candidate-matrix.test.js" > matrix.log 2>&1 || { cat matrix.log; exit 1; }
+          cat matrix.log
+          PASS=$(grep -E '^# pass ' matrix.log | awk '{print $3}')
+          FAIL=$(grep -E '^# fail ' matrix.log | awk '{print $3}')
+          SKIP=$(grep -E '^# skipped ' matrix.log | awk '{print $3}')
+          echo "pass=$PASS fail=$FAIL skipped=$SKIP"
+          test "${PASS:-0}" -ge 1
+          test "${FAIL:-1}" -eq 0
+          test "${SKIP:-1}" -eq 0
