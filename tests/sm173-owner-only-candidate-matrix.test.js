@@ -28,7 +28,7 @@ async function session(uid, verified) {
   const r = await fetch(`${AUTH}/identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=demo-api-key`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: customToken(uid), returnSecureToken: true }) });
   const s = await r.json();
   assert.ok(s.idToken, 'sessão sintética');
-  const upd = await fetch(`${AUTH}/identitytoolkit.googleapis.com/v1/accounts:update?key=demo-api-key`, { method: 'POST', headers: { 'content-type': 'application/json', ...ADMIN }, body: JSON.stringify({ idToken: s.idToken, email: `${uid}@synthetic.test`, emailVerified: verified, returnSecureToken: true }) });
+  const upd = await fetch(`${AUTH}/identitytoolkit.googleapis.com/v1/accounts:update?key=demo-api-key`, { method: 'POST', headers: { 'content-type': 'application/json', ...ADMIN }, body: JSON.stringify({ idToken: s.idToken, localId: uid, email: `${uid}@synthetic.test`, emailVerified: verified, returnSecureToken: true }) });
   const updBody = await upd.json().catch(() => ({}));
   console.log(`[diag] accounts:update status=${upd.status} emailVerified=${updBody.emailVerified ?? 'n/a'} error=${updBody.error?.message ?? 'none'}`);
   const r2 = await fetch(`${AUTH}/identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=demo-api-key`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: customToken(uid), returnSecureToken: true }) });
