@@ -133,3 +133,11 @@ test('preview e resumo chamam o feedback apenas nos fluxos de mercado', () => {
   const previewSource = indexHtml.slice(previewStart, indexHtml.indexOf('function refreshQuickMovementPreview', previewStart));
   assert.match(previewSource, /quickMovementMetadataFeedbackHtml\(draft\.ticker, draft\.type, draft\.sector, draft\.manualType, draft\.manualSector\)/);
 });
+test('SM188: sem classe conhecida, o select de tipo não pré-seleciona Ação como identificada', () => {
+  const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  // A classe conhecida vem da origem real (não do padrão do rascunho).
+  assert.match(source, /const classSource=draft\.manualType\?'manual':\(draft\.ticker\?resolveAssetMetadata\(draft\.ticker\)\.source:'unknown'\);/);
+  assert.match(source, /const classUnknown=classSource==='unknown';/);
+  assert.match(source, /const typePlaceholder=classUnknown\?'<option value="" selected disabled>Escolha o tipo<\/option>':'';/);
+  assert.match(source, /const selectedType=classUnknown\?'':normalizeType\(draft\.type\|\|'Ação','Ação'\);/, 'nenhuma classe pré-selecionada quando desconhecida');
+});

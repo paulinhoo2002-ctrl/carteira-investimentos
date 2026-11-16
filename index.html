@@ -19518,9 +19518,12 @@ function quickMovementModal(){
     <button type="button" role="tab" aria-selected="${rfTab==='novo'}" class="rf-quick-tab ${rfTab==='novo'?'on':''}" onclick="setRfQuickTab('novo')">Novo título</button>
   </div>`;
   // SM188: sem classe conhecida, o select não pré-seleciona "Ação" como se tivesse sido identificado.
-  const knownType=String(draft.type||'').trim();
-  const typePlaceholder=knownType?'':'<option value="" selected disabled>Escolha o tipo</option>';
-  const assetTypes=typePlaceholder+quickMovementKindOptions().map(t=>`<option ${knownType&&normalizeType(knownType,'Ação')===t?'selected':''}>${esc(t)}</option>`).join('');
+  // Classe conhecida = origem real (carteira, histórico ou catálogo) ou escolha manual. O padrão do rascunho não conta.
+  const classSource=draft.manualType?'manual':(draft.ticker?resolveAssetMetadata(draft.ticker).source:'unknown');
+  const classUnknown=classSource==='unknown';
+  const typePlaceholder=classUnknown?'<option value="" selected disabled>Escolha o tipo</option>':'';
+  const selectedType=classUnknown?'':normalizeType(draft.type||'Ação','Ação');
+  const assetTypes=typePlaceholder+quickMovementKindOptions().map(t=>`<option ${selectedType===t?'selected':''}>${esc(t)}</option>`).join('');
   const eventTypes=['Rendimento','Dividendo','JCP','Amortização','Outro'].map(t=>`<option ${String(draft.eventType||'Rendimento')===t?'selected':''}>${esc(t)}</option>`).join('');
   const rfSubtypes=['CDB','LCI','LCA','Tesouro Direto','CRI','CRA','Debênture','Letra Financeira','Outro'].map(t=>`<option ${String(draft.rfSubtype||'CDB')===t?'selected':''}>${esc(t)}</option>`).join('');
   const commonHeader=`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
