@@ -20039,8 +20039,10 @@ function saveQuickMovement(){
   // Validação local antes de gravar (sem consulta de cotação): só ativo já existente na carteira ou no
   // catálogo conhecido. Formato B3 sozinho (inference) e ticker só "aprendido" de digitação não contam.
   if(kind==='compra'||kind==='venda'){
-    const known=String(resolveAssetMetadata(reg.ticker).source||'');
-    if(!['asset','catalog'].includes(known)){
+    const tk=normalizeMetadataTicker(reg.ticker);
+    const inPortfolio=(S.assets||[]).some(a=>normalizeMetadataTicker(a?.ticker||'')===tk);
+    const inCatalog=!!META[tk];
+    if(!inPortfolio && !inCatalog){
       S.quickMovementSaving=false;
       S.quickMovementError='Ativo não reconhecido. Verifique o código informado.';
       S.quickMovementErrorField='ticker';

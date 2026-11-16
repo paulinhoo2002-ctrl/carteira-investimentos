@@ -49,11 +49,15 @@ const registro = (page, ticker) => page.evaluate(symbol => S.aportes.filter(item
 it('Lançamentos premium - compra, venda, edição e exclusão com dados sintéticos', async () => {
   const app = await openApp();
   const { page } = app;
-  const ticker = 'V16QA1';
+  const ticker = 'BBAS3';
   try {
     await page.evaluate(() => go('aportes'));
     assert.ok(await page.locator('.aporte-premium').count(), 'tela de Lançamentos renderizada');
     assert.equal(await page.locator('.aporte-primary-toolbar .btn.bp').count(), 1, 'uma única ação primária de cadastro');
+
+    // Posição sintética pré-existente: a compra só é aceita quando já existe posição do ativo (SM184, contenção A).
+    // A cobertura histórica do provedor não é simulada aqui; ver teste "sem cobertura histórica".
+    await page.evaluate(symbol => { S.assets = [...S.assets, { id: 'V16_KNOWN_POSITION', ticker: symbol, type: 'Ação', qty: 4, avg_price: 10.5, current_price: 10.5 }]; render(); }, ticker);
 
     // COMPRA pela interface
     await page.locator('.aporte-primary-toolbar .btn.bp').click();
@@ -67,9 +71,6 @@ it('Lançamentos premium - compra, venda, edição e exclusão com dados sintét
     await page.evaluate(() => go('aportes'));
     const linha = page.locator('.aporte-history-card', { hasText: ticker }).first();
     assert.match(await linha.innerText(), /Compra/, 'histórico mostra o tipo Compra');
-
-    // Posição sintética previamente existente: sem prova completa, as operações do ledger não a recalculam.
-    await page.evaluate(symbol => { S.assets = [...S.assets, { id: 'V16_KNOWN_POSITION', ticker: symbol, type: 'Ação', qty: 4, avg_price: 10.5, current_price: 10.5 }]; render(); }, ticker);
 
     // VENDA: acima da posição é rejeitada e não grava; venda válida grava
     const assetId = await page.evaluate(symbol => String(S.assets.find(item => item.ticker === symbol)?.id), ticker);
@@ -106,6 +107,47 @@ it('Lançamentos premium - compra, venda, edição e exclusão com dados sintét
     assert.equal(await page.evaluate(id => S.aportes.find(item => String(item.id) === String(id))?.reconciliationStatus, venda.id), 'PENDING_RECONCILIATION', 'exclusão não remove a venda pendente do ledger');
     assert.equal(await page.evaluate(symbol => S.assets.find(item => item.ticker === symbol)?.qty, ticker), 4, 'posição existente é preservada durante reconciliação pendente');
     assert.deepEqual(app.problems, [], 'sem erros de página nem escrita externa');
+  } finally {
+    await closeApp(app);
+  }
+});
+
+it('Lançamentos premium - ticker sem cobertura histórica é recusado sem lançamento órfão (SM184)', async () => {
+  const app = await openApp();
+  const { page } = app;
+  try {
+    await page.evaluate(() => go('aportes'));
+    const antes = await page.evaluate(() => ({ aportes: S.aportes.length, assets: S.assets.length }));
+    await page.locator('.aporte-primary-toolbar .btn.bp').click();
+    await page.locator('.quick-movement-modal').waitFor({ state: 'visible' });
+    await page.locator('#qm-ti').fill('BBAS3');
+    await page.locator('#qm-qty').fill('4');
+    await page.locator('#qm-price').fill('10,50');
+    await page.locator('.quick-movement-modal button.btn.bsv').click();
+    await page.waitForFunction(() => /Nada foi gravado/.test(document.querySelector('.quick-movement-modal')?.innerText || ''));
+    assert.deepEqual(await page.evaluate(() => ({ aportes: S.aportes.length, assets: S.assets.length })), antes, 'compra recusada não grava lançamento nem posição');
+    assert.equal(await page.evaluate(() => S.aportes.some(item => item.ticker === 'BBAS3')), false, 'sem lançamento órfão');
+    assert.deepEqual(app.problems, [], 'sem erros de página');
+  } finally {
+    await closeApp(app);
+  }
+});
+
+it('Lançamentos premium - ticker inexistente (formato válido) é bloqueado antes da gravação (SM184)', async () => {
+  const app = await openApp();
+  const { page } = app;
+  try {
+    await page.evaluate(() => go('aportes'));
+    const antes = await page.evaluate(() => S.aportes.length);
+    await page.locator('.aporte-primary-toolbar .btn.bp').click();
+    await page.locator('.quick-movement-modal').waitFor({ state: 'visible' });
+    await page.locator('#qm-ti').fill('ZZNX3');
+    await page.locator('#qm-qty').fill('4');
+    await page.locator('#qm-price').fill('10,50');
+    await page.locator('.quick-movement-modal button.btn.bsv').click();
+    await page.waitForFunction(() => /Ativo não reconhecido/.test(document.querySelector('.quick-movement-modal')?.innerText || ''));
+    assert.equal(await page.evaluate(() => S.aportes.length), antes, 'ticker inexistente não gera lançamento');
+    assert.equal(await page.evaluate(() => S.assets.some(item => item.ticker === 'ZZNX3')), false, 'sem posição fantasma');
   } finally {
     await closeApp(app);
   }
