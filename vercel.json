@@ -194,8 +194,7 @@
       "**": false,
       "main": true,
       "codex/preview/**": true,
-      "m5-preview/**": true,
-      "sm173-6b-qa-owner-exception": true
+      "m5-preview/**": true
     }
   }
 }
