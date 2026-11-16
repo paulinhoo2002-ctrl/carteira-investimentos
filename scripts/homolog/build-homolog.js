@@ -3,7 +3,8 @@
 // SM132 — build reproduzível da HOMOLOGAÇÃO (carteira-homolog-sm118). Não é build de produção.
 // Uso:
 //   node scripts/homolog/build-homolog.js --sha <sha-40> --out <dir-novo> --sdk-config <json-publico> \
-//        --uid <uid-sintetico> --email <email-de-homologacao> --mode <bootstrap|authenticated>
+//        --uid <uid-sintetico> --email <email-de-homologacao> --mode <bootstrap|authenticated> \
+//        [--qa-owner-rules <regras-qa-publicadas>]   (exceção QA: conta proprietária no projeto QA apenas)
 // O --sdk-config é a configuração PÚBLICA do app web de homologação (não é segredo). Nunca use a de produção.
 // O script não grava nada no repositório. Gera o artefato em --out e um manifesto ao lado (<out>.manifest.json),
 // fora do artefato publicado. Roda o guard antes de considerar o build válido (fail-closed).
@@ -150,7 +151,9 @@ function main() {
   if (fs.existsSync(out)) throw new Error('destino já existe: não sobrescreve');
   const sdkRaw = JSON.parse(fs.readFileSync(args['sdk-config'], 'utf8'));
   const sdk = validateSdkConfig(sdkRaw.result ? sdkRaw.result.sdkConfig : (sdkRaw.sdkConfig || sdkRaw), HOMOLOG_PROJECT);
-  const { uid, email } = validateIdentity(args.uid, args.email);
+  // Exceção QA (SM173.6B): só com --qa-owner-rules <regras QA publicadas>; sem ele, a identidade de produção é recusada.
+  const qa = args['qa-owner-rules'] ? { projectId: HOMOLOG_PROJECT, rulesPath: path.resolve(args['qa-owner-rules']) } : null;
+  const { uid, email, qaException } = validateIdentity(args.uid, args.email, qa);
   const resolved = execFileSync('git', ['-C', repoRoot(), 'rev-parse', '--verify', `${sha}^{commit}`], { encoding: 'utf8' }).trim();
   if (resolved !== sha) throw new Error('SHA não resolvido de forma exata');
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'homolog-src-'));
@@ -171,10 +174,10 @@ function main() {
     // Marcador publicado: prova que este build (e não o fonte) foi o que a Vercel serviu.
     fs.writeFileSync(path.join(out, 'homolog-build.json'), JSON.stringify({ sha, mode: args.mode, project: HOMOLOG_PROJECT, builtAt: new Date().toISOString() }) + '\n', 'utf8');
     const files = walk(out).sort().map(p => ({ path: p, sha256: sha256(fs.readFileSync(path.join(out, p))) }));
-    const manifest = { sha, shortSha, project: HOMOLOG_PROJECT, identity: { uid, email }, unresolved: crawled.unresolved, files };
+    const manifest = { sha, shortSha, project: HOMOLOG_PROJECT, identity: { uid, email, qaException }, unresolved: crawled.unresolved, files };
     const manifestPath = out + '.manifest.json';
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 1));
-    const result = checkDistribution(out, { sha, shortSha, projectId: HOMOLOG_PROJECT, uid, email, cfg: sdk, manifestPath, loginHint });
+    const result = checkDistribution(out, { sha, shortSha, projectId: HOMOLOG_PROJECT, uid, email, cfg: sdk, manifestPath, loginHint, qaException });
     console.log(`build homolog ok: ${files.length} arquivos, SHA ${shortSha}, guard ${result.checks.length} verificações PASS`);
     console.log(`manifesto: ${manifestPath}`);
   } finally {

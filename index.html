@@ -9441,12 +9441,13 @@ function revalidateFirebaseAuthAfterReconnect(){
           render();
           return {status:'auth-gate'};
         }
-        hydrateAuthorizedLocalState();
+        // SM173.6B: escopo alheio no civ5 = estado protegido (sem carteira exibida), não acesso liberado.
+        const localReady = FB.accountMode!=='REAL' || hydrateAuthorizedLocalState();
         FB.authResolved = true;
         FB.access.loading = false;
         FB.access.loaded = true;
-        FB.access.allowed = true;
-        FB.access.reason = '';
+        FB.access.allowed = localReady;
+        FB.access.reason = localReady ? '' : CIV5_PROTECTED_REASON;
         clearReconnectReloadGuard();
         reconnectWasOffline = false;
         startCloudSync({readOnlyOnly: isProtectedReadOnlyQaBoot() || !isEditOwner()});
@@ -10876,9 +10877,20 @@ function load(){
   if(S.assets.length && S.aportes.length) S.autoProvDirty=true;
   syncHideValuesPreference();
 }
+// Motivo exibido quando o civ5 deste navegador pertence a outra identidade (estado protegido, recuperável).
+const CIV5_PROTECTED_REASON='Os dados deste navegador pertencem a outra conta. Nada foi exibido, enviado ou apagado. Peça a migração controlada para exibir a carteira.';
 function hydrateAuthorizedLocalState(){
   if(FB.accountMode!=='REAL') return false;
   if(FB.localPortfolioLoaded) return true;
+  // SM173.6B: só carrega o civ5 quando pertence a esta identidade. Escopo alheio ou não confirmado: nada entra na
+  // memória exibida. save() e a nuvem continuam bloqueados pelo mesmo gate; nada é gravado nem apagado aqui.
+  const loadGate=civ5Gate();
+  if(loadGate!=='ok'){
+    civ5QaTrace('load_blocked',loadGate);
+    S.assets=[]; S.wallets=[]; S.aportes=[]; S.proventos=[]; S.rfEvents=[];
+    FB.localPortfolioLoaded=false;
+    return false;
+  }
   load();
   initializeV76Runtime();
   FB.localPortfolioLoaded=true;
@@ -11910,7 +11922,14 @@ function initFirebase(){
         await recordAccessAttempt(user, ok, FB.access.reason);
         if(!authSession.isCurrent() || FB.user?.uid !== user.uid) return;
         FB.access.loading = false;
+        // SM173.6B: civ5 de outra identidade = estado protegido; sem carteira, sem sincronização.
         hydrateAuthorizedLocalState();
+        if(FB.accountMode==='REAL' && !FB.localPortfolioLoaded){
+          FB.access.allowed = false;
+          FB.access.reason = CIV5_PROTECTED_REASON;
+          render();
+          return;
+        }
         try{ if(S.aportes.length) syncAssetsFromAportes(false); }
         catch(error){ debugError('sincronização inicial de ativos falhou:',error); }
         clearReconnectReloadGuard();

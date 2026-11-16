@@ -17,9 +17,23 @@ function readOwnerIdentifiers(rulesPath = RULES_PATH) {
   if (!uid || !email) throw new Error('GUARD: identidade do proprietário não encontrada em firestore.rules (fail-closed)');
   return { uid, email };
 }
-function prodIdentifiers() {
+function prodIdentifiers(qaException = false) {
   if (!prodOwner) prodOwner = readOwnerIdentifiers();
-  return [PROD_PROJECT, prodOwner.email, prodOwner.uid];
+  // Exceção QA (SM173.6B): o e-mail do proprietário é permitido na homologação; o UID e o projeto de produção não.
+  return qaException ? [PROD_PROJECT, prodOwner.uid] : [PROD_PROJECT, prodOwner.email, prodOwner.uid];
+}
+// Exceção QA explícita: só o projeto de homologação, só a conta proprietária definitiva, só o UID autorizado pelas
+// regras QA publicadas (com e-mail verificado). SHA-256 das regras owner-only publicadas no QA na SM173.4.
+const QA_PROJECT = 'carteira-homolog-sm118';
+const QA_RULES_SHA256 = 'ba88b2f00227b274834d91e7087f0e95412e64eaa2799c0e7a0e31ddb597b786';
+function readQaOwnerRules(rulesPath, expectedSha256 = QA_RULES_SHA256) {
+  const bytes = fs.readFileSync(rulesPath); // ausente = erro (fail-closed)
+  if (sha256(bytes) !== expectedSha256) throw new Error('GUARD: regras QA não correspondem às regras owner-only publicadas (SHA-256)');
+  const text = bytes.toString('utf8');
+  const uids = new Set([...text.matchAll(/request\.auth\.uid\s*==\s*"([A-Za-z0-9]{20,40})"/g)].map(m => m[1]));
+  if (uids.size !== 1) throw new Error('GUARD: regras QA devem autorizar exatamente um UID proprietário');
+  if (!/request\.auth\.token\.email_verified\s*==\s*true/.test(text)) throw new Error('GUARD: regras QA sem exigência de e-mail verificado');
+  return { uid: [...uids][0] };
 }
 const PROD_HOSTS = /controle-financeiro|investidor10|carteira-2\b/;
 const SDK_FIELDS = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'];
@@ -53,14 +67,23 @@ function validateLoginHint(hint) {
 }
 
 // Valida a identidade sintética autorizada. Lança erro se ausente, inválida ou igual à identidade de produção.
-function validateIdentity(uid, email) {
+// `qa` (opcional) = { projectId, rulesPath }: exceção QA explícita. Sem ele, vale a regra estrita (produção recusada).
+function validateIdentity(uid, email, qa = null) {
   if (!/^[A-Za-z0-9]{20,40}$/.test(String(uid || ''))) throw new Error('GUARD: UID sintético ausente ou inválido');
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(email || ''))) throw new Error('GUARD: e-mail de homologação ausente ou inválido');
   // SM165: o app compara o e-mail normalizado (minúsculas, sem espaços) em isAccessAdmin. A constante gravada no build
   // precisa estar normalizada; caso contrário o proprietário nunca passa no gate.
   const normalized = String(email).trim().toLowerCase();
-  for (const id of prodIdentifiers()) if (uid === id || normalized === String(id).toLowerCase()) throw new Error('GUARD: identidade de produção informada');
-  return { uid, email: normalized };
+  if (!qa) {
+    for (const id of prodIdentifiers()) if (uid === id || normalized === String(id).toLowerCase()) throw new Error('GUARD: identidade de produção informada');
+    return { uid, email: normalized, qaException: false };
+  }
+  if (qa.projectId !== QA_PROJECT) throw new Error('GUARD: exceção QA recusada: projeto diferente do QA autorizado');
+  if (!prodOwner) prodOwner = readOwnerIdentifiers();
+  if (normalized !== prodOwner.email.toLowerCase()) throw new Error('GUARD: exceção QA só vale para a conta proprietária definitiva');
+  if (uid === prodOwner.uid) throw new Error('GUARD: UID de produção não pode substituir o UID QA');
+  if (uid !== readQaOwnerRules(qa.rulesPath).uid) throw new Error('GUARD: UID não corresponde ao autorizado pelas regras QA publicadas');
+  return { uid, email: normalized, qaException: true };
 }
 
 // Verifica o diretório gerado. `expected` = { sha, shortSha, projectId, uid, email, cfg }.
@@ -73,7 +96,7 @@ function checkDistribution(dir, expected) {
   const cfg = expected.cfg;
 
   if (!html.includes(`projectId: "${expected.projectId}"`)) fail('projectId de homologação ausente no index.html');
-  for (const id of prodIdentifiers()) if (html.includes(id)) fail(`identificador de produção presente: ${id.slice(0, 6)}…`);
+  for (const id of prodIdentifiers(expected.qaException === true)) if (html.includes(id)) fail(`identificador de produção presente: ${id.slice(0, 6)}…`);
   if (expected.loginHint) {
     // Dica presente, editável (sem readonly/disabled) e sem senha preenchida.
     const emailTag = /<input id="homolog-email"[^>]*>/.exec(html);
@@ -125,4 +148,4 @@ function walk(dir, base = dir) {
   return out;
 }
 
-module.exports = { checkDistribution, validateSdkConfig, validateIdentity, validateLoginHint, readOwnerIdentifiers, PROD_PROJECT, sha256, walk };
+module.exports = { checkDistribution, validateSdkConfig, validateIdentity, validateLoginHint, readOwnerIdentifiers, readQaOwnerRules, QA_PROJECT, QA_RULES_SHA256, PROD_PROJECT, sha256, walk };
