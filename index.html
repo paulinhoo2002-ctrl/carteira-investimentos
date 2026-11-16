@@ -10762,6 +10762,17 @@ function civ5Gate(){
   if(raw===null){
     try{ localStorage.setItem(CIV5_OWNER_KEY,CIV5_SCOPE); return 'ok'; }catch(e){ return 'STORAGE_UNAVAILABLE'; }
   }
+  // SM173.9: civ5 sem escopo nunca é vinculado automaticamente (nem no login, nem na sincronização).
+  // Só o ato explícito civ5ConfirmLegacyBind() vincula. Até lá: estado protegido, nada gravado.
+  return 'LEGACY_UNBOUND';
+}
+// Confirmação literal do proprietário para vincular o civ5 sem escopo. Sem ela, nada muda.
+const CIV5_LEGACY_CONFIRMATION='VINCULAR CIV5 LEGADO';
+function civ5ConfirmLegacyBind(confirmation){
+  if(confirmation!==CIV5_LEGACY_CONFIRMATION) return 'CONFIRMATION_REQUIRED';
+  if(!CIV5_SCOPE) return 'IDENTITY_UNCONFIRMED';
+  let owner=null; try{ owner=localStorage.getItem(CIV5_OWNER_KEY); }catch(e){ return 'STORAGE_UNAVAILABLE'; }
+  if(owner!==null) return owner===CIV5_SCOPE ? 'ok' : 'FOREIGN_SCOPE'; // nunca reatribui escopo já existente
   return civ5LegacyBind();
 }
 function civ5GateReadOnly(){

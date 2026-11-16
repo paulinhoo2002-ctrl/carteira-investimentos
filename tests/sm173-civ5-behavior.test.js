@@ -10,6 +10,10 @@ const test = require('node:test');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8').replace(/\r\n/g, '\n');
 
+
+// SM173.9: o gate não vincula civ5 sem escopo; o vínculo legado exige confirmação explícita. Helper confirma só para o cenário legado.
+const gateAfterLegacy = o => { const g = o.civ5Gate(); return g === 'LEGACY_UNBOUND' ? o.civ5ConfirmLegacyBind('VINCULAR CIV5 LEGADO') : g; };
+
 function functionSource(name) {
   const asyncStart = html.indexOf(`\nasync function ${name}(`);
   const plainStart = html.indexOf(`\nfunction ${name}(`);
@@ -94,7 +98,7 @@ function makeApp({ storage, user, admin = true, cloud }) {
   ctx.window = ctx;
   ctx.globalThis = ctx;
   vm.createContext(ctx);
-  vm.runInContext(SOURCE + '\nthis.__api={civ5Gate,civ5GateReadOnly,civ5BindIdentity,queueCloudSave,uploadLocalToCloud,getScope:()=>CIV5_SCOPE};', ctx);
+  vm.runInContext(SOURCE + '\nthis.__api={civ5Gate,civ5ConfirmLegacyBind,civ5GateReadOnly,civ5BindIdentity,queueCloudSave,uploadLocalToCloud,getScope:()=>CIV5_SCOPE};', ctx);
   app.ctx = ctx;
   app.api = ctx.__api;
   app.setUser = u => { ctx.FB.user = u; };
@@ -196,15 +200,15 @@ test('troca de usuário e retorno à identidade original preservam os dados do d
   const cloud = { doc: null, failSet: false, delayMs: 0, sets: [] };
   const owner = makeApp({ storage, user: { uid: OWNER }, cloud });
   await owner.api.civ5BindIdentity({ uid: OWNER });
-  assert.equal(owner.api.civ5Gate(), 'ok');
+  assert.equal(gateAfterLegacy(owner.api), 'ok');
   const snapshot = storage.getItem('civ5');
   const other = makeApp({ storage, user: { uid: OTHER }, admin: false, cloud });
   await other.api.civ5BindIdentity({ uid: OTHER });
-  assert.equal(other.api.civ5Gate(), 'FOREIGN_SCOPE');
+  assert.equal(gateAfterLegacy(other.api), 'FOREIGN_SCOPE');
   assert.equal(storage.getItem('civ5'), snapshot, 'dados do dono intactos durante a troca');
   const back = makeApp({ storage, user: { uid: OWNER }, cloud });
   await back.api.civ5BindIdentity({ uid: OWNER });
-  assert.equal(back.api.civ5Gate(), 'ok', 'retorno à identidade original');
+  assert.equal(gateAfterLegacy(back.api), 'ok', 'retorno à identidade original');
   assert.equal(storage.getItem('civ5'), snapshot, 'dados preservados após o retorno');
 });
 
@@ -213,10 +217,10 @@ test('migração legada: sem perda, sem duplicação, idempotente e com backup i
   storage.setItem('civ5', RAW_BEFORE);
   const app = makeApp({ storage, user: { uid: OWNER }, cloud: { doc: null, failSet: false, delayMs: 0, sets: [] } });
   await app.api.civ5BindIdentity({ uid: OWNER });
-  assert.equal(app.api.civ5Gate(), 'ok');
+  assert.equal(gateAfterLegacy(app.api), 'ok');
   assert.equal(storage.getItem('civ5_legacy_backup'), RAW_BEFORE, 'backup idêntico ao legado');
   assert.equal(storage.getItem('civ5'), RAW_BEFORE, 'legado original intacto');
-  assert.equal(app.api.civ5Gate(), 'ok', 'segunda chamada idempotente');
+  assert.equal(gateAfterLegacy(app.api), 'ok', 'segunda chamada idempotente');
   assert.equal(storage.getItem('civ5'), RAW_BEFORE, 'sem duplicação após repetir a migração');
 });
 
@@ -229,7 +233,7 @@ test('migração legada bloqueada para quem não é o dono (sem envio cruzado)',
   other.ctx.FB.pendingCloudSave = true;
   const r = await other.api.uploadLocalToCloud(false);
   assert.equal(r.pass, false);
-  assert.equal(r.reason, 'LEGACY_NOT_OWNER');
+  assert.equal(r.reason, 'LEGACY_UNBOUND', 'sem vínculo, o gate bloqueia o envio');
   assert.equal(cloud.sets.length, 0, 'nenhum envio do legado para outra conta');
   assert.equal(storage.getItem('civ5_owner'), null, 'legado não vinculado');
   assert.equal(storage.getItem('civ5_legacy_backup'), null, 'sem backup por quem não é dono');
@@ -257,7 +261,7 @@ test('backup existente e diferente não é sobrescrito', async () => {
   storage.setItem('civ5_legacy_backup', 'backup-anterior');
   const app = makeApp({ storage, user: { uid: OWNER }, cloud: { doc: null, failSet: false, delayMs: 0, sets: [] } });
   await app.api.civ5BindIdentity({ uid: OWNER });
-  assert.equal(app.api.civ5Gate(), 'LEGACY_BACKUP_CONFLICT');
+  assert.equal(gateAfterLegacy(app.api), 'LEGACY_BACKUP_CONFLICT');
   assert.equal(storage.getItem('civ5_legacy_backup'), 'backup-anterior', 'backup anterior preservado');
   assert.equal(storage.getItem('civ5'), RAW_BEFORE);
 });
@@ -270,8 +274,8 @@ test('duas abas da mesma identidade compartilham o armazenamento sem sobrescrita
   const tabB = makeApp({ storage, user: { uid: OWNER }, cloud });
   await tabA.api.civ5BindIdentity({ uid: OWNER });
   await tabB.api.civ5BindIdentity({ uid: OWNER });
-  assert.equal(tabA.api.civ5Gate(), 'ok');
-  assert.equal(tabB.api.civ5Gate(), 'ok');
+  assert.equal(gateAfterLegacy(tabA.api), 'ok');
+  assert.equal(gateAfterLegacy(tabB.api), 'ok');
   assert.equal(storage.getItem('civ5'), RAW_BEFORE, 'vincular duas abas não reescreve os dados');
   assert.equal(storage.getItem('civ5_legacy_backup'), RAW_BEFORE, 'backup único');
 });
@@ -281,10 +285,10 @@ test('logout zera a identidade em memória e preserva o armazenamento', async ()
   storage.setItem('civ5', RAW_BEFORE);
   const app = makeApp({ storage, user: { uid: OWNER }, cloud: { doc: null, failSet: false, delayMs: 0, sets: [] } });
   await app.api.civ5BindIdentity({ uid: OWNER });
-  assert.equal(app.api.civ5Gate(), 'ok');
+  assert.equal(gateAfterLegacy(app.api), 'ok');
   await app.api.civ5BindIdentity(null);
   assert.equal(app.api.getScope(), null);
-  assert.equal(app.api.civ5Gate(), 'IDENTITY_UNCONFIRMED', 'sem identidade, nenhuma gravação');
+  assert.equal(gateAfterLegacy(app.api), 'IDENTITY_UNCONFIRMED', 'sem identidade, nenhuma gravação');
   assert.equal(storage.getItem('civ5'), RAW_BEFORE, 'armazenamento local preservado após logout');
   assert.ok(storage.getItem('civ5_owner'), 'vínculo persistido para a próxima entrada do dono');
 });

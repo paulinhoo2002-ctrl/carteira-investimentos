@@ -31,6 +31,10 @@ function makeStorage({ failSet = null, silentSet = null } = {}) {
   };
 }
 
+
+// SM173.9: o gate não vincula civ5 sem escopo; o vínculo legado exige confirmação explícita. Helper confirma só para o cenário legado.
+const gateAfterLegacy = o => { const g = o.civ5Gate(); return g === 'LEGACY_UNBOUND' ? o.civ5ConfirmLegacyBind('VINCULAR CIV5 LEGADO') : g; };
+
 function load({ storage, user = { uid: OWNER }, admin = true, project = 'carteira-homolog-sm118' } = {}) {
   const ctx = {
     STOR: 'civ5',
@@ -47,7 +51,7 @@ function load({ storage, user = { uid: OWNER }, admin = true, project = 'carteir
   };
   ctx.globalThis = ctx;
   vm.createContext(ctx);
-  vm.runInContext(BLOCK + '\nthis.__api={civ5ScopeFor,civ5Gate,civ5GateReadOnly,civ5BindIdentity,civ5LegacyBind,getScope:()=>CIV5_SCOPE};', ctx);
+  vm.runInContext(BLOCK + '\nthis.__api={civ5ScopeFor,civ5Gate,civ5GateReadOnly,civ5BindIdentity,civ5LegacyBind,civ5ConfirmLegacyBind,getScope:()=>CIV5_SCOPE};', ctx);
   return ctx;
 }
 
@@ -72,7 +76,7 @@ test('identidade ausente: gate bloqueia (IDENTITY_UNCONFIRMED) sem tocar no arma
   const st = makeStorage();
   st.setItem('civ5', RAW);
   const c = load({ storage: st });
-  assert.equal(c.civ5Gate(), 'IDENTITY_UNCONFIRMED');
+  assert.equal(gateAfterLegacy(c), 'IDENTITY_UNCONFIRMED');
   assert.equal(st.getItem('civ5'), RAW);
   assert.equal(st.getItem('civ5_owner'), null);
 });
@@ -80,7 +84,7 @@ test('identidade ausente: gate bloqueia (IDENTITY_UNCONFIRMED) sem tocar no arma
 test('armazenamento vazio + identidade confirmada: vincula sem backup', async () => {
   const st = makeStorage();
   const c = await bindAs(load({ storage: st }), { uid: OWNER });
-  assert.equal(c.civ5Gate(), 'ok');
+  assert.equal(gateAfterLegacy(c), 'ok');
   assert.equal(st.getItem('civ5_owner'), c.__api.getScope());
   assert.equal(st.getItem('civ5_legacy_backup'), null, 'nada a copiar');
 });
@@ -89,7 +93,7 @@ test('legado do dono (civ5 com dados, sem escopo): backup verificado antes do v�
   const st = makeStorage();
   st.setItem('civ5', RAW);
   const c = await bindAs(load({ storage: st, admin: true }), { uid: OWNER });
-  assert.equal(c.civ5Gate(), 'ok');
+  assert.equal(gateAfterLegacy(c), 'ok');
   assert.equal(st.getItem('civ5_legacy_backup'), RAW, 'backup idêntico ao legado');
   assert.equal(st.getItem('civ5'), RAW, 'civ5 não foi alterado pela migração');
   assert.equal(st.getItem('civ5_owner'), c.__api.getScope());
@@ -99,7 +103,7 @@ test('legado de conta que NÃO é o dono: bloqueado, sem backup e sem vínculo',
   const st = makeStorage();
   st.setItem('civ5', RAW);
   const c = await bindAs(load({ storage: st, user: { uid: OTHER }, admin: false }), { uid: OTHER });
-  assert.equal(c.civ5Gate(), 'LEGACY_NOT_OWNER');
+  assert.equal(gateAfterLegacy(c), 'LEGACY_NOT_OWNER');
   assert.equal(st.getItem('civ5_owner'), null);
   assert.equal(st.getItem('civ5_legacy_backup'), null);
   assert.equal(st.getItem('civ5'), RAW);
@@ -110,7 +114,7 @@ test('escopo divergente: bloqueia e não toca civ5, vínculo nem backup', async 
   st.setItem('civ5', RAW);
   st.setItem('civ5_owner', 'escopo-de-outra-conta');
   const c = await bindAs(load({ storage: st }), { uid: OWNER });
-  assert.equal(c.civ5Gate(), 'FOREIGN_SCOPE');
+  assert.equal(gateAfterLegacy(c), 'FOREIGN_SCOPE');
   assert.equal(st.getItem('civ5'), RAW);
   assert.equal(st.getItem('civ5_owner'), 'escopo-de-outra-conta');
   assert.equal(st.getItem('civ5_legacy_backup'), null);
@@ -121,7 +125,7 @@ test('backup existente e diferente: conflito, não sobrescreve backup nem vincul
   st.setItem('civ5', RAW);
   st.setItem('civ5_legacy_backup', 'backup-anterior-diferente');
   const c = await bindAs(load({ storage: st }), { uid: OWNER });
-  assert.equal(c.civ5Gate(), 'LEGACY_BACKUP_CONFLICT');
+  assert.equal(gateAfterLegacy(c), 'LEGACY_BACKUP_CONFLICT');
   assert.equal(st.getItem('civ5_legacy_backup'), 'backup-anterior-diferente');
   assert.equal(st.getItem('civ5_owner'), null);
 });
@@ -130,7 +134,7 @@ test('falha de quota ao copiar backup: migração não conclui, legado preservad
   const st = makeStorage({ failSet: k => k === 'civ5_legacy_backup' });
   st.setItem('civ5', RAW);
   const c = await bindAs(load({ storage: st }), { uid: OWNER });
-  assert.equal(c.civ5Gate(), 'LEGACY_BACKUP_FAILED');
+  assert.equal(gateAfterLegacy(c), 'LEGACY_BACKUP_FAILED');
   assert.equal(st.getItem('civ5_owner'), null);
   assert.equal(st.getItem('civ5'), RAW);
 });
@@ -139,7 +143,7 @@ test('backup silenciosamente não gravado: verificação falha, não vincula', a
   const st = makeStorage({ silentSet: k => k === 'civ5_legacy_backup' });
   st.setItem('civ5', RAW);
   const c = await bindAs(load({ storage: st }), { uid: OWNER });
-  assert.equal(c.civ5Gate(), 'LEGACY_BACKUP_VERIFY_FAILED');
+  assert.equal(gateAfterLegacy(c), 'LEGACY_BACKUP_VERIFY_FAILED');
   assert.equal(st.getItem('civ5_owner'), null);
 });
 
@@ -148,7 +152,7 @@ test('reinício entre backup e vínculo: segunda tentativa conclui sem alterar o
   st.setItem('civ5', RAW);
   st.setItem('civ5_legacy_backup', RAW); // backup já feito, vínculo não
   const c = await bindAs(load({ storage: st }), { uid: OWNER });
-  assert.equal(c.civ5Gate(), 'ok');
+  assert.equal(gateAfterLegacy(c), 'ok');
   assert.equal(st.getItem('civ5_legacy_backup'), RAW);
 });
 
@@ -156,9 +160,9 @@ test('idempotente: depois de vinculado, o gate continua ok sem novas gravações
   const st = makeStorage();
   st.setItem('civ5', RAW);
   const c = await bindAs(load({ storage: st }), { uid: OWNER });
-  assert.equal(c.civ5Gate(), 'ok');
+  assert.equal(gateAfterLegacy(c), 'ok');
   const snap = new Map(st.map);
-  assert.equal(c.civ5Gate(), 'ok');
+  assert.equal(gateAfterLegacy(c), 'ok');
   assert.deepEqual(st.map, snap);
 });
 
@@ -176,14 +180,14 @@ test('armazenamento indisponível: gate bloqueia com motivo explícito', async (
   const st = makeStorage();
   const c = await bindAs(load({ storage: st }), { uid: OWNER });
   st.getItem = () => { throw new Error('SecurityError'); };
-  assert.equal(c.civ5Gate(), 'STORAGE_UNAVAILABLE');
+  assert.equal(gateAfterLegacy(c), 'STORAGE_UNAVAILABLE');
 });
 
 test('troca de identidade no mesmo navegador: segunda conta não herda o civ5 da primeira', async () => {
   const st = makeStorage();
   st.setItem('civ5', RAW);
   const owner = await bindAs(load({ storage: st }), { uid: OWNER });
-  assert.equal(owner.civ5Gate(), 'ok');
+  assert.equal(gateAfterLegacy(owner), 'ok');
   const other = await bindAs(load({ storage: st, user: { uid: OTHER }, admin: false }), { uid: OTHER });
   assert.equal(other.civ5Gate(), 'FOREIGN_SCOPE', 'vínculo pertence ao dono');
   assert.equal(st.getItem('civ5'), RAW, 'dados do dono intactos');
@@ -193,10 +197,10 @@ test('logout (sem identidade) bloqueia o gate e preserva o civ5 do dono', async 
   const st = makeStorage();
   st.setItem('civ5', RAW);
   const c = await bindAs(load({ storage: st }), { uid: OWNER });
-  assert.equal(c.civ5Gate(), 'ok');
+  assert.equal(gateAfterLegacy(c), 'ok');
   await c.__api.civ5BindIdentity(null);
   assert.equal(c.__api.getScope(), null);
-  assert.equal(c.civ5Gate(), 'IDENTITY_UNCONFIRMED');
+  assert.equal(gateAfterLegacy(c), 'IDENTITY_UNCONFIRMED');
   assert.equal(st.getItem('civ5'), RAW);
   assert.equal(st.getItem('civ5_owner') !== null, true, 'vínculo persistido para a próxima entrada do dono');
 });
@@ -205,6 +209,7 @@ test('alteração pendente sobrevive ao recarregamento da mesma identidade', asy
   const st = makeStorage();
   st.setItem('civ5', RAW);
   const first = await bindAs(load({ storage: st }), { uid: OWNER });
+  assert.equal(gateAfterLegacy(first), 'ok');
   st.setItem('civ5_pending_owner', first.__api.getScope());
   // novo carregamento da página, mesma identidade
   const again = load({ storage: st });
