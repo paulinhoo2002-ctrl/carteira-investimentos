@@ -21,7 +21,8 @@ test('ticker inválido/não reconhecido bloqueia compra e venda antes de qualque
   const snapshot = body.indexOf('const financialSnapshot=snapshotFinancialImportState');
   assert.ok(gate > 0 && snapshot > 0, 'gate de validação presente');
   assert.ok(gate < snapshot, 'validação ocorre antes do snapshot e da gravação');
-  assert.match(body, /\['asset','catalog','inference'\]\.includes\(known\)/, 'aceita só asset/catalog/inference');
+  assert.match(body, /\['asset','catalog'\]\.includes\(known\)/, 'aceita só asset/catalog (inference não comprova existência)');
+  assert.doesNotMatch(body.slice(gate, snapshot), /'inference'/, 'formato B3 sintático não basta');
   assert.match(body, /Ativo não reconhecido\. Verifique o código informado\./);
   assert.doesNotMatch(body.slice(gate, snapshot), /'learned'/, 'ticker só aprendido por digitação não conta como reconhecido');
 });

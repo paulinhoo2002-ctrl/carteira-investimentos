@@ -20036,11 +20036,11 @@ function saveQuickMovement(){
     }
     reg.reconciliationStatus='PENDING_RECONCILIATION';
   }
-  // Validação local antes de gravar (sem consulta de cotação): ação/FII precisa ser reconhecido pelo
-  // ativo já existente, pelo catálogo ou pelo formato B3. Ticker só "aprendido" de digitação manual não conta.
+  // Validação local antes de gravar (sem consulta de cotação): só ativo já existente na carteira ou no
+  // catálogo conhecido. Formato B3 sozinho (inference) e ticker só "aprendido" de digitação não contam.
   if(kind==='compra'||kind==='venda'){
     const known=String(resolveAssetMetadata(reg.ticker).source||'');
-    if(!['asset','catalog','inference'].includes(known)){
+    if(!['asset','catalog'].includes(known)){
       S.quickMovementSaving=false;
       S.quickMovementError='Ativo não reconhecido. Verifique o código informado.';
       S.quickMovementErrorField='ticker';
