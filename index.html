@@ -34510,10 +34510,12 @@ function deleteRfPosition(assetId){
   const incomes=(S.proventos||[]).filter(p=>String(p?.sourceEventKind||'').trim().toLowerCase()==='rf' && eventIds.has(String(p?.sourceEventId||'').trim()));
   const name=assetRfName(asset)||String(asset.name||asset.ticker||'título').trim();
   if(!confirm(`Excluir ${name} da carteira?\n\nIsso remove permanentemente o título, ${events.length} movimentação(ões) e ${incomes.length} provento(s) vinculado(s). Esta ação não pode ser desfeita.`)) return;
-  const beforeSave=snapshotFinancialImportState(['rfEvents','assets','proventos','rfMovementEditor']);
+  const beforeSave=snapshotFinancialImportState(['rfEvents','assets','proventos','aportes','rfMovementEditor']);
   if(!beforeSave){ toast('⚠️ Não foi possível preparar a gravação. Nada foi excluído.','#f87171'); return; }
   S.rfEvents=normalizeRfEvents(S.rfEvents||[]).filter(e=>!eventKeys.has(e.autoKey||rfEventDuplicateKey(e)));
   S.proventos=(S.proventos||[]).filter(p=>!incomes.includes(p));
+  // Lançamento de cadastro (aportes) do título tem o mesmo id do ativo: sem remover, sobra registro órfão.
+  S.aportes=(S.aportes||[]).filter(a=>String(a?.id||'')!==rfAssetEventId(asset));
   S.assets=(S.assets||[]).filter(a=>rfAssetEventId(a)!==rfAssetEventId(asset));
   if(S.rfMovementEditor?.assetId===rfAssetEventId(asset)) S.rfMovementEditor=null;
   rememberScroll();

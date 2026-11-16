@@ -30,7 +30,8 @@ test('deleteRfPosition exige permissão, confirma, remove título, lançamentos 
   assert.match(body, /S\.rfEvents=normalizeRfEvents/);
   assert.match(body, /S\.proventos=\(S\.proventos/);
   assert.match(body, /S\.assets=\(S\.assets\|\|\[\]\)\.filter\(a=>rfAssetEventId\(a\)!==rfAssetEventId\(asset\)\)/);
-  assert.match(body, /snapshotFinancialImportState\(\['rfEvents','assets','proventos','rfMovementEditor'\]\)/);
+  assert.match(body, /snapshotFinancialImportState\(\['rfEvents','assets','proventos','aportes','rfMovementEditor'\]\)/);
+  assert.match(body, /S\.aportes=\(S\.aportes\|\|\[\]\)\.filter\(a=>String\(a\?\.id\|\|''\)!==rfAssetEventId\(asset\)\)/, 'lançamento de cadastro do título sai junto (sem órfão)');
   assert.match(body, /if\(!persistFinancialImportState\(beforeSave\)\)/, 'falha de gravação restaura o estado anterior');
 });
 
