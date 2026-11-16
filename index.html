@@ -10257,9 +10257,14 @@ function save(){
     if(typeof isAuthoritativeLocalRecoveryBoot==='function' && isAuthoritativeLocalRecoveryBoot() && !protectedLocalRecoveryWrite) return false;
     if(!protectedLocalRecoveryWrite && !canEditFromThisTab('salvar')) return false;
     // SM173: nunca gravar o civ5 de outra identidade (ou antes de a identidade ser confirmada). Nada é apagado.
-    if(!isLocalTestMode() && civ5Gate()!=='ok'){
-      toast('Dados locais não confirmados para esta conta: gravação bloqueada. Nada foi apagado.','#fbbf24');
-      return false;
+    if(!isLocalTestMode()){
+      const civ5SaveGate=civ5Gate();
+      if(civ5SaveGate!=='ok'){
+        civ5QaTrace('save_blocked',civ5SaveGate);
+        toast('Dados locais não confirmados para esta conta: gravação bloqueada. Nada foi apagado.','#fbbf24');
+        return false;
+      }
+      civ5QaTrace('save_allowed',civ5SaveGate);
     }
     if(S._rmpTrace) console.log('[rmP] save() chamado');
     syncWalletFromState();
@@ -10682,6 +10687,33 @@ const CIV5_BACKUP_KEY='civ5_legacy_backup';
 const CIV5_PENDING_KEY='civ5_pending_owner';
 let CIV5_SCOPE=null;       // escopo (ambiente Firebase + UID) da sessão atual; null até confirmar
 let CIV5_V250_SCOPE=null;  // escopo do marcador offline da sessão atual
+const CIV5_QA_TRACE=[];
+let CIV5_QA_SEQUENCE=0;
+function civ5QaDiagnosticsEnabled(){
+  const hostname=String(window?.location?.hostname||'');
+  return hostname==='carteira-homolog-c5785e6.vercel.app' || (hostname.startsWith('carteira-homolog-c5785e6-') && hostname.endsWith('.vercel.app'));
+}
+function civ5QaTrace(event,gateCode=''){
+  if(!civ5QaDiagnosticsEnabled()) return;
+  let storageAvailable=true;
+  try{ localStorage.getItem(CIV5_OWNER_KEY); }catch(e){ storageAvailable=false; }
+  const entry={
+    sequence:++CIV5_QA_SEQUENCE,
+    event:String(event),
+    authResolved:FB.authResolved===true,
+    identityBound:Boolean(CIV5_SCOPE),
+    localHydrated:FB.localPortfolioLoaded===true,
+    cloudHydrated:FB.cloudLoaded===true,
+    storageAvailable,
+    gateCode:String(gateCode||'')
+  };
+  CIV5_QA_TRACE.push(entry);
+  if(CIV5_QA_TRACE.length>50) CIV5_QA_TRACE.shift();
+  if(typeof window.__CIV5_QA_DIAGNOSTIC__!=='function'){
+    window.__CIV5_QA_DIAGNOSTIC__=()=>CIV5_QA_TRACE.map(item=>({...item}));
+  }
+  try{ console.info('[CIV5 QA]',entry); }catch(e){}
+}
 async function civ5ScopeFor(projectId,uid){
   const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(`carteira-investimentos:civ5:${projectId}:${uid}`));
   return [...new Uint8Array(d)].map(b=>b.toString(16).padStart(2,'0')).join('');
@@ -10720,20 +10752,22 @@ function civ5GateReadOnly(){
 }
 async function civ5BindIdentity(user){
   CIV5_SCOPE=null; CIV5_V250_SCOPE=null;
+  civ5QaTrace('identity_bind_start',user?'AUTH_PRESENT':'AUTH_ABSENT');
   if(!user) return;
   const projectId=String(FB?.app?.options?.projectId||'');
-  if(!projectId || !globalThis.crypto?.subtle) return;
+  if(!projectId || !globalThis.crypto?.subtle){ civ5QaTrace('identity_bind_unavailable','IDENTITY_UNCONFIRMED'); return; }
   const scope=await civ5ScopeFor(projectId,user.uid);
   const v250=window.V250OfflineSession?.scopeHash ? await window.V250OfflineSession.scopeHash(user) : '';
-  if(FB.user?.uid!==user.uid) return;   // sessão mudou durante o cálculo: não confirma
+  if(FB.user?.uid!==user.uid){ civ5QaTrace('identity_bind_stale','IDENTITY_UNCONFIRMED'); return; }   // sessão mudou durante o cálculo: não confirma
   CIV5_SCOPE=scope; CIV5_V250_SCOPE=v250||null;
+  civ5QaTrace('identity_scope_ready',civ5GateReadOnly());
   try{
     // Alterações não enviadas desta mesma identidade sobreviveram a um recarregamento: restaura e reenvia.
     if(localStorage.getItem(CIV5_PENDING_KEY)===scope && civ5Gate()==='ok'){
       FB.pendingCloudSave=true;
       load();
     }
-  }catch(e){}
+  }catch(e){ civ5QaTrace('pending_state_check_failed','STORAGE_UNAVAILABLE'); }
   render();
 }
 // SM173-END
@@ -11796,7 +11830,6 @@ function initFirebase(){
       clearRealStateInMemory();
       FB.authResolved = true;
       FB.user = user || null;
-      civ5BindIdentity(FB.user);
       if(FB.user){
         FB.cloudStateModel=CloudSyncState.initial(CloudSyncState.STATES.AUTHENTICATING);
         FB.access.loading = true;
@@ -11804,6 +11837,31 @@ function initFirebase(){
         FB.access.allowed = false;
         FB.access.reason = '';
         render();
+        try{ await civ5BindIdentity(FB.user); }
+        catch(error){
+          civ5QaTrace('identity_bind_failed','IDENTITY_UNCONFIRMED');
+          FB.accountMode='BLOCKED';
+          FB.access.loading=false;
+          FB.access.loaded=true;
+          FB.access.allowed=false;
+          FB.access.reason='IDENTITY_UNCONFIRMED';
+          toast('Não foi possível confirmar a identidade local. Os dados foram preservados e as gravações continuam bloqueadas.','#f87171');
+          render();
+          return;
+        }
+        if(!authSession.isCurrent() || FB.user?.uid !== user.uid) return;
+        if(!CIV5_SCOPE){
+          civ5QaTrace('identity_bind_incomplete','IDENTITY_UNCONFIRMED');
+          FB.accountMode='BLOCKED';
+          FB.access.loading=false;
+          FB.access.loaded=true;
+          FB.access.allowed=false;
+          FB.access.reason='IDENTITY_UNCONFIRMED';
+          toast('A identidade local ainda não pôde ser confirmada. Os dados foram preservados e as gravações continuam bloqueadas.','#f87171');
+          render();
+          return;
+        }
+        civ5QaTrace('identity_bind_complete',civ5GateReadOnly());
         const ok = await loadAccessControl(user,authSession);
         if(!authSession.isCurrent() || FB.user?.uid !== user.uid) return;
         // Phase 2: protected offline cached session wins before any mode routing
@@ -11863,6 +11921,7 @@ function initFirebase(){
         }
         startCloudSync({readOnlyOnly: isProtectedReadOnlyQaBoot() || !isEditOwner()});
       }else{
+        civ5BindIdentity(null);
         // Clear every portfolio reference before rendering the login screen.
         clearRealStateInMemory();
         FB.localPortfolioLoaded = false;
@@ -11875,6 +11934,7 @@ function initFirebase(){
         FB.access.cfg = null;
         FB.access.lastDeniedAt = null;
         stopCloudSync();
+        civ5QaTrace('auth_signed_out','IDENTITY_UNCONFIRMED');
       }
       render();
     }, error=>{
