@@ -34,9 +34,9 @@ test('viewModel com meta patrimonial real', () => {
       hasTarget: true,
       current: 500000,
       target: 800000,
-      percent: 50,
-      barPercent: 50,
-      missing: 500000,
+      percent: 62.5,
+      barPercent: 62.5,
+      missing: 300000,
       excess: null,
       reached: false,
       tone: 'warn',
@@ -74,7 +74,7 @@ test('viewModel com meta patrimonial real', () => {
   assert.ok(viewModel.patrimonyCard.currentValue.includes('500.000'));
   assert.ok(viewModel.patrimonyCard.targetValue.includes('800.000'));
   assert.deepEqual(viewModel.patrimonyCard.tone, 'warn');
-  assert.deepEqual(viewModel.patrimonyCard.barPercent, 50);
+  assert.deepEqual(viewModel.patrimonyCard.barPercent, 62.5);
   assert.ok(viewModel.patrimonyCard.hasData);
   assert.deepEqual(viewModel.incomeCard, null);
   assert.deepEqual(viewModel.assetGoalCard, null);
@@ -115,11 +115,11 @@ test('viewModel com meta de renda real', () => {
       hasTarget: true,
       current: 3000,
       target: 3000,
-      percent: 75,
-      barPercent: 75,
-      missing: 1000,
-      excess: null,
-      reached: false,
+      percent: 100,
+      barPercent: 100,
+      missing: 0,
+      excess: 0,
+      reached: true,
       tone: 'info',
       currentMonthKey: '2026-01',
       currentMonthLabel: 'Janeiro 2026',
@@ -142,7 +142,7 @@ test('viewModel com meta de renda real', () => {
   assert.ok(viewModel.incomeCard.currentValue.includes('3.000'));
   assert.ok(viewModel.incomeCard.targetValue.includes('3.000'));
   assert.deepEqual(viewModel.incomeCard.tone, 'info');
-  assert.deepEqual(viewModel.incomeCard.barPercent, 75);
+  assert.deepEqual(viewModel.incomeCard.barPercent, 100);
   assert.ok(viewModel.incomeCard.hasData);
 });
 

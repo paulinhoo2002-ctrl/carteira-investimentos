@@ -158,7 +158,7 @@ test('normalizeReadonlyGoalsSnapshot retorna snapshot valido inalterado e congel
       target: 100,
       percent: 100,
       barPercent: 100,
-      missing: null,
+      missing: 0,
       excess: 0,
       reached: true,
       tone: 'ok',
@@ -280,10 +280,10 @@ test('snapshot valido com percent > 100', () => {
       hasTarget: true,
       current: 1500000,
       target: 800000,
-      percent: 150,
+      percent: 187.5,
       barPercent: 100,
-      missing: null,
-      excess: 500000,
+      missing: 0,
+      excess: 700000,
       reached: true,
       tone: 'ok',
       monthlyContribution: 2000,
@@ -313,7 +313,7 @@ test('snapshot valido com percent > 100', () => {
     history: { groups: [], summary: { total: 0, monthCount: 0, avg: null } },
   };
   const result = normalizeReadonlyGoalsSnapshot(input);
-  assert.deepEqual(result.patrimony.percent, 150);
+  assert.deepEqual(result.patrimony.percent, 187.5);
   assert.deepEqual(result.patrimony.barPercent, 100);
   assert.deepEqual(result.patrimony.reached, true);
 });
@@ -394,7 +394,7 @@ test('snapshot valido deep freeze', () => {
       target: 100,
       percent: 100,
       barPercent: 100,
-      missing: null,
+      missing: 0,
       excess: 0,
       reached: true,
       tone: 'ok',
@@ -459,7 +459,7 @@ test('normalize nao muta snapshot original', () => {
       target: 100,
       percent: 100,
       barPercent: 100,
-      missing: null,
+      missing: 0,
       excess: 0,
       reached: true,
       tone: 'ok',
