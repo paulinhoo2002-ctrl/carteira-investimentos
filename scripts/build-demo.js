@@ -7,6 +7,8 @@ const path = require('path');
 
 const file = path.join(__dirname, '..', 'index.html');
 let html = fs.readFileSync(file, 'utf8');
+// Idempotente: uma build já transformada não é alterada novamente.
+if (html.includes('DEMO_BUILD: SDKs Firebase removidos')) { console.log('build-demo: já aplicada'); process.exit(0); }
 
 const replacements = [
   // 1. Modo de teste sintético sempre ativo; ignora host e parâmetros da URL.
