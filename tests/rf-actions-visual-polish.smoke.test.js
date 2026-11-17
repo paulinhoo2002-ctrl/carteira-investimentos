@@ -68,7 +68,7 @@ for (const viewport of viewports) {
       await rfActionScope.waitFor({ state: 'visible', timeout: 5000 });
 
       const before = await page.evaluate(() => {
-        const firstAsset = document.querySelector('.premium-rf-position-list .premium-rf-position-row');
+        const firstAsset = [...document.querySelectorAll('.premium-rf-position-list .premium-rf-position-row')].find(row => row.getBoundingClientRect().width > 0) || document.querySelector('.premium-rf-position-list .premium-rf-position-row');
         const visibleRect = element => {
           const rect = element.getBoundingClientRect();
           return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, width: rect.width, height: rect.height };
@@ -77,13 +77,13 @@ for (const viewport of viewports) {
         const value = firstAsset?.querySelector('.premium-rf-row-value');
         const actions = firstAsset?.querySelector('.premium-rf-row-actions');
         const important = {
-          title: firstAsset?.querySelector('.premium-rf-row-title'),
-          institution: firstAsset?.querySelector('.premium-rf-row-issuer'),
-          current: firstAsset?.querySelector('.premium-rf-row-financial'),
-          applied: [...(firstAsset?.querySelectorAll('.premium-rf-row-meta') || [])].find(item => item.textContent.includes('Valor aplicado')),
-          maturity: [...(firstAsset?.querySelectorAll('.premium-rf-row-meta') || [])].find(item => item.textContent.includes('Vencimento')),
-          result: [...(firstAsset?.querySelectorAll('.premium-rf-row-meta') || [])].find(item => item.textContent.includes('Resultado')),
-          rentability: [...(firstAsset?.querySelectorAll('.premium-rf-row-meta') || [])].find(item => item.textContent.includes('Rentab.')),
+          title: firstAsset?.querySelector('.premium-rf-row-title, .rf-category-identity strong'),
+          institution: firstAsset?.querySelector('.premium-rf-row-issuer, .rf-category-identity span'),
+          current: firstAsset?.querySelector('.premium-rf-row-financial') || [...(firstAsset?.querySelectorAll('.rf-category-metric') || [])].find(item => item.textContent.includes('Atual')),
+          applied: [...(firstAsset?.querySelectorAll('.premium-rf-row-meta, .rf-category-metric') || [])].find(item => /Valor aplicado|Aplicado/.test(item.textContent)),
+          maturity: [...(firstAsset?.querySelectorAll('.premium-rf-row-meta, .rf-category-identity span') || [])].find(item => item.textContent.includes('Vencimento')),
+          result: [...(firstAsset?.querySelectorAll('.premium-rf-row-meta, .rf-category-metric') || [])].find(item => item.textContent.includes('Resultado')),
+          rentability: [...(firstAsset?.querySelectorAll('.premium-rf-row-meta, .rf-category-metric') || [])].find(item => /Rentab/.test(item.textContent)),
         };
         const ticker = firstAsset?.querySelector('.premium-rf-row-title')?.textContent.split('·')[0].trim();
         const asset = S.assets.find(item => String(item.ticker || '').trim().toUpperCase() === String(ticker || '').toUpperCase() && isRendaFixaAsset(item) && Number(rfPrincipalBalance(item).value) > 0);
