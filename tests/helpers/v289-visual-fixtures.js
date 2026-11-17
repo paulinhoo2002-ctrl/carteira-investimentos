@@ -66,16 +66,7 @@ async function applyV289VisualFixture(page, scenario = 'baseline') {
     S.lastUpdate = new Date(data.lastUpdate);
     S.tab = 'dashboard'; S.hideValues = false;
     window.__V289_VISUAL_SCENARIO__ = copy(data.visual);
-    const alias = () => document.querySelectorAll('.side-brand-sub').forEach(node => {
-      const avatar = node.querySelector('.side-avatar');
-      if (avatar && avatar.textContent !== 'QA') avatar.textContent = 'QA';
-      for (const child of node.childNodes) if (child.nodeType === Node.TEXT_NODE && child.textContent !== ' Conta sintética') child.textContent = ' Conta sintética';
-    });
-    if (!window.__V289_ALIAS_OBSERVER__) {
-      window.__V289_ALIAS_OBSERVER__ = new MutationObserver(alias);
-      window.__V289_ALIAS_OBSERVER__.observe(document.getElementById('root'), {childList:true,subtree:true});
-    }
-    render(); alias();
+    render();
   }, fixture);
   return fixture;
 }

@@ -71,7 +71,7 @@ test('fixture rejects non-local or non-test browser before evaluating page code'
   }
 });
 
-test('fixture seeds only memory and aliases static account label across render', async () => {
+test('fixture seeds only memory and sidebar shows neutral identity across render', async () => {
   const { chromium } = require('playwright-core');
   const server = await startLocalHttpServer(path.join(__dirname, '..'));
   const browser = await chromium.launch({ executablePath: require('./helpers/chrome-path').resolveChromePath(), headless: true });
@@ -85,8 +85,11 @@ test('fixture seeds only memory and aliases static account label across render',
     assert.deepEqual(after.assets, makeV289VisualFixture('baseline').assets.map(a => a.ticker));
     assert.equal(after.wallet, 'Conta sintética');
     await page.evaluate(() => render());
-    assert.match(await page.locator('.side-brand-sub').innerText(), /Conta sintética/);
-    assert.doesNotMatch(await page.locator('.side-brand-sub').innerText(), /Paulo/);
+    // Sem sessão autenticada a barra lateral usa o rótulo neutro; nunca o nome fixo nem o avatar antigo.
+    const sideText = await page.locator('.side-brand-sub').innerText();
+    assert.match(sideText, /Minha conta/);
+    assert.doesNotMatch(sideText, /Paulo|Sérgio|PS/);
+    assert.equal(await page.locator('.side-brand-sub .side-avatar').innerText(), '•');
   } finally {
     await browser.close();
     server.server.close();
