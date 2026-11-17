@@ -26,11 +26,15 @@ async function setUser(page, user) {
 
 const sideBrand = page => page.locator('.side-brand-sub');
 
-test('sidebar has no fixed owner name or legacy PS avatar in rendered markup', async () => {
+test('sidebar label always follows the session identity (no hardcoded label)', async () => {
   await withPage(async page => {
-    const html = await page.locator('.tabs-desktop').innerHTML();
-    assert.doesNotMatch(html, /Paulo|Sérgio|Sergio/);
-    assert.doesNotMatch(html, />PS</);
+    const label = () => page.locator('.tabs-desktop .side-brand-user').innerText();
+    await setUser(page, { uid: 'u-first', displayName: 'Ana Lima' });
+    assert.equal(await label(), 'Ana Lima');
+    await setUser(page, { uid: 'u-second', displayName: 'Bruno Souza' });
+    assert.equal(await label(), 'Bruno Souza');
+    await setUser(page, null);
+    assert.equal(await label(), 'Minha conta');
   });
 });
 

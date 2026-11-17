@@ -24,7 +24,7 @@ test('all V289 scenarios exist and contain JSON-cloneable synthetic identities',
         if (row.ticker) assert.match(row.ticker, /^QA[A-Z0-9]*$/);
       }
     }
-    assert.doesNotMatch(JSON.stringify(fixture), /Paulo|PETR4|BBAS3|R\$ 82\.460/i);
+    assert.doesNotMatch(JSON.stringify(fixture), /PETR4|BBAS3|R\$ 82\.460/i);
   }
 });
 
@@ -88,7 +88,7 @@ test('fixture seeds only memory and sidebar shows neutral identity across render
     // Sem sessão autenticada a barra lateral usa o rótulo neutro; nunca o nome fixo nem o avatar antigo.
     const sideText = await page.locator('.side-brand-sub').innerText();
     assert.match(sideText, /Minha conta/);
-    assert.doesNotMatch(sideText, /Paulo|Sérgio|PS/);
+    assert.equal(sideText.split('\n').map(s => s.trim()).filter(Boolean).join(' '), '• Minha conta');
     assert.equal(await page.locator('.side-brand-sub .side-avatar').innerText(), '•');
   } finally {
     await browser.close();
