@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build:modern && npm run build",
+  "buildCommand": "npm run build:modern && node scripts/build-demo.js && npm run build",
   "outputDirectory": ".",
   "framework": null,
   "redirects": [
