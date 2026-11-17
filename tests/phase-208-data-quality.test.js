@@ -284,7 +284,7 @@ test('fase 208 helpers destacam dados invalidos sem corromper estado', () => {
     ],
     goals: {
       patrimonio: { target: 'abc' },
-      proventos: { monthly: 4000 },
+      proventos: { monthly: 3000 },
       ativos: { ticker: '', type: '' },
     },
   });
@@ -351,7 +351,7 @@ test('fase 208 helpers destacam dados invalidos sem corromper estado', () => {
     aportes: [],
     goals: {
       patrimonio: { target: 1000 },
-      proventos: { monthly: 4000 },
+      proventos: { monthly: 3000 },
       ativos: { ticker: 'PETR4', type: 'Ação' },
     },
   });
@@ -558,7 +558,7 @@ test('fase 206 usa patrimonio atual real e historico mensal real sem mutacao', (
     aportes: [],
     goals: {
       patrimonio: { target: 1000 },
-      proventos: { monthly: 4000 },
+      proventos: { monthly: 3000 },
     },
     divGoal: 3000,
   });
@@ -585,7 +585,7 @@ test('fase 206 usa patrimonio atual real e historico mensal real sem mutacao', (
   assert.equal(snapshot.currentIncomeCount, 2);
   assert.equal(snapshot.currentMonthGroup.total, 100);
   assert.equal(snapshot.currentMonthGroup.count, 1);
-  assert.equal(snapshot.incomeTarget, 4000);
+  assert.equal(snapshot.incomeTarget, 3000);
   assert.equal(snapshot.patrimonyTarget, 1000);
   assert.equal(snapshot.hasPortfolioData, false);
   assert.equal(cxCalls, 1);
@@ -596,7 +596,7 @@ test('fase 206 usa patrimonio atual real e historico mensal real sem mutacao', (
     aportes: [],
     goals: {
       patrimonio: { target: 1000 },
-      proventos: { monthly: 4000 },
+      proventos: { monthly: 3000 },
     },
     divGoal: 3000,
   }), 'financialGoalsSnapshot nao pode alterar S');

@@ -49,7 +49,7 @@ test('bridge lida com snapshot valido', () => {
       hasCurrent: true,
       hasTarget: true,
       current: 500000,
-      target: 1000000,
+      target: 800000,
       percent: 50,
       barPercent: 50,
       missing: 500000,

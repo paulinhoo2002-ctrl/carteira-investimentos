@@ -31327,15 +31327,15 @@ function dashboardFinancialGoalsPanel(data){
   const patrimonyConfigured=Number(normalizedGoals?.patrimonio?.target)||0;
   const incomeConfigured=Number(normalizedGoals?.proventos?.monthly)||0;
   const incomeStats=data?.income||{monthlyAvg:null,monthlyAverageStatus:'UNKNOWN',completeMonthCount:0};
-  const patrimonyTarget=patrimonyConfigured>0 ? patrimonyConfigured : 1000000;
-  const incomeTarget=incomeConfigured>0 ? incomeConfigured : 4000;
+  const patrimonyTarget=patrimonyConfigured>0 ? patrimonyConfigured : 0;
+  const incomeTarget=incomeConfigured>0 ? incomeConfigured : 0;
   const patrimonyMetrics=goalProgressMetrics(portfolioCurrent, patrimonyTarget);
   const incomeCurrent=goals.currentIncome;
   const incomeMetrics=goalProgressMetrics(goals.currentIncomeCoverage==='COMPLETE'?incomeCurrent:null, incomeTarget);
   const patrimonyTone=financialGoalsTone(patrimonyMetrics);
   const incomeTone=financialGoalsTone(incomeMetrics);
   const patrimonyCurrentLabel=patrimonyMetrics.hasCurrent ? fmt(portfolioCurrent) : 'Patrimônio atual indisponível';
-  const patrimonyTargetLabel=fmt(patrimonyTarget);
+  const patrimonyTargetLabel=patrimonyConfigured>0 ? fmt(patrimonyTarget) : 'não configurada';
   const patrimonyStatus=!patrimonyMetrics.hasCurrent
     ? 'Patrimônio atual indisponível'
     : patrimonyMetrics.reached
@@ -31350,7 +31350,7 @@ function dashboardFinancialGoalsPanel(data){
       : patrimonyMetrics.hasTarget
         ? `Faltam ${fmt(patrimonyMetrics.missing)}`
         : 'Meta não configurada';
-  const incomeTargetLabel=fmt(incomeTarget);
+  const incomeTargetLabel=incomeConfigured>0 ? fmt(incomeTarget) : 'não configurada';
   const incomeStatus=!incomeMetrics.hasCurrent
     ? 'Cobertura mensal não confirmada'
     : incomeMetrics.reached
@@ -31387,7 +31387,7 @@ function dashboardFinancialGoalsPanel(data){
       <article class="passive-goal-card financial-goal-card ${patrimonyTone}">
         <div class="passive-goal-kicker">Meta patrimonial</div>
         <div class="passive-goal-value">${patrimonyCurrentLabel}</div>
-        <div class="passive-goal-sub">Meta ${patrimonyTargetLabel}${patrimonyConfigured>0 ? '' : ' · sugerida visualmente'}</div>
+        <div class="passive-goal-sub">Meta ${patrimonyTargetLabel}</div>
         ${financialGoalsBar(patrimonyMetrics, 'Progresso da meta patrimonial', patrimonyTone)}
         <div class="passive-goal-sub">${patrimonyStatus}</div>
         <div class="passive-goal-sub">${patrimonyGap}</div>
@@ -31396,7 +31396,7 @@ function dashboardFinancialGoalsPanel(data){
       <article class="passive-goal-card financial-goal-card ${incomeTone}">
         <div class="passive-goal-kicker">Meta de renda passiva</div>
         <div class="passive-goal-value">${incomeCurrentLabel}</div>
-        <div class="passive-goal-sub">Meta ${incomeTargetLabel}${incomeConfigured>0 ? '' : ' · sugerida visualmente'}</div>
+        <div class="passive-goal-sub">Meta ${incomeTargetLabel}</div>
         ${financialGoalsBar(incomeMetrics, 'Progresso da meta de renda passiva', incomeTone)}
         <div class="passive-goal-sub">${incomeStatus}</div>
         <div class="passive-goal-sub">${incomeGap}</div>

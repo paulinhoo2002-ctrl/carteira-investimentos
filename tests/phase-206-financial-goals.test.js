@@ -256,8 +256,8 @@ function buildHistoryRows(now) {
 test('dashboard keeps the current compact executive baseline', () => {
   const ctx = buildContext({
     goals: {
-      patrimonio: { target: 1000000 },
-      proventos: { monthly: 4000 },
+      patrimonio: { target: 800000 },
+      proventos: { monthly: 3000 },
     },
     assets: [{ current: 620000, applied: 500000 }],
     historyRows: buildHistoryRows(new Date()),
@@ -277,8 +277,8 @@ test('dashboard keeps the current compact executive baseline', () => {
 test('financial goals snapshot uses cx and official history helpers', () => {
   const ctx = buildContext({
     goals: {
-      patrimonio: { target: 1000000 },
-      proventos: { monthly: 4000 },
+      patrimonio: { target: 800000 },
+      proventos: { monthly: 3000 },
     },
     assets: [{ current: 123, applied: 45 }],
     historyRows: buildHistoryRows(new Date()),
@@ -338,8 +338,8 @@ test('portfolio availability distinguishes real zero from absence', () => {
 test('metas financeiras calculam progresso, limite e estado executivo', () => {
   const ctx = buildContext({
     goals: {
-      patrimonio: { target: 1000000 },
-      proventos: { monthly: 4000 },
+      patrimonio: { target: 800000 },
+      proventos: { monthly: 3000 },
     },
     assets: [
       { current: 620000, applied: 500000 },
@@ -347,22 +347,22 @@ test('metas financeiras calculam progresso, limite e estado executivo', () => {
     historyRows: buildHistoryRows(new Date()),
   });
 
-  const patrimony = ctx.goalProgressMetrics(620000, 1000000);
+  const patrimony = ctx.goalProgressMetrics(620000, 800000);
   assert.equal(patrimony.hasCurrent, true);
   assert.equal(patrimony.hasTarget, true);
-  assert.equal(patrimony.percent, 62);
-  assert.equal(patrimony.barPercent, 62);
-  assert.equal(patrimony.missing, 380000);
+  assert.equal(patrimony.percent, 77.5);
+  assert.equal(patrimony.barPercent, 77.5);
+  assert.equal(patrimony.missing, 180000);
   assert.equal(patrimony.excess, 0);
   assert.equal(patrimony.reached, false);
 
-  const overshoot = ctx.goalProgressMetrics(1250000, 1000000);
-  assert.equal(overshoot.percent, 125);
+  const overshoot = ctx.goalProgressMetrics(1250000, 800000);
+  assert.equal(overshoot.percent, 156.25);
   assert.equal(overshoot.barPercent, 100);
-  assert.equal(overshoot.excess, 250000);
+  assert.equal(overshoot.excess, 450000);
   assert.equal(overshoot.reached, true);
 
-  const noCurrent = ctx.goalProgressMetrics(null, 1000000);
+  const noCurrent = ctx.goalProgressMetrics(null, 800000);
   assert.equal(noCurrent.hasCurrent, false);
   assert.equal(noCurrent.current, null);
   assert.equal(noCurrent.barPercent, 0);
@@ -389,15 +389,15 @@ test('metas financeiras calculam progresso, limite e estado executivo', () => {
   assert.match(html, /Meta patrimonial/);
   assert.match(html, /R\$ 620000\.00/);
   assert.match(html, /R\$ 2800\.00/);
-  assert.match(html, /Faltam R\$ 380000\.00/);
+  assert.match(html, /Faltam R\$ 180000\.00/);
   assert.match(html, /Progresso indisponível sem cobertura completa do mês/);
   assert.match(html, /Média 12M/);
   assert.match(html, /melhor mês/);
   assert.match(html, /role="progressbar"/);
   assert.match(html, /aria-valuemin="0"/);
   assert.match(html, /aria-valuemax="100"/);
-  assert.match(html, /aria-valuenow="62\.0"/);
-  assert.match(html, /aria-valuetext="62\.0% alcancado"/);
+  assert.match(html, /aria-valuenow="77.5"/);
+  assert.match(html, /aria-valuetext="77,5% alcancado"/);
   assert.match(html, /go\('metas'\)/);
 });
 
@@ -421,5 +421,6 @@ test('metas financeiras tratam ausencia como estado neutro', () => {
   assert.match(html, /Meta de renda passiva/);
   assert.match(html, /Cobertura mensal não confirmada/);
   assert.doesNotMatch(html, /R\$ 0\.00 recebidos neste mês|0,00 recebidos neste mês/);
-  assert.match(html, /Meta R\$ 4000\.00 · sugerida visualmente/);
+  assert.match(html, /Meta não configurada/);
+  assert.doesNotMatch(html, /sugerida visualmente/);
 });

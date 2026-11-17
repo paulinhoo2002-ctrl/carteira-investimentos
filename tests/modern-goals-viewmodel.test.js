@@ -33,7 +33,7 @@ test('viewModel com meta patrimonial real', () => {
       hasCurrent: true,
       hasTarget: true,
       current: 500000,
-      target: 1000000,
+      target: 800000,
       percent: 50,
       barPercent: 50,
       missing: 500000,
@@ -72,7 +72,7 @@ test('viewModel com meta patrimonial real', () => {
   assert.ok(viewModel.patrimonyCard !== null);
   assert.deepEqual(viewModel.patrimonyCard.title, 'Meta patrimonial');
   assert.ok(viewModel.patrimonyCard.currentValue.includes('500.000'));
-  assert.ok(viewModel.patrimonyCard.targetValue.includes('1.000.000'));
+  assert.ok(viewModel.patrimonyCard.targetValue.includes('800.000'));
   assert.deepEqual(viewModel.patrimonyCard.tone, 'warn');
   assert.deepEqual(viewModel.patrimonyCard.barPercent, 50);
   assert.ok(viewModel.patrimonyCard.hasData);
@@ -114,7 +114,7 @@ test('viewModel com meta de renda real', () => {
       hasCurrent: true,
       hasTarget: true,
       current: 3000,
-      target: 4000,
+      target: 3000,
       percent: 75,
       barPercent: 75,
       missing: 1000,
@@ -140,7 +140,7 @@ test('viewModel com meta de renda real', () => {
   assert.ok(viewModel.incomeCard !== null);
   assert.deepEqual(viewModel.incomeCard.title, 'Meta de renda passiva');
   assert.ok(viewModel.incomeCard.currentValue.includes('3.000'));
-  assert.ok(viewModel.incomeCard.targetValue.includes('4.000'));
+  assert.ok(viewModel.incomeCard.targetValue.includes('3.000'));
   assert.deepEqual(viewModel.incomeCard.tone, 'info');
   assert.deepEqual(viewModel.incomeCard.barPercent, 75);
   assert.ok(viewModel.incomeCard.hasData);

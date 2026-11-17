@@ -38,13 +38,13 @@ test('PATRIMÔNIO: editar meta patrimonial, salvar, confirmar persistência', as
     await page.waitForTimeout(300);
     
     // Set new target
-    await page.fill('#mp-head-target', '1000000');
+    await page.fill('#mp-head-target', '800000');
     await page.keyboard.press('Enter');
     await page.waitForTimeout(500);
     
     // Verify persisted by checking input value
     const value = await page.inputValue('#mp-head-target');
-    assert.equal(value, '1000000', 'Meta patrimonial deve persistir');
+    assert.equal(value, '800000', 'Meta patrimonial deve persistir');
     
     // Verify progress text exists (not checking exact % as test data varies)
     const progressText = await page.locator('.metas-primary-goal-progress').innerText();

@@ -180,7 +180,7 @@ function makeRoundtripState(overrides = {}) {
     irpfYear: 2026,
     irpfStep: 4,
     goals: {
-      patrimonio: { target: 1000000, aporte: 2500, annualVar: 12 },
+      patrimonio: { target: 800000, aporte: 2500, annualVar: 12 },
       ativos: { type: 'Acao', ticker: 'PETR4', aporte: 500, annualVar: 10, finalValue: 50000 },
       proventos: { types: ['Acao', 'FII'], monthly: 800 },
       allocation: { items: [{ type: 'Acao', pct: 60 }, { type: 'FII', pct: 40 }] }
