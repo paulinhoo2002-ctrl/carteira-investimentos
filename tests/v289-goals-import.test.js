@@ -77,6 +77,8 @@ test('E1 Metas: carteira sem dados mantém patrimônio e progresso indisponívei
       text: node.innerText,
       progressBars: node.querySelectorAll('.metas-primary-goal-progress').length,
     }));
+    // Indicadores complementares ficam recolhidos por padrão; o usuário precisa abrir o bloco para lê-los.
+    await app.page.locator('.metas-secondary-kpis > summary').click();
     const secondaryValues = await app.page.locator('.metas-kpi-grid .metas-kpi-card .metas-kpi-value').allInnerTexts();
     assert.match(state.text, /Meta definida/);
     assert.match(state.text, /Patrimônio atual\s+Sem leitura atual/);
@@ -271,6 +273,7 @@ test('E3 Importar: seleção, prévia protegida, duplicidade e cancelamento não
       window.__v293StorageBefore = JSON.stringify(Object.keys(localStorage).sort().map(key => [key, localStorage.getItem(key)]));
       window.__v293FinancialStateBefore = JSON.stringify({ assets: S.assets, aportes: S.aportes, proventos: S.proventos, rfEvents: S.rfEvents, goals: S.goals });
     });
+    await app.page.locator('.nav-more-summary', { hasText: 'Avançado' }).click(); // 'Importar dados' fica no grupo Avançado, recolhido por padrão
     await app.page.getByRole('button', { name: 'Importar dados', exact: true }).click();
     const empty = await app.page.evaluate(() => ({
       step: S.importCenterSession?.step || 1,
@@ -426,6 +429,7 @@ test('E3 Importar: seleção, prévia protegida, duplicidade e cancelamento não
 test('E3 Importar: seleção é primeira e catálogo secundário em sete larguras e dois temas', async () => {
   const app = await createApp();
   try {
+    await app.page.locator('.nav-more-summary', { hasText: 'Avançado' }).click(); // 'Importar dados' fica no grupo Avançado, recolhido por padrão
     await app.page.getByRole('button', { name: 'Importar dados', exact: true }).click();
     for (const theme of ['dark', 'light']) {
       await app.page.evaluate(value => {
