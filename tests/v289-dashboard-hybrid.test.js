@@ -258,7 +258,7 @@ test('Dashboard HYBRID V2 - priorities do not infer missing income as zero', asy
     assert.equal(await page.locator('.dashboard-v3-priority').count(), 0, 'Carteira vazia não deve criar alerta grande');
   });
   await withPage({ width: 1366, height: 768 }, async page => {
-    await applyV289VisualFixture(page, 'priority-one');
+    await applyV289VisualFixture(page, 'priority-goal-no-income');
     assert.equal(await page.evaluate(() => S.goals.proventos.monthly), 1200);
     const priority = page.locator('.dashboard-v3-priority');
     assert.equal(await page.evaluate(() => S.proventos.length), 0);

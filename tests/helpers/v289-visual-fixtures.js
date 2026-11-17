@@ -1,7 +1,7 @@
 const V289_VISUAL_SCENARIOS = Object.freeze([
   'baseline', 'no-data', 'unknown', 'partial', 'stale', 'valid-zero',
   'long-label-large-value', 'return-pair-mismatch', 'history-gap',
-  'allocation-unknown', 'priority-zero', 'priority-one', 'priority-many', 'dense-reliability',
+  'allocation-unknown', 'priority-zero', 'priority-goal-no-income', 'priority-many', 'dense-reliability',
 ]);
 
 function makeV289VisualFixture(scenario = 'baseline') {
@@ -41,7 +41,7 @@ function makeV289VisualFixture(scenario = 'baseline') {
     proventos.length = 0;
     visual.valueState = 'NO_DATA';
   }
-  if (scenario === 'priority-one') {
+  if (scenario === 'priority-goal-no-income') {
     // A target without received-income history cannot prove a goal gap.
     assets.length = 0;
     aportes.length = 0;

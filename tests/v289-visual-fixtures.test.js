@@ -7,7 +7,7 @@ const { startLocalHttpServer } = require('./local-http-server');
 const required = [
   'baseline', 'no-data', 'unknown', 'partial', 'stale', 'valid-zero',
   'long-label-large-value', 'return-pair-mismatch', 'history-gap',
-  'allocation-unknown', 'priority-zero', 'priority-one', 'priority-many',
+  'allocation-unknown', 'priority-zero', 'priority-goal-no-income', 'priority-many',
   'dense-reliability',
 ];
 
@@ -43,21 +43,21 @@ test('visual cases preserve explicit mismatch, gaps, allocation uncertainty and 
   assert.ok(makeV289VisualFixture('history-gap').visual.history.some(point => point.value === null));
   assert.equal(makeV289VisualFixture('allocation-unknown').visual.allocationState, 'UNKNOWN');
   assert.equal(makeV289VisualFixture('priority-zero').visual.priorities.length, 0);
-  assert.equal(makeV289VisualFixture('priority-one').visual.priorities.length, 1);
+  assert.equal(makeV289VisualFixture('priority-goal-no-income').visual.priorities.length, 0);
   assert.ok(makeV289VisualFixture('priority-many').visual.priorities.length > 1);
 });
 
 test('scenario edits cannot mutate baseline or another scenario', () => {
   const baselineBefore = makeV289VisualFixture('baseline');
-  const one = makeV289VisualFixture('priority-one');
+  const one = makeV289VisualFixture('priority-goal-no-income');
   const many = makeV289VisualFixture('priority-many');
   one.goals.proventos.monthly = 1;
   one.visual.priorities.push({ id: 'QA_EXTRA' });
   many.assets[0].name = 'Alterado apenas no teste';
   many.visual.history[0].value = -1;
   assert.deepEqual(makeV289VisualFixture('baseline'), baselineBefore);
-  assert.equal(makeV289VisualFixture('priority-one').visual.priorities.length, 1);
-  assert.equal(makeV289VisualFixture('priority-one').goals.proventos.monthly, 1200);
+  assert.equal(makeV289VisualFixture('priority-goal-no-income').visual.priorities.length, 0);
+  assert.equal(makeV289VisualFixture('priority-goal-no-income').goals.proventos.monthly, 1200);
   assert.notEqual(makeV289VisualFixture('priority-many').assets[0].name, 'Alterado apenas no teste');
   assert.notEqual(makeV289VisualFixture('priority-many').visual.history[0].value, -1);
 });
