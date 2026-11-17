@@ -30567,6 +30567,15 @@ function fpTopPayers(rows){
   }).join('');
   return `<section class="fp-top-payers" aria-label="Top ativos">${head}<ol class="fp-payers">${items}</ol><button type="button" class="fp-link" onclick="setDividendViewMode('asset')">Ver todos os ativos</button></section>`;
 }
+// Identidade da sessão atual (sem nome fixo). Fallback neutro quando não há nome de exibição.
+function sidebarIdentityHtml(){
+  const raw=FB&&FB.user&&typeof FB.user.displayName==='string'?FB.user.displayName.replace(/\s+/g,' ').trim():'';
+  const words=raw?raw.split(' '):[];
+  const initials=words.length?(Array.from(words[0])[0]+(words.length>1?Array.from(words[words.length-1])[0]:'')).toUpperCase():'';
+  const avatar=initials?`<span class="side-avatar" aria-hidden="true" style="flex:none">${esc(initials)}</span>`:'<span class="side-avatar" aria-hidden="true" style="flex:none">•</span>';
+  const label=raw||'Minha conta';
+  return `<div class="side-brand-sub" style="display:flex;align-items:center;gap:6px;min-width:0;max-width:100%">${avatar}<span class="side-brand-user" style="flex:1 1 auto;display:block;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(label)}">${esc(label)}</span></div>`;
+}
 function desktopTabs(){
   const sideLu=S.lastUpdate?S.lastUpdate.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—';
   const isAtivos=S.tab==='ativos';
@@ -30575,7 +30584,7 @@ function desktopTabs(){
   return `<nav class="tabs tabs-desktop" aria-label="Navegação principal da carteira">
     <div class="side-brand">
       <div class="side-brand-icon" aria-hidden="true">${fpIcon('brand')}</div>
-      <div class="side-brand-text"><div class="side-brand-name">Carteira</div><div class="side-brand-sub"><span class="side-avatar" aria-hidden="true">PS</span>Paulo Sérgio</div></div>
+      <div class="side-brand-text" style="min-width:0;max-width:100%"><div class="side-brand-name">Carteira</div>${sidebarIdentityHtml()}</div>
     </div>
     <button class="portfolio-search-trigger" type="button" onclick="portfolioSearchOpen()" aria-label="Buscar na carteira" title="Buscar na carteira (Ctrl+K)"><span aria-hidden="true">⌕</span><span>Buscar na carteira</span><kbd>Ctrl K</kbd></button>
     ${navItem('dashboard','Resumo','📊',S.tab==='dashboard')}
