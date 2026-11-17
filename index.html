@@ -34134,8 +34134,9 @@ function assetActionMenuHtml(asset, isRF, context='default'){
     ? `<button type="button" class="btn bgh asset-action" onclick='openRfMovementEditor(${JSON.stringify(rfAssetEventId(asset))}, "resgate_parcial")'>Resgatar</button>`
     : `<button type="button" class="btn bgh asset-action" onclick='openAssetQuickMovement(${JSON.stringify(id)}, "venda")'>Vender</button>`;
   const quickActions=context==='desktop' ? `<span class="asset-quick-actions">${primary.replace('bsv asset-action','bsv asset-action asset-quick')}${secondary.replace('bgh asset-action','bgh asset-action asset-quick asset-quick-sell')}${isRF?'':`<button type="button" class="asset-icon-btn" aria-label="Editar ${esc(asset.ticker||asset.name||'ativo')}" title="Editar" onclick='edA(${JSON.stringify(id)})'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>`}</span>` : '';
-  const menuPrimary=context==='mobile' ? primary.replace('<button ', '<button role="menuitem" ') : '';
-  const menuSecondary=context==='mobile' ? secondary.replace('<button ', '<button role="menuitem" ') : '';
+  const inMenu=context==='mobile' || (isRF && context!=='desktop');
+  const menuPrimary=inMenu ? primary.replace('<button ', '<button role="menuitem" ') : '';
+  const menuSecondary=inMenu ? secondary.replace('<button ', '<button role="menuitem" ') : '';
   return `<div class="asset-actions asset-action-menu" data-asset-actions="${esc(id)}">${quickActions}
 
       <button type="button" class="asset-action-trigger" aria-label="Mais ações para ${esc(asset.ticker||asset.name||'ativo')}" aria-haspopup="menu" aria-controls="${esc(menuId)}" aria-expanded="false" onclick='toggleAssetActionMenu(${JSON.stringify(menuId)}, event)'>⋯</button>
