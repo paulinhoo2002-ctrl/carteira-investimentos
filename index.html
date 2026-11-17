@@ -12767,6 +12767,8 @@ function accessGateBox(){
 }
 function shouldShowAccessGate(){
   if(isLocalTestMode()) return false;
+  // SM173.11: sessão offline em cache não prova identidade atual. Sem usuário Firebase, a carteira não é exibida.
+  if(!FB.user && !isProtectedReadOnlyQaBoot()) return true;
   return !FB.authResolved || FB.access.loading || !FB.access.loaded || !FB.access.allowed;
 }
 function backupManagerModal(){

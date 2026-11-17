@@ -54,7 +54,7 @@ test('trusted marker is not created without a local portfolio snapshot', () => {
 test('Login gate cannot be bypassed by an offline portfolio snapshot', () => {
   assert.match(index, /v250-offline-session\.js/);
   assert.match(index, /function isV250OfflineCachedSession\(\)/);
-  assert.match(index, /function shouldShowAccessGate\(\)\{\s*if\(isLocalTestMode\(\)\) return false;\s*return !FB\.authResolved \|\| FB\.access\.loading \|\| !FB\.access\.loaded \|\| !FB\.access\.allowed;/);
+  assert.match(index, /function shouldShowAccessGate\(\)\{\s*if\(isLocalTestMode\(\)\) return false;\s*(?:\/\/[^\n]*\s*)?if\(!FB\.user && !isProtectedReadOnlyQaBoot\(\)\) return true;\s*return !FB\.authResolved \|\| FB\.access\.loading \|\| !FB\.access\.loaded \|\| !FB\.access\.allowed;/);
   assert.match(index, /clearV250OfflineEligibility\(\)/);
   assert.match(index, /typeof isV250OfflineCachedSession==='function' && isV250OfflineCachedSession\(\) && !protectedLocalRecoveryWrite/);
   assert.match(index, /rememberV250TrustedSnapshot/);
