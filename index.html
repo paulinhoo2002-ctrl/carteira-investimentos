@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' http://127.0.0.1:* ws://127.0.0.1:* https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://api.brapi.com.br https://fonts.googleapis.com https://fonts.gstatic.com; frame-src 'self' https://carteira-de-investimento-16725.firebaseapp.com https://accounts.google.com; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' http://127.0.0.1:* ws://127.0.0.1:* https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://api.brapi.com.br https://fonts.googleapis.com https://fonts.gstatic.com; frame-src 'self' https://carteira-de-investimento-16725.firebaseapp.com https://carteira-invest-qa-v316.firebaseapp.com https://accounts.google.com; base-uri 'self'; form-action 'self'">
 <meta name="theme-color" content="#f4f7fb">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -9536,6 +9536,18 @@ const firebaseConfig = {
   appId: "1:194762472851:web:1285e351b2dcc80f147c66",
   measurementId: "G-ZP045H8HTZ"
 };
+// SM189.37 — Preview usa o Firebase QA isolado (v316). Produção fica só no domínio de produção.
+const firebaseQaPreviewConfig = {
+  apiKey: "AIzaSyBUgrloDZlWHiZqOlRanb7NUahW9HJfUTM",
+  authDomain: "carteira-invest-qa-v316.firebaseapp.com",
+  projectId: "carteira-invest-qa-v316",
+  storageBucket: "carteira-invest-qa-v316.firebasestorage.app",
+  messagingSenderId: "571302584960",
+  appId: "1:571302584960:web:ea6e0ece0c1ec64268fc65"
+};
+const FIREBASE_PRODUCTION_HOST="carteira-investimentos-delta.vercel.app";
+function isVercelPreviewHost(hostname){ return /\.vercel\.app$/.test(hostname) && hostname!==FIREBASE_PRODUCTION_HOST; }
+function activeFirebaseConfig(){ return isVercelPreviewHost(location.hostname) ? firebaseQaPreviewConfig : firebaseConfig; }
 
 let FB = {
   ready:false, app:null, auth:null, db:null, user:null,
@@ -11839,7 +11851,7 @@ function initFirebase(){
         if(window.__LOCAL_AUTH_EMULATOR_MODE__===true && !emulatorMode) throw new Error('Auth emulator mode is loopback-only.');
         const appConfig = (emulatorMode || isLocalTestMode())
           ? {apiKey: 'demo-api-key', authDomain: 'localhost', projectId: 'demo-carteira-qa-emulator'}
-          : firebaseConfig;
+          : activeFirebaseConfig();
     FB.app=firebase.initializeApp(appConfig);
     FB.auth=firebase.auth();
     FB.db=firebase.firestore();
