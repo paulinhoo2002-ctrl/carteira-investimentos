@@ -9224,8 +9224,9 @@ const firebaseQaPreviewConfig = {
 };
 const FIREBASE_QA_PROJECT_ID="carteira-invest-qa-v316";
 const QA_PREVIEW_USERS = Object.freeze({
-  "n7tXL6RHXpNqxwkJexTK1gYN6ey1": "qa-c-sm189-37@exemplo-invalido.test",
-  "jjouXVMgibeQl0gXY0IHU8JQnFL2": "qa-d-sm189-37@exemplo-invalido.test"
+  "n7tXL6RHXpNqxwkJexTK1gYN6ey1": Object.freeze({email:"qa-c-sm189-37@exemplo-invalido.test",providerId:"password"}),
+  "jjouXVMgibeQl0gXY0IHU8JQnFL2": Object.freeze({email:"qa-d-sm189-37@exemplo-invalido.test",providerId:"password"}),
+  "dtl8Ufm8s0PB1Cbu51oYMhoUt752": Object.freeze({email:"psmarquesdossantos@gmail.com",providerId:"google.com",emailVerified:true})
 });
 const FIREBASE_PRODUCTION_HOST="carteira-investimentos-delta.vercel.app";
 function isQaPreviewHost(hostname){
@@ -9853,7 +9854,10 @@ function isAccessAdmin(user){
   return !!user && user.uid === OWNER_FIREBASE_UID && normalizeEmail(user.email) === OWNER_FIREBASE_EMAIL && user.emailVerified === true;
 }
 function isQaPreviewAccount(user){
-  return isQaPreviewEnvironment() && !!user && QA_PREVIEW_USERS[user.uid]===normalizeEmail(user.email);
+  const allowed=user&&QA_PREVIEW_USERS[user.uid];
+  return isQaPreviewEnvironment() && !!allowed && normalizeEmail(user.email)===allowed.email
+    && (allowed.emailVerified!==true || user.emailVerified===true)
+    && user.providerData?.some(provider=>provider.providerId===allowed.providerId)===true;
 }
 function isAuthorizedAppUser(user){
   return isQaPreviewEnvironment() ? isQaPreviewAccount(user) : isAccessAdmin(user);
@@ -12316,10 +12320,40 @@ async function signInGoogle(){
     }
   }
 }
+async function signInQaGoogle(){
+  const errorNode=document.getElementById('qa-preview-login-error');
+  if(!isQaPreviewEnvironment() || !FB.ready){
+    if(errorNode) errorNode.textContent='Login Google de homologação indisponível neste ambiente.';
+    return;
+  }
+  try{
+    const provider=new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({prompt:'select_account'});
+    await firebaseAuthPersistenceReady;
+    const result=await FB.auth.signInWithPopup(provider);
+    if(!isQaPreviewAccount(result.user)){
+      await FB.auth.signOut();
+      if(errorNode) errorNode.textContent='Esta conta Google não está autorizada para este Preview.';
+    }
+  }catch{
+    if(errorNode) errorNode.textContent='Não foi possível entrar com Google. Confira a conta autorizada e tente novamente.';
+  }
+}
+function selectQaPreviewAccount(){
+  const selectedUid=document.getElementById('qa-preview-account')?.value;
+  const account=QA_PREVIEW_USERS[selectedUid];
+  const emailInput=document.getElementById('qa-preview-email');
+  const passwordInput=document.getElementById('qa-preview-password');
+  if(emailInput) emailInput.value=account?.providerId==='password' ? account.email : '';
+  if(passwordInput) passwordInput.value='';
+}
 async function signInQaPreview(){
+  const accountSelect=document.getElementById('qa-preview-account');
   const emailInput=document.getElementById('qa-preview-email');
   const passwordInput=document.getElementById('qa-preview-password');
   const errorNode=document.getElementById('qa-preview-login-error');
+  const selectedUid=accountSelect?.value;
+  const account=QA_PREVIEW_USERS[selectedUid];
   const email=normalizeEmail(emailInput?.value);
   const password=String(passwordInput?.value||'');
   if(!isQaPreviewEnvironment() || !FB.ready){
@@ -12327,7 +12361,7 @@ async function signInQaPreview(){
     if(passwordInput) passwordInput.value='';
     return;
   }
-  if(!Object.values(QA_PREVIEW_USERS).includes(email) || !password){
+  if(!account || account.providerId!=='password' || account.email!==email || !password){
     if(errorNode) errorNode.textContent='Informe uma conta sintética autorizada e sua senha.';
     if(passwordInput) passwordInput.value='';
     return;
@@ -12335,7 +12369,7 @@ async function signInQaPreview(){
   try{
     await firebaseAuthPersistenceReady;
     const result=await FB.auth.signInWithEmailAndPassword(email,password);
-    if(!isQaPreviewAccount(result.user)){
+    if(result.user?.uid!==selectedUid || !isQaPreviewAccount(result.user)){
       await FB.auth.signOut();
       if(errorNode) errorNode.textContent='Esta conta não está autorizada para este Preview.';
     }
@@ -12452,18 +12486,25 @@ function accessGateBox(){
             </div>
           </div>
           <div style="font-size:12px;line-height:1.55;color:#8ea0bb;max-width:360px">
-            ${qaPreview ? 'Use uma das contas sintéticas autorizadas para validar este Preview.' : 'Acesso aprovado para a conta do proprietário.'}<br>
+            ${qaPreview ? 'Escolha uma conta sintética ou entre com a conta Google autorizada para validar este Preview.' : 'Acesso aprovado para a conta do proprietário.'}<br>
             A carteira sincroniza automaticamente na nuvem.
           </div>
           ${FB.user ? `<div style="margin-top:14px">${chip}</div>` : ''}
           <div style="margin-top:18px">
             ${qaPreview ? `
+              <label for="qa-preview-account" style="display:block;margin:0 0 5px;color:#cbd5e1;font-size:12px">Conta sintética</label>
+              <select id="qa-preview-account" aria-describedby="qa-preview-login-error" onchange="selectQaPreviewAccount()" required style="width:100%;min-height:44px;margin-bottom:10px;padding:10px 12px;border:1px solid #334155;border-radius:10px;background:#080d16;color:#f1f5f9">
+                <option value="">Selecione uma conta de teste</option>
+                <option value="n7tXL6RHXpNqxwkJexTK1gYN6ey1">Conta sintética QA C</option>
+                <option value="jjouXVMgibeQl0gXY0IHU8JQnFL2">Conta sintética QA D</option>
+              </select>
               <label for="qa-preview-email" style="display:block;margin:0 0 5px;color:#cbd5e1;font-size:12px">E-mail sintético</label>
-              <input id="qa-preview-email" type="email" autocomplete="username" aria-describedby="qa-preview-login-error" required style="width:100%;min-height:44px;margin-bottom:10px;padding:10px 12px;border:1px solid #334155;border-radius:10px;background:#080d16;color:#f1f5f9">
+              <input id="qa-preview-email" type="email" autocomplete="username" aria-describedby="qa-preview-login-error" readonly required style="width:100%;min-height:44px;margin-bottom:10px;padding:10px 12px;border:1px solid #334155;border-radius:10px;background:#080d16;color:#f1f5f9">
               <label for="qa-preview-password" style="display:block;margin:0 0 5px;color:#cbd5e1;font-size:12px">Senha de homologação</label>
               <input id="qa-preview-password" type="password" autocomplete="current-password" aria-describedby="qa-preview-login-error" required style="width:100%;min-height:44px;padding:10px 12px;border:1px solid #334155;border-radius:10px;background:#080d16;color:#f1f5f9">
               <div id="qa-preview-login-error" role="status" aria-live="polite" style="min-height:18px;margin-top:8px;color:#fca5a5;font-size:12px"></div>
               <button class="btn bp" type="button" onclick="signInQaPreview()" style="width:100%;min-height:48px;margin-top:8px;border-radius:14px;font-size:15px;font-weight:800">Entrar no Preview QA</button>
+              <button class="btn bgh" type="button" onclick="signInQaGoogle()" style="width:100%;min-height:44px;margin-top:8px;border-radius:12px">Continuar com Google no QA</button>
             ` : `
               <button class="btn bp" onclick="signInGoogle()" style="width:100%;min-height:48px;border-radius:14px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 12px 28px rgba(79,70,229,.34)">
                 <span style="font-size:18px;font-weight:900;line-height:1;background:linear-gradient(90deg,#4285f4 0 25%,#34a853 25% 50%,#fbbc05 50% 75%,#ea4335 75% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">G</span>

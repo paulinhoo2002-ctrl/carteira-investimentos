@@ -12,6 +12,9 @@ service cloud.firestore {
         && (
           (request.auth.uid == "n7tXL6RHXpNqxwkJexTK1gYN6ey1" && request.auth.token.email == "qa-c-sm189-37@exemplo-invalido.test")
           || (request.auth.uid == "jjouXVMgibeQl0gXY0IHU8JQnFL2" && request.auth.token.email == "qa-d-sm189-37@exemplo-invalido.test")
+          || (request.auth.uid == "dtl8Ufm8s0PB1Cbu51oYMhoUt752"
+            && request.auth.token.email == "psmarquesdossantos@gmail.com"
+            && request.auth.token.email_verified == true)
         );
     }
 
