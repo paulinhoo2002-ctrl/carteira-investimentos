@@ -16,7 +16,8 @@ test('No hardcoded Google API keys in source', () => {
   });
   // Known public Firebase API keys for this project (client API key, not a secret per Firebase security model)
   // Reference: https://firebase.google.com/docs/projects/api-keys
-  const KNOWN_PUBLIC_FIREBASE_KEYS = ['AIzaSyAUAGr6VfVoq4BdYAKSNENLv5dCaisHIho'];
+  // QA (carteira-invest-qa-v316, isolado de produção): chave pública de cliente, listada por valor exato.
+  const KNOWN_PUBLIC_FIREBASE_KEYS = ['AIzaSyAUAGr6VfVoq4BdYAKSNENLv5dCaisHIho', 'AIzaSyBUgrloDZlWHiZqOlRanb7NUahW9HJfUTM'];
   for (const file of files) {
     const content = fs.readFileSync(path.join(root, file), 'utf8');
     // Google API Key pattern (AIza...) - only flag if in Firebase config context
