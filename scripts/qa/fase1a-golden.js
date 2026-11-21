@@ -22,6 +22,7 @@ const git = gitArgs => execFileSync('git', ['--no-optional-locks', ...gitArgs], 
 // Diferenças já aprovadas e verificadas por outros testes; o golden não as cobre.
 const INTENTIONAL = [
   { id: 'F-01', area: 'ativos (estado parcial)', description: 'Total investido passa a aparecer quando o capital aplicado é completo, mesmo com valor atual incompleto (regra de produto aprovada); a referência mostrava "—". Valor atual, resultado e rentabilidade seguem indisponíveis.', tokenAdditions: [{ state: 'partial', route: 'ativos', tokens: ['$95.982,00'] }] },
+  { id: 'SM189.37', area: 'renda fixa', description: 'Fila de conferência volta a exibir valores atuais já registrados; acrescenta apenas valores sintéticos repetidos visualmente, sem alterar cálculo ou persistência.', tokenAdditions: [{ state: 'rich', route: 'renda-fixa', tokens: ['$19.620,00'] }, { state: 'partial', route: 'renda-fixa', tokens: ['$2.310,00', '$6.420,00'] }, { state: 'noquotes', route: 'renda-fixa', tokens: ['$19.620,00'] }] },
   { id: 'F-03/F-04', area: 'dashboard', description: 'Variação diária (novo KPI da V20): fórmula sobre o fechamento anterior e cobertura; testado em tests/fase1b-daily-variation.test.js. Não existe na referência.' },
   { id: 'V19/V20', area: 'dashboard, dividendos', description: 'Novos painéis e reorganização da V19/V20 (Valor investido, lançamentos recentes, Recebido no ano); o golden compara só os indicadores comparáveis (cx(), 3 cartões do Dashboard, KPIs e ranking de Dividendos) e as 11 telas sem mudança numérica.' },
 ];

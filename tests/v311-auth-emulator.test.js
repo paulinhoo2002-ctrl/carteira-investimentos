@@ -279,7 +279,7 @@ test('V311: localhost query flags cannot bypass auth on a non-loopback origin', 
   const app = await newPage({ hostname: 'qa-non-loopback.invalid', query: `${QUERY}&testMode=1&skipAuth=1` });
   try {
     try {
-      await app.page.waitForFunction(() => FB.authResolved === true && FB.access.loading === false && document.body.innerText.includes('Entre com Google para continuar'), null, { timeout: 20000 });
+      await app.page.waitForFunction(() => FB.authResolved === true && FB.ready === false && FB.accountMode === 'AUTH_FAILURE' && FB.access.allowed === false, null, { timeout: 20000 });
     } catch (error) {
       const diag = await app.page.evaluate(() => ({ firebase: typeof window.firebase, FBdefined: typeof FB !== 'undefined', ready: typeof FB !== 'undefined' && FB.ready, authResolved: typeof FB !== 'undefined' && FB.authResolved, accountMode: typeof FB !== 'undefined' && FB.accountMode, debugAuthError: window.__V311_DEBUG_AUTH_ERROR__, hostname: location.hostname, href: location.href, body: document.body.innerText.slice(0, 240) })).catch(() => ({ pageUnavailable: true }));
       throw new Error(`${error.message}; diag=${JSON.stringify(diag)}; pageErrors=${JSON.stringify(app.pageErrors)}; consoleErrors=${JSON.stringify(app.consoleErrors)}; requests=${JSON.stringify(app.requests.map(r => r.url))}`);
@@ -287,14 +287,23 @@ test('V311: localhost query flags cannot bypass auth on a non-loopback origin', 
     const state = await app.page.evaluate(() => ({
       testMode: window.__LOCAL_TEST_MODE__,
       emulatorMode: window.__LOCAL_AUTH_EMULATOR_MODE__,
+      ready: FB.ready,
+      appInitialized: !!FB.app,
+      accountMode: FB.accountMode,
       authenticated: !!FB.user,
-      gate: document.body.innerText.includes('Entre com Google para continuar'),
+      accessAllowed: FB.access.allowed,
+      failureGate: document.body.innerText.includes('Não foi possível validar o acesso'),
     }));
     assert.equal(state.testMode, false);
     assert.equal(state.emulatorMode, false);
+    assert.equal(state.ready, false);
+    assert.equal(state.appInitialized, false);
+    assert.equal(state.accountMode, 'AUTH_FAILURE');
     assert.equal(state.authenticated, false);
-    assert.equal(state.gate, true);
+    assert.equal(state.accessAllowed, false);
+    assert.equal(state.failureGate, true);
     assert.equal(app.requests.some(({ url }) => /127\.0\.0\.1:(9099|8080)/.test(url)), false);
+    assert.deepEqual(firebaseDataRequests(app), [], 'unknown host must not initialize any Firebase data endpoint');
     assert.deepEqual(app.blockedProductionRequests, [], 'non-loopback QA URL must not contact production Firebase data endpoints');
   } finally { await app.context.close(); }
 });
