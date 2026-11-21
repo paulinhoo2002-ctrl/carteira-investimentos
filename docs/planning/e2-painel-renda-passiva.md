@@ -64,7 +64,9 @@ Um único painel que responda, na mesma tela:
 
 **Regra:** nunca somar previsto e recebido no mesmo número.
 
-**Ponto a decidir antes de implementar:** o progresso da meta deve ser mostrado pelo recebido, pelo previsto, ou pelos dois? Recomendação: os dois, com rótulos distintos, porque o painel atual de Metas usa o previsto e o de Dividendos usa o recebido.
+**Decisão do proprietário:** o progresso da meta mostra **recebido e previsto**, com rótulos distintos ("Progresso (recebido)" e "Progresso (previsto)").
+
+**Meta mensal:** é sempre a configurada pelo usuário (`passiveIncomeGoalTarget`). O valor de R$ 5.000/mês é apenas exemplo de planejamento e **não deve ser fixado no código, nos testes de produção nem na interface**.
 
 ## 6. Carteira vazia e aportes futuros
 
@@ -123,9 +125,9 @@ Texto proposto para a interface (rascunho, a revisar):
 
 ## 12. Pendências para decisão do proprietário
 
-1. O progresso da meta deve mostrar recebido, previsto ou os dois? (recomendado: os dois, rotulados)
-2. O texto da seção 6 está adequado?
-3. Confirmar que R$ 5.000/mês é a meta ativa, ou apenas exemplo.
+1. ~~Progresso da meta~~ — **respondido:** recebido e previsto, rotulados.
+2. O texto da seção 6 está adequado? — **pendente.**
+3. ~~R$ 5.000/mês~~ — **respondido:** apenas exemplo; a meta é a configurada pelo usuário.
 
 ## 13. Aprovação
 
