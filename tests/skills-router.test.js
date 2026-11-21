@@ -79,3 +79,21 @@ test('selects an optional namespaced Firebase auditor only when triggered', () =
   assert.deepEqual(result.selectedSkills, ['doubt-driven-development', 'firebase:firebase-security-rules-auditor']);
   assert.deepEqual(result.missingTriggeredSkills, []);
 });
+
+test('selects Firebase Auth guidance only for an explicit auth trigger', () => {
+  const available = ['doubt-driven-development', 'firebase:firebase-auth-basics'];
+  assert.deepEqual(selectSkills('firebase', available).selectedSkills, ['doubt-driven-development']);
+
+  const result = selectSkills('firebase', available, ['firebaseAuth']);
+  assert.deepEqual(result.selectedSkills, ['doubt-driven-development', 'firebase:firebase-auth-basics']);
+  assert.deepEqual(result.missingTriggeredSkills, []);
+  assert.ok(result.selectedSkills.length <= 2);
+
+  const withRules = selectSkills(
+    'firebase',
+    [...available, 'firebase:firebase-security-rules-auditor'],
+    ['firebaseAuth', 'firestoreRules']
+  );
+  assert.deepEqual(withRules.selectedSkills, ['doubt-driven-development', 'firebase:firebase-security-rules-auditor']);
+  assert.deepEqual(withRules.deferredByLimit, ['firebase:firebase-auth-basics']);
+});
