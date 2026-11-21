@@ -32628,7 +32628,7 @@ function rendaFixaTab(){
             <div class="premium-rf-review-item-main">
               <div class="premium-rf-review-item-title">${esc(row.ticker)}${row.name&&row.name!==row.ticker?` · ${esc(row.name)}`:''}</div>
               <div class="premium-rf-review-item-meta">${esc(row.category)} · ${esc(dueText)}</div>
-              <div class="premium-rf-review-item-value">${row.explicit===false?'Atualização necessária':fmt(row.current)}</div>
+              ${row.explicit===false?'<div class="premium-rf-review-item-value">Atualização necessária</div>':''}
             </div>
             ${assetId?`<button type="button" class="premium-rf-review-action ds-button ds-button--secondary" onclick='edA(${JSON.stringify(assetId)})'>Revisar</button>`:''}
           </div>`;

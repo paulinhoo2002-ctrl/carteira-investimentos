@@ -35,20 +35,6 @@
    "id": "V19/V20",
    "area": "dashboard, dividendos",
    "description": "Novos painéis e reorganização da V19/V20 (Valor investido, lançamentos recentes, Recebido no ano); o golden compara só os indicadores comparáveis (cx(), 3 cartões do Dashboard, KPIs e ranking de Dividendos) e as 11 telas sem mudança numérica."
-  },
-  {
-   "id": "RF-HARNESS-QA-RF-VENC",
-   "area": "renda-fixa (estado parcial)",
-   "description": "O fixture sintético QA_RF_VENC (QARFV01, R$ 2.310,00) foi incluído no harness depois da baseline f8fef82. O mesmo valor atual aparece em 4 seções da tela (card Atual, Próximos vencimentos, Próximos da revisão e tabela Rentabilidade total simples). A referência tinha 3 ocorrências; a diferença vem do harness, não da mudança de código. Verificado em f8fef82 e origin/main com o harness atual: 4 ocorrências nos dois.",
-   "tokenAdditions": [
-    {
-     "state": "partial",
-     "route": "renda-fixa",
-     "tokens": [
-      "$2.310,00"
-     ]
-    }
-   ]
   }
  ],
  "expected": {
@@ -325,7 +311,6 @@
      "$18.000,00",
      "$18.000,00",
      "$18.000,00",
-     "$19.620,00",
      "$19.620,00",
      "$19.620,00",
      "$19.620,00",
@@ -900,7 +885,6 @@
      "$6.420,00",
      "$6.420,00",
      "$6.420,00",
-     "$6.420,00",
      "$8.000,00",
      "$8.000,00",
      "$8.000,00",
@@ -1420,7 +1404,6 @@
      "$18.000,00",
      "$18.000,00",
      "$18.000,00",
-     "$19.620,00",
      "$19.620,00",
      "$19.620,00",
      "$19.620,00",
