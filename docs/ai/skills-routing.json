@@ -5,6 +5,7 @@
     "superpowers:using-superpowers",
     "superpowers:systematic-debugging",
     "superpowers:verification-before-completion",
+    "firebase:firebase-auth-basics",
     "firebase:firebase-security-rules-auditor",
     "browser-harness:browser-harness",
     "find-skills"
@@ -13,6 +14,7 @@
     "using-superpowers": ["superpowers:using-superpowers"],
     "systematic-debugging": ["superpowers:systematic-debugging"],
     "verification-before-completion": ["superpowers:verification-before-completion"],
+    "firebase-auth-basics": ["firebase:firebase-auth-basics"],
     "firebase-security-rules-auditor": ["firebase:firebase-security-rules-auditor"],
     "find-skills": ["find-skills"],
     "browser-harness": ["browser-harness:browser-harness"]
@@ -36,7 +38,7 @@
     "FINANCE_CORE": { "required": ["doubt-driven-development"], "optional": { "officialSource": "source-driven-development" } },
     "FINANCIAL_RECONCILIATION": { "required": ["doubt-driven-development", "source-driven-development"], "optional": {} },
     "IR2026": { "required": ["doubt-driven-development", "source-driven-development"], "optional": {} },
-    "PRIVACY_SECURITY": { "required": ["doubt-driven-development"], "optional": { "firestoreRules": "firebase-security-rules-auditor", "officialSource": "source-driven-development" } },
+    "PRIVACY_SECURITY": { "required": ["doubt-driven-development"], "optional": { "firestoreRules": "firebase-security-rules-auditor", "firebaseAuth": "firebase-auth-basics", "officialSource": "source-driven-development" } },
     "RELEASE": { "required": ["caveman-review"], "optional": { "finalVerification": "verification-before-completion", "gitCloseout": "caveman-commit" } },
     "GOVERNANCE": { "required": ["caveman-review"], "optional": { "architectureDiagram": "archify" } },
     "ARCHITECTURE": { "required": ["doubt-driven-development"], "optional": { "architectureDiagram": "archify" } },

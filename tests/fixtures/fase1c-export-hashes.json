@@ -3,7 +3,8 @@
   "origin": "origin/main (produção) com fixtures sintéticas e relógio congelado 2026-11-08T15:00Z",
   "baselineSha": "f8fef82313681c60ef641e56a9eb75b24526940b",
   "how": "tests/fase1c-export-integrity.test.js executado na referência com EXPORT_HASH_DUMP=1",
-  "updatedBy": "SUPERMISSAO-19: adicionado reconciliationStatus nas exportações JSON; movimentos PENDENTE DE RECONCILIAÇÃO excluídos dos totais"
+  "updatedBy": "SUPERMISSAO-19: adicionado reconciliationStatus nas exportações JSON; movimentos PENDENTE DE RECONCILIAÇÃO excluídos dos totais",
+  "harnessUpdate": "SM189.37: chaves parcial atualizadas para o resultado atual de origin/main 58827aa, reexecutado com o harness atual. Cada CSV de parcial que mudou (parcial|complete|CSV, parcial|fixed|CSV) tem o mesmo resultado em f8fef82 com este harness: a diferença vem do fixture QA_RF_VENC criado depois da baseline. Os JSON de parcial mudam por reconciliationStatus, já documentado em meta.updatedBy; os CSV completos não mudam. Nenhuma chave completa foi alterada."
  },
  "hashes": {
   "completo|complete|CSV": {
@@ -59,52 +60,52 @@
    "length": 6297
   },
   "parcial|complete|CSV": {
-   "sha": "be6fc7e80a7d1730",
-   "length": 34390
+   "sha": "a2a840dd6379c3cc",
+   "length": 34403
   },
   "parcial|complete|JSON": {
-   "sha": "17056241e565ab5a",
-   "length": 569850
+   "sha": "b26a1ad197e1332a",
+   "length": 576271
   },
   "parcial|assets|CSV": {
    "sha": "64d10c575d0c9454",
    "length": 1918
   },
   "parcial|assets|JSON": {
-   "sha": "f00e4a2c08e4680d",
-   "length": 510068
+   "sha": "550e6a5fdcbbbf81",
+   "length": 516476
   },
   "parcial|proventos|CSV": {
    "sha": "0074f447c8b6af24",
    "length": 4470
   },
   "parcial|proventos|JSON": {
-   "sha": "78960e5b8a025e0d",
-   "length": 515456
+   "sha": "e3628f538ea26eae",
+   "length": 521864
   },
   "parcial|fixed|CSV": {
-   "sha": "e6b41cab166a8222",
-   "length": 1391
+   "sha": "d5357f9aba192b89",
+   "length": 1404
   },
   "parcial|fixed|JSON": {
-   "sha": "42771f1146e3a8ae",
-   "length": 508146
+   "sha": "ed07f3acff55373d",
+   "length": 514567
   },
   "parcial|patrimony|CSV": {
    "sha": "35fa61f04be02759",
    "length": 1734
   },
   "parcial|patrimony|JSON": {
-   "sha": "bfe89f435b09c786",
-   "length": 508854
+   "sha": "792b512ce0855311",
+   "length": 515262
   },
   "parcial|audit|CSV": {
    "sha": "25aa6993ef2f802b",
    "length": 24686
   },
   "parcial|audit|JSON": {
-   "sha": "c07219f06b5b02b2",
-   "length": 549040
+   "sha": "9adb3acbd1c6940a",
+   "length": 555448
   },
   "parcial|irpf|CSV": {
    "sha": "3b77d619da6ff46c",

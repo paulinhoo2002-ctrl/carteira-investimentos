@@ -196,3 +196,28 @@ these checks pass locally and no production endpoint is contacted. The current
 
 References: [Firebase Auth Emulator connection](https://firebase.google.com/docs/emulator-suite/connect_auth)
 and [Firebase Emulator Suite setup](https://firebase.google.com/docs/emulator-suite/install_and_configure).
+
+## SM189.37 — homologação autenticada isolada
+
+The Preview project `carteira-homolog-c5785e6` uses only Firebase QA
+`carteira-invest-qa-v316` on that project's Vercel hosts. Production keeps
+Google Sign-In and its existing Firebase project. Unknown hosts receive no
+Firebase configuration. The QA app accepts only the two synthetic identities
+allowlisted by exact UID and email; it does not offer account creation, store
+passwords, or grant administrative UI. QA Firestore rules are held separately
+in `firestore.qa-preview.rules`; the two identity pairs can access only their
+own `portfolios/{uid}` and `users/{uid}` documents. `meta/access` retains its
+previous administrator rule.
+
+The synthetic test accounts may have unverified email addresses. This exception
+is limited to those exact QA UID/email pairs and the isolated QA project; it
+does not change the production owner's verified-email contract. Rule tests use
+a `demo-` Firebase Emulator project and ephemeral passwords generated in
+memory.
+
+Before publishing QA rules, preserve the hosted QA version and validate the
+local copy with the Firebase Emulator. Deploy only with
+`firebase.qa-preview.json` and `--project carteira-invest-qa-v316`; the default
+`firebase.json` must not be used for this operation. Vercel SSO remains active.
+Authenticated browser validation remains blocked until a legitimate SSO
+session is available to the browser.

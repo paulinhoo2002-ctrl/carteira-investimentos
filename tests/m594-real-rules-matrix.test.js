@@ -70,6 +70,23 @@ async function signUpOrIn(email, password) {
   assert.fail(`signUp failed for ${email}: HTTP ${res.status} ${msg}`);
 }
 
+// The canonical rules hardcode the owner UID (isOwnerAccount). The emulator mints
+// random UIDs on signUp, so the owner account is created through the emulator
+// admin REST endpoint with that exact localId; otherwise uid-scoped rules deny it.
+const OWNER_UID = 'yaypxiiv7Ye7pwpDZ0nqhG3Yj7E3';
+async function ensureOwnerAccount(email, password, localId) {
+  const res = await request(`${AUTH}/identitytoolkit.googleapis.com/v1/projects/${PROJECT}/accounts`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: 'Bearer owner' },
+    body: JSON.stringify({ localId, email, password, emailVerified: false }),
+  });
+  if (res.ok) return signIn(email, password);
+  const body = await res.json().catch(() => ({}));
+  const msg = body && body.error && body.error.message ? body.error.message : '';
+  if (msg.includes('EMAIL_EXISTS')) return signIn(email, password);
+  assert.fail(`owner admin create failed for ${email}: HTTP ${res.status} ${msg}`);
+}
+
 // Emulator-documented verification: sendOobCode(VERIFY_EMAIL) → emulator oobCodes
 // listing → accounts:update {oobCode} → fresh sign-in mints email_verified=true.
 async function markEmailVerified(idToken) {
@@ -130,7 +147,8 @@ test('R01: unauthenticated read and write of portfolio are denied', async () => 
 test('OWNER LIFECYCLE: unverified owner-email DENIED everywhere, verified owner ALLOWED (R05,R11 → R02,R03,R03b,R08,R09)', async () => {
   // Phase 1 — fresh UNVERIFIED account bearing the owner email: denied on the
   // admin registry AND on its own financial documents (M595 verified gate).
-  const unverifiedOwner = await signUpOrIn(OWNER_EMAIL, OWNER_PASS);
+  const unverifiedOwner = await ensureOwnerAccount(OWNER_EMAIL, OWNER_PASS, OWNER_UID);
+  assert.equal(unverifiedOwner.localId, OWNER_UID, 'owner must carry the canonical rules UID');
   const unvPortfolioRead = await fsGet(unverifiedOwner.idToken, `portfolios/${unverifiedOwner.localId}`);
   denied(unvPortfolioRead.status, 'R05 unverified owner-email read own portfolio');
   const unvPortfolioWrite = await fsWrite(unverifiedOwner.idToken, `portfolios/${unverifiedOwner.localId}`, { probe: { stringValue: 'nope' } });

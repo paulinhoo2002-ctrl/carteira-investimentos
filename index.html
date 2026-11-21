@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' http://127.0.0.1:* ws://127.0.0.1:* https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://brapi.dev https://fonts.googleapis.com https://fonts.gstatic.com; frame-src 'self' https://carteira-de-investimento-16725.firebaseapp.com https://accounts.google.com; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' http://127.0.0.1:* ws://127.0.0.1:* https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://brapi.dev https://fonts.googleapis.com https://fonts.gstatic.com; frame-src 'self' https://carteira-de-investimento-16725.firebaseapp.com https://carteira-invest-qa-v316.firebaseapp.com https://accounts.google.com; base-uri 'self'; form-action 'self'">
 <meta name="theme-color" content="#f4f7fb">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -9213,6 +9213,37 @@ const firebaseConfig = {
   appId: "1:194762472851:web:1285e351b2dcc80f147c66",
   measurementId: "G-ZP045H8HTZ"
 };
+// SM189.37 — Preview usa o Firebase QA isolado (v316). Produção fica só no domínio de produção.
+const firebaseQaPreviewConfig = {
+  apiKey: "AIzaSyBUgrloDZlWHiZqOlRanb7NUahW9HJfUTM",
+  authDomain: "carteira-invest-qa-v316.firebaseapp.com",
+  projectId: "carteira-invest-qa-v316",
+  storageBucket: "carteira-invest-qa-v316.firebasestorage.app",
+  messagingSenderId: "571302584960",
+  appId: "1:571302584960:web:ea6e0ece0c1ec64268fc65"
+};
+const FIREBASE_QA_PROJECT_ID="carteira-invest-qa-v316";
+const QA_PREVIEW_USERS = Object.freeze({
+  "n7tXL6RHXpNqxwkJexTK1gYN6ey1": Object.freeze({email:"qa-c-sm189-37@exemplo-invalido.test",providerId:"password"}),
+  "jjouXVMgibeQl0gXY0IHU8JQnFL2": Object.freeze({email:"qa-d-sm189-37@exemplo-invalido.test",providerId:"password"}),
+  "dtl8Ufm8s0PB1Cbu51oYMhoUt752": Object.freeze({email:"psmarquesdossantos@gmail.com",providerId:"google.com",emailVerified:true})
+});
+const FIREBASE_PRODUCTION_HOST="carteira-investimentos-delta.vercel.app";
+function isQaPreviewHost(hostname){
+  const host=String(hostname||'').toLowerCase();
+  return host==='carteira-homolog-c5785e6.vercel.app' || /^carteira-homolog-c5785e6-[a-z0-9-]+\.vercel\.app$/.test(host);
+}
+function activeFirebaseConfig(){
+  if(location.hostname===FIREBASE_PRODUCTION_HOST) return firebaseConfig;
+  if(isQaPreviewHost(location.hostname)) return firebaseQaPreviewConfig;
+  return null;
+}
+function isQaPreviewConfigured(){
+  return isQaPreviewHost(location.hostname) && activeFirebaseConfig()?.projectId===FIREBASE_QA_PROJECT_ID;
+}
+function isQaPreviewEnvironment(){
+  return isQaPreviewConfigured() && FB.app?.options?.projectId===FIREBASE_QA_PROJECT_ID;
+}
 
 let FB = {
   ready:false, app:null, auth:null, db:null, user:null,
@@ -9821,6 +9852,15 @@ function restoreLocalTestData(){
 function normalizeEmail(v){ return String(v||'').toLowerCase().trim(); }
 function isAccessAdmin(user){
   return !!user && user.uid === OWNER_FIREBASE_UID && normalizeEmail(user.email) === OWNER_FIREBASE_EMAIL && user.emailVerified === true;
+}
+function isQaPreviewAccount(user){
+  const allowed=user&&QA_PREVIEW_USERS[user.uid];
+  return isQaPreviewEnvironment() && !!allowed && normalizeEmail(user.email)===allowed.email
+    && (allowed.emailVerified!==true || user.emailVerified===true)
+    && user.providerData?.some(provider=>provider.providerId===allowed.providerId)===true;
+}
+function isAuthorizedAppUser(user){
+  return isQaPreviewEnvironment() ? isQaPreviewAccount(user) : isAccessAdmin(user);
 }
 function canManageSecurity(){
   return isAccessAdmin(FB.user);
@@ -11525,7 +11565,10 @@ function initFirebase(){
         if(window.__LOCAL_AUTH_EMULATOR_MODE__===true && !emulatorMode) throw new Error('Auth emulator mode is loopback-only.');
         const appConfig = (emulatorMode || isLocalTestMode())
           ? {apiKey: 'demo-api-key', authDomain: 'localhost', projectId: 'demo-carteira-qa-emulator'}
-          : firebaseConfig;
+          : activeFirebaseConfig();
+        if(!appConfig) throw new Error('No Firebase project is authorized for this host.');
+        if(location.hostname===FIREBASE_PRODUCTION_HOST && appConfig.projectId!=='carteira-de-investimento-16725') throw new Error('Production Firebase project mismatch.');
+        if(isQaPreviewHost(location.hostname) && appConfig.projectId!==FIREBASE_QA_PROJECT_ID) throw new Error('QA Firebase project mismatch.');
     FB.app=firebase.initializeApp(appConfig);
     FB.auth=firebase.auth();
     FB.db=firebase.firestore();
@@ -11681,8 +11724,8 @@ async function loadAccessControl(user,authSession=null){
   const setAccess = value => {
     if(!authSession || authSession.isCurrent()) FB.access=value;
   };
-  if(!isAccessAdmin(user)){
-    setAccess({loaded:true,loading:false,allowed:false,reason:'Acesso restrito à conta autorizada do proprietário.',cfg:null,lastDeniedAt:new Date().toISOString()});
+  if(!isAuthorizedAppUser(user)){
+    setAccess({loaded:true,loading:false,allowed:false,reason:'Acesso não autorizado para este ambiente.',cfg:null,lastDeniedAt:new Date().toISOString()});
     return false;
   }
   if(!FB.db){
@@ -11722,11 +11765,12 @@ async function resolveAccountModeCompat(user, accessOk, authSession=null){
   if(!user) return 'LOGIN_REQUIRED';
   if(authSession && !authSession.isCurrent()) return 'AUTH_FAILURE';
   if(!window.AccountMode || !FB.db || FB.access?.authFailure) return 'AUTH_FAILURE';
-  if(!isAccessAdmin(user) || !accessOk) return 'BLOCKED';
+  const qaPreviewAccount=isQaPreviewAccount(user);
+  if((!isAccessAdmin(user) && !qaPreviewAccount) || !accessOk) return 'BLOCKED';
   return AccountMode.resolveAccountMode({
     authUser:user,
-    emailVerified:user.emailVerified === true,
-    authorization:{enabled:true,blocked:false,role:'owner'}
+    emailVerified:user.emailVerified === true || qaPreviewAccount,
+    authorization:{enabled:true,blocked:false,role:qaPreviewAccount?'user':'owner'}
   });
 }
 function clearRealStateInMemory(){
@@ -12250,6 +12294,10 @@ async function signInGoogle(){
     toast('🧪 Modo de teste local: entrada com Google desativada.');
     return;
   }
+  if(isQaPreviewConfigured()){
+    toast('Use a conta sintética no formulário de homologação.');
+    return;
+  }
   if(!FB.ready){ alert('Firebase não carregou. Verifique a internet.'); return; }
   try{
     const provider=new firebase.auth.GoogleAuthProvider();
@@ -12270,6 +12318,65 @@ async function signInGoogle(){
     }else{
       alert(`Não foi possível entrar com Google.\n\nErro: ${code||String(e?.message||e)}\nDomínio atual: ${host}\n\nSe for "unauthorized-domain", autorize "${host}" em:\nconsole.firebase.google.com → Authentication → Settings → Authorized domains`);
     }
+  }
+}
+async function signInQaGoogle(){
+  const errorNode=document.getElementById('qa-preview-login-error');
+  if(!isQaPreviewEnvironment() || !FB.ready){
+    if(errorNode) errorNode.textContent='Login Google de homologação indisponível neste ambiente.';
+    return;
+  }
+  try{
+    const provider=new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({prompt:'select_account'});
+    await firebaseAuthPersistenceReady;
+    const result=await FB.auth.signInWithPopup(provider);
+    if(!isQaPreviewAccount(result.user)){
+      await FB.auth.signOut();
+      if(errorNode) errorNode.textContent='Esta conta Google não está autorizada para este Preview.';
+    }
+  }catch{
+    if(errorNode) errorNode.textContent='Não foi possível entrar com Google. Confira a conta autorizada e tente novamente.';
+  }
+}
+function selectQaPreviewAccount(){
+  const selectedUid=document.getElementById('qa-preview-account')?.value;
+  const account=QA_PREVIEW_USERS[selectedUid];
+  const emailInput=document.getElementById('qa-preview-email');
+  const passwordInput=document.getElementById('qa-preview-password');
+  if(emailInput) emailInput.value=account?.providerId==='password' ? account.email : '';
+  if(passwordInput) passwordInput.value='';
+}
+async function signInQaPreview(){
+  const accountSelect=document.getElementById('qa-preview-account');
+  const emailInput=document.getElementById('qa-preview-email');
+  const passwordInput=document.getElementById('qa-preview-password');
+  const errorNode=document.getElementById('qa-preview-login-error');
+  const selectedUid=accountSelect?.value;
+  const account=QA_PREVIEW_USERS[selectedUid];
+  const email=normalizeEmail(emailInput?.value);
+  const password=String(passwordInput?.value||'');
+  if(!isQaPreviewEnvironment() || !FB.ready){
+    if(errorNode) errorNode.textContent='Login de homologação indisponível neste ambiente.';
+    if(passwordInput) passwordInput.value='';
+    return;
+  }
+  if(!account || account.providerId!=='password' || account.email!==email || !password){
+    if(errorNode) errorNode.textContent='Informe uma conta sintética autorizada e sua senha.';
+    if(passwordInput) passwordInput.value='';
+    return;
+  }
+  try{
+    await firebaseAuthPersistenceReady;
+    const result=await FB.auth.signInWithEmailAndPassword(email,password);
+    if(result.user?.uid!==selectedUid || !isQaPreviewAccount(result.user)){
+      await FB.auth.signOut();
+      if(errorNode) errorNode.textContent='Esta conta não está autorizada para este Preview.';
+    }
+  }catch{
+    if(errorNode) errorNode.textContent='Não foi possível entrar. Confira a conta e tente novamente.';
+  }finally{
+    if(passwordInput) passwordInput.value='';
   }
 }
 async function signOutGoogle(){
@@ -12345,8 +12452,10 @@ function authBox(){
   if(isLocalTestMode()) return `<span class="note-pill" style="background:rgba(251,191,36,.08);color:#fde68a;border-color:rgba(251,191,36,.22)">Teste local</span>`;
   if(isV250OfflineCachedSession()) return `<span class="note-pill" role="status" style="background:rgba(251,191,36,.08);color:#fde68a;border-color:rgba(251,191,36,.22)">Offline · leitura</span>`;
   if(!FB.ready) return '';
-  if(!FB.user) return `<button class="btn bgh hdr-mobile-btn" style="font-size:11px;padding:6px 10px;min-height:30px;line-height:1;border-color:#24324a;color:#a5b4fc;background:#111827" onclick="signInGoogle()"><span class="hdr-mobile-icon">🔑</span><span class="hdr-mobile-label">Entrar Google</span></button>`;
-  const name=esc(FB.user.displayName||'Conta Google');
+  if(!FB.user) return isQaPreviewConfigured()
+    ? `<button class="btn bgh hdr-mobile-btn" style="font-size:11px;padding:6px 10px;min-height:30px;line-height:1;border-color:#24324a;color:#a5b4fc;background:#111827" onclick="document.getElementById('qa-preview-email')?.focus()"><span class="hdr-mobile-icon">🔑</span><span class="hdr-mobile-label">Entrar QA</span></button>`
+    : `<button class="btn bgh hdr-mobile-btn" style="font-size:11px;padding:6px 10px;min-height:30px;line-height:1;border-color:#24324a;color:#a5b4fc;background:#111827" onclick="signInGoogle()"><span class="hdr-mobile-icon">🔑</span><span class="hdr-mobile-label">Entrar Google</span></button>`;
+  const name=esc(FB.user.displayName||(isQaPreviewAccount(FB.user)?'Conta de homologação':'Conta Google'));
   const photo=FB.user.photoURL?`<img src="${esc(FB.user.photoURL)}" alt="Foto do usuário" style="width:24px;height:24px;border-radius:50%;border:1px solid #1e2a3d">`:'<div style="width:24px;height:24px;border-radius:50%;background:#111828;display:flex;align-items:center;justify-content:center;font-size:12px">👤</div>';
   return `<div style="display:flex;align-items:center;gap:4px;background:#0a0e18;border:1px solid #1c2738;border-radius:999px;padding:3px 4px">
     ${photo}<span class="hdr-mobile-user" style="font-size:10px;color:#b3c2d6;max-width:82px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
@@ -12361,7 +12470,8 @@ function accessGateBox(){
   const loading = !FB.authResolved || FB.access.loading;
   const reason = FB.access.reason || 'Faça login com um e-mail aprovado para acessar a carteira.';
   const stateLabel = loading ? 'Verificando acesso' : (FB.user ? 'Acesso em validação' : 'Acesso restrito');
-  const title = loading ? 'Verificando sua conta...' : (FB.user ? 'Seu e-mail não está autorizado' : 'Entre com Google para continuar');
+  const qaPreview=isQaPreviewConfigured();
+  const title = loading ? 'Verificando sua conta...' : (FB.user ? 'Seu e-mail não está autorizado' : qaPreview ? 'Acesso de homologação' : 'Entre com Google para continuar');
   const chip = FB.user ? `<span class="note-pill" style="background:#111827;color:#c7d2fe;border-color:rgba(99,102,241,.22)">${esc(FB.user.email || '')}</span>` : '';
   return `
     <div${loading ? ' role="status" aria-live="polite"' : ''} style="min-height:calc(100vh - 86px);display:grid;place-items:center;padding:14px 16px 20px">
@@ -12376,21 +12486,37 @@ function accessGateBox(){
             </div>
           </div>
           <div style="font-size:12px;line-height:1.55;color:#8ea0bb;max-width:360px">
-            Acesso aprovado para contas autorizadas.<br>
+            ${qaPreview ? 'Escolha uma conta sintética ou entre com a conta Google autorizada para validar este Preview.' : 'Acesso aprovado para a conta do proprietário.'}<br>
             A carteira sincroniza automaticamente na nuvem.
           </div>
           ${FB.user ? `<div style="margin-top:14px">${chip}</div>` : ''}
           <div style="margin-top:18px">
-            <button class="btn bp" onclick="signInGoogle()" style="width:100%;min-height:48px;border-radius:14px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 12px 28px rgba(79,70,229,.34)">
-              <span style="font-size:18px;font-weight:900;line-height:1;background:linear-gradient(90deg,#4285f4 0 25%,#34a853 25% 50%,#fbbc05 50% 75%,#ea4335 75% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">G</span>
-              <span>Entrar com Google</span>
-            </button>
+            ${qaPreview ? `
+              <label for="qa-preview-account" style="display:block;margin:0 0 5px;color:#cbd5e1;font-size:12px">Conta sintética</label>
+              <select id="qa-preview-account" aria-describedby="qa-preview-login-error" onchange="selectQaPreviewAccount()" required style="width:100%;min-height:44px;margin-bottom:10px;padding:10px 12px;border:1px solid #334155;border-radius:10px;background:#080d16;color:#f1f5f9">
+                <option value="">Selecione uma conta de teste</option>
+                <option value="n7tXL6RHXpNqxwkJexTK1gYN6ey1">Conta sintética QA C</option>
+                <option value="jjouXVMgibeQl0gXY0IHU8JQnFL2">Conta sintética QA D</option>
+              </select>
+              <label for="qa-preview-email" style="display:block;margin:0 0 5px;color:#cbd5e1;font-size:12px">E-mail sintético</label>
+              <input id="qa-preview-email" type="email" autocomplete="username" aria-describedby="qa-preview-login-error" readonly required style="width:100%;min-height:44px;margin-bottom:10px;padding:10px 12px;border:1px solid #334155;border-radius:10px;background:#080d16;color:#f1f5f9">
+              <label for="qa-preview-password" style="display:block;margin:0 0 5px;color:#cbd5e1;font-size:12px">Senha de homologação</label>
+              <input id="qa-preview-password" type="password" autocomplete="current-password" aria-describedby="qa-preview-login-error" required style="width:100%;min-height:44px;padding:10px 12px;border:1px solid #334155;border-radius:10px;background:#080d16;color:#f1f5f9">
+              <div id="qa-preview-login-error" role="status" aria-live="polite" style="min-height:18px;margin-top:8px;color:#fca5a5;font-size:12px"></div>
+              <button class="btn bp" type="button" onclick="signInQaPreview()" style="width:100%;min-height:48px;margin-top:8px;border-radius:14px;font-size:15px;font-weight:800">Entrar no Preview QA</button>
+              <button class="btn bgh" type="button" onclick="signInQaGoogle()" style="width:100%;min-height:44px;margin-top:8px;border-radius:12px">Continuar com Google no QA</button>
+            ` : `
+              <button class="btn bp" onclick="signInGoogle()" style="width:100%;min-height:48px;border-radius:14px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 12px 28px rgba(79,70,229,.34)">
+                <span style="font-size:18px;font-weight:900;line-height:1;background:linear-gradient(90deg,#4285f4 0 25%,#34a853 25% 50%,#fbbc05 50% 75%,#ea4335 75% 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">G</span>
+                <span>Entrar com Google</span>
+              </button>
+            `}
             ${FB.user ? `<button class="btn bgh" onclick="signOutGoogle()" style="width:100%;margin-top:7px;min-height:38px;border-radius:12px">Sair</button>` : ''}
           </div>
         </div>
         <div style="border-top:1px solid #182234;padding:9px 22px 10px;display:flex;align-items:center;gap:8px;color:#94a3b8;font-size:9px;line-height:1.25">
           <span style="font-size:14px">🔒</span>
-          <span>Seus dados ficam na sua conta Google. Nenhuma senha é armazenada.</span>
+          <span>${qaPreview ? 'Este login acessa somente o Firebase QA. A senha não é salva pelo app.' : 'Seus dados ficam na sua conta Google. Nenhuma senha é armazenada.'}</span>
         </div>
       </div>
     </div>
@@ -32616,7 +32742,7 @@ function rendaFixaTab(){
             <div class="premium-rf-review-item-main">
               <div class="premium-rf-review-item-title">${esc(row.ticker)}${row.name&&row.name!==row.ticker?` · ${esc(row.name)}`:''}</div>
               <div class="premium-rf-review-item-meta">${esc(row.category)} · ${esc(dueText)}</div>
-              <div class="premium-rf-review-item-value">${row.explicit===false?'Atualização necessária':fmt(row.current)}</div>
+              ${row.explicit===false?'<div class="premium-rf-review-item-value">Atualização necessária</div>':''}
             </div>
             ${assetId?`<button type="button" class="premium-rf-review-action ds-button ds-button--secondary" onclick='edA(${JSON.stringify(assetId)})'>Revisar</button>`:''}
           </div>`;

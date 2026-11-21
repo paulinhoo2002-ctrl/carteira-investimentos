@@ -1,0 +1,11 @@
+{
+  "firestore": {
+    "rules": "firestore.qa-preview.rules"
+  },
+  "emulators": {
+    "auth": { "host": "127.0.0.1", "port": 19100 },
+    "firestore": { "host": "127.0.0.1", "port": 19101 },
+    "hub": { "host": "127.0.0.1", "port": 19102 },
+    "logging": { "host": "127.0.0.1", "port": 19103 }
+  }
+}
