@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "carteira-de-investimento-16725"
+    "default": "carteira-de-investimento-16725",
+    "qa": "carteira-invest-qa-v316"
   }
 }

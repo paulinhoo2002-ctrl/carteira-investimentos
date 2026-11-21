@@ -20,11 +20,7 @@ function readConfig(name) {
 const prod = readConfig('firebaseConfig');
 const qa = readConfig('firebaseQaPreviewConfig');
 
-const fnSrc = [
-  html.match(/function isVercelPreviewHost\(hostname\)\{[^\n]*\}/)[0],
-  html.match(/function activeFirebaseConfig\(\)\{[^\n]*\}/)[0],
-  'const FIREBASE_PRODUCTION_HOST="carteira-investimentos-delta.vercel.app";',
-].join('\n');
+const fnSrc = html.slice(html.indexOf('const FIREBASE_QA_PROJECT_ID'), html.indexOf('let FB = {'));
 
 function selectFor(hostname) {
   // Código-fonte fixo do próprio index.html (sem dados externos); só o hostname é variável.
@@ -49,15 +45,16 @@ test('domínio de produção usa Firebase de produção', () => {
   assert.equal(selectFor('carteira-investimentos-delta.vercel.app'), prod);
 });
 
-test('hosts de preview Vercel usam o Firebase QA', () => {
-  assert.equal(selectFor('carteira-investimentos-git-sm189-paulinhoo2002-ctrls-projects.vercel.app'), qa);
+test('somente o host do Preview QA usa o Firebase QA', () => {
+  assert.equal(selectFor('carteira-homolog-c5785e6-jd01eb6md-paulinhoo2002-ctrls-projects.vercel.app'), qa);
   assert.equal(selectFor('carteira-homolog-c5785e6.vercel.app'), qa);
 });
 
-test('hosts fora da Vercel mantêm o comportamento atual (produção)', () => {
-  assert.equal(selectFor('localhost'), prod);
-  assert.equal(selectFor(''), prod);
-  assert.equal(selectFor('exemplo.com.br'), prod);
+test('hosts desconhecidos falham fechados sem cair para produção', () => {
+  assert.equal(selectFor('localhost'), null);
+  assert.equal(selectFor(''), null);
+  assert.equal(selectFor('exemplo.com.br'), null);
+  assert.equal(selectFor('carteira-investimentos-git-sm189-paulinhoo2002-ctrls-projects.vercel.app'), null);
 });
 
 test('CSP libera apenas o authDomain QA exato em frame-src, sem curinga', () => {

@@ -1,0 +1,42 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isQaPreviewUser(userId) {
+      return isSignedIn()
+        && request.auth.uid == userId
+        && (
+          (request.auth.uid == "n7tXL6RHXpNqxwkJexTK1gYN6ey1" && request.auth.token.email == "qa-c-sm189-37@exemplo-invalido.test")
+          || (request.auth.uid == "jjouXVMgibeQl0gXY0IHU8JQnFL2" && request.auth.token.email == "qa-d-sm189-37@exemplo-invalido.test")
+        );
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && request.auth.token.email_verified == true
+        && request.auth.token.email == "paulinhoo2002@gmail.com";
+    }
+
+    function canAccessOwnDocument(userId) {
+      return request.auth != null
+        && request.auth.uid == userId
+        && (isQaPreviewUser(userId) || isAdmin());
+    }
+
+    match /portfolios/{userId} {
+      allow read, write: if canAccessOwnDocument(userId);
+    }
+
+    match /users/{userId} {
+      allow read, write: if canAccessOwnDocument(userId);
+    }
+
+    match /meta/access {
+      allow read, write: if isAdmin();
+    }
+  }
+}
