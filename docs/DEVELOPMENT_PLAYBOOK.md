@@ -276,9 +276,21 @@ sem conferir os viewports/asserts de cada teste.
   workflow de CI também usa Node 20 em seus jobs principais, enquanto
   `.github/workflows/release.yml` usa Node 22.
 - A versão do Playbook não cria nem provisiona Firebase/Vercel hospedados.
+- Release de `808ef95` falhou no teste `security-secrets` ("No hardcoded
+  Google API keys"): a chave pública QA (`carteira-invest-qa-v316`) está em
+  `index.html` desde #581 e a lista de chaves públicas só tinha a de produção.
+  Correção proposta: PR #583 (uma entrada exata na lista do teste; o scanner
+  continua reprovando qualquer outra chave). Até esse PR ser mesclado, o
+  Release da `main` segue vermelho.
+- CI do PR #582 em `9bd27cc` passou em Node 20 (job `Build and test`).
+- `carteira-investimentos-delta.vercel.app` serve `index.html` byte a byte
+  igual ao da `main` em `808ef95` (verificação somente leitura, 2026-11-21).
+  Isso não prova o login nem o funcionamento do domínio.
 
 ### PENDENTE
 
+- Decidir a correção da chave QA do Release: PR #583 (exceção por valor exato)
+  ou remoção da configuração QA do HTML.
 - Alinhar Node dos workflows CI/Preview com `engines.node` (ou rever o contrato
   de engine com decisão explícita). Este playbook não altera workflows.
 - Comprovar projeto QA hospedado, variáveis e regras por deployment/runtime; os
