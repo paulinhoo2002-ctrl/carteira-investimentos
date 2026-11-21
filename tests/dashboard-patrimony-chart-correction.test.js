@@ -12,16 +12,18 @@ const panel = source.slice(start, end);
 test('evolucao usa a serie real de aportes acumulados e nao a rotula como patrimonio', () => {
   assert.ok(start >= 0 && end > start, 'painel patrimonial precisa existir');
   assert.match(panel, /histórico patrimonial ainda não disponível/i);
-  assert.match(panel, /cobertura do histórico desconhecida/);
+  assert.match(panel, /cobertura do histórico (é|permanece) desconhecida/);
   assert.match(panel, /Aportes líquidos registrados/);
   assert.match(panel, /dashboard-patrimony-chart/);
   assert.match(panel, /lineChart\(/);
   // Meses sem movimentos têm lacunas explícitas; a série nunca afirma cobertura completa.
-  assert.match(panel, /row\.movementCount\?row\.cumulative:null/);
+  // A lacuna agora nasce no snapshot (mês sem movimento => cumulative null); o painel apenas repassa a série.
+  assert.match(source, /row\.cumulative=row\.movementCount\?cumulative:null/);
+  assert.match(panel, /values:chartMonths\.map\(row=>row\.cumulative\)/);
   assert.match(panel, /tooltipLabel:'Aportes registrados'/);
   assert.doesNotMatch(panel, /tooltipLabel:'Patrimônio'/, 'série de aportes não pode se apresentar como patrimônio de mercado');
   assert.match(panel, /Histórico patrimonial ainda não disponível/, 'painel precisa declarar que o histórico patrimonial não está disponível');
-  assert.match(panel, /snapshot\.months\.map\(row=>row\.label\)/);
+  assert.match(panel, /chartMonths\.map\(row=>row\.label\)/);
 });
 
 test('evolucao patrimonial preserva pontos navegáveis, dominio valido e lacunas sem inventar serie', () => {
@@ -57,7 +59,8 @@ test('evolucao patrimonial preserva pontos navegáveis, dominio valido e lacunas
   assert.ok(svg.includes('data-chart-index="0"') && svg.includes('data-chart-index="2"'), 'valores válidos precisam de pontos navegáveis');
   assert.ok(!svg.includes('data-chart-index="1"'), 'lacuna sem dado não pode gerar ponto navegável');
   assert.ok(!/data-chart-tooltip="[^"]*fev/.test(svg), 'nenhum valor pode ser inventado para o mês sem dado');
-  const axisValues = [...svg.matchAll(/text-anchor="end"[^>]*>([^<]+)<\/text>/g)].map(match => Number(match[1])).filter(Number.isFinite);
+  const axisNumber = label => { const m = label.replace(/R\$\s*/, '').trim().match(/^([\d.,]+)\s*(mil|mi|bi)?$/i); if (!m) return NaN; const mult = { mil: 1e3, mi: 1e6, bi: 1e9 }[(m[2] || '').toLowerCase()] || 1; return Number(m[1].replace(/\./g, '').replace(',', '.')) * mult; };
+  const axisValues = [...svg.matchAll(/text-anchor="end"[^>]*>([^<]+)<\/text>/g)].map(match => axisNumber(match[1])).filter(Number.isFinite);
   assert.ok(axisValues.length > 0, 'eixo numérico precisa ser renderizado');
   assert.ok(Math.max(...axisValues) >= 300, 'o domínio precisa cobrir o maior valor válido da série');
   assert.ok(Math.min(...axisValues) <= 0, 'o domínio precisa incluir a base numérica');

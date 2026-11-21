@@ -6,7 +6,8 @@ const test = require('node:test');
 const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
 test('dashboard period controls expose an explicit selection state', () => {
-  const dashBlock = source.slice(source.indexOf('function dash(){'), source.indexOf('function patrimonySnapshot('));
+  // O seletor de período vive junto do gráfico que ele controla (dashboardEvolutionPanel).
+  const dashBlock = source.slice(source.indexOf('function dashboardEvolutionPanel(data){'), source.indexOf('function dashboardIncomePanel('));
   assert.match(dashBlock, /aria-label="Mostrar evolução de \$\{period\} meses"/);
   assert.match(dashBlock, /aria-pressed="\$\{Number\(S\.dashPeriod\)===period\?'true':'false'\}"/);
 });

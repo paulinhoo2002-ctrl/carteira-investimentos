@@ -69,11 +69,11 @@ for(const item of cases){
         assert.equal(state.cards,4,'detalhe deve ter quatro metricas principais');
         assert.match(state.back,/Voltar/);
         assert.ok(state.tabs.includes('Visão geral'));
-        assert.ok(state.tabs.includes('Valuation'));
+        assert.ok(state.tabs.includes('Avaliação'));
         assert.equal(state.overflow,false,`overflow em ${viewport.suffix}`);
         await page.screenshot({path:path.join('.qa-state','v84-ui',`${item.final}-${viewport.suffix}-cycle-1.png`),fullPage:true});
-        await page.locator('.asset-detail-tab').filter({hasText:'Valuation'}).click();
-        assert.ok(await page.locator('.asset-detail-page').isVisible(),'aba Valuation indisponivel');
+        await page.locator('.asset-detail-tab').filter({hasText:'Avaliação'}).click();
+        assert.ok(await page.locator('.asset-detail-page').isVisible(),'aba Avaliação indisponível');
         await page.locator('.asset-detail-back').click();
         await page.waitForSelector(item.type==='rf'?'.premium-rf-position-row':'.assets-premium-shell',{timeout:3000});
         assert.equal(await page.locator('.asset-detail-page').count(),0,'voltar nao fechou detalhe');

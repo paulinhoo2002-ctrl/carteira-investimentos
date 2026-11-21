@@ -83,6 +83,10 @@ const helperCode = [
   extractFunctionSource('inputDateValue', 'function brDate'),
   extractFunctionSource('brDate', 'function parseAnyDate'),
   extractFunctionSource('cleanAssetCode', 'function normalizeMetadataTicker'),
+  extractFunctionSource('cloneData', 'const DEFAULT_RUNTIME_STATE'),
+  extractFunctionSource('isReconciliationPendingMovement', 'function financialMovementsForCalculations'),
+  extractFunctionSource('financialSyncUpdatedAllTickers', 'function syncAssetsFromAportes('),
+  extractFunctionSource('tickerValidoB3', 'function isMarketTicker'),
 ].join('\n');
 
 function buildBuilderContext({ draft, elementValues = {}, contract = null, saleAsset = null, resolve = null } = {}) {

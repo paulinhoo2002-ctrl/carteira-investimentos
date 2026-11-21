@@ -47,6 +47,7 @@ function makeReportsHarness() {
       counters.audit += 1;
       return { alerts: [] };
     },
+    isReconciliationPendingMovement: movement => String(movement?.reconciliationStatus||'').toUpperCase()==='PENDING_RECONCILIATION',
     reportsDateAllowed() {
       return true;
     },

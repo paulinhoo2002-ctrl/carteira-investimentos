@@ -44,8 +44,9 @@ test('CSP header allows Firebase domains in connect-src', () => {
   assert.match(csp, /connect-src.*securetoken\.googleapis\.com/);
 });
 
-test('CSP header allows Brapi API in connect-src', () => {
-  assert.match(getCSPHeader(), /connect-src.*api\.brapi\.com\.br/);
+test('CSP header allows Brapi API (brapi.dev, o domínio realmente usado) in connect-src', () => {
+  assert.match(getCSPHeader(), /connect-src[^;]*https:\/\/brapi\.dev(?=[\s;]|$)/);
+  assert.doesNotMatch(getCSPHeader(), /api\.brapi\.com\.br/, 'domínio antigo não é consumido por nenhum código');
 });
 
 test('CSP header does NOT carry infeasible Google Fonts hashes', () => {

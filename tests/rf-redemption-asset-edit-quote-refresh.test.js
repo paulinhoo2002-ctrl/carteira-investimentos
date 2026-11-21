@@ -498,6 +498,7 @@ function buildQuoteUiHarness() {
     applyLocalReadonlyControlState: () => {},
     renderPortfolioSearch: () => {},
     maskSensitiveRenderedValues: () => {},
+    localizeUiCodes: () => {},
     syncBodyModalLock: () => {},
     withRenderCycleReportCache: (fn) => fn(),
     bind: () => {},

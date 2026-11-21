@@ -74,7 +74,7 @@ test('fixture rejects non-local or non-test browser before evaluating page code'
 test('fixture seeds only memory and aliases static account label across render', async () => {
   const { chromium } = require('playwright-core');
   const server = await startLocalHttpServer(path.join(__dirname, '..'));
-  const browser = await chromium.launch({ executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', headless: true });
+  const browser = await chromium.launch({ executablePath: require('./helpers/chrome-path').resolveChromePath(), headless: true });
   try {
     const page = await browser.newPage();
     await page.goto(server.url, { waitUntil: 'domcontentloaded' });

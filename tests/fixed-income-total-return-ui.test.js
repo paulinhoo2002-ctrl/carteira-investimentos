@@ -70,9 +70,10 @@ test('position result stays separate from coupons and requires known position ba
 });
 
 test('Dashboard separates valuation, received income, and uncertified total result',()=>{
-  const kpis=source.slice(source.indexOf('function executiveKPIs(data){'),source.indexOf('function package2ExecutivePanel('));
+  // O resultado da posição agora vive em dashboardPositionResult/dashboardPerformancePanel (contrato V15), antes dos KPIs primários.
+  const kpis=source.slice(source.indexOf('function dashboardPositionResult(data){'),source.indexOf('function dashboardEvolutionPanel(data){'));
   const status=source.slice(source.indexOf('function dashboardEconomicResultStatus('),source.indexOf('function dashboardHasEconomicCertification('));
-  const panel=source.slice(source.indexOf('function package2ExecutivePanel('),source.indexOf('function dashboardEvolutionPanel(data){'));
+  const panel=source.slice(source.indexOf('function dashboardExecutiveKPIs(data, showTotalStatus=true){'),source.indexOf('function dashboardEvolutionPanel(data){'));
   assert.match(kpis,/Resultado/);
   assert.match(kpis,/Sobre capital cadastrado/);
   assert.match(kpis,/dashboardMetricCard\([^\n]*'Recebido no mês'/);
@@ -101,7 +102,7 @@ test('hide-values masks rendered currency, percentages, and holding quantities w
   assert.match(note,/•••• cotas x R\$ •••• \(\+••••%\)/);
   assert.doesNotMatch(note,/12|9,34|8,50/);
   assert.equal(helpers.withVisibleValues(()=>helpers.fmtN(12.5)),'12,5');
-  assert.equal(helpers.withVisibleValues(()=>helpers.fmtP(8.5)),'+8.50%');
+  assert.equal(helpers.withVisibleValues(()=>helpers.fmtP(8.5)),'+8,50%'); // F-09: percentual exibido em pt-BR
   const cardStart=source.indexOf('function aporteHistoryCard(row){');
   const cardEnd=source.indexOf('function aportesPagination(',cardStart);
   assert.notEqual(cardStart,-1);
@@ -203,6 +204,7 @@ test('economic evidence is limited to REAL Trend products and synthetic local fi
   const context={
     isLocalTestMode:()=>true,
     FB:{accountMode:'LOCAL'},
+    financialMovementsForCalculations:()=> (context.S?.aportes||[]).filter(row=>row?.reconciliationStatus!=='PENDING_RECONCILIATION'),
     rfPosNorm:value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim(),
     assetRfName:asset=>asset.name,
     rfAssetEventId:item=>item.id,

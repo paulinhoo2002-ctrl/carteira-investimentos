@@ -41,6 +41,7 @@ test('financial KPI labels and context use the documented readable type scale', 
   assert.match(source, /\.premium-rf-row-meta\{[^}]*font-size:var\(--fs-caption\)/);
   assert.match(source, /\.premium-rf-review-item-value\{[^}]*font-size:var\(--fs-label\)/);
   assert.match(source, /\.premium-rf-review-action\{min-height:44px;[^}]*font-size:var\(--fs-label\)/);
-  assert.match(source, /\.analysis-summary-kicker,[\s\S]*?font-size: var\(--fs-label\) !important;/);
-  assert.match(source, /\.analysis-summary-sub,[\s\S]*?font-size: var\(--fs-caption\) !important;/);
+  // Contrato V16: tipografia dos rótulos por tokens FP (sem !important).
+  assert.match(source, /\.analysis-summary-kicker,[\s\S]*?font-size:var\(--fp-fs-ui\)/);
+  assert.match(source, /\.analysis-summary-sub,[\s\S]*?font-size:var\(--fp-fs-meta\)/);
 });

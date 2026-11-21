@@ -18,7 +18,7 @@ function snippet(name, nextName) {
 
 function harness(functions, overrides = {}) {
   const { S: initialState, ...helpers } = overrides;
-  const metrics = { confirmCalls: 0, saveCalls: 0, portfolioMutations: 0, renderCalls: 0, quoteCalls: 0, scheduleCalls: 0, alerts: [] };
+  const metrics = { confirmCalls: 0, confirmMessages: [], saveCalls: 0, portfolioMutations: 0, renderCalls: 0, quoteCalls: 0, scheduleCalls: 0, alerts: [] };
   const context = {
     console,
     Date,
@@ -37,7 +37,7 @@ function harness(functions, overrides = {}) {
     },
     metrics,
     confirmAnswer: overrides.confirmAnswer ?? true,
-    confirm() { metrics.confirmCalls += 1; return context.confirmAnswer; },
+    confirm(message) { metrics.confirmCalls += 1; metrics.confirmMessages.push(String(message||'')); return context.confirmAnswer; },
     alert(message) { metrics.alerts.push(String(message)); },
     toast() {},
     render() { metrics.renderCalls += 1; },
@@ -220,7 +220,7 @@ test('Inter note review: opening/closing is read-only; explicit import invokes p
   context.S.noteReview = { noteKey: 'v284-note|INTER|number|1|01-01-2026', noteIdentity: 'v284-note|INTER|number|1|01-01-2026', broker: 'INTER', noteNumber: '1', tradeDate: '2026-01-01', completenessStatus: 'COMPLETE', identityStatus: 'READY', rows: [{ include: true, ticker: 'SYN1', operation: 'compra', qty: 1, price: 10, sourceItem: { date: '2026-01-01', operation: 'compra' } }] };
   context.importNotaReview();
   assert.equal(metrics.saveCalls, 1);
-  assert.equal(metrics.portfolioMutations, 1);
+  assert.equal(metrics.portfolioMutations, 0, 'ledger import never triggers portfolio reconstruction');
 });
 
 test('fixed-income review: cancel blocks persistence; explicit apply reaches confirmed writer', () => {
@@ -881,6 +881,23 @@ function applySyntheticLegacyNote(context, parsed) {
   );
 }
 
+test('complete note identity permits ledger import without certifying or overwriting position', () => {
+  const { context, metrics } = legacyNoteHarness();
+  const existingPosition = { id: 7, ticker: 'SYN1', type: 'Ação', qty: 20, avg_price: 40 };
+  context.S.assets = [existingPosition];
+  let syncCalls=0;
+  context.syncAssetsFromAportes=()=>{syncCalls++; context.S.assets=[{ticker:'UNRELATED-RF',current_price:0}]};
+  const parsed = syntheticLegacyNote(context, { fileName: 'nota-custo.xlsx', broker: 'INTER DTVM LTDA', trades: [{}] });
+  context.confirmAnswer = false;
+  const result = applySyntheticLegacyNote(context, parsed);
+  assert.equal(result?.status, 'APPLIED');
+  assert.equal(metrics.confirmCalls, 0, 'manual confirmation is not a completeness proof');
+  assert.equal(metrics.saveCalls, 1, 'the confirmed ledger entry is persisted');
+  assert.equal(context.S.aportes.length, 1);
+  assert.equal(syncCalls,0, 'ledger import does not run a whole-portfolio recalculation');
+  assert.deepEqual(context.S.assets, [existingPosition], 'the writer does not claim a recalculated position');
+});
+
 test('NOTE-ID-1: unnumbered note reimported under same filename is duplicate-safe', () => {
   const { context, metrics } = legacyNoteHarness();
   const first = syntheticLegacyNote(context, { fileName: 'nota-a.xlsx', broker: 'INTER DTVM LTDA', trades: [{}] });
@@ -1221,8 +1238,8 @@ test('BATCH-SAVE-MOVEMENT: failed B3 movement persistence restores aportes and a
     b3MovementHistoricalOperationType: () => 'Compra',
     b3MovementHistoricalSide: () => 'Entrada',
 
-    b3MovementHistoricalAutoKey: () => 'synthetic-movement-key',
-    b3MovementSavedHistoricalAutoKey: () => '',
+    b3MovementHistoricalAutoKey: row => `synthetic-${row.ticker}-${row.date}-${row.sourceEventId||''}`,
+    b3MovementSavedHistoricalAutoKey: row => `synthetic-${row.ticker}-${row.date}-${row.sourceEventId||''}`,
     b3MovementDuplicateKind: () => '',
     rfPosNorm: value => String(value || '').toUpperCase(),
     b3MovementDateKey: value => String(value || ''),
@@ -1318,6 +1335,74 @@ test('B3 movements: failed save quarantines; verified reload permits one retry',
   context.applyB3MovementImported([row], '2026-01-02');
   assert.equal(persistence.getPersisted().aportes.length, 1, 'replay after retry remains idempotent');
   assert.equal(persistence.getStorageWrites(), 1);
+});
+
+test('B3 movement writer records history without claiming a recalculated position', () => {
+  const row = { ticker: 'SYN-MOV-COST', qty: 1, price: 25, value: 25, date: '2026-01-02', movement: 'Compra', entryExit: 'Débito', type: 'Ação', target: 'aportes', destination: 'historico', confidence: 'Alta', include: true };
+  const { context, persistence } = syntheticB3MovementImport([row]);
+  let syncCalls=0;
+  context.syncAssetsFromAportes=()=>{syncCalls++; context.S.assets=[{ticker:'UNRELATED-RF',current_price:0}]};
+  const existingPosition = { id: 8, ticker: row.ticker, type: 'Ação', qty: 11, avg_price: 18 };
+  context.S.assets = [existingPosition];
+  const result = context.applyB3MovementImported([row], '2026-01-02');
+  assert.equal(result.status, 'APPLIED');
+  assert.equal(context.metrics.confirmCalls, 0, 'no manual answer is treated as coverage evidence');
+  assert.equal(persistence.getStorageWrites(), 1);
+  assert.equal(context.S.aportes.length, 1);
+  assert.equal(syncCalls,0, 'B3 ledger import must not run whole-portfolio reconstruction');
+  assert.deepEqual(context.S.assets, [existingPosition]);
+});
+
+test('B3 movement writer restores all state when persistence fails after ledger confirmation', () => {
+  const row = { ticker: 'SYN-MOV-COST-ROLLBACK', qty: 1, price: 25, value: 25, date: '2026-01-02', movement: 'Compra', entryExit: 'Débito', type: 'Ação', target: 'aportes', destination: 'historico', confidence: 'Alta', include: true };
+  const { context, persistence } = syntheticB3MovementImport([row], { failStorage: true });
+  const before = JSON.stringify({ assets: context.S.assets, aportes: context.S.aportes, learnMeta: context.S.learnMeta });
+  context.confirmAnswer = true;
+  const result = context.applyB3MovementImported([row], '2026-01-02');
+  assert.equal(result.status, 'SAVE_OUTCOME_UNKNOWN');
+  assert.equal(JSON.stringify({ assets: context.S.assets, aportes: context.S.aportes, learnMeta: context.S.learnMeta }), before);
+  assert.equal(context.S._financialWriteQuarantined, true);
+  assert.equal(persistence.getPersisted().aportes.length, 0);
+  assert.equal(context.metrics.confirmCalls, 0);
+});
+
+test('B3 movement writer blocks identical rows without execution IDs instead of importing one silently', () => {
+  const row = { ticker: 'SYN-MOV-DUP', qty: 1, price: 25, value: 25, date: '2026-01-02', movement: 'Compra', entryExit: 'Débito', type: 'Ação', target: 'aportes', destination: 'historico', confidence: 'Alta', include: true };
+  const { context, persistence } = syntheticB3MovementImport([row, { ...row }]);
+  const result = context.applyB3MovementImported([row, { ...row }], '2026-01-02');
+  assert.equal(result.status, 'POSSIBLE_DUPLICATE_REVIEW_REQUIRED');
+  assert.equal(result.count, 2);
+  assert.equal(persistence.getStorageWrites(), 0);
+  assert.equal(context.S.aportes.length, 0);
+});
+
+test('B3 movement writer keeps identical executions separate when source IDs differ', () => {
+  const row = { ticker: 'SYN-MOV-ID', qty: 1, price: 25, value: 25, date: '2026-01-02', movement: 'Compra', entryExit: 'Débito', type: 'Ação', target: 'aportes', destination: 'historico', confidence: 'Alta', include: true };
+  const { context, persistence } = syntheticB3MovementImport([row, { ...row }]);
+  const result = context.applyB3MovementImported([{ ...row, sourceEventId: 'exec-1' }, { ...row, sourceEventId: 'exec-2' }], '2026-01-02');
+  assert.equal(result.status, 'APPLIED');
+  assert.equal(result.added, 2);
+  assert.deepEqual(Array.from(context.S.aportes, item => item.sourceEventId).sort(), ['exec-1', 'exec-2']);
+  assert.equal(persistence.getPersisted().aportes.length, 2);
+});
+
+test('B3 movement writer blocks a reused execution ID with conflicting financial fields', () => {
+  const row = { ticker: 'SYN-MOV-ID-CONFLICT', qty: 1, price: 25, value: 25, date: '2026-01-02', movement: 'Compra', entryExit: 'Débito', type: 'Ação', target: 'aportes', destination: 'historico', confidence: 'Alta', include: true, sourceEventId: 'exec-conflict' };
+  const { context, persistence } = syntheticB3MovementImport([row, { ...row, price: 26, value: 26 }]);
+  const result = context.applyB3MovementImported([row, { ...row, price: 26, value: 26 }], '2026-01-02');
+  assert.equal(result.status, 'IDENTITY_CONFLICT');
+  assert.equal(persistence.getStorageWrites(), 0);
+  assert.equal(context.S.aportes.length, 0);
+});
+
+test('B3 movement writer detects a changed replay with the same execution ID across files', () => {
+  const row = { ticker: 'SYN-MOV-ID-REPLAY', qty: 1, price: 25, value: 25, date: '2026-01-02', movement: 'Compra', entryExit: 'Débito', type: 'Ação', target: 'aportes', destination: 'historico', confidence: 'Alta', include: true, sourceEventId: 'exec-replay' };
+  const { context, persistence } = syntheticB3MovementImport([row]);
+  context.S.aportes.push({ ...row, operation: 'compra', operationType: 'Compra', side: 'Entrada', institution: '', unitPrice: 25, totalValue: 25 });
+  const result = context.applyB3MovementImported([{ ...row, price: 26, value: 26 }], '2026-01-02');
+  assert.equal(result.status, 'IDENTITY_CONFLICT');
+  assert.equal(persistence.getStorageWrites(), 0);
+  assert.equal(context.S.aportes.length, 1);
 });
 
 test('B3 movements: empty, incomplete and review-only rows never persist', () => {

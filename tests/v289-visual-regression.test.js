@@ -331,10 +331,10 @@ test('V330 daily-use visual evidence captures premium screens with synthetic dat
         for (const label of ['Recebido', 'Média mensal', 'Último mês', 'Projeção anual', 'Histórico mensal', 'Evolução da renda', 'Top ativos', 'Resumo por ano']) {
           assert.ok(dividendText.includes(label.toLocaleLowerCase('pt-BR')), `Dividendos overview is missing ${label}`);
         }
-        const currentMonthKpi = await runtime.page.locator('.dividend-executive-kpi').nth(0).innerText();
+        const currentMonthKpi = await runtime.page.locator('.fp-kpi-strip-item').nth(0).innerText();
         assert.match(currentMonthKpi, /Recebido este mês/i, 'primary Dividendos KPI must identify the current calendar month');
         assert.match(currentMonthKpi, /—/, 'a month without complete evidence must remain unavailable');
-        const received12MonthsKpi = await runtime.page.locator('.dividend-executive-kpi').nth(1).innerText();
+        const received12MonthsKpi = await runtime.page.locator('.fp-kpi-strip-item').nth(1).innerText();
         assert.match(received12MonthsKpi, /Recebido nos últimos 12 meses/i, 'Dividendos must expose received income over the rolling 12-month period');
         assert.match(received12MonthsKpi, /R\$\s*19,37/, 'synthetic paid receipt in the known 12-month period must be included once');
       }
@@ -532,10 +532,20 @@ test('Ativos mantém valor indisponível como desconhecido, nunca como zero', as
     assert.equal(values['Rentabilidade'], '—', 'rentabilidade sem valor atual deve ficar indisponível');
     assert.equal(values['% carteira'], '—', 'peso sem valor atual deve ficar indisponível');
     assert.equal(values['Valor total'], '—', 'valor total sem preço deve ficar indisponível');
+    // Regra de produto F-01 (aprovada): com capital aplicado completo, o "Total investido" é conhecido e
+    // aparece, mesmo com valor atual incompleto; valor atual, resultado e rentabilidade seguem indisponíveis.
+    const kpiValues = await runtime.page.locator('.assets-kpi-value').allInnerTexts();
+    const applied = await runtime.page.evaluate(() => ({ complete: cx().appliedComplete, total: cx().tI }));
+    assert.equal(applied.complete, true, 'o capital aplicado da fixture parcial é completo');
+    assert.equal(
+      kpiValues[0].replace(/\s/g, ' '),
+      new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(applied.total).replace(/\s/g, ' '),
+      'Total investido mostra o capital aplicado conhecido'
+    );
     assert.deepEqual(
-      await runtime.page.locator('.assets-kpi-value').allInnerTexts(),
-      ['—', '—', '—', '—'],
-      'o resumo superior não pode apresentar totais como completos quando falta valor corrente'
+      kpiValues.slice(1),
+      ['—', '—', '—'],
+      'valor atual, resultado e rentabilidade não podem ser apresentados como completos quando falta valor corrente'
     );
     const categoryMetrics = await runtime.page.locator('.assets-premium-shell details.ag[data-asset-group="FII"] .acc-metric-value').allInnerTexts();
     assert.deepEqual(categoryMetrics.slice(1), ['—', '—', '—', '—'], 'agregados da categoria incompleta não podem transformar valor ausente em perda ou peso zero');
@@ -623,17 +633,19 @@ test('V289 final route matrix keeps Dashboard first-fold, mobile order and navig
   try {
     await setThemeAndRoute(runtime.page, 'dark', 'dashboard');
     const desktop = await runtime.page.evaluate(() => {
-      const selectors = ['.dashboard-executive-kpis', '.dashboard-evolution-card', '.dashboard-v3-allocation'];
+      const selectors = ['.dashboard-executive-kpis', '.dashboard-home-highlights'];
       return Object.fromEntries(selectors.map(selector => [selector, document.querySelector(selector)?.getBoundingClientRect().bottom ?? null]));
     });
-    // O Resumo abre com o bloco "Quanto eu tenho hoje?" (resposta simples primeiro). KPIs e evolução seguem inteiros na primeira dobra;
-    // a alocação precisa começar dentro dela (topo visível), mas pode terminar abaixo.
+    // O Resumo abre com o bloco "Quanto eu tenho hoje?" (resposta simples primeiro). KPIs e os rankings de
+    // maiores altas/baixas seguem inteiros na primeira dobra (redesign do Início aprovado); o gráfico de
+    // evolução e a alocação precisam começar dentro dela (topo visível), mas podem terminar abaixo.
     for (const [selector, bottom] of Object.entries(desktop)) {
-      if (selector === '.dashboard-v3-allocation') continue;
       assert.ok(bottom !== null && bottom <= 768, `${selector} is below the 1366x768 first fold (${bottom})`);
     }
-    const allocationTop = await runtime.page.evaluate(() => document.querySelector('.dashboard-v3-allocation')?.getBoundingClientRect().top ?? null);
-    assert.ok(allocationTop !== null && allocationTop < 768, `.dashboard-v3-allocation must start inside the 1366x768 first fold (${allocationTop})`);
+    const belowFoldAllowedTop = await runtime.page.evaluate(() => Object.fromEntries(['.dashboard-evolution-card', '.dashboard-v3-allocation'].map(selector => [selector, document.querySelector(selector)?.getBoundingClientRect().top ?? null])));
+    for (const [selector, top] of Object.entries(belowFoldAllowedTop)) {
+      assert.ok(top !== null && top < 768, `${selector} must start inside the 1366x768 first fold (${top})`);
+    }
 
     await runtime.page.setViewportSize({ width: 390, height: 844 });
     await applyV289VisualFixture(runtime.page, 'baseline');

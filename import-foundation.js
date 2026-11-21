@@ -75,7 +75,8 @@
       normalizeMoneyCents(event.grossValue??event.gross??event.value),
       normalizeMoneyCents(event.netValue??event.net),
       cleanKey(event.institution||event.broker),
-      cleanKey(event.documentId||event.noteNumber||event.documentIdentity)
+      cleanKey(event.documentId||event.noteNumber||event.documentIdentity),
+      cleanKey(event.sourceEventId||event.sourceExecutionId||event.executionId||event.tradeId||event.transactionId||event.eventId)
     ];
     return `evt-${fnv1a(fields.join('|'))}`;
   }
@@ -90,32 +91,38 @@
     return normalizeMoneyCents(event.netValue ?? event.net ?? event.grossValue ?? event.gross ?? event.value);
   }
 
+  function sourceEventIdentity(event={}){
+    const eventId=cleanKey(event.sourceEventId||event.sourceExecutionId||event.executionId||event.tradeId||event.transactionId||event.eventId);
+    if(!eventId) return '';
+    return [cleanKey(event.source||event.sourceType),cleanKey(event.institution||event.broker),cleanKey(event.documentId||event.noteNumber||event.documentIdentity),eventId].join('|');
+  }
+
   function eventType(event={}){
     return cleanKey(event.eventType || event.type || event.operation);
   }
 
   function classifyDuplicate(candidate, existing=[]){
     const fingerprint=String(candidate?.fingerprint||eventFingerprint(candidate));
-    const known=(Array.isArray(existing)?existing:[]).map(item=>typeof item==='string'?item:String(item?.fingerprint||eventFingerprint(item)));
-    if(known.includes(fingerprint)) return {state:'EXACT_DUPLICATE',fingerprint};
+    const rows=Array.isArray(existing)?existing:[];
+    const candidateEventId=sourceEventIdentity(candidate);
+    if(candidateEventId){
+      const sameSourceEvent=rows.find(item=>sourceEventIdentity(typeof item==='string'?{}:item)===candidateEventId);
+      if(sameSourceEvent) return {state:String(sameSourceEvent?.fingerprint||eventFingerprint(sameSourceEvent))===fingerprint?'EXACT_DUPLICATE':'IDENTITY_CONFLICT',fingerprint};
+    }
     const identity=resolveExactIdentity(candidate);
-    const sameIdentity=(Array.isArray(existing)?existing:[]).filter(item=>resolveExactIdentity(typeof item==='string'?{}:item)===identity && identity);
+    const sameIdentity=rows.filter(item=>resolveExactIdentity(typeof item==='string'?{}:item)===identity && identity);
     if(!sameIdentity.length) return {state:'NOT_DUPLICATE',fingerprint};
     const candidateDate=normalizeDate(candidate.date||candidate.tradeDate||candidate.paymentDate);
     const candidateType=eventType(candidate);
-    const candidateValue=eventValue(candidate);
     for(const item of sameIdentity){
       const existingDate=normalizeDate(item.date||item.tradeDate||item.paymentDate);
       const existingType=eventType(item);
-      const existingValue=eventValue(item);
       if(candidateDate && existingDate && candidateDate!==existingDate) continue;
       if(candidateType && existingType && candidateType!==existingType) continue;
-      if(candidateDate && existingDate && candidateDate===existingDate && candidateType===existingType && candidateValue!==null && existingValue!==null && candidateValue!==existingValue){
-        return {state:'IDENTITY_CONFLICT',fingerprint};
-      }
-      if(candidateDate && existingDate && candidateDate===existingDate && candidateType===existingType && candidateValue===existingValue){
-        return {state:'POSSIBLE_DUPLICATE',fingerprint};
-      }
+      const existingEventId=sourceEventIdentity(item);
+      if(candidateEventId&&existingEventId&&candidateEventId!==existingEventId) continue;
+      const sameQuantity=normalizeQuantity(candidate.quantity??candidate.qty)===normalizeQuantity(item.quantity??item.qty);
+      if(candidateDate&&existingDate&&candidateType&&existingType&&sameQuantity) return {state:'POSSIBLE_DUPLICATE',fingerprint};
     }
     return {state:'NOT_DUPLICATE',fingerprint};
   }
@@ -130,5 +137,5 @@
     return {beforeCount:beforeRows.length,importedCount:importedRows.length,identities,differences,status:differences.length?'QUANTITY_DIFFERENCE':'MATCH'};
   }
 
-  return {normalizeDate,normalizeMoneyCents,normalizeQuantity,resolveExactIdentity,eventFingerprint,sourceFingerprint,classifyDuplicate,reconcilePositions};
+  return {normalizeDate,normalizeMoneyCents,normalizeQuantity,resolveExactIdentity,eventFingerprint,sourceFingerprint,sourceEventIdentity,classifyDuplicate,reconcilePositions};
 });

@@ -105,14 +105,32 @@ export default async function handler(req, res) {
         if (!cr.ok) return;
         const cj = await cr.json();
         const meta = cj?.chart?.result?.[0]?.meta || {};
-        const price = Number(meta.regularMarketPrice || meta.previousClose || 0);
-        if (price > 0) {
-          const patch = current || { symbol: sym };
-          const previousClose = Number(meta.previousClose || patch.regularMarketPreviousClose || 0);
-          const changePercent = previousClose > 0 ? ((price - previousClose) / previousClose) * 100 : 0;
-          patch.regularMarketPrice = price;
-          patch.regularMarketPreviousClose = previousClose || patch.regularMarketPreviousClose;
-          patch.regularMarketChangePercent = Number(meta.regularMarketChangePercent || patch.regularMarketChangePercent || changePercent || 0);
+        // Variação diária: só existe quando há preço do pregão E fechamento anterior. Ausência é null,
+        // nunca 0; um 0 só sai quando o próprio cálculo/provedor resulta em zero (preço = fechamento).
+        const finiteOrNull = (value) => {
+          if (value === null || value === undefined || value === '') return null;
+          const parsed = Number(value);
+          return Number.isFinite(parsed) ? parsed : null;
+        };
+        const positiveOrNull = (value) => {
+          const parsed = finiteOrNull(value);
+          return parsed !== null && parsed > 0 ? parsed : null;
+        };
+        const patch = current || { symbol: sym };
+        const regularPrice = positiveOrNull(meta.regularMarketPrice);
+        const previousClose = positiveOrNull(meta.previousClose) ?? positiveOrNull(patch.regularMarketPreviousClose);
+        if (regularPrice !== null || previousClose !== null) {
+          let changePercent = null;
+          if (regularPrice !== null) {
+            changePercent = finiteOrNull(meta.regularMarketChangePercent);
+            if (changePercent === null) changePercent = finiteOrNull(patch.regularMarketChangePercent);
+            if (changePercent === null && previousClose !== null) changePercent = ((regularPrice - previousClose) / previousClose) * 100;
+          }
+          // Sem preço do pregão, o fechamento anterior serve de preço (cliente) mas não gera variação.
+          if (regularPrice !== null) patch.regularMarketPrice = regularPrice;
+          else delete patch.regularMarketPrice;
+          if (previousClose !== null) patch.regularMarketPreviousClose = previousClose;
+          patch.regularMarketChangePercent = changePercent;
           patch.regularMarketTime = meta.regularMarketTime || patch.regularMarketTime;
           patch.currency = meta.currency || patch.currency || 'BRL';
           bySymbol.set(key, patch);

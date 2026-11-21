@@ -6,7 +6,7 @@
   if (root) root.FinancialEvidenceProvenance = api;
 }(typeof globalThis === 'object' ? globalThis : this, function createProvenance() {
   const RECEIPT_TYPES = new Set(['COUPON', 'INTEREST', 'INCOME', 'AMORTIZATION', 'PARTIAL_REDEMPTION', 'TOTAL_REDEMPTION', 'PRINCIPAL_RETURN']);
-  const CONTRIBUTION_TYPES = new Set(['APPLICATION', 'PURCHASE']);
+  const MOVEMENT_TYPES = new Set(['APPLICATION', 'PURCHASE', 'SALE']);
   const TAX_TYPES = new Set(['IR', 'IOF']);
   const COMPLETE_DUPLICATE_STATES = new Set(['NONE', 'RESOLVED']);
   const COMPLETE_CONFLICT_STATES = new Set(['NONE', 'RESOLVED']);
@@ -25,6 +25,8 @@
     if (!validDate(date) || !validDate(start) || !validDate(end) || start > end) return 'UNKNOWN';
     return date >= start && date <= end ? 'IN_PERIOD' : 'OUTSIDE_PERIOD';
   }
+
+  const verifiedRegistries = new WeakSet();
 
   function createRegistry(records = [], proof = {}) {
     const rows = Array.isArray(records) ? records : [];
@@ -49,7 +51,13 @@
         && occurredOn && occurredOn < record.periodStart && record.compatibleWithPeriod === true
         && typeof record.positionQuantity === 'number' && Number.isFinite(record.positionQuantity) && record.positionQuantity > 0
         && Boolean(text(record.quantityUnit));
-      if (compatibleOpeningPosition) period = 'OPENING_COMPATIBLE';
+      const compatibleNoOpeningPosition = semanticType === 'NO_OPENING_POSITION'
+        && status === 'OBSERVED'
+        && validDate(record.periodStart) && validDate(record.periodEnd) && record.periodStart <= record.periodEnd
+        && occurredOn && occurredOn < record.periodStart && record.compatibleWithPeriod === true
+        && typeof record.positionQuantity === 'number' && Number.isFinite(record.positionQuantity) && record.positionQuantity === 0
+        && Boolean(text(record.quantityUnit));
+      if (compatibleOpeningPosition || compatibleNoOpeningPosition) period = 'OPENING_COMPATIBLE';
 
       if (stableEventId) {
         const key = `${sourceKind || ''}|${stableEventId}`;
@@ -62,7 +70,8 @@
       const needsReceiptBasis = RECEIPT_TYPES.has(semanticType);
       const statusVerified = semanticType === 'CURRENT_POSITION' ? status === 'OBSERVED'
         : semanticType === 'OPENING_POSITION' ? compatibleOpeningPosition
-        : CONTRIBUTION_TYPES.has(semanticType) ? status === 'CONFIRMED'
+          : semanticType === 'NO_OPENING_POSITION' ? compatibleNoOpeningPosition
+        : MOVEMENT_TYPES.has(semanticType) ? status === 'CONFIRMED'
           : TAX_TYPES.has(semanticType) ? status === 'PAID'
             : needsReceiptBasis ? status === 'RECEIVED'
               : semanticType === 'LINKED_REFERENCE' && status === 'REFERENCE';
@@ -72,7 +81,8 @@
         : Boolean(statusVerified && historyRelevant && hasSourceAuthority && stableEventId && occurredOn
           && COMPLETE_DUPLICATE_STATES.has(duplicateState) && COMPLETE_CONFLICT_STATES.has(conflictState)
           && (!needsReceiptBasis || amountBasis)
-          && (semanticType === 'OPENING_POSITION' ? compatibleOpeningPosition : period === 'IN_PERIOD'));
+          && (semanticType === 'OPENING_POSITION' ? compatibleOpeningPosition
+            : semanticType === 'NO_OPENING_POSITION' ? compatibleNoOpeningPosition : period === 'IN_PERIOD'));
       const coverageState = complete ? 'COMPLETE' : semanticType === 'CURRENT_POSITION' && hasSourceAuthority ? 'PARTIAL' : 'UNKNOWN';
       return {
         sourceKind,
@@ -82,14 +92,18 @@
         occurredOn,
         observedAt: text(record.observedAt) || null,
         amount: typeof record.amount === 'number' && Number.isFinite(record.amount) && record.amount >= 0 ? record.amount : null,
+        quantity: typeof record.quantity === 'number' && Number.isFinite(record.quantity) && record.quantity >= 0 ? record.quantity : null,
+        positionQuantity: typeof record.positionQuantity === 'number' && Number.isFinite(record.positionQuantity) && record.positionQuantity >= 0 ? record.positionQuantity : null,
         authority: text(record.authority) || null,
         semanticType,
         amountBasis,
+        relatedEventId: text(record.relatedEventId) || null,
         status,
         periodStart: validDate(record.periodStart) ? record.periodStart : null,
         periodEnd: validDate(record.periodEnd) ? record.periodEnd : null,
         periodMembership: period,
         openingPositionCompatible: compatibleOpeningPosition,
+        noOpeningPositionCompatible: compatibleNoOpeningPosition,
         duplicateState,
         conflictState,
         sourceOverlapResolution: text(record.sourceOverlapResolution).toUpperCase() || null,
@@ -129,14 +143,20 @@
     if (sourceEvidence.some(row => row.historyRelevant && row.coverageState !== 'COMPLETE')) blockers.add('PROVENANCE_INCOMPLETE');
     if (hasDuplicate || unresolvedDuplicate) blockers.add('DUPLICATE_EVIDENCE');
     if (unresolvedOverlap) blockers.add('SOURCE_OVERLAP_UNRESOLVED');
-    return Object.freeze({
+    const registry = Object.freeze({
       sourceEvidence: Object.freeze(sourceEvidence.map(row => Object.freeze(row))),
       provenanceComplete: sourceEvidence.some(row => row.historyRelevant) && sourceEvidence.filter(row => row.historyRelevant).every(row => row.coverageState === 'COMPLETE'),
       duplicatesResolved: proof.duplicatesResolved === true && !hasDuplicate && !unresolvedDuplicate,
       sourceOverlapResolved: proof.sourceOverlapResolved === true && !unresolvedOverlap,
       blockers: Object.freeze([...blockers]),
     });
+    verifiedRegistries.add(registry);
+    return registry;
   }
 
-  return Object.freeze({ createRegistry, validDate });
+  function isVerifiedRegistry(registry) {
+    return Boolean(registry && verifiedRegistries.has(registry));
+  }
+
+  return Object.freeze({ createRegistry, isVerifiedRegistry, validDate });
 }));

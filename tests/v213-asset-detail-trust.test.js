@@ -22,5 +22,5 @@ test('renders unavailable asset values as a dash', () => {
 
 test('preserves manual fixed-income authority language', () => {
   assert.match(html, /O detalhe preserva a autoridade do valor já cadastrado/);
-  assert.match(html, /Valuation automático indisponível/);
+  assert.match(html, /Avaliação automática indisponível/);
 });

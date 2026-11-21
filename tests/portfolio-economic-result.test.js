@@ -21,6 +21,13 @@ const completeCoverage = overrides => ({
 
 function completeProvenance(assetId, eventId = `${assetId}-application`, amount = 100) {
   return [{
+    sourceKind: 'SYNTHETIC_POSITION', sourceId: 'synthetic-opening', stableEventId: `${assetId}-no-opening`,
+    assetIdentity: assetId, occurredOn: '2023-12-31', amount: null, quantity: null, positionQuantity: 0,
+    authority: 'SYNTHETIC_TEST_SOURCE', semanticType: 'NO_OPENING_POSITION', status: 'OBSERVED',
+    periodStart: '2024-01-01', periodEnd: '2026-10-18', periodMembership: 'OPENING_COMPATIBLE',
+    noOpeningPositionCompatible: true, duplicateState: 'NONE', conflictState: 'NONE',
+    sourceOverlapResolution: 'RESOLVED', coverageState: 'COMPLETE', historyRelevant: true,
+  }, {
     sourceKind: 'RF_EVENT', sourceId: 'synthetic-source', stableEventId: eventId,
     assetIdentity: assetId, occurredOn: '2024-01-01', amount, authority: 'SYNTHETIC_TEST_SOURCE',
     semanticType: 'APPLICATION', status: 'CONFIRMED', amountBasis: 'GROSS',
@@ -29,7 +36,6 @@ function completeProvenance(assetId, eventId = `${assetId}-application`, amount 
     coverageState: 'COMPLETE', historyRelevant: true,
   }];
 }
-
 function completeAsset(assetId, currentMarketValue = 110, contributed = 100) {
   const evidence = {
     contributions: [{ id: `${assetId}-application`, type: 'APPLICATION', amount: contributed, status: 'CONFIRMED', occurredOn: '2024-01-01' }],

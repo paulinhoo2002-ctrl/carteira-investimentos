@@ -15,11 +15,12 @@ test('Phase 3.2.5: grupos reutilizam análise, filtros, ordenação e ações ca
 });
 
 test('Phase 3.2.5: tabela agrupada restaura inteligência financeira rica', () => {
-  assert.match(source, /<th>Setor<\/th>/);
+  // Contrato V16: cabeçalhos ordenáveis (assetSortableHeader) preservam rótulo e ordem das colunas.
+  assert.match(source, /assetSortableHeader\(type,\'sector\',\'Setor\'\)/);
   assert.match(source, /<th class="num">Preço médio<\/th>\s*<th class="num">Preço atual \/ posição<\/th>/);
-  assert.match(source, /<th>Investido<\/th>\s*<th class="num">Resultado R\$<\/th>\s*<th class="num">Rentabilidade<\/th>/);
-  assert.match(source, /<th class="num">Valor total<\/th>\s*<th class="num">% carteira<\/th>/);
-  assert.match(source, /<th class="num">DY<\/th>/);
+  assert.match(source, /assetSortableHeader\(type,\'pm\',\'Investido\'\)[\s\S]*?assetSortableHeader\(type,\'result\',\'Resultado R\$\'\)[\s\S]*?assetSortableHeader\(type,\'rentability\',\'Rentabilidade\'\)/);
+  assert.match(source, /assetSortableHeader\(type,\'total\',\'Valor total\'\)[\s\S]*?assetSortableHeader\(type,\'share\',\'% carteira\'\)/);
+  assert.match(source, /assetSortableHeader\(type,\'dy\',\'DY\'\)/);
   assert.match(source, /<th class="num">Estimativa mensal<\/th>/);
   assert.match(source, /Sem estimativa mensal validada/);
 });

@@ -56,20 +56,33 @@ test('provenance não registra conteúdo do documento nem PII', () => {
 test('dedupe classifica exact, potential e conflict sem remoção automática', () => {
   const base = Core.normalizeRecord(row(), { sourceType: 'B3_MOVEMENTS_XLSX', broker: 'B3', sourceFileName: 'b3.xlsx' });
   const potential = Core.normalizeRecord(row({ unitPrice: 36 }), { sourceType: 'B3_MOVEMENTS_XLSX', broker: 'B3', sourceFileName: 'b3.xlsx' });
-  const exact = Core.classifyRecord(base, [base]);
-  const conflict = Core.classifyRecord(potential, [base]);
-  assert.equal(exact.state, 'EXACT_DUPLICATE');
-  assert.equal(conflict.state, 'IDENTITY_CONFLICT');
-  assert.equal(Core.classifyRecord(base, [Core.normalizeRecord(row({ noteNumber: 'different' }), { sourceType: 'B3_MOVEMENTS_XLSX', broker: 'B3' })]).state, 'PROBABLE_DUPLICATE');
+  assert.equal(Core.classifyRecord(base, [base]).state, 'POSSIBLE_DUPLICATE');
+  assert.equal(Core.classifyRecord(potential, [base]).state, 'POSSIBLE_DUPLICATE');
+  const identified = Core.normalizeRecord(row({ sourceEventId: 'exec-1' }), { sourceType: 'B3_MOVEMENTS_XLSX', broker: 'B3', sourceFileName: 'b3.xlsx' });
+  assert.equal(Core.classifyRecord(identified, [identified]).state, 'EXACT_DUPLICATE');
+  const conflict = Core.normalizeRecord(row({ sourceEventId: 'exec-1', grossValue: 400 }), { sourceType: 'B3_MOVEMENTS_XLSX', broker: 'B3', sourceFileName: 'b3.xlsx' });
+  assert.equal(Core.classifyRecord(conflict, [identified]).state, 'IDENTITY_CONFLICT');
+  assert.equal(Core.classifyRecord({ ...identified, sourceEventId: 'exec-2' }, [identified]).state, 'UNIQUE');
 });
 
-test('dedupe classifica registros repetidos dentro do mesmo preview', () => {
+test('execuções idênticas sem ID permanecem em revisão no mesmo preview e entre arquivos', () => {
   const source = { name: 'movimentacoes-b3.csv', sourceType: 'CSV' };
   const row = { date: '2026-09-18', operation: 'BUY', ticker: 'PETR4', quantity: 2, unitPrice: '35,00', grossValue: '70,00', sourceRow: 2 };
   const preview = Core.buildPreview({ rows: [row, { ...row, sourceRow: 3 }], source });
-  assert.equal(preview.records[0].duplicate.state, 'UNIQUE');
-  assert.equal(preview.records[1].duplicate.state, 'EXACT_DUPLICATE');
-  assert.equal(preview.counts.EXACT_DUPLICATE, 1);
+  assert.equal(preview.records[0].duplicate.state, 'POSSIBLE_DUPLICATE');
+  assert.equal(preview.records[1].duplicate.state, 'POSSIBLE_DUPLICATE');
+  assert.equal(preview.counts.POSSIBLE_DUPLICATE, 2);
+  const existing = Core.buildPreview({ rows: [row], source }).records;
+  const acrossFiles = Core.buildPreview({ rows: [row], source: { ...source, name: 'renamed.csv' }, existing });
+  assert.equal(acrossFiles.records[0].duplicate.state, 'POSSIBLE_DUPLICATE');
+});
+
+test('IDs de execução distintos preservam duas execuções econômicas idênticas', () => {
+  const source = { name: 'execucoes.csv', sourceType: 'CSV' };
+  const row = { date: '2026-09-18', operation: 'BUY', ticker: 'PETR4', quantity: 2, unitPrice: '35,00', grossValue: '70,00' };
+  const preview = Core.buildPreview({ rows: [{ ...row, sourceEventId: 'exec-1' }, { ...row, sourceEventId: 'exec-2' }], source });
+  assert.deepEqual(preview.records.map(record => record.duplicate.state), ['UNIQUE', 'UNIQUE']);
+  assert.equal(preview.counts.UNIQUE, 2);
 });
 
 test('mesmo filename com conteúdo diferente não colapsa fingerprint', () => {

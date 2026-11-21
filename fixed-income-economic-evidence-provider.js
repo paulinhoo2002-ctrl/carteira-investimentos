@@ -110,8 +110,10 @@
     const contributions = [];
     const normalizedEvents = [];
     const provenanceRows = [];
-    if (historyEvidence?.openingPosition === 'KNOWN' && historyEvidence.openingPositionEvidence && typeof historyEvidence.openingPositionEvidence === 'object') {
+    let openingPosition = historyEvidence?.openingPosition || 'UNKNOWN';
+    if (['KNOWN', 'NONE'].includes(historyEvidence?.openingPosition) && historyEvidence.openingPositionEvidence && typeof historyEvidence.openingPositionEvidence === 'object') {
       const opening = historyEvidence.openingPositionEvidence;
+      const openingType = historyEvidence.openingPosition === 'NONE' ? 'NO_OPENING_POSITION' : 'OPENING_POSITION';
       provenanceRows.push({
         ...opening,
         sourceKind: opening.sourceKind || null,
@@ -119,13 +121,16 @@
         stableEventId: opening.stableEventId || null,
         assetIdentity: opening.assetIdentity || null,
         occurredOn: opening.asOfDate || opening.occurredOn || null,
-        semanticType: 'OPENING_POSITION',
+        semanticType: openingType,
         periodStart: historyEvidence.periodStart,
         periodEnd: historyEvidence.periodEnd,
         duplicateState: opening.duplicateState || 'UNKNOWN',
         conflictState: opening.conflictState || 'UNKNOWN',
         historyRelevant: true,
       });
+    } else if (historyEvidence?.openingPosition === 'NONE') {
+      openingPosition = 'UNKNOWN';
+      blockers.add('OPENING_POSITION_NOT_EVIDENCED');
     }
     if (currentPositionProvenance && typeof currentPositionProvenance === 'object') provenanceRows.push({
       sourceKind: 'CURRENT_POSITION', sourceId: currentPositionProvenance.sourceId || 'S.assets',
@@ -143,7 +148,6 @@
     let taxEvidencePresent = false;
     let returnsPresent = false;
     let unknownTypePresent = false;
-    let openingPosition = historyEvidence?.openingPosition || 'UNKNOWN';
 
     for (const row of selectedEvents) {
       const type = eventType(row);
@@ -198,13 +202,15 @@
       if (['APPLICATION', 'PURCHASE'].includes(type)) {
         const sourceAmount = amountFor(row, 'contribution');
         provenanceRow.amount = sourceAmount?.amount ?? null;
+        const quantity = typeof row?.qty === 'number' && Number.isFinite(row.qty) && row.qty > 0 ? row.qty : null;
+        provenanceRow.quantity = quantity;
         const status = row?.status === 'CONFIRMED' ? 'CONFIRMED' : 'UNKNOWN';
         provenanceRow.status = status;
         if (!sourceAmount || !id || !validDate(date) || status !== 'CONFIRMED') {
           contributionsSupported = false;
           blockers.add('CONTRIBUTION_EVIDENCE_INCOMPLETE');
         }
-        contributions.push({ id, type, amount: status === 'CONFIRMED' ? sourceAmount?.amount ?? null : null, status, occurredOn: date });
+        contributions.push({ id, type, amount: status === 'CONFIRMED' ? sourceAmount?.amount ?? null : null, quantity, status, occurredOn: date });
         continue;
       }
 
@@ -381,6 +387,31 @@
         : provenHistory?.coverage?.capitalReturns === 'COMPLETE' ? 'COMPLETE' : returnsPresent ? 'PARTIAL' : 'UNKNOWN',
       principal: provenHistory?.coverage?.principal === 'COMPLETE' ? 'COMPLETE' : 'UNKNOWN',
     };
+    const expectedEvents = selectedEvents.map(row => {
+      const type = eventType(row);
+      const id = stableId(row);
+      const occurredOn = typeof row?.date === 'string' ? row.date : '';
+      const relatedEventId = String(row?.relatedEventId || '').trim();
+      if (['APPLICATION', 'PURCHASE'].includes(type)) {
+        const sourceAmount = amountFor(row, 'contribution');
+        const status = row?.status === 'CONFIRMED' ? 'CONFIRMED' : 'UNKNOWN';
+        return { id, type, amount: status === 'CONFIRMED' ? sourceAmount?.amount ?? null : null,
+          quantity: typeof row?.qty === 'number' && Number.isFinite(row.qty) && row.qty > 0 ? row.qty : null,
+          status, occurredOn };
+      }
+      if (type === 'UNKNOWN') return { id, type, amount: null, status: 'UNKNOWN', occurredOn };
+      if (['IR', 'IOF'].includes(type)) {
+        const sourceAmount = amountFor(row, 'tax');
+        const status = row?.status === 'PAID' && hasValidTaxLink(relatedEventId) ? 'PAID' : 'UNKNOWN';
+        return { id, type, amount: status === 'PAID' ? sourceAmount?.amount ?? null : null, status, relatedEventId, occurredOn };
+      }
+      const sourceAmount = amountFor(row, 'receipt');
+      const status = row?.status === 'RECEIVED' ? 'RECEIVED' : 'UNKNOWN';
+      const verified = sourceAmount && id && validDate(occurredOn) && status === 'RECEIVED';
+      return { id, type, amount: verified ? sourceAmount.amount : null,
+        amountBasis: sourceAmount?.amountBasis, status: verified ? 'RECEIVED' : 'UNKNOWN', occurredOn };
+    });
+    const observedEvents = [...contributions, ...normalizedEvents];
     const evaluated = coverageEngine?.evaluateCoverage?.({
       historyEvidence: provenHistory,
       registry,
@@ -388,6 +419,8 @@
       subjectIdentity: assetId || null,
       subjectPresent: true,
       additionalBlockers: [...blockers],
+      expectedEvents,
+      observedEvents,
     }) || { coverage: { ...componentCoverage, history: { status: 'PARTIAL', periodStart: null, periodEnd: null, openingPosition, allEventsRepresented: false, duplicatesResolved: false, sourceOverlapResolved: false } }, blockers: ['HISTORICAL_COVERAGE_ENGINE_UNAVAILABLE'] };
     const structuralHistoryComplete = evaluated.coverage.history.status === 'COMPLETE'
       && eventsSupported && contributionsSupported && blockers.size === 0;

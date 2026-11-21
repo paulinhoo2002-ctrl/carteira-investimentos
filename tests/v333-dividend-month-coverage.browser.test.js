@@ -40,7 +40,7 @@ for (const viewport of [{ width: 1366, height: 768 }, { width: 390, height: 844 
       await matrix.scrollIntoViewIfNeeded();
       await page.screenshot({ path: path.join(out, `matriz-${viewport.width}.png`), fullPage: true });
       await page.evaluate(() => setDividendViewMode('overview'));
-      const kpiDetails = page.locator('.div-exec-kpis .dividend-executive-kpi-info').nth(2);
+      const kpiDetails = page.locator('.div-exec-kpis .dividend-executive-kpi-info', { has: page.locator('summary[aria-label="Mais informações sobre Média mensal"]') });
       const coverageSummary = kpiDetails.locator('summary');
       const coverageDetail = kpiDetails.locator('.dividend-executive-kpi-sub');
       assert.equal(await coverageSummary.getAttribute('aria-label'), 'Mais informações sobre Média mensal');
