@@ -5,6 +5,9 @@ deve primeiro confirmar a identidade do repositório em `AGENTS.md`, ler o
 contrato operacional permanente e então classificar a missão abaixo. O seletor
 `scripts/qa/select-skills.js` descobre Skills versionadas em `.agents/skills/`;
 Skills do runtime só entram quando o executor as informa explicitamente.
+Para o ciclo de desenvolvimento, ambientes e comandos locais, consulte
+[`docs/DEVELOPMENT_PLAYBOOK.md`](../docs/DEVELOPMENT_PLAYBOOK.md). Este
+documento não adiciona categorias nem substitui a seleção definida aqui.
 
 ## Ordem permanente
 

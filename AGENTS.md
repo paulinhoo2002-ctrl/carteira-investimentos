@@ -97,6 +97,11 @@ Ao iniciar uma tarefa relevante neste repositório:
 
 Before doing ANY work in this repository:
 
+Read [`docs/DEVELOPMENT_PLAYBOOK.md`](docs/DEVELOPMENT_PLAYBOOK.md) for the
+verified local workflow and command index. It complements this file and does
+not override protected contracts, task authorization, or the canonical Skill
+Router.
+
 1. Read `docs/ai/PROJECT_STATE.md`.
 2. Read `docs/ai/NEXT_STEP.md`.
 3. Read `docs/ai/VISUAL_CANON.md` for UI work.
