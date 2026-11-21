@@ -423,6 +423,9 @@ test('RF: 1000 -> 1100 mostra lucro 100 e NÃO mostra "Atualização necessária
   loadPrincipalFns(ctx);
 
   const html = ctx.rendaFixaTab();
+  const reviewValues = html.match(/<div class="premium-rf-review-item-value">[^<]+<\/div>/g) || [];
+  assert.ok(reviewValues.some(value => /1\.100,00/.test(value)),
+    'Fila de conferência deve manter visível o valor atual explícito de RF01');
   // Extrair apenas a linha (<tr>) de RF01 na tabela RF, e o bloco de preview de RF01,
   // para isolar a verificação do conteúdo do título. Assim o texto do RF04 (que mostra
   // "Atualização necessária") não vaza para dentro da janela dos demais.

@@ -46,17 +46,18 @@ test('stale auth callbacks cannot reuse another session authorization result', (
   assert.doesNotMatch(resolver, /authorizedUsers/);
 });
 
-test('owner-only authorization checks UID and verified email before any private read', () => {
+test('production owner and Preview QA identities are checked before any private read', () => {
   assert.ok(/const OWNER_FIREBASE_UID = '[^']+';/.test(html), 'owner UID constant is configured');
   assert.ok(/const OWNER_FIREBASE_EMAIL = '[^']+';/.test(html), 'authorized owner email is configured');
   assert.ok(/function isAccessAdmin\(user\)\{\s*return !!user && user\.uid === OWNER_FIREBASE_UID && normalizeEmail\(user\.email\) === OWNER_FIREBASE_EMAIL && user\.emailVerified === true/.test(html), 'admin identity requires exact UID, authorized email, and verification');
   const gate = html.slice(html.indexOf('async function loadAccessControl('), html.indexOf('async function recordAccessAttempt('));
-  const identityCheck = gate.indexOf('if(!isAccessAdmin(user))');
-  assert.ok(identityCheck >= 0, 'owner identity must be checked');
+  const identityCheck = gate.indexOf('if(!isAuthorizedAppUser(user))');
+  assert.ok(identityCheck >= 0, 'environment-specific identity must be checked');
   assert.ok(identityCheck < gate.indexOf('if(!FB.db)'), 'identity check must precede database access');
   assert.ok(!/collection\(|normalizeAccessList|allowedEmails|allowedDomains/.test(gate), 'access lists and database reads cannot grant access');
   const resolver = html.slice(html.indexOf('async function resolveAccountModeCompat('), html.indexOf('function clearRealStateInMemory('));
-  assert.ok(/if\(!isAccessAdmin\(user\) \|\| !accessOk\) return 'BLOCKED';/.test(resolver), 'resolver rejects non-owner before REAL');
+  assert.ok(/if\(\(!isAccessAdmin\(user\) && !qaPreviewAccount\) \|\| !accessOk\) return 'BLOCKED';/.test(resolver), 'resolver admits only verified production owner or exact QA identity');
+  assert.ok(/role:qaPreviewAccount\?'user':'owner'/.test(resolver), 'QA identities never receive the owner role');
   assert.ok(!/authorizedUsers|else if\(accessOk\)/.test(resolver), 'no alternate authorization registry or access-list grant exists');
   const accessLog = html.slice(html.indexOf('async function recordAccessAttempt('), html.indexOf('function portfolioRef('));
   assert.match(accessLog, /if\(!allowed \|\| !isAccessAdmin\(user\)\) return;/, 'denied identities must not trigger access-log writes');

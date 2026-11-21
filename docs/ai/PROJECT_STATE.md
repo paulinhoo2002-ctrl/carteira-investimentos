@@ -1,9 +1,19 @@
 # Estado atual da Carteira LEGACY
 
+## Acompanhamento ativo — SM189.37 (2026-11-21)
+
+- PR #581 está aberto na branch remota `codex/preview/sm189-37-firebase-preview`. O corpo atual diz “Não é para merge”; tratar merge como NO-GO nesta fase.
+- A correção do Skill Router (`b44a1d4`) e o alinhamento dos workflows com Node 22 (`3a90636`) estão na candidata. O SHA e os checks precisam ser consultados no PR a cada atualização.
+- O proprietário confirmou manualmente login Google QA, dashboard autenticado e persistência após recarga. Isso não comprova todos os fluxos de QA.
+- Backup criptografado e restauração local V1.2 não equivalem a recuperação hospedada; certificação de recuperação hospedada permanece pendente.
+- Nenhuma posição financeira real está certificada; owner, histórico, custos, duplicidades e conflitos continuam sujeitos à evidência autoritativa.
+- A revisão Graphify disponível cobre SHA anterior (`ee1b936`); revisão independente atualizada após as correções permanece pendente.
+
+
 > Nesta branch de governança, o roteador canônico de Skills está em `.agents/SKILL_ROUTER.md`; o seletor usa o inventário local versionado e não depende de chat ou modelo. Esta proposta ainda não está integrada em `main`.
 
-DATE=2026-10-27
-MAIN_HEAD=10083077d2471063807da6097a3872be7ad5c67d
+DATE=2026-11-21
+MAIN_HEAD=58827aa23b6fa6f9b0835959c993bcf4261c230e
 VISUAL_PHASE=M1959_COMPLETE
 VISUAL_CONTRACT=docs/ai/VISUAL_UX_RESPONSIVE_CONTRACT.md
 PRODUCTION=READY

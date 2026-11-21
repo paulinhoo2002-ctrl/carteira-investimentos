@@ -88,8 +88,8 @@ itens não são pré-requisitos nem entram na seleção automática):
 | `ui-ux-pro-max` | Sistema de design amplo | Host-local; sobrepõe `interface-design`/`design-system` | Condicional, somente necessidade demonstrada |
 
 As Skills `using-superpowers`, `systematic-debugging`,
-`verification-before-completion`, `firebase-security-rules-auditor` e
-`find-skills` são aliases de runtime opcionais definidos em
+`verification-before-completion`, `firebase-auth-basics`,
+`firebase-security-rules-auditor` e `find-skills` são aliases de runtime opcionais definidos em
 `docs/ai/skills-routing.json`. Só podem ser selecionadas se aparecerem na
 disponibilidade informada pelo runtime; um nome catalogado não prova instalação.
 
@@ -104,7 +104,7 @@ disponibilidade informada pelo runtime; um nome catalogado não prova instalaç�
 | `FINANCE_CORE` | `doubt-driven-development` | Preservar contratos financeiros; fonte oficial pode adicionar `source-driven-development` |
 | `FINANCIAL_RECONCILIATION` | `doubt-driven-development`, `source-driven-development` | Dry-run, proveniência e cobertura; nunca preencher lacunas |
 | `IR2026` | `doubt-driven-development`, `source-driven-development` | Fiscal exige fonte/autorização; histórico não certificado permanece analítico |
-| `PRIVACY_SECURITY` | `doubt-driven-development` | Auditor de regras Firebase só se disponível e escopo envolver regras |
+| `PRIVACY_SECURITY` | `doubt-driven-development` | `firebase-auth-basics` via gatilho `firebaseAuth`; auditor de regras Firebase via `firestoreRules` quando disponível |
 | `RELEASE` | `caveman-review` | Verificação/commit entram só por gatilho e autorização próprios |
 | `GOVERNANCE` | `caveman-review` | `archify` somente quando um diagrama for útil |
 | `ARCHITECTURE` | `doubt-driven-development` | `archify` somente para representação visual necessária |

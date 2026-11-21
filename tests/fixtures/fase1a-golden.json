@@ -27,6 +27,35 @@
    ]
   },
   {
+   "id": "SM189.37",
+   "area": "renda fixa",
+   "description": "Fila de conferência volta a exibir valores atuais já registrados; acrescenta apenas valores sintéticos repetidos visualmente, sem alterar cálculo ou persistência.",
+   "tokenAdditions": [
+    {
+     "state": "rich",
+     "route": "renda-fixa",
+     "tokens": [
+      "$19.620,00"
+     ]
+    },
+    {
+     "state": "partial",
+     "route": "renda-fixa",
+     "tokens": [
+      "$2.310,00",
+      "$6.420,00"
+     ]
+    },
+    {
+     "state": "noquotes",
+     "route": "renda-fixa",
+     "tokens": [
+      "$19.620,00"
+     ]
+    }
+   ]
+  },
+  {
    "id": "F-03/F-04",
    "area": "dashboard",
    "description": "Variação diária (novo KPI da V20): fórmula sobre o fechamento anterior e cobertura; testado em tests/fase1b-daily-variation.test.js. Não existe na referência."
@@ -311,7 +340,6 @@
      "$18.000,00",
      "$18.000,00",
      "$18.000,00",
-     "$19.620,00",
      "$19.620,00",
      "$19.620,00",
      "$19.620,00",
@@ -886,7 +914,6 @@
      "$6.420,00",
      "$6.420,00",
      "$6.420,00",
-     "$6.420,00",
      "$8.000,00",
      "$8.000,00",
      "$8.000,00",
@@ -1406,7 +1433,6 @@
      "$18.000,00",
      "$18.000,00",
      "$18.000,00",
-     "$19.620,00",
      "$19.620,00",
      "$19.620,00",
      "$19.620,00",
