@@ -1,5 +1,15 @@
 # Próximo passo oficial
 
+## Ação ativa — SM189.37 / PR #581 (2026-11-21)
+
+- Branch: `codex/preview/sm189-37-firebase-preview`; consultar o HEAD e os checks diretamente no PR antes de qualquer decisão.
+- A correção de roteamento Firebase Auth está commitada em `b44a1d4`; workflows de CI, Preview e emulador foram alinhados com Node 22 em `3a90636`.
+- O proprietário confirmou login Google QA, dashboard e persistência após recarga. Não usar isso como evidência automática de logout ou isolamento entre contas.
+- Próximo gate técnico: validar todos os checks no HEAD mais recente e obter revisão independente atualizada. O PR ainda declara “Não é para merge”; não integrar nesta fase.
+- Produção e Firebase de produção permanecem intocáveis. Restauração hospedada e certificação de posições reais continuam pendentes.
+- As seções históricas abaixo foram preservadas e não representam a próxima ação atual.
+
+
 OPERATING_MODE=MAINTENANCE_AND_DATA_CERTIFICATION_MODE
 VISUAL_PHASE=UX_OVERLOAD_REDUCTION_IN_PROGRESS (PR #542)
 
