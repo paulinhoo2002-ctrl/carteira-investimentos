@@ -272,27 +272,28 @@ sem conferir os viewports/asserts de cada teste.
   Node `v26.7.0` e npm `11.19.0`.
 - `.firebaserc` declara o projeto de produção como `default`; as configurações
   locais de Auth/Firestore Emulator e scripts de teste usam projetos `demo-*`.
-- `.github/workflows/preview.yml` usa Node 20 e não publica deployment; o
-  workflow de CI também usa Node 20 em seus jobs principais, enquanto
-  `.github/workflows/release.yml` usa Node 22.
+- `ci.yml`, `preview.yml` e `release.yml` em `origin/main` (2026-11-21) fixam
+  Node 22, alinhado a `engines.node`.
+- Release: `808ef95` falhou no scanner `security-secrets` (chave pública QA em
+  `index.html`). Corrigido por PR #583 (exceção por valor exato; o scanner
+  continua reprovando outras chaves), mesclado em `61d97d1`.
+- Release: `61d97d1` falhou com `GH013` porque `@semantic-release/git` e
+  `@semantic-release/changelog` tentavam commitar na `main`. Corrigido por PR
+  #584 (plugins removidos), mesclado em `d7b9259`.
+- Tag-base `v1.4.0` aponta para `5aba06b` (commit que declarou 1.4.0; não é
+  publicação histórica). Release `v1.5.0` publicado em `d7b9259` pelo
+  workflow, sem commit direto na `main`.
+- Após `d7b9259`, `carteira-investimentos-delta.vercel.app` responde 200;
+  smoke de console sem erro; login mostra o gate "Entrar com Google"; a
+  configuração selecionada é `carteira-de-investimento-16725`. Login real
+  não foi executado.
 - A versão do Playbook não cria nem provisiona Firebase/Vercel hospedados.
-- Release de `808ef95` falhou no teste `security-secrets` ("No hardcoded
-  Google API keys"): a chave pública QA (`carteira-invest-qa-v316`) está em
-  `index.html` desde #581 e a lista de chaves públicas só tinha a de produção.
-  Correção proposta: PR #583 (uma entrada exata na lista do teste; o scanner
-  continua reprovando qualquer outra chave). Até esse PR ser mesclado, o
-  Release da `main` segue vermelho.
-- CI do PR #582 em `9bd27cc` passou em Node 20 (job `Build and test`).
-- `carteira-investimentos-delta.vercel.app` serve `index.html` byte a byte
-  igual ao da `main` em `808ef95` (verificação somente leitura, 2026-11-21).
-  Isso não prova o login nem o funcionamento do domínio.
 
 ### PENDENTE
 
-- Decidir a correção da chave QA do Release: PR #583 (exceção por valor exato)
-  ou remoção da configuração QA do HTML.
-- Alinhar Node dos workflows CI/Preview com `engines.node` (ou rever o contrato
-  de engine com decisão explícita). Este playbook não altera workflows.
+- CHANGELOG.md deixa de ser atualizado pelo Release; mantê-lo manualmente.
+- O CHANGELOG cita "Versão 4483112 publicada na Vercel", mas `4483112` tem
+  `package.json` em 1.0.0. Inconsistência a corrigir em PR próprio.
 - Comprovar projeto QA hospedado, variáveis e regras por deployment/runtime; os
   arquivos locais examinados não bastam para certificar essa configuração.
 - Verificar a URL estável de QA, SSO e processo real de deploy/rollback no
@@ -300,6 +301,10 @@ sem conferir os viewports/asserts de cada teste.
 
 ### HISTÓRICO
 
+- Em 2026-11-21, logs de execuções de CI e Preview mostraram Node 20.20.2 em
+  alguns jobs, enquanto os arquivos em `origin/main` fixam Node 22. Não
+  reconciliei a diferença; confirmar em nova execução antes de afirmar qual
+  versão roda na CI.
 - Totais de testes, vulnerabilidades, cobertura, versões de service worker e
   estados de release em documentos antigos são snapshots. Não os reutilize
   como resultado atual sem executar a verificação na branch/SHA atual.
