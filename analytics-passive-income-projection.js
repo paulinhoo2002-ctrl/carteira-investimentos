@@ -118,8 +118,9 @@
     var monthlyResults = [];
 
     // Track shares for more accurate DRIP
-    var shares = currentPortfolioValue > 0 ? currentPortfolioValue : 1; // proxy for shares
-    var pricePerShare = currentPortfolioValue > 0 ? 1 : 0; // proxy
+    // Carteira vazia: 0 cotas a preço proxy 1, para que aportes possam ser convertidos em cotas.
+    var shares = currentPortfolioValue > 0 ? currentPortfolioValue : 0; // proxy for shares
+    var pricePerShare = 1; // proxy
 
     for (var year = 1; year <= years; year++) {
       for (var month = 1; month <= 12; month++) {
@@ -163,7 +164,8 @@
         // But we track yield separately - simpler: just scale by share count increase
         var yieldRatio = shares / (shares - (reinvested + monthlyContribution) / pricePerShare);
         // Actually simpler: track base yield
-        var currentYield = currentMonthlyIncome * 12 / currentPortfolioValue;
+        // Sem patrimônio não há yield mensurável: 0 em vez de 0/0 = NaN.
+        var currentYield = currentPortfolioValue > 0 ? currentMonthlyIncome * 12 / currentPortfolioValue : 0;
         monthlyIncome = portfolioValue * currentYield / 12;
 
         monthlyResults.push({

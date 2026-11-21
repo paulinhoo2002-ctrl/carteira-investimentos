@@ -142,20 +142,48 @@ test('projeção DRIP com reinvestimento total aumenta valor e renda', () => {
   assert.ok(d.totalDividendsReceived > 0);
 });
 
-// DEFEITO PREEXISTENTE registrado como todo (não corrigido nesta entrega, não mascarado):
-// em projectWithDRIP, currentYield = currentMonthlyIncome*12 / currentPortfolioValue divide por zero
-// quando não há patrimônio; NaN se propaga para monthlyIncome e finalMonthlyIncome.
-test('relatório com carteira vazia: finalMonthlyIncome não deve ser NaN',
-  { todo: 'defeito preexistente: divisão por zero em projectWithDRIP quando currentPortfolioValue = 0' },
-  () => {
-    const r = withFixedRandom(() => P.generateFullProjectionReport({ assets: [], proventos: [], goals: {} }));
-    assert.ok(!Number.isNaN(r.baseProjection.finalMonthlyIncome));
-  });
+// Regressão E1.1: antes, currentYield = renda*12 / valor dividia por zero em carteira vazia
+// e o NaN se propagava para toda a projeção. Carteiras válidas não mudam (ver casos acima).
+test('regressão E1.1: carteira vazia sem aporte projeta zeros finitos', () => {
+  const d = P.projectWithDRIP({ currentPortfolioValue: 0, currentMonthlyIncome: 0, years: 1 });
+  assert.equal(d.finalPortfolioValue, 0);
+  assert.equal(d.finalMonthlyIncome, 0);
+  assert.equal(d.totalInvested, 0);
+});
 
-test('relatório com carteira vazia: patrimônio e meta permanecem zero', () => {
+test('regressão E1.1: carteira vazia com aporte converte o aporte em valor, sem NaN', () => {
+  const d = P.projectWithDRIP({ currentPortfolioValue: 0, currentMonthlyIncome: 0, monthlyContribution: 1000, years: 1 });
+  assert.equal(d.totalInvested, 12000);
+  assert.equal(d.finalPortfolioValue, 11000); // aporte do último mês entra após o cálculo do valor, como já ocorria
+  assert.equal(d.finalMonthlyIncome, 0); // sem yield mensurável não há renda projetada
+  assert.ok(Number.isFinite(d.finalPortfolioValue));
+});
+
+test('regressão E1.1: renda negativa ou valor negativo tratados como carteira vazia', () => {
+  const d = P.projectWithDRIP({ currentPortfolioValue: -500, currentMonthlyIncome: 10, years: 1 });
+  assert.ok(Number.isFinite(d.finalPortfolioValue));
+  assert.ok(Number.isFinite(d.finalMonthlyIncome));
+});
+
+test('regressão E1.1: relatório com carteira vazia não contém nenhum número não finito', () => {
   const r = withFixedRandom(() => P.generateFullProjectionReport({ assets: [], proventos: [], goals: {} }));
+  const nonFinite = [];
+  (function walk(o, p) {
+    if (typeof o === 'number') { if (!Number.isFinite(o)) nonFinite.push(p); return; }
+    if (o && typeof o === 'object') Object.keys(o).forEach(k => walk(o[k], `${p}.${k}`));
+  })(r, '');
+  assert.deepEqual(nonFinite, []);
   assert.equal(r.portfolio.totalValue, 0);
   assert.equal(r.goalTracking.progressPercent, 0);
+});
+
+test('regressão E1.1: carteira válida mantém resultados de referência', () => {
+  const d = P.projectWithDRIP({ currentPortfolioValue: 1000, currentMonthlyIncome: 8.33, dividendGrowthRate: 0, priceGrowthRate: 0, reinvestmentRate: 1, years: 1, dividendYield: 10 });
+  assert.equal(d.finalPortfolioValue, 1104.67);
+  assert.equal(d.finalMonthlyIncome, 9.2);
+  const c = P.projectWithDRIP({ currentPortfolioValue: 1000, currentMonthlyIncome: 8.33, monthlyContribution: 100, years: 1 });
+  assert.equal(c.finalPortfolioValue, 2251.65);
+  assert.equal(c.finalMonthlyIncome, 18.76);
 });
 
 test('meses parciais: média mensal da renda realizada usa só meses COMPLETE (regra estática em index.html)', () => {
