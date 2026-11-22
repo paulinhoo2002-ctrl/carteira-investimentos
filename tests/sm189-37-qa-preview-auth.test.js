@@ -16,6 +16,7 @@ const entries = Object.entries(users);
 const emailC = 'qa-c-sm189-37@exemplo-invalido.test';
 const emailD = 'qa-d-sm189-37@exemplo-invalido.test';
 const googleEmail = 'psmarquesdossantos@gmail.com';
+const qaAdminUid = 'SEE358lc3MdU192l9qRuhBekFNa2';
 
 function selectConfig(hostname) {
   const source = html.slice(html.indexOf('const FIREBASE_QA_PROJECT_ID'), html.indexOf('let FB = {'));
@@ -138,10 +139,14 @@ test('QA Firestore rules require the exact UID/email pair and deny cross-user an
   }
   const google = entries.find(([, account]) => account.email === googleEmail);
   assert.match(rules, new RegExp(`\\(request\\.auth\\.uid == "${google[0]}"\\s*&&\\s*request\\.auth\\.token\\.email == "${googleEmail}"\\s*&&\\s*request\\.auth\\.token\\.email_verified == true\\)`));
+  assert.match(rules, new RegExp(`function isAdmin\\(\\)[\\s\\S]*?request\\.auth\\.uid == "${qaAdminUid}"[\\s\\S]*?request\\.auth\\.token\\.email_verified == true[\\s\\S]*?request\\.auth\\.token\\.email == "paulinhoo2002@gmail.com"`));
   assert.match(rules, /request\.auth\.uid == userId/);
   assert.match(rules, /function canAccessOwnDocument\(userId\)/);
-  assert.match(rules, /match \/portfolios\/\{userId\}[\s\S]*?allow read, write: if canAccessOwnDocument\(userId\);/);
-  assert.match(rules, /match \/users\/\{userId\}[\s\S]*?allow read, write: if canAccessOwnDocument\(userId\);/);
+  assert.match(rules, /match \/portfolios\/\{userId\}[\s\S]*?allow read: if canAccessOwnDocument\(userId\);[\s\S]*?allow create: if canAccessOwnDocument\(userId\)[\s\S]*?allow update: if canAccessOwnDocument\(userId\)[\s\S]*?allow delete: if canAccessOwnDocument\(userId\);/);
+  assert.match(rules, /match \/users\/\{userId\}[\s\S]*?allow read: if canAccessOwnDocument\(userId\);[\s\S]*?allow create: if canAccessOwnDocument\(userId\)[\s\S]*?allow update: if canAccessOwnDocument\(userId\)[\s\S]*?allow delete: if request\.auth\.uid == userId && isAdmin\(\);/);
+  assert.match(rules, /function canCreateAdminProfileFields\(data\)/);
+  assert.match(rules, /function canUpdateAdminProfileFields\(\)/);
+  assert.doesNotMatch(rules, /allow read, write: if canAccessOwnDocument\(userId\);/);
   assert.match(rules, /match \/meta\/access[\s\S]*?allow read, write: if isAdmin\(\);/);
   assert.doesNotMatch(rules, /allow read, write: if isSignedIn\(\);/);
 });
