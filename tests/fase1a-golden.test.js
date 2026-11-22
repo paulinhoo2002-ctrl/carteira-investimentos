@@ -17,6 +17,20 @@ const additions = {};
 golden.intentionalDifferences.forEach(item => (item.tokenAdditions || []).forEach(entry => {
   additions[`${entry.state}/${entry.route}`] = [...(additions[`${entry.state}/${entry.route}`] || []), ...entry.tokens];
 }));
+// Substituições intencionais: um token da referência é trocado por outro (ex.: ganho tributável corrigido).
+const replacements = {};
+golden.intentionalDifferences.forEach(item => (item.tokenReplacements || []).forEach(entry => {
+  replacements[`${entry.state}/${entry.route}`] = [...(replacements[`${entry.state}/${entry.route}`] || []), entry];
+}));
+function expectedTokens(state, route) {
+  const tokens = [...golden.expected[state].routeTokens[route]];
+  for (const entry of replacements[`${state}/${route}`] || []) {
+    const index = tokens.indexOf(entry.from);
+    assert.ok(index >= 0, `substituição sem origem na referência: ${entry.from} (${state}/${route})`);
+    tokens[index] = entry.to;
+  }
+  return [...tokens, ...(additions[`${state}/${route}`] || [])].sort();
+}
 
 test.before(async () => { current = await collectSnapshot(repo); }, { timeout: 300000 });
 
@@ -44,7 +58,7 @@ for (const state of ['rich', 'partial', 'noquotes', 'empty']) {
 
   test(`11 telas sem mudança numérica: valores R$ e % iguais à referência — ${state}`, () => {
     STABLE_ROUTES.forEach(route => {
-      const expected = [...golden.expected[state].routeTokens[route], ...(additions[`${state}/${route}`] || [])].sort();
+      const expected = expectedTokens(state, route);
       assert.deepEqual(current[state].routeTokens[route], expected, `${route} (${state})`);
     });
   });

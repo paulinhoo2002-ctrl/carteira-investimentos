@@ -165,7 +165,10 @@ for (const state of Object.keys(STATES)) {
   test(`Fase 1a - telas sem mudança numérica: valores monetários e percentuais idênticos (${state})`, () => {
     for (const route of STABLE_ROUTES) {
       // F-01 (intencional, Lote C): em Ativos/parcial o Total investido passa a aparecer.
-      const expected = [...tokens(main[state].routes[route]), ...(state === 'partial' && route === 'ativos' ? ['$95.982,00'] : [])].sort();
+      // IRPF-GANHOS-TRIBUTAVEIS (intencional): o "Ganhos tributáveis" de R$ 235,50 vira R$ 0,00 (ver fase1a-golden.json).
+      const base = tokens(main[state].routes[route]);
+      if (route === 'irpf') { const i = base.indexOf('$235,50'); if (i >= 0) base[i] = '$0,00'; }
+      const expected = [...base, ...(state === 'partial' && route === 'ativos' ? ['$95.982,00'] : [])].sort();
       assert.deepEqual(tokens(v20[state].routes[route]), expected, `${route} (${state})`);
     }
   });

@@ -61,6 +61,16 @@
    "description": "Variação diária (novo KPI da V20): fórmula sobre o fechamento anterior e cobertura; testado em tests/fase1b-daily-variation.test.js. Não existe na referência."
   },
   {
+   "id": "IRPF-GANHOS-TRIBUTAVEIS",
+   "area": "irpf",
+   "description": "Ganhos tributáveis deixa de incluir o resultado de vendas isentas (faixa de R$ 20 mil/mês em Ações). Na referência o valor tributável era R$ 235,50 e incluía o ganho isento; agora é R$ 0,00 nesse cenário. Regressão em tests/irpf-taxable-gain.test.js. Imposto, isenção e prejuízo não mudam.",
+   "tokenReplacements": [
+    { "state": "rich", "route": "irpf", "from": "$235,50", "to": "$0,00" },
+    { "state": "partial", "route": "irpf", "from": "$235,50", "to": "$0,00" },
+    { "state": "noquotes", "route": "irpf", "from": "$235,50", "to": "$0,00" }
+   ]
+  },
+  {
    "id": "V19/V20",
    "area": "dashboard, dividendos",
    "description": "Novos painéis e reorganização da V19/V20 (Valor investido, lançamentos recentes, Recebido no ano); o golden compara só os indicadores comparáveis (cx(), 3 cartões do Dashboard, KPIs e ranking de Dividendos) e as 11 telas sem mudança numérica."
