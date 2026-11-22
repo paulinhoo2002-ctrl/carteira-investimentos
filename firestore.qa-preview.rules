@@ -20,6 +20,7 @@ service cloud.firestore {
 
     function isAdmin() {
       return isSignedIn()
+        && request.auth.uid == "SEE358lc3MdU192l9qRuhBekFNa2"
         && request.auth.token.email_verified == true
         && request.auth.token.email == "paulinhoo2002@gmail.com";
     }
@@ -30,12 +31,212 @@ service cloud.firestore {
         && (isQaPreviewUser(userId) || isAdmin());
     }
 
+    function isOptionalList(data, field, maxItems) {
+      return !(field in data)
+        || (data[field] is list && data[field].size() <= maxItems);
+    }
+
+    function isOptionalString(data, field, maxLength) {
+      return !(field in data)
+        || (data[field] is string && data[field].size() <= maxLength);
+    }
+
+    function isOptionalMap(data, field, maxFields) {
+      return !(field in data)
+        || (data[field] is map && data[field].size() <= maxFields);
+    }
+
+    function isOptionalNonnegativeNumber(data, field) {
+      return !(field in data)
+        || (data[field] is int
+          && data[field] >= 0
+          && data[field] <= 1000000000000000)
+        || (data[field] is float
+          && data[field] >= 0
+          && data[field] <= 1000000000000000);
+    }
+
+    function isDashboardValid(value) {
+      return value is map
+        && value.keys().hasOnly(['period', 'type'])
+        && (!('period' in value)
+          || (value.period is int && value.period >= 0 && value.period <= 10000))
+        && (!('type' in value)
+          || (value.type is string && value.type.size() <= 32));
+    }
+
+    function isDashboardShapeValid(value) {
+      return value is map
+        && (!('period' in value)
+          || (value.period is int && value.period >= 0 && value.period <= 10000))
+        && (!('type' in value)
+          || (value.type is string && value.type.size() <= 32));
+    }
+
+    function isRentabilidadeValid(value) {
+      return value is map
+        && value.keys().hasOnly(['period', 'type', 'bench'])
+        && (!('period' in value)
+          || (value.period is string && value.period.size() <= 32))
+        && (!('type' in value)
+          || (value.type is string && value.type.size() <= 32))
+        && (!('bench' in value)
+          || (value.bench is string && value.bench.size() <= 32));
+    }
+
+    function isRentabilidadeShapeValid(value) {
+      return value is map
+        && (!('period' in value)
+          || (value.period is string && value.period.size() <= 32))
+        && (!('type' in value)
+          || (value.type is string && value.type.size() <= 32))
+        && (!('bench' in value)
+          || (value.bench is string && value.bench.size() <= 32));
+    }
+
+    function isPortfolioShapeValid(data) {
+      return isOptionalList(data, 'wallets', 100)
+        && isOptionalString(data, 'activeWalletId', 128)
+        && isOptionalList(data, 'assets', 10000)
+        && isOptionalList(data, 'aportes', 10000)
+        && isOptionalList(data, 'proventos', 10000)
+        && isOptionalList(data, 'rfEvents', 10000)
+        && isOptionalNonnegativeNumber(data, 'divGoal')
+        && isOptionalMap(data, 'goals', 1000)
+        && isOptionalMap(data, 'learnMeta', 1000)
+        && (!('dashboard' in data) || isDashboardShapeValid(data.dashboard))
+        && (!('rentabilidade' in data) || isRentabilidadeShapeValid(data.rentabilidade))
+        && isOptionalString(data, 'tab', 64)
+        && isOptionalString(data, 'updatedAtLocal', 64)
+        && isOptionalTimestamp(data, 'updatedAt');
+    }
+
+    function isPortfolioCreateValid() {
+      return request.resource.data.keys().hasOnly([
+          'wallets', 'activeWalletId', 'assets', 'aportes', 'proventos',
+          'rfEvents', 'divGoal', 'goals', 'learnMeta', 'dashboard',
+          'rentabilidade', 'tab', 'updatedAtLocal', 'updatedAt'
+        ])
+        && isPortfolioShapeValid(request.resource.data)
+        && (!('dashboard' in request.resource.data)
+          || isDashboardValid(request.resource.data.dashboard))
+        && (!('rentabilidade' in request.resource.data)
+          || isRentabilidadeValid(request.resource.data.rentabilidade));
+    }
+
+    function isDashboardUpdateValid() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(['dashboard'])
+        || (!('dashboard' in request.resource.data)
+          && 'dashboard' in resource.data
+          && resource.data.dashboard is map
+          && resource.data.dashboard.keys().hasOnly(['period', 'type']))
+        || (isDashboardShapeValid(request.resource.data.dashboard)
+          && (
+            ('dashboard' in resource.data
+              && resource.data.dashboard is map
+              && request.resource.data.dashboard.diff(resource.data.dashboard)
+                .affectedKeys().hasOnly(['period', 'type']))
+            || ((!('dashboard' in resource.data)
+              || !(resource.data.dashboard is map))
+              && request.resource.data.dashboard.keys().hasOnly(['period', 'type']))
+          ));
+    }
+
+    function isRentabilidadeUpdateValid() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(['rentabilidade'])
+        || (!('rentabilidade' in request.resource.data)
+          && 'rentabilidade' in resource.data
+          && resource.data.rentabilidade is map
+          && resource.data.rentabilidade.keys().hasOnly(['period', 'type', 'bench']))
+        || (isRentabilidadeShapeValid(request.resource.data.rentabilidade)
+          && (
+            ('rentabilidade' in resource.data
+              && resource.data.rentabilidade is map
+              && request.resource.data.rentabilidade.diff(resource.data.rentabilidade)
+                .affectedKeys().hasOnly(['period', 'type', 'bench']))
+            || ((!('rentabilidade' in resource.data)
+              || !(resource.data.rentabilidade is map))
+              && request.resource.data.rentabilidade.keys().hasOnly(['period', 'type', 'bench']))
+          ));
+    }
+
+    function isPortfolioUpdateValid() {
+      // Preserve legacy fields when untouched; clients cannot add or edit them.
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'wallets', 'activeWalletId', 'assets', 'aportes', 'proventos',
+          'rfEvents', 'divGoal', 'goals', 'learnMeta', 'dashboard',
+          'rentabilidade', 'tab', 'updatedAtLocal', 'updatedAt'
+        ])
+        && isPortfolioShapeValid(request.resource.data)
+        && isDashboardUpdateValid()
+        && isRentabilidadeUpdateValid();
+    }
+
+    function isOptionalTimestamp(data, field) {
+      return !(field in data) || data[field] is timestamp;
+    }
+
+    function isOptionalBoolean(data, field) {
+      return !(field in data) || data[field] is bool;
+    }
+
+    function isOptionalNonnegativeInt(data, field) {
+      return !(field in data)
+        || (data[field] is int && data[field] >= 0 && data[field] <= 1000000000);
+    }
+
+    function isUserProfileValid(data) {
+      return 'email' in data
+        && isOptionalString(data, 'email', 320)
+        && data.email == request.auth.token.email
+        && isOptionalString(data, 'displayName', 256)
+        && isOptionalString(data, 'photoURL', 2048)
+        && isOptionalBoolean(data, 'allowed')
+        && isOptionalTimestamp(data, 'lastSeen')
+        && isOptionalString(data, 'lastSeenLocal', 64)
+        && isOptionalNonnegativeInt(data, 'loginCount')
+        && isOptionalString(data, 'lastReason', 1024)
+        && isOptionalTimestamp(data, 'updatedAt');
+    }
+
+    function canCreateAdminProfileFields(data) {
+      return !data.keys().hasAny([
+          'allowed', 'lastSeen', 'lastSeenLocal', 'loginCount', 'lastReason', 'updatedAt'
+        ]) || isAdmin();
+    }
+
+    function canUpdateAdminProfileFields() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'allowed', 'lastSeen', 'lastSeenLocal', 'loginCount', 'lastReason', 'updatedAt'
+        ]) || isAdmin();
+    }
+
     match /portfolios/{userId} {
-      allow read, write: if canAccessOwnDocument(userId);
+      allow read: if canAccessOwnDocument(userId);
+      allow create: if canAccessOwnDocument(userId)
+        && isPortfolioCreateValid();
+      allow update: if canAccessOwnDocument(userId)
+        && isPortfolioUpdateValid();
+      allow delete: if canAccessOwnDocument(userId);
     }
 
     match /users/{userId} {
-      allow read, write: if canAccessOwnDocument(userId);
+      allow read: if canAccessOwnDocument(userId);
+      allow create: if canAccessOwnDocument(userId)
+        && request.resource.data.keys().hasOnly([
+          'email', 'displayName', 'photoURL', 'allowed', 'lastSeen',
+          'lastSeenLocal', 'loginCount', 'lastReason', 'updatedAt'
+        ])
+        && canCreateAdminProfileFields(request.resource.data)
+        && isUserProfileValid(request.resource.data);
+      allow update: if canAccessOwnDocument(userId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'email', 'displayName', 'photoURL', 'allowed', 'lastSeen',
+          'lastSeenLocal', 'loginCount', 'lastReason', 'updatedAt'
+        ])
+        && canUpdateAdminProfileFields()
+        && isUserProfileValid(request.resource.data);
+      allow delete: if request.auth.uid == userId && isAdmin();
     }
 
     match /meta/access {
