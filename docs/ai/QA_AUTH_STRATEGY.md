@@ -241,3 +241,9 @@ Gatilhos de deploy (verificados nos workflows de `origin/main`):
 Limitação conhecida, em dois casos distintos:
 - **Duplicidade de produção (deployments `READY`):** `carteira-investimentos` e `sm167-revisao-correcoes` publicam deployments `READY` de produção a partir do mesmo commit de `main`. Isso duplica a produção. Corrigir exige desconectar ou ajustar projetos na Vercel (ação de configuração remota, não coberta por este documento).
 - **Homologação com deployments `CANCELED`:** `carteira-homolog-c5785e6` também recebe deployments com target de produção a partir de `main`, mas eles aparecem como `CANCELED`. Não publicam produção. A causa provável é a regra de Ignored Build Step, que não é legível pelas ferramentas disponíveis; não foi confirmada.
+
+## SM189.58 P7 — Exceção de Preview para a PR #599
+
+A configuração do projeto de homologação usa uma lista explícita de branches autorizadas para criar Previews. Branches fora dessa lista são ignoradas pela etapa de build e não geram deployment. A branch desta PR documental e de workflow informativo está fora da lista; portanto, a ausência de Preview hospedado para a PR #599 é esperada na configuração atual.
+
+Esta exceção vale somente para a PR #599. Ela não dispensa CI, nem Preview e homologação QA para alterações funcionais futuras. Um Preview funcional deve usar uma branch autorizada no projeto QA e comprovar o deployment e o ambiente servidos. Nenhuma configuração Vercel ou Firebase foi alterada.
