@@ -7,14 +7,16 @@ permissions:
   contents: read
 
 jobs:
-  # Job mantido com o mesmo nome para preservar o check "preview" existente.
-  # Não compila nem implanta: o build já roda no CI e o deploy de preview
-  # é feito pela integração Git da Vercel (somente branches não-main).
+  # Job apenas informativo, mantido com o mesmo nome para preservar o check "preview".
+  # Seu sucesso NÃO valida build nem deployment. A aprovação de uma PR depende da
+  # CI completa (ci.yml) e de evidência independente do Preview da Vercel.
+  # O deploy de preview é feito pela integração Git da Vercel (somente branches não-main).
   preview:
     runs-on: ubuntu-latest
     steps:
-      - name: Registrar política de preview
+      - name: Registrar política de preview (informativo)
         run: |
+          echo "Job informativo: não valida build nem deployment."
           echo "Preview de branch: integração Git da Vercel (não é produção)."
           echo "Produção: somente a branch main."
-          echo "Este workflow não compila nem implanta; o build é coberto pelo CI."
+          echo "Aprovação: CI completa + evidência independente do Preview da Vercel."

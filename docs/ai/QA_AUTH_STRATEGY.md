@@ -238,4 +238,6 @@ Gatilhos de deploy (verificados nos workflows de `origin/main`):
 - `.github/workflows/preview.yml` não compila nem implanta. Roda em PR apenas para registrar a política de preview (job `preview`, mantido para preservar o check existente). O build de PR é coberto pelo job de build do CI.
 - `.github/workflows/ci.yml` roda em push e PR para `main`. `release.yml` roda em push para `main`. `sm189-37-emulator-linux.yml` roda manualmente e em push para a branch de preview QA; não publica nem faz deploy.
 
-Limitação conhecida: os três projetos Vercel publicam produção a partir de `main`, o que duplica deploys de produção. Corrigir isso exige desconectar ou ajustar projetos na Vercel (ação de configuração remota, não coberta por este documento).
+Limitação conhecida, em dois casos distintos:
+- **Duplicidade de produção (deployments `READY`):** `carteira-investimentos` e `sm167-revisao-correcoes` publicam deployments `READY` de produção a partir do mesmo commit de `main`. Isso duplica a produção. Corrigir exige desconectar ou ajustar projetos na Vercel (ação de configuração remota, não coberta por este documento).
+- **Homologação com deployments `CANCELED`:** `carteira-homolog-c5785e6` também recebe deployments com target de produção a partir de `main`, mas eles aparecem como `CANCELED`. Não publicam produção. A causa provável é a regra de Ignored Build Step, que não é legível pelas ferramentas disponíveis; não foi confirmada.
