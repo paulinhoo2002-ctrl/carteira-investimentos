@@ -10762,6 +10762,7 @@ async function bootstrapExperimentalActiveWalletHost(){
         generatedAt: new Date().toISOString(),
         notice: 'Valores recebidos consideram apenas eventos PAID; o histórico legado não comprova cobertura completa. React nao escreve na fonte.',
         summary: {
+          referenceMonth: incomeStats.currentMonthKey,
           historyCoverage: 'UNKNOWN',
           monthCoverage,
           averageCoverage,
