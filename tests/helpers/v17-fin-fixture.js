@@ -2,9 +2,8 @@
 // (lucro, prejuízo, zero legítimo, sem valor atual, vencido e a vencer). Nenhum valor representa carteira real.
 const { applyRichFixture } = require('./fp-rich-fixture');
 
-const iso = (offsetDays) => new Date(Date.now() + offsetDays * 86400000).toISOString().slice(0, 10);
-
-function syntheticRfTitles() {
+function syntheticRfTitles(referenceDate = new Date()) {
+  const iso = (offsetDays) => new Date(referenceDate.getTime() + offsetDays * 86400000).toISOString().slice(0, 10);
   const base = { type: 'Renda Fixa', asset_type: 'Renda Fixa', qty: 1, rf_ir_iof: 0, rf_unavailable_value: 0, rf_application_date: iso(-420) };
   return [
     { ...base, id: 'QA_RF_LUCRO', ticker: 'QARFL01', name: 'CDB sintético lucro', product: 'CDB sintético lucro', subtype: 'CDB', rf_subtype: 'CDB', institution: 'Banco Sintético Alfa', rf_contract_rate: '110% CDI', rf_applied_value: 12000, rf_liquid_value: 13250, rf_gross_value: 13250, appliedValue: 12000, currentValue: 13250, rf_maturity_date: iso(540) },
