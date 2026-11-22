@@ -10751,6 +10751,7 @@ async function bootstrapExperimentalActiveWalletHost(){
           sourceEventId,
         };
       });
+      const paymentCount = items.filter(item => item.paymentState === 'PAID').length;
       const monthCoverage = ['COMPLETE','PARTIAL','UNKNOWN','FUTURE'].includes(incomeStats.currentMonthCoverage) ? incomeStats.currentMonthCoverage : 'UNKNOWN';
       const averageCoverage = ['COMPLETE','PARTIAL','UNKNOWN'].includes(incomeStats.monthlyAverageStatus) ? incomeStats.monthlyAverageStatus : 'UNKNOWN';
       const monthTotal = monthCoverage === 'COMPLETE' || (monthCoverage === 'PARTIAL' && incomeStats.currentMonthCount > 0)
@@ -10768,7 +10769,7 @@ async function bootstrapExperimentalActiveWalletHost(){
           monthTotal,
           yearTotal: stats.paymentCount > 0 ? stats.ano : null,
           averageMonthly: incomeStats.monthlyAverageStatus === 'COMPLETE' && Number.isFinite(incomeStats.monthlyAvg) ? incomeStats.monthlyAvg : null,
-          paymentCount: stats.paymentCount,
+          paymentCount,
         },
         items,
       };

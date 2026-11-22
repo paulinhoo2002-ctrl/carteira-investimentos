@@ -120,7 +120,7 @@ test('monthly average requires explicit complete coverage and a finite value', (
   assert.equal(readPassiveIncomeContract({ incomeSnapshot: snapshot({ averageCoverage: 'UNKNOWN', averageMonthly: Infinity }) }).monthlyAverage.state, 'INVALID');
 });
 
-test('official snapshot count and subtotal share the canonical PAID row source', () => {
+test('official subtotal uses eligible PAID rows while snapshot count matches visible PAID items', () => {
   const start = source.indexOf('function proventoStats(){');
   const end = source.indexOf('\n}', start) + 2;
   assert.ok(start >= 0 && end > start, 'proventoStats is present');
@@ -136,7 +136,6 @@ test('official snapshot count and subtotal share the canonical PAID row source',
   assert.equal(context.proventoStats().paymentCount, 2);
   assert.equal(context.proventoStats().total, 150);
   assert.match(source, /totalReceived: stats\.paymentCount > 0 \? stats\.total : null/);
-  assert.match(source, /paymentCount: stats\.paymentCount/);
 
   const snapshotStart = source.indexOf('getIncomeSnapshot(){');
   const snapshotEnd = source.indexOf('\n    getContributionsSnapshot(){', snapshotStart);
@@ -146,6 +145,45 @@ test('official snapshot count and subtotal share the canonical PAID row source',
   assert.match(snapshotSource, /historyCoverage: 'UNKNOWN'/);
   assert.match(snapshotSource, /averageCoverage,/);
   assert.match(snapshotSource, /averageMonthly: incomeStats\.monthlyAverageStatus === 'COMPLETE'/);
+  assert.match(snapshotSource, /const paymentCount = items\.filter\(item => item\.paymentState === 'PAID'\)\.length/);
+  assert.match(snapshotSource, /totalReceived: stats\.paymentCount > 0 \? stats\.total : null/);
+});
+
+test('snapshot count matches visible PAID items when official history excludes an item', async () => {
+  const snapshotStart = source.indexOf('getIncomeSnapshot(){');
+  const snapshotEnd = source.indexOf('\n    getContributionsSnapshot(){', snapshotStart);
+  assert.ok(snapshotStart >= 0 && snapshotEnd > snapshotStart, 'legacy income snapshot is present');
+  const context = {
+    S: { proventos: [{ id: 'paid-without-official-history', state: 'PAID', value: 25 }] },
+    proventoStats: () => ({ paymentCount: 0, total: 0, mes: 0, ano: 0 }),
+    passiveIncomeGoalStats: () => ({
+      currentMonthCoverage: 'UNKNOWN', currentMonthCount: 0, currentMonthTotal: null,
+      currentMonthKey: '2026-11', monthlyAverageStatus: 'UNKNOWN', monthlyAvg: null,
+    }),
+    globalThis: { DividendIntelligence: { classifyIncomeState: item => item.state } },
+    proventoDividendPaymentDate: () => null,
+    proventoTipoCanonical: () => 'Dividendo',
+    toISODate: () => null,
+  };
+  vm.createContext(context);
+  const getIncomeSnapshot = vm.runInContext(`({ ${source.slice(snapshotStart, snapshotEnd)} }).getIncomeSnapshot`, context);
+  const incomeSnapshot = getIncomeSnapshot();
+  assert.equal(incomeSnapshot.summary.paymentCount, 1);
+  assert.equal(incomeSnapshot.summary.totalReceived, null);
+
+  const { INCOME_READONLY_FALLBACK_SNAPSHOT, normalizeReadonlyIncomeSnapshot } =
+    await import('../modern/src/features/income/incomeReadonlyContract.mjs');
+  assert.notEqual(normalizeReadonlyIncomeSnapshot(incomeSnapshot), INCOME_READONLY_FALLBACK_SNAPSHOT);
+});
+
+test('PAID items with unavailable official subtotal remain INCOMPLETE, not INVALID or zero', () => {
+  const result = readPassiveIncomeContract({
+    incomeSnapshot: snapshot({ historyCoverage: 'UNKNOWN', totalReceived: null, paymentCount: 1 }),
+  });
+  assert.equal(result.realized.state, 'INCOMPLETE');
+  assert.equal(result.realized.observedState, 'PAID');
+  assert.equal(result.realized.value, null);
+  assert.equal(result.realized.paymentCount, 1);
 });
 
 test('goal prioritizes S.goals.proventos.monthly and preserves numeric-string plus legacy fallback semantics', () => {
@@ -170,7 +208,7 @@ test('invalid totals, counts, and contradictory summary values stay INVALID', ()
     assert.equal(readPassiveIncomeContract({ incomeSnapshot: snapshot({ paymentCount: invalidCount }) }).realized.state, 'INVALID');
   }
 
-  assert.equal(readPassiveIncomeContract({ incomeSnapshot: snapshot({ paymentCount: 1, totalReceived: null }) }).realized.state, 'INVALID');
+  assert.equal(readPassiveIncomeContract({ incomeSnapshot: snapshot({ historyCoverage: 'COMPLETE', paymentCount: 1, totalReceived: null }) }).realized.state, 'INVALID');
   assert.equal(readPassiveIncomeContract({ incomeSnapshot: snapshot({ paymentCount: 0, totalReceived: 0 }) }).realized.state, 'INVALID');
   assert.equal(readPassiveIncomeContract({ incomeSnapshot: snapshot({ historyCoverage: 'BROKEN' }) }).realized.state, 'INVALID');
   assert.equal(readPassiveIncomeContract({ incomeSnapshot: snapshot({ monthCoverage: 'UNKNOWN', monthTotal: Infinity }) }).realizedMonth.state, 'INVALID');

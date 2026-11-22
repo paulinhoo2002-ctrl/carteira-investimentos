@@ -81,13 +81,20 @@ function readPassiveIncomeContract({
     realized = metric('INCOMPLETE', null, { observedState: 'UNKNOWN', coverage: historyCoverage });
   } else if (
     !Number.isInteger(paymentCount) || paymentCount < 0 ||
-    (paymentCount > 0 && (totalReceived === null || totalReceived === undefined)) ||
+    (paymentCount > 0 && historyCoverage === 'COMPLETE' && (totalReceived === null || totalReceived === undefined)) ||
     (paymentCount === 0 && totalReceived !== null && totalReceived !== undefined && !(historyCoverage === 'COMPLETE' && totalReceived === 0)) ||
     (paymentCount === 0 && historyCoverage === 'COMPLETE' && totalReceived !== 0)
   ) {
     realized = metric('INVALID', null, { observedState: 'UNKNOWN', coverage: 'UNKNOWN' });
-  } else if (paymentCount > 0) {
+  } else if (paymentCount > 0 && totalReceived !== null && totalReceived !== undefined) {
     realized = metric(historyCoverage === 'COMPLETE' ? 'PAID' : 'INCOMPLETE', totalReceived, {
+      observedState: 'PAID',
+      coverage: historyCoverage,
+      paymentCount,
+      source: 'incomeSnapshot.summary.totalReceived',
+    });
+  } else if (paymentCount > 0) {
+    realized = metric('INCOMPLETE', null, {
       observedState: 'PAID',
       coverage: historyCoverage,
       paymentCount,
