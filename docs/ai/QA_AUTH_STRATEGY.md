@@ -234,13 +234,13 @@ Leitura somente, por nome (sem valores). Esta seção não altera a estratégia 
 Recomendação (não aplicada; exige autorização de configuração remota): remover as variáveis listadas acima de `carteira-investimentos` e as `HOMOLOG_*` de `carteira-homolog-c5785e6`, ou manter apenas as que forem explicitamente usadas por um mecanismo revisado. Antes de remover, confirmar que nenhuma branch ativa depende delas.
 
 Gatilhos de deploy (verificados nos workflows de `origin/main`):
-- Deploy de produção e de preview vêm da integração Git da Vercel. Todos os três projetos estão ligados ao repositório `carteira-investimentos`. Push em `main` gera produção em `carteira-investimentos` e `sm167-revisao-correcoes`; pushes em outras branches geram preview.
+- Deployments seguem a integração Git, mas um push não garante Preview: cada projeto aplica suas próprias regras, incluindo branch de produção e Ignored Build Step. No projeto QA, a regra inspecionada permite builds somente para branches explicitamente autorizadas; branches fora da lista são ignoradas. Não inferir a regra de um projeto a partir de outro.
 - `.github/workflows/preview.yml` não compila nem implanta. Roda em PR apenas para registrar a política de preview (job `preview`, mantido para preservar o check existente). O build de PR é coberto pelo job de build do CI.
 - `.github/workflows/ci.yml` roda em push e PR para `main`. `release.yml` roda em push para `main`. `sm189-37-emulator-linux.yml` roda manualmente e em push para a branch de preview QA; não publica nem faz deploy.
 
 Limitação conhecida, em dois casos distintos:
 - **Duplicidade de produção (deployments `READY`):** `carteira-investimentos` e `sm167-revisao-correcoes` publicam deployments `READY` de produção a partir do mesmo commit de `main`. Isso duplica a produção. Corrigir exige desconectar ou ajustar projetos na Vercel (ação de configuração remota, não coberta por este documento).
-- **Homologação com deployments `CANCELED`:** `carteira-homolog-c5785e6` também recebe deployments com target de produção a partir de `main`, mas eles aparecem como `CANCELED`. Não publicam produção. A causa provável é a regra de Ignored Build Step, que não é legível pelas ferramentas disponíveis; não foi confirmada.
+- **Homologação com deployments `CANCELED`:** `carteira-homolog-c5785e6` recebe deployments com target de produção a partir de `main`, mas eles aparecem como `CANCELED` e não publicam produção. A P6 inspecionou o Ignored Build Step do projeto QA e confirmou sua lista explícita de branches autorizadas; isso não comprova a causa desses deployments de `main`. A causa específica permanece não confirmada sem evidência correspondente do deployment.
 
 ## SM189.58 P7 — Exceção de Preview para a PR #599
 
