@@ -221,3 +221,16 @@ local copy with the Firebase Emulator. Deploy only with
 `firebase.json` must not be used for this operation. Vercel SSO remains active.
 Authenticated browser validation remains blocked until a legitimate SSO
 session is available to the browser.
+
+## Estado observado das variáveis Vercel — SM189.58 (2026-11-22)
+
+Leitura somente, por nome (sem valores). Esta seção não altera a estratégia acima.
+
+- `carteira-investimentos` (produção) tem `QA_FIREBASE_API_KEY`, `QA_FIREBASE_AUTH_DOMAIN`, `QA_FIREBASE_PROJECT_ID`, `QA_FIREBASE_STORAGE_BUCKET`, `QA_FIREBASE_MESSAGING_SENDER_ID`, `QA_FIREBASE_APP_ID` e `QA_FIREBASE_PREVIEW_ALLOWED_HOSTS`, com escopo de preview em duas branches `codex/*` antigas. O código de `origin/main` não lê essas variáveis. Elas são inertes e não isolam nada, como este documento já previa.
+- `carteira-homolog-c5785e6` tem `HOMOLOG_*` (SDK, modo, e-mail e UID de QA) com escopo de preview em branches `codex/sm153-*` e `sm173-*`. Nenhum arquivo de `origin/main` as consome.
+- `sm167-revisao-correcoes` não tem variáveis.
+- Seleção efetiva do Firebase em `origin/main`: por hostname (`isQaPreviewHost` e `activeFirebaseConfig` em `index.html`), com config fixa de `carteira-invest-qa-v316` para o host de homologação e de `carteira-de-investimento-16725` para o host de produção. Hosts desconhecidos não recebem configuração.
+
+Recomendação (não aplicada; exige autorização de configuração remota): remover as variáveis listadas acima de `carteira-investimentos` e as `HOMOLOG_*` de `carteira-homolog-c5785e6`, ou manter apenas as que forem explicitamente usadas por um mecanismo revisado. Antes de remover, confirmar que nenhuma branch ativa depende delas.
+
+Nota: `.github/workflows/preview.yml` em `origin/main` não faz deploy. Ele apenas informa o status e encerra. Deploys em Vercel vêm da integração Git dos projetos.
