@@ -5,35 +5,16 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
+  # Job mantido com o mesmo nome para preservar o check "preview" existente.
+  # Não compila nem implanta: o build já roda no CI e o deploy de preview
+  # é feito pela integração Git da Vercel (somente branches não-main).
   preview:
     runs-on: ubuntu-latest
     steps:
-      - name: Verificar credenciais do Vercel
-        id: verificar-credenciais
+      - name: Registrar política de preview
         run: |
-          if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
-            echo "ℹ️ VERCEL_TOKEN não configurado. Deploy de preview desabilitado."
-            echo "ℹ️ Configure o secret VERCEL_TOKEN para ativar o preview de deploy."
-            echo "has_token=false" >> $GITHUB_OUTPUT
-          else
-            echo "✅ VERCEL_TOKEN configurado. Deploy de preview pode ser autorizado separadamente."
-            echo "has_token=true" >> $GITHUB_OUTPUT
-          fi
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run build && npm run build:modern
-      - name: Informar status do preview
-        run: |
-          if [ "${{ steps.verificar-credenciais.outputs.has_token }}" = "true" ]; then
-            echo "ℹ️ Preview de preview está disponível, mas requer autorização explícita para deploy."
-            echo "ℹ️ Nenhum deploy será executado automaticamente neste workflow."
-          else
-            echo "ℹ️ Preview de preview desabilitado sem VERCEL_TOKEN."
-          fi
+          echo "Preview de branch: integração Git da Vercel (não é produção)."
+          echo "Produção: somente a branch main."
+          echo "Este workflow não compila nem implanta; o build é coberto pelo CI."

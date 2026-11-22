@@ -227,10 +227,15 @@ session is available to the browser.
 Leitura somente, por nome (sem valores). Esta seção não altera a estratégia acima.
 
 - `carteira-investimentos` (produção) tem `QA_FIREBASE_API_KEY`, `QA_FIREBASE_AUTH_DOMAIN`, `QA_FIREBASE_PROJECT_ID`, `QA_FIREBASE_STORAGE_BUCKET`, `QA_FIREBASE_MESSAGING_SENDER_ID`, `QA_FIREBASE_APP_ID` e `QA_FIREBASE_PREVIEW_ALLOWED_HOSTS`, com escopo de preview em duas branches `codex/*` antigas. O código de `origin/main` não lê essas variáveis. Elas são inertes e não isolam nada, como este documento já previa.
-- `carteira-homolog-c5785e6` tem `HOMOLOG_*` (SDK, modo, e-mail e UID de QA) com escopo de preview em branches `codex/sm153-*` e `sm173-*`. Nenhum arquivo de `origin/main` as consome.
+- `carteira-homolog-c5785e6` tem variáveis `HOMOLOG_*` (configuração de SDK, modo de build e identidades de QA) com escopo de preview em branches `codex/sm153-*` e `sm173-*`. Nenhum arquivo de `origin/main` as consome. Valores e identidades não são reproduzidos aqui.
 - `sm167-revisao-correcoes` não tem variáveis.
 - Seleção efetiva do Firebase em `origin/main`: por hostname (`isQaPreviewHost` e `activeFirebaseConfig` em `index.html`), com config fixa de `carteira-invest-qa-v316` para o host de homologação e de `carteira-de-investimento-16725` para o host de produção. Hosts desconhecidos não recebem configuração.
 
 Recomendação (não aplicada; exige autorização de configuração remota): remover as variáveis listadas acima de `carteira-investimentos` e as `HOMOLOG_*` de `carteira-homolog-c5785e6`, ou manter apenas as que forem explicitamente usadas por um mecanismo revisado. Antes de remover, confirmar que nenhuma branch ativa depende delas.
 
-Nota: `.github/workflows/preview.yml` em `origin/main` não faz deploy. Ele apenas informa o status e encerra. Deploys em Vercel vêm da integração Git dos projetos.
+Gatilhos de deploy (verificados nos workflows de `origin/main`):
+- Deploy de produção e de preview vêm da integração Git da Vercel. Todos os três projetos estão ligados ao repositório `carteira-investimentos`. Push em `main` gera produção em `carteira-investimentos` e `sm167-revisao-correcoes`; pushes em outras branches geram preview.
+- `.github/workflows/preview.yml` não compila nem implanta. Roda em PR apenas para registrar a política de preview (job `preview`, mantido para preservar o check existente). O build de PR é coberto pelo job de build do CI.
+- `.github/workflows/ci.yml` roda em push e PR para `main`. `release.yml` roda em push para `main`. `sm189-37-emulator-linux.yml` roda manualmente e em push para a branch de preview QA; não publica nem faz deploy.
+
+Limitação conhecida: os três projetos Vercel publicam produção a partir de `main`, o que duplica deploys de produção. Corrigir isso exige desconectar ou ajustar projetos na Vercel (ação de configuração remota, não coberta por este documento).
