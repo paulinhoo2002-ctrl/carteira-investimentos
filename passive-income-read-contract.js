@@ -1,3 +1,4 @@
+(function () {
 'use strict';
 
 const COVERAGE = new Set(['COMPLETE', 'PARTIAL', 'UNKNOWN']);
@@ -180,4 +181,8 @@ function readPassiveIncomeContract({
   };
 }
 
-module.exports = { readPassiveIncomeContract, resolveMonthlyGoal, validateProjectionAssets };
+const passiveIncomeReadContract = { readPassiveIncomeContract, resolveMonthlyGoal, validateProjectionAssets };
+
+if (typeof module !== 'undefined' && module.exports) module.exports = passiveIncomeReadContract;
+if (typeof globalThis !== 'undefined') globalThis.PassiveIncomeReadContract = passiveIncomeReadContract;
+})();
