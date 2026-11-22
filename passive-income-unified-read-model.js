@@ -1,6 +1,13 @@
+(function () {
 'use strict';
 
-const { readPassiveIncomeContract } = require('./passive-income-read-contract.js');
+const passiveIncomeReadContract = typeof module !== 'undefined' && module.exports
+  ? require('./passive-income-read-contract.js')
+  : globalThis.PassiveIncomeReadContract;
+if (typeof passiveIncomeReadContract?.readPassiveIncomeContract !== 'function') {
+  throw new Error('Passive income read contract is unavailable.');
+}
+const { readPassiveIncomeContract } = passiveIncomeReadContract;
 
 const MONTH_KEY = /^(\d{4})-(0[1-9]|1[0-2])$/;
 
@@ -147,4 +154,8 @@ function buildPassiveIncomeReadModel({
   };
 }
 
-module.exports = { buildPassiveIncomeReadModel };
+const passiveIncomeUnifiedReadModel = { buildPassiveIncomeReadModel };
+
+if (typeof module !== 'undefined' && module.exports) module.exports = passiveIncomeUnifiedReadModel;
+if (typeof globalThis !== 'undefined') globalThis.PassiveIncomeUnifiedReadModel = passiveIncomeUnifiedReadModel;
+})();

@@ -3,6 +3,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
+const PassiveIncomeProjection = require('../analytics-passive-income-projection.js');
+const PassiveIncomeUnifiedReadModel = require('../passive-income-unified-read-model.js');
 
 process.env.TZ = 'UTC';
 const FIXED_NOW = '2026-07-20T12:00:00.000Z';
@@ -28,7 +30,7 @@ function extractBetween(text, startMarker, endMarker) {
   return text.slice(start, end);
 }
 
-function createSandbox(state = {}) {
+function createSandbox(state = {}, overrides = {}) {
   const sandbox = {
     console: {
       log() {},
@@ -54,6 +56,9 @@ function createSandbox(state = {}) {
     S: state,
     TYPE_CHOICES: ['Ação', 'FII', 'ETF', 'BDR', 'Stock', 'Reit', 'Renda Fixa', 'Tesouro Direto', 'Reserva de emergência', 'Fundos de Investimento'],
     TYPE_FORM_CHOICES: ['Ação', 'FII', 'ETF', 'BDR', 'Stock', 'Reit', 'Renda Fixa', 'Tesouro Direto', 'Reserva de emergência', 'Fundos de Investimento'],
+    TYPE_GOAL_CHOICES: ['Ação', 'FII', 'ETF', 'BDR', 'Stock', 'Reit', 'Fundos de Investimento'],
+    PassiveIncomeProjection: overrides.PassiveIncomeProjection || PassiveIncomeProjection,
+    PassiveIncomeUnifiedReadModel: overrides.PassiveIncomeUnifiedReadModel || PassiveIncomeUnifiedReadModel,
     TYPE_ALIAS_LOOKUP: {
       ACAO: 'Ação',
       ACOES: 'Ação',
@@ -227,8 +232,8 @@ function createSandbox(state = {}) {
   return sandbox;
 }
 
-function loadRuntime(state) {
-  const sandbox = createSandbox(state);
+function loadRuntime(state, overrides = {}) {
+  const sandbox = createSandbox(state, overrides);
   const context = vm.createContext(sandbox);
   const blocks = [
     extractBetween(indexHtml, 'function isRendaFixaAsset(a){', 'function dataQualitySnapshot(){'),
@@ -638,7 +643,11 @@ test('fase 206 usa patrimonio atual real e historico mensal real sem mutacao', (
   });
   assert.match(passiveHtml, /Renda passiva/);
   assert.match(passiveHtml, /Recebido no m[eê]s/);
-  assert.match(passiveHtml, /M[eé]dia 12 meses/);
+  assert.match(passiveHtml, /Renda projetada \/ m[eê]s/);
+  assert.match(passiveHtml, /Meta mensal/);
+  assert.match(passiveHtml, /Progresso da meta/);
+  assert.match(passiveHtml, /PAID e ESTIMATE permanecem separados/);
+  assert.doesNotMatch(passiveHtml, /combinedIncome|Total combinado/);
   assert.match(goalsHtml, /Metas financeiras/);
   assert.match(goalsHtml, /Patrim[oô]nio atual/);
   assert.match(goalsHtml, /Meta de renda passiva/);
@@ -647,6 +656,39 @@ test('fase 206 usa patrimonio atual real e historico mensal real sem mutacao', (
   assert.match(goalsHtml, /role="progressbar"/);
   assert.match(goalsHtml, /go\('metas'\)/);
   assert.match(passiveHtml, /dashboard-home-income/);
+});
+test('painel E2.3 mantém ausente, incompleto e inválido sem substituir por zero', () => {
+  let captured;
+  const runtime = loadRuntime({
+    assets: [], proventos: [], goals: { proventos: { monthly: 0 } }, divGoal: 0,
+  }, {
+    PassiveIncomeProjection: { calculatePortfolioYield: () => ({ monthlyIncome: 0 }) },
+    PassiveIncomeUnifiedReadModel: {
+      buildPassiveIncomeReadModel(input) {
+        captured = input;
+        return {
+          period: { referenceMonth: null },
+          realizedMonth: { state: 'MISSING', value: null, coverage: 'UNKNOWN' },
+          forecast: { state: 'INCOMPLETE', value: null },
+          goal: { state: 'MISSING', value: null, source: null },
+          progress: { state: 'INVALID', percent: null, remainingAmount: null },
+          quality: { monthlyAverage: { coverage: 'UNKNOWN' } },
+        };
+      },
+    },
+  });
+  const html = runtime.dashboardPassiveIncomePanel({ income: { currentMonthKey: '2026-07', currentMonthCoverage: 'UNKNOWN', monthlyAverageStatus: 'UNKNOWN', monthKeys: [] } });
+
+  assert.equal(captured.incomeSnapshot.summary.historyCoverage, 'UNKNOWN');
+  assert.equal(captured.incomeSnapshot.summary.totalReceived, null);
+  assert.equal(captured.configuredMonthlyGoal, 0);
+  assert.equal(captured.legacyMonthlyGoal, 0);
+  assert.match(html, /Recebido no m[eê]s[\s\S]*?Indispon[ií]vel/);
+  assert.match(html, /Renda projetada \/ m[eê]s[\s\S]*?Indispon[ií]vel/);
+  assert.match(html, /Meta mensal[\s\S]*?Indispon[ií]vel/);
+  assert.match(html, /Dados inv[aá]lidos/);
+  assert.doesNotMatch(html, /aria-valuenow/);
+  assert.doesNotMatch(html, /R\$\s*0,00/);
 });
 test('proventos oficiais normalizam strings e excluem registros invalidos', () => {
   const runtime = loadRuntime({
