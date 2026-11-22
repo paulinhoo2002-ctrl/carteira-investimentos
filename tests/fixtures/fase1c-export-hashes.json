@@ -4,7 +4,7 @@
   "baselineSha": "f8fef82313681c60ef641e56a9eb75b24526940b",
   "how": "tests/fase1c-export-integrity.test.js executado na referência com EXPORT_HASH_DUMP=1",
   "updatedBy": "SUPERMISSAO-19: adicionado reconciliationStatus nas exportações JSON; movimentos PENDENTE DE RECONCILIAÇÃO excluídos dos totais",
-  "harnessUpdate": "SM189.37: chaves parcial atualizadas para o resultado atual de origin/main 58827aa, reexecutado com o harness atual. Cada CSV de parcial que mudou (parcial|complete|CSV, parcial|fixed|CSV) tem o mesmo resultado em f8fef82 com este harness: a diferença vem do fixture QA_RF_VENC criado depois da baseline. Os JSON de parcial mudam por reconciliationStatus, já documentado em meta.updatedBy; os CSV completos não mudam. Nenhuma chave completa foi alterada."
+  "harnessUpdate": "SM189.37: chaves parcial atualizadas para o resultado atual de origin/main 58827aa, reexecutado com o harness atual. Cada CSV de parcial que mudou (parcial|complete|CSV, parcial|fixed|CSV) tem o mesmo resultado em f8fef82 com este harness: a diferença vem do fixture QA_RF_VENC criado depois da baseline. Os JSON de parcial mudam por reconciliationStatus, já documentado em meta.updatedBy; os CSV completos não mudam. Nenhuma chave completa foi alterada.; SM189.45 E2.1 CI fix: fixture de vencimentos sintéticos usa o mesmo NOW congelado no navegador; oito hashes parcial mudam porque antes dependiam de Date.now do Node, divergente do relógio do browser. Código de exportação não mudou."
  },
  "hashes": {
   "completo|complete|CSV": {
@@ -60,52 +60,52 @@
    "length": 6297
   },
   "parcial|complete|CSV": {
-   "sha": "a2a840dd6379c3cc",
-   "length": 34403
+   "sha": "3c46c5f8f090c746",
+   "length": 34390
   },
   "parcial|complete|JSON": {
-   "sha": "b26a1ad197e1332a",
-   "length": 576271
+   "sha": "7b0917bf3b44a641",
+   "length": 569850
   },
   "parcial|assets|CSV": {
    "sha": "64d10c575d0c9454",
    "length": 1918
   },
   "parcial|assets|JSON": {
-   "sha": "550e6a5fdcbbbf81",
-   "length": 516476
+   "sha": "10f704936bddb45f",
+   "length": 510068
   },
   "parcial|proventos|CSV": {
    "sha": "0074f447c8b6af24",
    "length": 4470
   },
   "parcial|proventos|JSON": {
-   "sha": "e3628f538ea26eae",
-   "length": 521864
+   "sha": "1b17f8e8bf51ff5d",
+   "length": 515456
   },
   "parcial|fixed|CSV": {
-   "sha": "d5357f9aba192b89",
-   "length": 1404
+   "sha": "27f6c1da6c506de6",
+   "length": 1391
   },
   "parcial|fixed|JSON": {
-   "sha": "ed07f3acff55373d",
-   "length": 514567
+   "sha": "696d0a8d9a7c8470",
+   "length": 508146
   },
   "parcial|patrimony|CSV": {
    "sha": "35fa61f04be02759",
    "length": 1734
   },
   "parcial|patrimony|JSON": {
-   "sha": "792b512ce0855311",
-   "length": 515262
+   "sha": "28161b43676762b4",
+   "length": 508854
   },
   "parcial|audit|CSV": {
    "sha": "25aa6993ef2f802b",
    "length": 24686
   },
   "parcial|audit|JSON": {
-   "sha": "9adb3acbd1c6940a",
-   "length": 555448
+   "sha": "16790818c872dc54",
+   "length": 549040
   },
   "parcial|irpf|CSV": {
    "sha": "3b77d619da6ff46c",

@@ -185,7 +185,7 @@ test('Modern Income snapshot separates announced events from received payments a
   const snapshotFor = rows => vm.runInNewContext(`({${method}}).getIncomeSnapshot()`, {
     S: { proventos: rows },
     globalThis: { DividendIntelligence: engine },
-    proventoStats: () => ({ total: rows.some(row => row.state === 'PAID') ? 250 : 0, mes: rows.some(row => row.state === 'PAID') ? 250 : 0, ano: rows.some(row => row.state === 'PAID') ? 250 : 0 }),
+    proventoStats: () => ({ total: rows.some(row => row.state === 'PAID') ? 250 : 0, mes: rows.some(row => row.state === 'PAID') ? 250 : 0, ano: rows.some(row => row.state === 'PAID') ? 250 : 0, paymentCount: rows.filter(row => row.state === 'PAID').length }),
     passiveIncomeGoalStats: () => ({ monthlyAvg: 100, monthlyAverageStatus: 'PARTIAL' }),
     proventoDividendPaymentDate: row => row.date ? new Date(`${row.date}T12:00:00Z`) : null,
     proventoTipoCanonical: value => value,

@@ -35,7 +35,7 @@ async function collect() {
           S.assets = [...keep, ...JSON.parse(JSON.stringify(titles))];
           S.wallets[0].assets = JSON.parse(JSON.stringify(S.assets));
           render();
-        }, syntheticRfTitles());
+        }, syntheticRfTitles(NOW));
       }
       for (const type of TYPES) {
         for (const kind of ['CSV', 'JSON']) {
