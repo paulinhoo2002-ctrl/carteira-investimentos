@@ -10751,7 +10751,6 @@ async function bootstrapExperimentalActiveWalletHost(){
           sourceEventId,
         };
       });
-      const paidItems = items.filter(item => item.paymentState === 'PAID');
       const monthCoverage = ['COMPLETE','PARTIAL','UNKNOWN','FUTURE'].includes(incomeStats.currentMonthCoverage) ? incomeStats.currentMonthCoverage : 'UNKNOWN';
       const averageCoverage = ['COMPLETE','PARTIAL','UNKNOWN'].includes(incomeStats.monthlyAverageStatus) ? incomeStats.monthlyAverageStatus : 'UNKNOWN';
       const monthTotal = monthCoverage === 'COMPLETE' || (monthCoverage === 'PARTIAL' && incomeStats.currentMonthCount > 0)
@@ -10765,11 +10764,11 @@ async function bootstrapExperimentalActiveWalletHost(){
           historyCoverage: 'UNKNOWN',
           monthCoverage,
           averageCoverage,
-          totalReceived: paidItems.length > 0 ? stats.total : null,
+          totalReceived: stats.paymentCount > 0 ? stats.total : null,
           monthTotal,
-          yearTotal: paidItems.length > 0 ? stats.ano : null,
+          yearTotal: stats.paymentCount > 0 ? stats.ano : null,
           averageMonthly: incomeStats.monthlyAverageStatus === 'COMPLETE' && Number.isFinite(incomeStats.monthlyAvg) ? incomeStats.monthlyAvg : null,
-          paymentCount: paidItems.length,
+          paymentCount: stats.paymentCount,
         },
         items,
       };
@@ -21124,7 +21123,7 @@ function proventoStats(){
       if(dt.getMonth()===currentMonth) mes+=value;
     }
   });
-  return{mes,ano,total:summary.total};
+  return{mes,ano,total:summary.total,paymentCount:rows.length};
 }
 function lucroTotalComProventos(){
   const {tG}=cx();
