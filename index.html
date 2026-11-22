@@ -22905,7 +22905,8 @@ function irpfBuildYearReport(year){
     month.buys+=qty*price;
   });
 
-  months.forEach(month=>{
+  const exemptRealizedByMonth=months.map(()=>Object.fromEntries(bucketOrder.map(b=>[b,0])));
+  months.forEach((month,monthIdx)=>{
     const equitySalesTotal=month.salesByBucket['Ações'];
     month.events.forEach(evt=>{
       const rate=irpfTaxRate(evt.bucket);
@@ -22914,6 +22915,7 @@ function irpfBuildYearReport(year){
         if(evt.realized>0) month.exemptByBucket[evt.bucket]+=evt.realized;
         else month.lossUsedByBucket[evt.bucket]+=evt.realized;
         month.realizedByBucket[evt.bucket]+=evt.realized;
+        exemptRealizedByMonth[monthIdx][evt.bucket]+=evt.realized;
         return;
       }
 
@@ -22991,7 +22993,7 @@ function irpfBuildYearReport(year){
   const totalBuys=months.reduce((s,m)=>s+m.buys,0);
   const totalSells=months.reduce((s,m)=>s+m.sells,0);
   const totalTax=months.reduce((s,m)=>s+bucketOrder.reduce((x,b)=>x+Number(m.taxByBucket[b]||0),0),0);
-  const totalTaxableGain=months.reduce((s,m)=>s+bucketOrder.reduce((x,b)=>x+Math.max(0, Number(m.realizedByBucket[b]||0)+Math.max(0,Number(m.carryByBucket[b]||0))),0),0);
+  const totalTaxableGain=months.reduce((s,m,monthIdx)=>s+bucketOrder.reduce((x,b)=>x+Math.max(0, Number(m.realizedByBucket[b]||0)-Number(exemptRealizedByMonth[monthIdx][b]||0)+Math.max(0,Number(m.carryByBucket[b]||0))),0),0);
   const totalExemptGain=months.reduce((s,m)=>s+Number(m.exemptByBucket['Ações']||0),0);
   const totalLossCarry=months.reduce((s,m)=>s+bucketOrder.reduce((x,b)=>x+Math.min(0, Number(m.carryByBucket[b]||0)),0),0);
   const liquidationYearEnd=finalPositions.reduce((s,p)=>s+p.cost,0);
