@@ -6305,6 +6305,16 @@ button, .tab, .asset-inner-tab, .asset-action, .tab-menu-panel button,
     color:var(--muted);
     margin-top:3px;
   }
+  .dashboard-home-income .dashboard-income-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+  .dashboard-home-income .premium-metric{min-height:142px;justify-content:flex-start;gap:8px}
+  .dashboard-home-income .premium-metric-label{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.3}
+  .dashboard-home-income .premium-metric-value{font-size:clamp(14px,1.1vw,19px);white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;line-height:1.25}
+  .dashboard-home-income .premium-metric-note{font-size:11px;line-height:1.35;white-space:normal;overflow:visible;text-overflow:clip;opacity:1}
+  .dashboard-income-source{font-size:11px;color:var(--muted);line-height:1.35;overflow-wrap:anywhere}
+  .dashboard-home-income-context{font-size:12px;color:var(--muted);line-height:1.45;margin:10px 0 0}
+  .dashboard-income-progress{height:8px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+  .dashboard-income-progress span{display:block;height:100%;border-radius:inherit;background:var(--primary)}
+  @media(max-width:900px){.dashboard-home-income .dashboard-income-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
   .dash-income-grid{display:grid;grid-template-columns:1fr;gap:12px}
   @media(min-width:901px){.dash-income-grid{grid-template-columns:minmax(0,1.55fr) minmax(220px,.85fr)}}
@@ -8978,6 +8988,8 @@ window.ensureXLSX=()=>{ if(window.__XLSX_PROMISE__) return window.__XLSX_PROMISE
 <script src="protected-local-cloud-authority.js?v=phase4i-authority-2"></script>
 <script src="analytics-monte-carlo-input.js"></script>
 <script src="analytics-passive-income-projection.js"></script>
+<script src="passive-income-read-contract.js"></script>
+<script src="passive-income-unified-read-model.js"></script>
 <script src="analytics-dividend-evolution.js"></script>
 <script src="analytics-asset-class-comparison.js"></script>
 <script src="analytics-wealth-goals.js"></script>
@@ -10762,6 +10774,7 @@ async function bootstrapExperimentalActiveWalletHost(){
         generatedAt: new Date().toISOString(),
         notice: 'Valores recebidos consideram apenas eventos PAID; o histórico legado não comprova cobertura completa. React nao escreve na fonte.',
         summary: {
+          referenceMonth: incomeStats.currentMonthKey,
           historyCoverage: 'UNKNOWN',
           monthCoverage,
           averageCoverage,
@@ -31398,30 +31411,81 @@ function dashboardHomeSummaryPanel(data){
 }
 function dashboardPassiveIncomePanel(data){
   const income=data?.income||passiveIncomeGoalStats();
-  const target=Number(income.target)||0;
-  const monthlyAvg=income.monthlyAvg;
-  const averageComplete=income.monthlyAverageStatus==='COMPLETE';
-  const goalReached=target>0&&averageComplete?Math.max(target-monthlyAvg,0):null;
-  const currentMonthKey=passiveIncomeMonthKey(new Date());
-  const recent=data?.recent?.month===currentMonthKey ? data.recent : passiveIncomeMonthSummary(currentMonthKey);
-  const monthReceived=recent.total;
-  const monthLabel=new Date(`${currentMonthKey}-01T12:00:00`).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
-  return `<div class="premium-panel dashboard-home-income dashboard-income-card">
+  const received=proventoStats();
+  const configuredTypes=Array.isArray(S.goals?.proventos?.types)&&S.goals.proventos.types.length
+    ? S.goals.proventos.types
+    : TYPE_GOAL_CHOICES;
+  const projectionAssets=(Array.isArray(S.assets)?S.assets:[]).filter(asset=>{
+    const type=normalizeType(asset?.type||metaTicker(asset?.ticker).type||'Ação','Ação');
+    return configuredTypes.includes(type);
+  });
+  const projectedMonthlyIncome=globalThis.PassiveIncomeProjection?.calculatePortfolioYield?.(projectionAssets)?.monthlyIncome??null;
+  const model=globalThis.PassiveIncomeUnifiedReadModel?.buildPassiveIncomeReadModel?.({
+    incomeSnapshot:{summary:{
+      referenceMonth:income.currentMonthKey,
+      historyCoverage:'UNKNOWN',
+      totalReceived:received.paymentCount>0?received.total:null,
+      paymentCount:received.paymentCount,
+      monthCoverage:income.currentMonthCoverage,
+      monthTotal:income.currentMonthTotal,
+      averageCoverage:income.monthlyAverageStatus,
+      averageMonthly:income.monthlyAverageStatus==='COMPLETE'&&Number.isFinite(income.monthlyAvg)?income.monthlyAvg:null,
+    }},
+    projectedMonthlyIncome,
+    projectionAssets,
+    configuredMonthlyGoal:S.goals?.proventos?.monthly,
+    legacyMonthlyGoal:S.divGoal,
+    goalStats:income,
+  });
+  const monthKey=model?.period?.referenceMonth;
+  const monthLabel=monthKey
+    ? new Date(`${monthKey}-01T12:00:00`).toLocaleDateString('pt-BR',{month:'long',year:'numeric'})
+    : 'Competência indisponível';
+  const stateLabel={PAID:'Recebido confirmado',ESTIMATE:'Estimativa',CONFIGURED:'Meta configurada',AVAILABLE:'Disponível',INCOMPLETE:'Cobertura incompleta',MISSING:'Indisponível',INVALID:'Dados inválidos'};
+  const metricCard=(label,metric,allowedStates,detail,source)=>{
+    const valid=metric&&allowedStates.includes(metric.state)&&metric.value!==null&&metric.value!==undefined&&Number.isFinite(Number(metric.value));
+    const value=valid?fmt(Number(metric.value)):'Indisponível';
+    const status=stateLabel[metric?.state]||'Indisponível';
+    return `<div class="premium-metric" role="listitem" data-state="${esc(metric?.state||'MISSING')}">
+      <div class="premium-metric-label">${esc(label)}</div>
+      <div class="premium-metric-value">${esc(value)}</div>
+      <div class="premium-metric-note">${esc(status)} · ${esc(detail)}</div>
+      <div class="dashboard-income-source">Origem: ${esc(source)}</div>
+    </div>`;
+  };
+  const progress=model?.progress;
+  const progressAvailable=progress?.state==='AVAILABLE'&&Number.isFinite(progress.percent)&&Number.isFinite(progress.remainingAmount);
+  const progressValue=progressAvailable?`${progress.percent.toFixed(1).replace('.',',')}%`:(stateLabel[progress?.state]||'Indisponível');
+  const progressDetail=progressAvailable
+    ? progress.remainingAmount>0?`Faltam ${fmt(progress.remainingAmount)} pela média real.`:'Meta alcançada pela média real.'
+    : progress?.state==='INCOMPLETE'?'Progresso requer 12 meses completos.':progress?.state==='INVALID'?'Valores ou período inconsistentes; progresso bloqueado.':'Meta ou cobertura histórica indisponível.';
+  const progressSource=progress?.source==='passiveIncomeGoalStats'?'Histórico de proventos · 12 meses completos':'Histórico recebido e cobertura mensal';
+  const progressBar=progressAvailable
+    ? `<div class="dashboard-income-progress" role="progressbar" aria-label="Progresso da meta mensal pela média real" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.max(0,Math.min(100,progress.percent)).toFixed(1)}" aria-valuetext="${esc(progressValue)} da meta"><span style="width:${Math.max(0,Math.min(100,progress.percent)).toFixed(1)}%"></span></div>`
+    : '';
+  const quality=model?.quality||{};
+  const realizedCoverage=model?.realizedMonth?.coverage;
+  const realizedDetail=realizedCoverage==='COMPLETE'?'Mês completo confirmado':realizedCoverage==='PARTIAL'?'Subtotal conhecido; mês parcial':realizedCoverage==='FUTURE'?'Competência futura':'Cobertura do mês não confirmada';
+  return `<section class="premium-panel dashboard-home-income dashboard-income-card" data-testid="dashboard-passive-income" aria-labelledby="dashboard-passive-income-title">
     <div class="premium-panel-head">
-      <div><div class="premium-panel-title">Renda passiva</div><div class="premium-panel-sub">Recebido no mês, média 12M e meta mensal.</div></div>
+      <div><h2 class="premium-panel-title" id="dashboard-passive-income-title">Renda passiva</h2><div class="premium-panel-sub">Recebimentos, estimativa da carteira e meta em indicadores separados.</div></div>
       <div class="premium-panel-badge">${esc(monthLabel)}</div>
     </div>
-    <div class="dash-income-grid">
-      <div class="dash-income-main">
-        <div class="premium-metrics">
-          ${dashboardMetricCard(dashboardMetricIcon('cash'),'Recebido no mês',passiveIncomeValue(monthReceived),recent.coverage==='COMPLETE'?'Mês completo confirmado':recent.coverage==='PARTIAL'?'':'Cobertura desconhecida','#34d399','rgba(52,211,153,.14)')}
-          ${dashboardMetricCard(dashboardMetricIcon('bars'),'Média 12 meses',passiveIncomeValue(monthlyAvg),`Meses completos: ${income.completeMonthCount??0}/12`,'#60a5fa','rgba(96,165,250,.14)')}
-          ${dashboardMetricCard(dashboardMetricIcon('target'),'Meta mensal',target>0?fmt(target):'—',target>0?'Meta configurada na aba Metas':'Defina a meta para acompanhar progresso',target>0?'#60a5fa':'#94a3b8','rgba(96,165,250,.14)')}
-          ${dashboardMetricCard(dashboardMetricIcon('flag'),'Falta para meta — média 12M',passiveIncomeValue(goalReached),!target?'Sem meta definida':goalReached===null?'Indisponível · exige 12 meses completos':goalReached>0?'Valor restante para atingir a meta':'Meta atingida',goalReached>0?'#fbbf24':goalReached===null?'#94a3b8':'#34d399',goalReached>0?'rgba(251,191,36,.14)':'rgba(52,211,153,.14)')}
-        </div>
+    ${model?`<div class="premium-metrics dashboard-income-metrics" role="list" aria-label="Indicadores de renda passiva">
+      ${metricCard('Recebido no mês',model.realizedMonth,['PAID','INCOMPLETE'],realizedDetail,'Proventos pagos · competência confirmada')}
+      ${metricCard('Renda projetada / mês',model.forecast,['ESTIMATE','INCOMPLETE'],'Estimativa da carteira; não é recebimento','Motor de projeção existente')}
+      ${metricCard('Meta mensal',model.goal,['CONFIGURED'],'Valor configurado para renda passiva',model.goal?.source==='S.goals.proventos.monthly'?'Metas da carteira':'Meta legada')}
+      <div class="premium-metric dashboard-income-progress-card" role="listitem" data-state="${esc(progress?.state||'MISSING')}">
+        <div class="premium-metric-label">Progresso da meta</div>
+        <div class="premium-metric-value">${esc(progressValue)}</div>
+        <div class="premium-metric-note">${esc(progressDetail)}</div>
+        ${progressBar}
+        <div class="dashboard-income-source">Origem: ${esc(progressSource)} · ${esc(quality.monthlyAverage?.coverage||'cobertura desconhecida')}</div>
       </div>
     </div>
-  </div>`;
+    <p class="dashboard-home-income-context">PAID e ESTIMATE permanecem separados. Período: ${esc(monthLabel)}. Recebido usa somente proventos pagos; estimativa vem do motor da carteira.</p>`
+    : `<p class="dashboard-home-income-context" role="status">Modelo unificado indisponível; indicadores não foram calculados.</p>`}
+  </section>`;
 }
 function financialGoalsTone(metrics){
   if(!metrics?.hasCurrent) return 'muted';
@@ -33540,6 +33604,7 @@ ${!S.assets.length ? `<div class="dashboard-empty-cta" role="region" aria-label=
         </div>
         ${dashboardV3AllocationPanel()}
       </div>
+      ${dashboardPassiveIncomePanel(data)}
       <div class="fp-dash-grid-2">
         ${dashboardUpcomingDividendsPanel()}
         ${dashboardRecentTransactionsPanel()}

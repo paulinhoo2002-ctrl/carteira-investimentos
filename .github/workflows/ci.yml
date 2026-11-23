@@ -56,12 +56,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run build and tests
-        run: npm test
-
-      - name: Build modern
-        run: npm run build:modern
-
       - name: Resolve Chromium (reuse preinstalled browser)
         run: |
           CHROME_BIN="$(command -v chromium || command -v chromium-browser || command -v google-chrome || true)"
@@ -73,6 +67,12 @@ jobs:
           fi
           echo "Using browser: $CHROME_BIN"
           echo "CHROME_PATH=$CHROME_BIN" >> "$GITHUB_ENV"
+
+      - name: Run build and tests
+        run: npm test
+
+      - name: Build modern
+        run: npm run build:modern
 
       - name: Auth access browser QA
         run: npm run test:auth-access-browser
