@@ -64,6 +64,17 @@
    "id": "V19/V20",
    "area": "dashboard, dividendos",
    "description": "Novos painéis e reorganização da V19/V20 (Valor investido, lançamentos recentes, Recebido no ano); o golden compara só os indicadores comparáveis (cx(), 3 cartões do Dashboard, KPIs e ranking de Dividendos) e as 11 telas sem mudança numérica."
+  },
+  {
+   "id": "SM189.60",
+   "area": "relatórios",
+   "description": "O KPI separado de Rentabilidade foi removido por duplicar o percentual já exibido no subtítulo de Resultado. Uma ocorrência redundante deixa de aparecer; o mesmo percentual e todos os demais valores continuam visíveis.",
+   "tokenRemovals": [
+    { "state": "rich", "route": "relatorios", "tokens": ["%+5.87%"] },
+    { "state": "partial", "route": "relatorios", "tokens": ["%+5.02%"] },
+    { "state": "noquotes", "route": "relatorios", "tokens": ["%+5.87%"] },
+    { "state": "empty", "route": "relatorios", "tokens": ["%+0.00%"] }
+   ]
   }
  ],
  "expected": {
