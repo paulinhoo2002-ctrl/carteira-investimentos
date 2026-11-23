@@ -7,7 +7,9 @@ const source = fs.readFileSync(require.resolve('../index.html'), 'utf8');
 test('reports decision center separates period movement categories', () => {
   assert.match(source, /Movimenta(?:c|ç)(?:ões|oes) do per(?:í|i)odo/);
   assert.match(source, /Fluxo registrado, sem confundir venda ou resgate com aporte/);
-  assert.match(source, /movementCounts=filteredAportes\.reduce/);
+  // Contrato atual: contagem sobre aportes confirmados; pendências de conciliação ficam fora.
+  assert.match(source, /movementCounts=confirmedAportes\.reduce/);
+  assert.match(source, /confirmedAportes=filteredAportes\.filter\(a=>!isReconciliationPendingMovement\(a\)\)/);
   assert.match(source, /kind==='venda'/);
   assert.match(source, /kind==='renda-fixa'/);
   assert.match(source, /proventos:filteredProventos\.length/);

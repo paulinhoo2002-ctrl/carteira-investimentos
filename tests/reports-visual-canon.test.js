@@ -21,7 +21,7 @@ test('CTA de Renda Fixa usa a rota canônica', () => {
 test('Relatórios mantém exportação analítica separada do backup', () => {
   assert.match(source, /function exportReportCSV\(type\)/);
   assert.match(source, /function exportReportJSON\(type\)/);
-  assert.match(source, /function exportBackup\(\)/);
+  assert.match(source, /async function exportBackup\(\{encrypted=true\}=\{\}\)/);
   assert.match(source, /purpose:'Relatório para consulta e exportação\. Não substitui o backup de restauração\.'/);
 });
 
