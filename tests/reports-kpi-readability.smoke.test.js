@@ -54,7 +54,7 @@ for (const theme of ['dark', 'light']) {
         await page.waitForSelector('.reports-kpis');
 
         const snapshot = await page.evaluate(() => ({
-          labels: [...document.querySelectorAll('.reports-kpi .label')].map(node => ({
+          labels: [...document.querySelectorAll('.reports-premium-kpis .reports-kpi .label')].map(node => ({
             text: node.textContent.trim(),
             fontSize: getComputedStyle(node).fontSize,
             lineHeight: getComputedStyle(node).lineHeight,
@@ -63,10 +63,10 @@ for (const theme of ['dark', 'light']) {
           filters: [...document.querySelectorAll('.reports-filter button')].map(node => node.textContent.trim()),
           overflow: document.documentElement.scrollWidth > window.innerWidth,
         }));
-        assert.equal(snapshot.labels.length, 8);
+        assert.deepEqual(snapshot.labels.map(item => item.text), ['Patrimônio atual', 'Total aplicado', 'Resultado', 'Proventos no período']);
         for (const label of snapshot.labels) assert.ok(parseFloat(label.fontSize) >= 11, `${label.text} abaixo de 11px`);
         assert.ok(snapshot.values.every(Boolean), 'KPI sem valor');
-        assert.deepEqual(snapshot.filters, ['Ano atual', 'Últimos 12 meses', 'Todos']);
+        assert.deepEqual(snapshot.filters, ['Mês atual', '3 meses', '6 meses', 'Ano atual', 'Últimos 12 meses', 'Todos']);
         assert.equal(snapshot.overflow, false);
         assert.equal(errors.length, 0, errors.join(' | '));
         assert.equal(requestFailures.length, 0, requestFailures.join(' | '));

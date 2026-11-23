@@ -8,15 +8,11 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const { collectSnapshot, STABLE_ROUTES, DASHBOARD_LABELS, DIVIDEND_LABELS } = require('./helpers/fase1-snapshot');
+const { expectedRouteTokens } = require('./helpers/golden-token-changes');
 
 const repo = path.join(__dirname, '..');
 const golden = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'fase1a-golden.json'), 'utf8'));
 let current = null;
-// Diferenças intencionais aprovadas que acrescentam valores visíveis em relação à referência.
-const additions = {};
-golden.intentionalDifferences.forEach(item => (item.tokenAdditions || []).forEach(entry => {
-  additions[`${entry.state}/${entry.route}`] = [...(additions[`${entry.state}/${entry.route}`] || []), ...entry.tokens];
-}));
 
 test.before(async () => { current = await collectSnapshot(repo); }, { timeout: 300000 });
 
@@ -44,7 +40,7 @@ for (const state of ['rich', 'partial', 'noquotes', 'empty']) {
 
   test(`11 telas sem mudança numérica: valores R$ e % iguais à referência — ${state}`, () => {
     STABLE_ROUTES.forEach(route => {
-      const expected = [...golden.expected[state].routeTokens[route], ...(additions[`${state}/${route}`] || [])].sort();
+      const expected = expectedRouteTokens(golden, state, route);
       assert.deepEqual(current[state].routeTokens[route], expected, `${route} (${state})`);
     });
   });

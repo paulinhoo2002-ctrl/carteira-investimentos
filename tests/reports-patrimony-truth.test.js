@@ -47,8 +47,8 @@ test('RELATÓRIOS: patrimônio truth view mantém série cumulativa oficial', as
     assert.equal(rows.length, 12, 'Série patrimonial deve cobrir 12 meses');
     assert.deepEqual(
       rows.map(row => row.accumulatedContributions),
-      [37098, 40098, 41098, 41098, 41098, 41798, 41798, 41798, 41798, 41798, 41798, 41798],
-      'Aportes acumulados devem refletir a sequência oficial do snapshot'
+      [37098, 40098, 41098, null, null, 41798, null, null, null, null, null, null],
+      'Aportes acumulados só existem nos meses com movimento registrado; meses sem registro são null (UNKNOWN != ZERO)'
     );
     assert.equal(Math.round(rows.at(-1).estimatedPatrimony * 100) / 100, 51660.53);
     assert.equal(Math.round(rows.at(-1).estimatedEvolution * 100) / 100, 5062.53);
@@ -58,6 +58,8 @@ test('RELATÓRIOS: patrimônio truth view mantém série cumulativa oficial', as
     const chartText = await page.locator('.reports-evolution-chart').innerText();
     assert.ok(!/Sem histórico suficiente/i.test(chartText), 'O gráfico não deve cair no estado vazio');
 
+    // "Análise patrimonial" é acordeão fechado por padrão (SM189.60); abrir antes de ler o conteúdo, sem mudar as asserções.
+    await page.evaluate(() => document.querySelectorAll('.reports-analysis-details').forEach(item => { item.open = true; }));
     const footerText = await page.locator('.reports-evolution-panel .reports-panel-footer').innerText();
     assert.match(footerText, /Último patrimônio/);
     assert.match(footerText, /R\$\s+51\.660,53/);

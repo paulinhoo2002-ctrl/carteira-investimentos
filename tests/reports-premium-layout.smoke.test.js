@@ -33,8 +33,13 @@ for (const [width, height] of [[390, 844], [430, 932], [768, 1024], [1366, 768],
       await page.evaluate(() => go('relatorios'));
       await page.waitForSelector('.reports-premium-shell');
       const result = await page.evaluate(() => {
+        const shell = document.querySelector('.shell');
         const last = [...document.querySelectorAll('.reports-premium-shell > *')].filter(node => node.getBoundingClientRect().height > 0).at(-1);
         const nav = document.querySelector('#investBottomNav');
+        if (shell) shell.scrollTop = shell.scrollHeight;
+        const lastRect = last?.getBoundingClientRect();
+        const shellRect = shell?.getBoundingClientRect();
+        const navVisible = Boolean(nav && getComputedStyle(nav).display !== 'none' && nav.getBoundingClientRect().height > 0);
         return {
           executiveKpis: document.querySelectorAll('.reports-premium-kpis .reports-kpi').length,
           evolution: Boolean(document.querySelector('.reports-evolution-chart')),
@@ -44,11 +49,12 @@ for (const [width, height] of [[390, 844], [430, 932], [768, 1024], [1366, 768],
           exportsClosed: document.querySelector('#reports-export-details')?.open === false,
           overflow: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) > innerWidth,
           financialPlaceholders: /NaN|Infinity|undefined|null/.test(document.querySelector('.reports-premium-shell')?.textContent || ''),
-          lastBottom: last?.getBoundingClientRect().bottom || 0,
-          navTop: nav?.getBoundingClientRect().top || innerHeight,
+          lastBottom: lastRect?.bottom || 0,
+          contentViewportTop: shellRect?.top || 0,
+          contentViewportBottom: navVisible ? nav.getBoundingClientRect().top : (shellRect?.bottom || innerHeight),
         };
       });
-      assert.equal(result.executiveKpis, 5);
+      assert.equal(result.executiveKpis, 4);
       assert.equal(result.evolution, true);
       assert.equal(result.allocation, true);
       assert.equal(result.income, true);
@@ -56,7 +62,8 @@ for (const [width, height] of [[390, 844], [430, 932], [768, 1024], [1366, 768],
       assert.equal(result.exportsClosed, true);
       assert.equal(result.overflow, false);
       assert.equal(result.financialPlaceholders, false);
-      assert.ok(result.lastBottom >= result.navTop, 'conteúdo final não alcançável antes da navegação');
+      assert.ok(result.lastBottom >= result.contentViewportTop, 'conteúdo final alcançável após rolagem');
+      assert.ok(result.lastBottom <= result.contentViewportBottom, 'conteúdo final alcançável sem ficar sob navegação fixa');
       assert.deepEqual(errors, []);
     } finally {
       await browser.close();

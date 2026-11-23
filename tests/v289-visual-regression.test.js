@@ -844,6 +844,7 @@ test('Relatórios scopes complete value coverage to positions in the current rep
   const runtime = await createRuntime({ width: 390, height: 844 });
   try {
     await setThemeAndRoute(runtime.page, 'light', 'relatorios');
+    await runtime.page.locator('.reports-data-overview > summary').click();
     const coverage = await runtime.page.locator('.reports-intelligence-strip').innerText();
     assert.match(coverage, /100% das posições deste recorte têm valor atual informado/i);
     await assertSyntheticReadOnlyRuntime(runtime);

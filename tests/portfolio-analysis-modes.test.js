@@ -29,6 +29,11 @@ function makeAnalysisHarness(overrides = {}) {
     indexHtml,
     "function prudentContributionAnalysis(){",
     "function bind(){",
+  ) + "\n" + extractFunctionBlock(
+    // SM189.65: helpers de percentual usados por generateOverviewAnalysis.
+    indexHtml,
+    "function reportsPercentValid(portfolio){",
+    "function reportsTab(){",
   );
 
   const renders = [];

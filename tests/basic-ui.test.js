@@ -37,7 +37,9 @@ function extractUiBundle() {
     extractSnippet('let reportModalFocusOrigin=null;', 'function pdfReportKpi('),
     extractSnippet("function pdfReportKpi(label,value,sub=''){", 'function reportCardPdfProventosPreview('),
     extractSnippet('function content(){', 'function prudentContributionAnalysis(){'),
-    extractSnippet('function go(t){', 'function clA(){')
+    extractSnippet('function go(t){', 'function clA(){'),
+    // SM189.64 (A3): helpers de percentual usados pela prévia de ativos (reportCardPdfAssetsPreview).
+    extractSnippet('function reportsPercentValid(portfolio){', 'function reportsTab(){')
   ].join('\n');
 }
 
