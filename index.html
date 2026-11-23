@@ -2559,7 +2559,7 @@ body.modal-open{overflow:hidden}
 .reports-premium-hero{background:linear-gradient(135deg,rgba(34,211,238,.09),rgba(79,70,229,.08) 52%,rgba(15,23,42,.36))}
 .reports-premium-head-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .reports-export-cta{min-height:44px}
-.reports-premium-kpis{grid-template-columns:repeat(5,minmax(0,1fr));margin-top:14px}
+.reports-premium-kpis{grid-template-columns:repeat(4,minmax(0,1fr));margin-top:14px}
 .reports-kpi-positive .value,.reports-positive{color:#34d399}
 .reports-kpi-negative .value,.reports-negative{color:#f87171}
 .reports-kpi-neutral .value,.reports-neutral{color:#cbd5e1}
@@ -2604,7 +2604,7 @@ body.modal-open{overflow:hidden}
 html[data-theme="light"] .reports-export-context{background:#f8fafc;border-color:#d9e2ec}html[data-theme="light"] .reports-export-context-title,html[data-theme="light"] .reports-export-context-value{color:#172033}html[data-theme="light"] .reports-export-context-sub,html[data-theme="light"] .reports-export-context-note,html[data-theme="light"] .reports-export-context-label{color:#52647b}html[data-theme="light"] .reports-export-context-item{border-color:#d9e2ec}
 .reports-empty{padding:18px 8px;color:#8294ad;font-size:11px;text-align:center}
 html[data-theme="light"] .reports-panel,html[data-theme="light"] .reports-details{background:#fff;border-color:#d9e2ec;box-shadow:none}html[data-theme="light"] .reports-panel-head h2,html[data-theme="light"] .reports-details summary,html[data-theme="light"] .reports-panel-footer strong,html[data-theme="light"] .reports-data-row strong,html[data-theme="light"] .reports-stat-list strong,html[data-theme="light"] .reports-next-maturity strong{color:#172033}html[data-theme="light"] .reports-panel-head p,html[data-theme="light"] .reports-data-row,html[data-theme="light"] .reports-stat-list>div,html[data-theme="light"] .reports-next-maturity,html[data-theme="light"] .reports-details-body{color:#52647b}html[data-theme="light"] .reports-evolution-chart{border-color:#d9e2ec}html[data-theme="light"] .reports-title{color:#172033}html[data-theme="light"] .reports-sub,html[data-theme="light"] .reports-evolution-label,html[data-theme="light"] .reports-evolution-value,html[data-theme="light"] .reports-kpi .sub,html[data-theme="light"] .reports-empty,html[data-theme="light"] .reports-footnote{color:#52647b}html[data-theme="light"] .reports-kpi .label{color:#52647b}html[data-theme="light"] .reports-kpi .value{color:#172033}html[data-theme="light"] .reports-kpi-positive .value,html[data-theme="light"] .reports-positive{color:#15803d}html[data-theme="light"] .reports-kpi-negative .value,html[data-theme="light"] .reports-negative{color:#b91c1c}html[data-theme="light"] .reports-kpi-neutral .value,html[data-theme="light"] .reports-neutral{color:#334155}html[data-theme="light"] .reports-filter button{border-color:#cbd5e1;background:#f8fafc;color:#334155}html[data-theme="light"] .reports-filter button.on{border-color:#818cf8;background:#eef2ff;color:#3730a3}html[data-theme="light"] .reports-badge{color:#3730a3;background:#eef2ff;border-color:#c7d2fe}html[data-theme="light"] .reports-badge-ok{color:#166534;background:#f0fdf4;border-color:#bbf7d0}html[data-theme="light"] .reports-badge-warn{color:#92400e;background:#fffbeb;border-color:#fde68a}
-@media(max-width:900px){.reports-premium-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.reports-premium-main-grid{grid-template-columns:1fr}.reports-premium-secondary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.reports-export-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:900px){.reports-premium-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.reports-premium-main-grid{grid-template-columns:1fr}.reports-premium-secondary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.reports-export-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.reports-premium-shell{padding-bottom:10px}.reports-premium-head-actions{width:100%;justify-content:stretch}.reports-premium-head-actions .reports-filter{flex:1;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}.reports-premium-head-actions .reports-filter button{flex:0 0 auto;white-space:nowrap;padding-left:9px;padding-right:9px}.reports-export-cta{width:100%}.reports-premium-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.reports-kpi{padding:9px}.reports-kpi .value{font-size:14px}.reports-premium-secondary-grid{grid-template-columns:1fr}.reports-evolution-chart{height:155px;gap:4px}.reports-evolution-value{display:none}.reports-panel-footer{grid-template-columns:1fr auto}.reports-panel-footer span:nth-of-type(2){grid-column:1}.reports-panel-footer strong:nth-of-type(2){grid-column:2;grid-row:2}.reports-details summary{align-items:flex-start;flex-direction:column;gap:4px}.reports-export-grid{grid-template-columns:1fr;padding-left:10px;padding-right:10px}}
 @media(max-width:560px){.reports-evolution-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}}
 @media(max-width:560px){.reports-export-context{margin-left:10px;margin-right:10px}.reports-export-context-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -2709,6 +2709,7 @@ html[data-theme="light"] .reports-executive-summary-head p,html[data-theme="ligh
 .reports-premium-shell .reports-title{font-size:20px;letter-spacing:-.02em}
 .reports-premium-shell .reports-sub{color:#8fa2ba}
 .reports-premium-shell .reports-filter{padding:3px;border:1px solid #1f3047;border-radius:12px;background:#09111d}
+.reports-premium-shell .reports-filter button{min-height:44px}
 .reports-premium-shell .reports-filter button{border:0;border-radius:9px;background:transparent;color:#8fa2ba}
 .reports-premium-shell .reports-filter button.on{background:rgba(16,185,129,.16);color:#86efac;box-shadow:inset 0 0 0 1px rgba(16,185,129,.24)}
 .reports-premium-shell .btn.reports-export-cta{border-color:rgba(16,185,129,.45)!important;background:#047857!important;color:#fff!important;box-shadow:none!important}
@@ -19319,8 +19320,7 @@ function quickMovementModal(){
   const rfSubtypes=['CDB','LCI','LCA','Tesouro Direto','CRI','CRA','Debênture','Letra Financeira','Outro'].map(t=>`<option ${String(draft.rfSubtype||'CDB')===t?'selected':''}>${esc(t)}</option>`).join('');
   const commonHeader=`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
       <div style="display:flex;flex-direction:column;gap:4px">
-        <div style="font-size:14px;font-weight:800;color:#e2eaf6">Cadastro premium de ${quickMovementKindLabel(kind).toLowerCase()}</div>
-        <div class="mu" style="font-size:11px;line-height:1.45">${esc(quickMovementImpactText(kind))}</div>
+        <div class="mu" style="font-size:12px;line-height:1.45">${esc(quickMovementImpactText(kind))}</div>
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${kind==='renda-fixa' ? rfTabs : tabs}</div>
     </div>`;
@@ -30179,11 +30179,11 @@ function reportsTab(){
       <div class="reports-kpis reports-premium-kpis">
         <div class="reports-kpi"><div class="label">Patrimônio atual</div><div class="value">${fmt(data.portfolio.tC)}</div><div class="sub">Estimativa pelos ativos cadastrados</div></div>
         <div class="reports-kpi"><div class="label">Total aplicado</div><div class="value">${fmt(data.portfolio.tI)}</div><div class="sub">Base consolidada da carteira</div></div>
-        <div class="reports-kpi reports-kpi-${resultTone}"><div class="label">Resultado</div><div class="value">${fmt(data.portfolio.tG)}</div><div class="sub">${fmtP(data.portfolio.tGP)} sobre o aplicado</div></div>
+        <div class="reports-kpi reports-kpi-${resultTone}"><div class="label">Resultado</div><div class="value">${fmt(data.portfolio.tG)}</div><div class="sub">Rentabilidade ${fmtP(data.portfolio.tGP)} sobre o aplicado</div></div>
         <div class="reports-kpi"><div class="label">Proventos no período</div><div class="value">${fmt(data.incomePeriodTotal)}</div><div class="sub">Média 12M: ${passiveIncomeValue(income.monthlyAvg)} · cobertura ${income.completeMonthCount??0}/12</div></div>
-        <div class="reports-kpi"><div class="label">Rentabilidade</div><div class="value">${fmtP(data.portfolio.tGP)}</div><div class="sub">Resultado sobre o capital</div></div>
       </div>
     </section>
+    <details class="reports-details reports-data-overview"><summary>Conferência e qualidade <span>Resumo factual, cobertura, reconciliações e fontes</span></summary>
     <section class="reports-intelligence-strip" aria-label="Inteligência do relatório">
       <div><span class="reports-intelligence-label">Leitura executiva</span><strong>${esc(intelligenceStatus)}</strong><small>${esc(intelligence?.sections?.performance?.reason||'Os indicadores usam as fontes canônicas do domínio.')}</small></div>
       <div><span class="reports-intelligence-label">Cobertura</span><strong>${esc(intelligenceCoverage)}</strong><small>${esc(intelligence?.coverage?.freshness==='LEGACY_CURRENT_VALUES'?'Valores atuais da carteira cadastrada.':'Atualização conforme a fonte disponível.')}</small></div>
@@ -30218,14 +30218,16 @@ function reportsTab(){
       <div class="reports-reconciliation-head"><div><h2 id="reports-data-health-title">Saúde e qualidade dos dados</h2><p>Estados descritivos, separados por fonte; ausência de evidência não significa valor zero.</p></div><span class="reports-badge">Somente leitura</span></div>
       <div class="reports-v273-health-grid" aria-label="Diagnósticos de qualidade dos dados">${healthTiles}</div>
       <p class="reports-reconciliation-note">Motor disponível: ${operationalReadiness?.engineAvailable?'sim':'não'} · dados prontos para performance real: ${operationalReadiness?.dataReady?'sim':'não'}. Cobertura, frescor e proveniência permanecem dimensões distintas.</p>
-    </section></details>
+    </section></details></details>
+    <details class="reports-details reports-analysis-details"><summary>Análise patrimonial <span>Evolução e distribuição por classe</span></summary>
     <section class="reports-premium-main-grid">
       <article class="reports-panel reports-evolution-panel"><div class="reports-panel-head"><div><h2>Evolução patrimonial</h2><p>Aplicado e patrimônio estimado no período selecionado.</p></div><span class="reports-badge">${esc(data.periodLabel)}</span></div>
         <div class="reports-evolution-chart" aria-label="Evolução patrimonial dos últimos meses">${evolutionBars||'<div class="reports-empty">Sem histórico suficiente.</div>'}</div><ul class="reports-evolution-summary" aria-label="Resumo textual da evolução patrimonial">${evolutionSummary||'<li><span>Histórico</span><strong>—</strong></li>'}</ul>
         <div class="reports-panel-footer"><span>Último patrimônio</span><strong>${fmt(data.portfolio.tC)}</strong><span>Diferença</span><strong class="reports-${resultTone}">${fmt(data.portfolio.tG)}</strong></div>
       </article>
       <article class="reports-panel"><div class="reports-panel-head"><div><h2>Distribuição da carteira</h2><p>Valor atual por classe.</p></div><span class="reports-badge">${allocationRows.length} classes</span></div><div class="reports-data-list">${allocationList}</div></article>
-    </section>
+    </section></details>
+    <details class="reports-details reports-activity-details"><summary>Renda e movimentações <span>Recebimentos, renda fixa e eventos</span></summary>
     <section class="reports-premium-secondary-grid">
       <article class="reports-panel"><div class="reports-panel-head"><div><h2>Movimentações do período</h2><p>Fluxo registrado, sem confundir venda ou resgate com aporte.</p></div><span class="reports-badge">${data.aportesCount+data.proventosCount} registros</span></div><div class="reports-stat-list"><div><span>Compras</span><strong>${movementCounts.compras||0}</strong></div><div><span>Vendas</span><strong>${movementCounts.vendas||0}</strong></div><div><span>Aplicações RF</span><strong>${movementCounts.rendaFixa||0}</strong></div><div><span>Proventos</span><strong>${movementCounts.proventos||0}</strong></div></div><a class="reports-inline-link" href="#" onclick="go('aportes');return false">Conferir movimentações</a></article>
       <article class="reports-panel"><div class="reports-panel-head"><div><h2>Renda e proventos</h2><p>Resumo dos recebimentos registrados.</p></div><span class="reports-badge reports-badge-ok">${data.incomePeriodTotal>0?'Com dados':'Sem dados'}</span></div><div class="reports-stat-list"><div><span>Recebido no período</span><strong>${fmt(data.incomePeriodTotal)}</strong></div><div><span>Média mensal 12M</span><strong>${passiveIncomeValue(income.monthlyAvg)} · cobertura ${income.completeMonthCount??0}/12</strong></div><div><span>Meta mensal</span><strong>${income.target>0?fmt(income.target):'—'}</strong></div></div><a class="reports-inline-link" href="#" onclick="go('dividendos');return false">Ver Dividendos</a></article>
@@ -30233,7 +30235,8 @@ function reportsTab(){
       <article class="reports-panel reports-audit-panel"><div class="reports-panel-head"><div><h2>Qualidade dos dados</h2><p>Conferência sem alterar registros.</p></div><span class="reports-badge reports-badge-${auditTone}">${data.auditCount?'Atenção':'Tudo certo'}</span></div><div class="reports-audit-count">${data.auditCount}<span>alertas para conferência</span></div><a class="reports-inline-link" href="#" onclick="go('auditoria');return false">Abrir Auditoria</a></article>
     </section>
     ${v228TimelinePanel()}
-    ${v254FiscalPanel()}
+    </details>
+    <details class="reports-details reports-fiscal-details"><summary>IRPF auxiliar e custo de aquisição <span>Leitura orientativa · sem apuração definitiva</span></summary>${v254FiscalPanel()}</details>
     <details class="reports-details"><summary>Histórico e detalhes <span>dados completos da carteira</span></summary><div class="reports-details-body"><p>Use as exportações para consultar posições, proventos, renda fixa, patrimônio e auditoria em formato estruturado.</p><div class="reports-secondary-kpis"><div class="reports-kpi"><div class="label">Ativos</div><div class="value">${data.assetsCount}</div><div class="sub">${data.fixedCount} título(s) de renda fixa</div></div><div class="reports-kpi"><div class="label">Renda Fixa</div><div class="value">${fmt(fixed.totalCurrent)}</div><div class="sub">Valor atual oficial</div></div><div class="reports-kpi"><div class="label">Alertas de auditoria</div><div class="value">${data.auditCount}</div><div class="sub">Somente para conferência</div></div></div></div></details>
     <details class="reports-details reports-export-details" id="reports-export-details"><summary>Exportar relatórios <span>CSV, JSON e PDF conforme cada relatório</span></summary>${reportExportContext(data)}<div class="reports-grid reports-export-grid">${exportCards}</div></details>
     ${experimentalEntry}
@@ -42791,6 +42794,33 @@ html[data-theme="light"] body .data-quality-field,html[data-theme="light"] body 
   html body .premium-rf-page .premium-rf-filter-options{grid-template-columns:repeat(2,minmax(0,1fr))}
   html body .premium-rf-page .premium-rf-position-row>.premium-rf-row-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
   html body .premium-rf-page .premium-rf-position-row>.premium-rf-row-actions :is(.btn,.asset-detail-link,.premium-rf-act){min-height:44px;width:100%;min-width:0}
+}
+/* SM189.60 — resumo primeiro, detalhes sob demanda; sem alterar fontes ou contratos financeiros. */
+html body .reports-premium-shell :is(.reports-analysis-details,.reports-activity-details,.reports-data-overview,.reports-fiscal-details){min-width:0}
+html body .reports-premium-shell .reports-analysis-details>.reports-premium-main-grid{padding:0 12px 12px}
+html body .reports-premium-shell .reports-activity-details>.reports-premium-secondary-grid{padding:0 12px 12px}
+html body .reports-premium-shell .reports-activity-details>.v228-timeline-panel{margin:0 12px 12px}
+html body .reports-premium-shell .reports-data-overview>.reports-intelligence-strip{padding:0 14px 14px;border:0;border-radius:0;background:transparent;box-shadow:none}
+html body .reports-premium-shell .reports-fiscal-details>.v254-fiscal-panel{padding:0 14px 14px;border:0;border-radius:0;background:transparent;box-shadow:none}
+html body .reports-premium-shell .reports-data-overview>summary span,
+html body .reports-premium-shell .reports-fiscal-details>summary span{max-width:58ch;overflow-wrap:anywhere}
+html body .patrimonio-premium .patrimonio-subtitle{font-size:12px;line-height:1.45}
+html body .patrimonio-premium .patrimony-reading-label{font-size:11px}
+html body .patrimonio-premium .patrimony-reading-text{font-size:13px;line-height:1.4}
+html body .patrimonio-premium .patrimonio-kpi-label{font-size:12px}
+html body .patrimonio-premium .patrimonio-kpi-sub{font-size:11px;line-height:1.4}
+html body .patrimonio-premium :is(.patrimonio-panel-title,.patrimonio-top-asset-amount){font-size:13px}
+html body .patrimonio-premium .patrimonio-panel-sub{font-size:11px}
+html body .patrimonio-premium .patrimonio-panel-badge{font-size:11px}
+html body .patrimonio-premium :is(.patrimonio-top-asset-name,.patrimonio-top-asset-perc,.patrimony-composition-chip,.patrimonio-composition-label,.patrimonio-composition-text,.patrimonio-insight-label,.patrimonio-insight-note,.patrimonio-kpi-sub){font-size:11px;line-height:1.4}
+html body .patrimonio-premium .patrimonio-composition-value{font-size:12px}
+html body .assets-premium-shell>.sh>div:last-child .btn{min-height:44px;font-size:12px!important}
+html body .quick-movement-modal :is(.dash-chip,.report-format-btn){min-height:44px;font-size:12px}
+html body .quick-movement-modal .quick-movement-preview-label{font-size:11px;letter-spacing:0}
+@media(max-width:430px){
+  html body .patrimonio-premium .patrimonio-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html body .patrimonio-premium .patrimonio-kpi-main{grid-column:1/-1}
+  html body .patrimonio-premium .patrimonio-kpi-value{font-size:15px}
 }
 </style>
 </body>

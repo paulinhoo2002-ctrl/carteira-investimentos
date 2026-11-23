@@ -42,6 +42,16 @@ test('relatórios preserva leitura responsiva e impressão nos viewports certifi
     await page.goto(`${harness.url}&protectedReadOnlyQa=1`);
     await page.evaluate(() => go('relatorios'));
     await page.waitForSelector('.reports-premium-shell');
+    if (viewport.width === 390) {
+      await page.locator('.reports-data-overview').evaluate(element => { element.open = true; });
+      await page.locator('.reports-integrity-disclosure').evaluate(element => { element.open = true; });
+      const nestedIntegrity = await page.locator('.reports-integrity-disclosure').evaluate(element => ({
+        nested: element.parentElement.closest('.reports-data-overview') !== null,
+        parentOpen: element.parentElement.closest('.reports-data-overview')?.open === true,
+        contentVisible: element.querySelector('.reports-reconciliation')?.getBoundingClientRect().height > 0,
+      }));
+      assert.deepEqual(nestedIntegrity, { nested: true, parentOpen: true, contentVisible: true });
+    }
     if (viewport.width === 390 && axePath) {
       await page.addScriptTag({ path: axePath });
       const axe = await page.evaluate(async () => window.axe.run(document.querySelector('.reports-v273-health')));

@@ -15,6 +15,10 @@ async function waitForReportsShell(page) {
   await page.waitForTimeout(300);
 }
 
+async function openReportDetails(page, selector) {
+  await page.locator(selector).evaluate(element => { element.open = true; });
+}
+
 async function app(options = {}) {
   const { width = 1366, height = 768 } = options;
   const harness = await startServer(path.join(__dirname, '..'));
@@ -43,9 +47,9 @@ test('RELATÓRIOS: navegação e estado inicial', async () => {
     const secondaryGrid = await page.$('.reports-premium-secondary-grid');
     assert.ok(secondaryGrid, 'Secondary grid deve existir');
     
-    // Check 5 KPIs in premium kpis
+    // Check the four primary indicators; result already includes profitability.
     const kpis = await page.$$('.reports-premium-kpis .reports-kpi');
-    assert.equal(kpis.length, 5, 'Deve ter 5 KPIs executivos');
+    assert.equal(kpis.length, 4, 'Deve ter quatro indicadores executivos sem repetição');
     
     // Check filters
     const filters = await page.$$('.reports-filter button');
@@ -65,6 +69,7 @@ test('RELATÓRIOS: navegação e estado inicial', async () => {
     assert.ok(reconciliation, 'Faixa de reconciliação deve existir');
     
     // Check income panel
+    await openReportDetails(page, '.reports-activity-details');
     const incomePanel = await page.locator('.reports-panel:has-text("Renda e proventos")');
     await incomePanel.waitFor({ state: 'visible' });
     
@@ -101,6 +106,7 @@ test('RELATÓRIOS: filtro de período atualiza UI', async () => {
   try {
     await page.evaluate(() => go('relatorios'));
     await waitForReportsShell(page);
+    await openReportDetails(page, '.reports-analysis-details');
     
     // Initial period should be '12m' (default)
     let periodLabel = await page.$eval('.reports-evolution-panel .reports-badge', el => el.textContent);
@@ -145,7 +151,7 @@ test('RELATÓRIOS: KPIs executivos têm valores válidos', async () => {
       return [...container.querySelectorAll('.value')].map(v => v.textContent.trim());
     });
     
-    assert.equal(kpiValues.length, 5, 'Deve ter 5 KPIs');
+    assert.equal(kpiValues.length, 4, 'Deve ter quatro indicadores primários');
     
     // Check each KPI has a non-empty value
     for (const value of kpiValues) {
@@ -166,6 +172,7 @@ test('RELATÓRIOS: distribuição da carteira renderiza classes', async () => {
   try {
     await page.evaluate(() => go('relatorios'));
     await waitForReportsShell(page);
+    await openReportDetails(page, '.reports-analysis-details');
     
     const allocationRows = await page.$$('.reports-data-list .reports-data-row');
     assert.ok(allocationRows.length >= 1, 'Deve ter pelo menos 1 classe na distribuição');
@@ -192,6 +199,7 @@ test('RELATÓRIOS: renda e proventos painel funcional', async () => {
   try {
     await page.evaluate(() => go('relatorios'));
     await waitForReportsShell(page);
+    await openReportDetails(page, '.reports-activity-details');
     
     const incomePanel = await page.locator('.reports-panel:has-text("Renda e proventos")');
     await incomePanel.waitFor({ state: 'visible' });
@@ -218,6 +226,7 @@ test('RELATÓRIOS: renda fixa painel funcional', async () => {
   try {
     await page.evaluate(() => go('relatorios'));
     await waitForReportsShell(page);
+    await openReportDetails(page, '.reports-activity-details');
     
     const fixedPanel = await page.locator('.reports-panel:has-text("Resumo da avaliação oficial")');
     await fixedPanel.waitFor({ state: 'visible' });
@@ -248,6 +257,7 @@ test('RELATÓRIOS: auditoria painel funcional', async () => {
   try {
     await page.evaluate(() => go('relatorios'));
     await waitForReportsShell(page);
+    await openReportDetails(page, '.reports-activity-details');
     
     const auditPanel = await page.locator('.reports-panel:has-text("Qualidade")');
     await auditPanel.waitFor({ state: 'visible' });
