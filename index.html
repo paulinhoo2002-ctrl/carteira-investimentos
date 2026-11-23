@@ -28351,7 +28351,7 @@ async function downloadExecutivePdf(){
         { indicador: 'Patrimônio atual', valor: money(portfolio.tC), observacao: 'Estimativa da posição atual' },
         { indicador: 'Valor aplicado', valor: money(portfolio.tI), observacao: 'Base cadastrada' },
         { indicador: 'Resultado financeiro', valor: money(portfolio.tG), observacao: 'Diferença entre atual e aplicado' },
-        { indicador: 'Rentabilidade', valor: Number.isFinite(Number(portfolio.tGP)) ? pct(portfolio.tGP) : pdfDash, observacao: 'Retorno sobre o capital aplicado' },
+        { indicador: 'Rentabilidade', valor: reportsPercentValid(portfolio) ? pct(portfolio.tGP) : pdfDash, observacao: 'Retorno sobre o capital aplicado' },
         { indicador: 'Proventos 12M', valor: money(income.total12), observacao: `${Number(summary.proventosCount)||0} registro(s) no filtro` },
         { indicador: 'Média mensal 12M', valor: money(monthlyAvg), observacao: 'Proventos reais recebidos' },
         { indicador: 'Meta mensal', valor: target > 0 ? money(target) : pdfDash, observacao: target > 0 ? 'Meta configurada na aba Metas' : 'Sem meta definida' },
@@ -29159,7 +29159,7 @@ function reportCardPdfPreview(type, printMode=false){
         {label:'Patrimônio total',value:fmt(Number(portfolio.tC)||0),sub:'Valor atual estimado'},
         {label:'Total aplicado',value:fmt(Number(portfolio.tI)||0),sub:'Capital cadastrado'},
         {label:'Resultado financeiro',value:fmt(Number(portfolio.tG)||0),sub:'Diferença entre atual e aplicado'},
-        {label:'Resultado percentual',value:fmtP(Number(portfolio.tGP)||0),sub:'Retorno sobre capital aplicado'},
+        {label:'Resultado percentual',value:reportsPercentText(portfolio),sub:'Retorno sobre capital aplicado'},
         {label:'Quantidade de ativos',value:String(Number(summary.assetsCount)||assets.length),sub:'Ativos cadastrados'}
       ],
       sections:[
@@ -29323,7 +29323,7 @@ function reportCardPdfAssetsPreview(printMode=false){
       {label:'Patrimônio atual',value:fmt(Number(portfolio.tC)||0),sub:'Valor atual estimado'},
       {label:'Valor aplicado',value:fmt(Number(portfolio.tI)||0),sub:'Capital cadastrado'},
       {label:'Resultado financeiro',value:fmt(Number(portfolio.tG)||0),sub:'Diferença entre atual e aplicado'},
-      {label:'Resultado percentual',value:fmtP(Number(portfolio.tGP)||0),sub:'Retorno sobre o capital aplicado'},
+      {label:'Resultado percentual',value:reportsPercentText(portfolio),sub:'Retorno sobre o capital aplicado'},
       {label:'Quantidade de ativos',value:String(summary.assetsCount||rows.length),sub:'Ativos cadastrados'}
     ],
     sections:[
@@ -29786,8 +29786,8 @@ function reportPdfPreview(){
         <div class="pdf-report-kpis">
           ${pdfReportKpi('Patrimônio atual',fmt(portfolio.tC),'Estimativa da posição atual')}
           ${pdfReportKpi('Valor aplicado',fmt(portfolio.tI),'Base cadastrada')}
-          ${pdfReportKpi('Resultado',fmt(portfolio.tG),fmtP(portfolio.tGP))}
-          ${pdfReportKpi('Rentabilidade',fmtP(portfolio.tGP),'Retorno sobre o capital aplicado')}
+          ${pdfReportKpi('Resultado',fmt(portfolio.tG),reportsPercentText(portfolio))}
+          ${pdfReportKpi('Rentabilidade',reportsPercentText(portfolio),'Retorno sobre o capital aplicado')}
           ${pdfReportKpi('Proventos 12M',fmt(income.total12),`${data.summary.proventosCount} registro(s) no filtro`)}
           ${pdfReportKpi('Média mensal 12M',passiveIncomeValue(monthlyAvg),`Meses completos: ${income.completeMonthCount??0}/12`)}
           ${pdfReportKpi('Meta mensal',target>0?fmt(target):'—',target>0?'Meta configurada na aba Metas':'Sem meta definida')}
@@ -30096,6 +30096,15 @@ function reportsSignedTone(value){
   if(!Number.isFinite(n)||n===0) return 'neutral';
   return n>0?'positive':'negative';
 }
+// Percentual de rentabilidade só é calculável com capital aplicado positivo, cobertura completa e valor finito.
+// Sem denominador válido mostra "—": nunca +0,00% (ausência não vira zero).
+function reportsPercentValid(portfolio){
+  const base=Number(portfolio?.tI), pct=Number(portfolio?.tGP);
+  return Number.isFinite(base)&&base>0&&portfolio?.appliedComplete!==false&&Number.isFinite(pct);
+}
+function reportsPercentText(portfolio){
+  return reportsPercentValid(portfolio)?fmtP(Number(portfolio.tGP)):'—';
+}
 function reportsTab(){
   const data=reportsSnapshot();
   const v272Readiness=v272CashFlowReadiness();
@@ -30186,7 +30195,7 @@ function reportsTab(){
       <div class="reports-kpis reports-premium-kpis">
         <div class="reports-kpi"><div class="label">Patrimônio atual</div><div class="value">${fmt(data.portfolio.tC)}</div><div class="sub">Estimativa pelos ativos cadastrados</div></div>
         <div class="reports-kpi"><div class="label">Total aplicado</div><div class="value">${fmt(data.portfolio.tI)}</div><div class="sub">Base consolidada da carteira</div></div>
-        <div class="reports-kpi reports-kpi-${resultTone}"><div class="label">Resultado</div><div class="value">${fmt(data.portfolio.tG)}</div><div class="sub">Rentabilidade ${fmtP(data.portfolio.tGP)} sobre o aplicado</div></div>
+        <div class="reports-kpi reports-kpi-${resultTone}"><div class="label">Resultado</div><div class="value">${fmt(data.portfolio.tG)}</div><div class="sub">Rentabilidade ${reportsPercentText(data.portfolio)} sobre o aplicado</div></div>
         <div class="reports-kpi"><div class="label">Proventos no período</div><div class="value">${fmt(data.incomePeriodTotal)}</div><div class="sub">Média 12M: ${passiveIncomeValue(income.monthlyAvg)} · cobertura ${income.completeMonthCount??0}/12</div></div>
       </div>
     </section>
@@ -30201,7 +30210,7 @@ function reportsTab(){
       <div class="reports-executive-summary-head"><div><h2 id="reports-executive-summary-title">Resumo factual da carteira</h2><p>Quatro sinais para orientar a conferência, sem criar recomendação de investimento.</p></div><span class="reports-badge">Fonte: carteira cadastrada</span></div>
       <div class="reports-executive-summary-grid">
         <div><span>Situação atual</span><strong>${fmt(data.portfolio.tC)}</strong><small>${data.assetsCount} ativos acompanhados</small></div>
-        <div><span>Evolução</span><strong class="reports-${resultTone}">${fmt(data.portfolio.tG)}</strong><small>${fmtP(data.portfolio.tGP)} sobre o aplicado</small></div>
+        <div><span>Evolução</span><strong class="reports-${resultTone}">${fmt(data.portfolio.tG)}</strong><small>${reportsPercentText(data.portfolio)} sobre o aplicado</small></div>
         <div><span>Concentração</span><strong>${allocationRows.length?esc(allocationRows[0].type):'—'}</strong><small>${allocationRows.length?`${allocationRows[0].share.toFixed(1).replace('.',',')}% da carteira`:'Sem distribuição disponível'}</small></div>
         <div><span>Renda registrada</span><strong>${fmt(data.incomePeriodTotal)}</strong><small>Recebido no período selecionado</small></div>
       </div>

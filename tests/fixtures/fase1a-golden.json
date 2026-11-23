@@ -69,11 +69,19 @@
    "id": "SM189.60",
    "area": "relatórios",
    "description": "O KPI separado de Rentabilidade foi removido por duplicar o percentual já exibido no subtítulo de Resultado. Uma ocorrência redundante deixa de aparecer; o mesmo percentual e todos os demais valores continuam visíveis.",
-   "tokenRemovals": [
-    { "state": "rich", "route": "relatorios", "tokens": ["%+5.87%"] },
-    { "state": "partial", "route": "relatorios", "tokens": ["%+5.02%"] },
-    { "state": "noquotes", "route": "relatorios", "tokens": ["%+5.87%"] },
-    { "state": "empty", "route": "relatorios", "tokens": ["%+0.00%"] }
+   "tokenChanges": [
+    { "state": "rich", "route": "relatorios", "token": "%+5.87%", "from": 3, "to": 2 },
+    { "state": "partial", "route": "relatorios", "token": "%+5.02%", "from": 3, "to": 2 },
+    { "state": "noquotes", "route": "relatorios", "token": "%+5.87%", "from": 3, "to": 2 },
+    { "state": "empty", "route": "relatorios", "token": "%+0.00%", "from": 3, "to": 2 }
+   ]
+  },
+  {
+   "id": "SM189.64-A3",
+   "area": "relatórios",
+   "description": "Capital aplicado zero (sem denominador válido) deixa de mostrar +0,00% como rentabilidade: o percentual vira '—' nos subtítulos de Resultado e Evolução, sem alterar o valor monetário. A referência de produção tinha +0,00% nesses dois pontos, valor que não era um zero financeiro confirmado. Nos estados com capital positivo nada muda.",
+   "tokenChanges": [
+    { "state": "empty", "route": "relatorios", "token": "%+0.00%", "from": 2, "to": 0 }
    ]
   }
  ],

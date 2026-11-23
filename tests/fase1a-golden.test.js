@@ -8,19 +8,11 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const { collectSnapshot, STABLE_ROUTES, DASHBOARD_LABELS, DIVIDEND_LABELS } = require('./helpers/fase1-snapshot');
+const { expectedRouteTokens } = require('./helpers/golden-token-changes');
 
 const repo = path.join(__dirname, '..');
 const golden = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'fase1a-golden.json'), 'utf8'));
 let current = null;
-// Diferenças visuais aprovadas em relação à referência; todos os demais tokens permanecem estritos.
-const additions = {};
-const removals = {};
-golden.intentionalDifferences.forEach(item => (item.tokenAdditions || []).forEach(entry => {
-  additions[`${entry.state}/${entry.route}`] = [...(additions[`${entry.state}/${entry.route}`] || []), ...entry.tokens];
-}));
-golden.intentionalDifferences.forEach(item => (item.tokenRemovals || []).forEach(entry => {
-  removals[`${entry.state}/${entry.route}`] = [...(removals[`${entry.state}/${entry.route}`] || []), ...entry.tokens];
-}));
 
 test.before(async () => { current = await collectSnapshot(repo); }, { timeout: 300000 });
 
@@ -48,12 +40,7 @@ for (const state of ['rich', 'partial', 'noquotes', 'empty']) {
 
   test(`11 telas sem mudança numérica: valores R$ e % iguais à referência — ${state}`, () => {
     STABLE_ROUTES.forEach(route => {
-      const expected = [...golden.expected[state].routeTokens[route], ...(additions[`${state}/${route}`] || [])].sort();
-      (removals[`${state}/${route}`] || []).forEach(token => {
-        const index = expected.indexOf(token);
-        assert.notEqual(index, -1, `${route} (${state}): token removal must match a value in the reference`);
-        expected.splice(index, 1);
-      });
+      const expected = expectedRouteTokens(golden, state, route);
       assert.deepEqual(current[state].routeTokens[route], expected, `${route} (${state})`);
     });
   });
