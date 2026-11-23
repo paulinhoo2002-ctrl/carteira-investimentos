@@ -187,18 +187,21 @@ test('SM189.60: telas essenciais cabem e permanecem utilizáveis em oito viewpor
         await dialog.locator(`[aria-label="${tabStart}"]`).focus();
         await page.keyboard.press('Tab');
         assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('aria-label') || document.activeElement?.textContent?.trim()), tabNext, `${kind}: Tab segue a ordem visual dos campos e ações`);
+        if (theme === 'light') {
+          await dialog.locator('.sec-body').evaluate(element => { element.scrollTop = 0; });
+          await page.locator('.shell').evaluate(element => { element.scrollTop = 0; });
+          await page.evaluate(() => document.activeElement?.blur?.());
+          fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
+          const screenshot = path.join(SCREENSHOT_DIR, `${kind}-${width}x${height}.png`);
+          await page.screenshot({ path: screenshot, fullPage: true });
+          screenshots.push(screenshot);
+        }
         await dialog.locator('[aria-label="Observação"]').focus();
         const finalField = await dialog.locator('[aria-label="Observação"]').boundingBox();
         const actionButton = await dialog.getByRole('button', { name: confirmName, exact: true }).boundingBox();
         assert.ok(finalField && actionButton && finalField.y + finalField.height <= actionButton.y, `${kind}: último campo alcançável sem ficar coberto pela confirmação`);
         state = await inspectLayout(page);
         assert.equal(state.overflow, false, `overflow no modal ${kind} ${width} ${theme}`);
-        if (theme === 'light') {
-          fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
-          const screenshot = path.join(SCREENSHOT_DIR, `${kind}-${width}x${height}.png`);
-          await page.screenshot({ path: screenshot, fullPage: true });
-          screenshots.push(screenshot);
-        }
         await page.keyboard.press('Escape');
         assert.equal(await page.getByRole('dialog', { name: 'Nova movimentação' }).count(), 0, `Escape fecha modal ${kind}`);
       }
