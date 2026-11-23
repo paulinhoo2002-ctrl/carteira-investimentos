@@ -30089,6 +30089,13 @@ function v254FiscalPanel(){
     <div class="v254-fiscal-grid v254-fiscal-grid--lower"><article><div class="v254-fiscal-section-head"><div><h3>Revisão necessária</h3><p>Registros que não devem sustentar apuração definitiva.</p></div></div><ul class="v254-fiscal-review-list">${reviewBody}</ul></article><article><div class="v254-fiscal-section-head"><div><h3>Regras oficiais usadas</h3><p>Fontes versionadas; a classificação final continua responsabilidade do contribuinte.</p></div></div><ul class="v254-fiscal-rules">${rules}</ul></article></div>
   </section>`;
 }
+// Sinal de resultado: só número > 0 é positivo e < 0 é negativo; zero, ausência (null/undefined) e NaN são neutros.
+function reportsSignedTone(value){
+  if(value===null||value===undefined) return 'neutral';
+  const n=Number(value);
+  if(!Number.isFinite(n)||n===0) return 'neutral';
+  return n>0?'positive':'negative';
+}
 function reportsTab(){
   const data=reportsSnapshot();
   const v272Readiness=v272CashFlowReadiness();
@@ -30128,7 +30135,7 @@ function reportsTab(){
     assetCoverage:knownReportTotal>0&&data.assetsCount?knownReportAssets.length/data.assetsCount*100:null
   });
   const nextFixed=(fixed.maturityRows||[])[0]||null;
-  const resultTone=Number(data.portfolio.tG)||0>0?'positive':Number(data.portfolio.tG)||0<0?'negative':'neutral';
+  const resultTone=reportsSignedTone(data.portfolio.tG);
   const maxEvolution=Math.max(...patrimony.months.map(row=>Number(row.cumulative)||0),1);
   const evolutionBars=patrimony.months.slice(-6).map(row=>{
     const value=Number(row.cumulative)||0;
@@ -30231,7 +30238,7 @@ function reportsTab(){
     <section class="reports-premium-secondary-grid">
       <article class="reports-panel"><div class="reports-panel-head"><div><h2>Movimentações do período</h2><p>Fluxo registrado, sem confundir venda ou resgate com aporte.</p></div><span class="reports-badge">${data.aportesCount+data.proventosCount} registros</span></div><div class="reports-stat-list"><div><span>Compras</span><strong>${movementCounts.compras||0}</strong></div><div><span>Vendas</span><strong>${movementCounts.vendas||0}</strong></div><div><span>Aplicações RF</span><strong>${movementCounts.rendaFixa||0}</strong></div><div><span>Proventos</span><strong>${movementCounts.proventos||0}</strong></div></div><a class="reports-inline-link" href="#" onclick="go('aportes');return false">Conferir movimentações</a></article>
       <article class="reports-panel"><div class="reports-panel-head"><div><h2>Renda e proventos</h2><p>Resumo dos recebimentos registrados.</p></div><span class="reports-badge reports-badge-ok">${data.incomePeriodTotal>0?'Com dados':'Sem dados'}</span></div><div class="reports-stat-list"><div><span>Recebido no período</span><strong>${fmt(data.incomePeriodTotal)}</strong></div><div><span>Média mensal 12M</span><strong>${passiveIncomeValue(income.monthlyAvg)} · cobertura ${income.completeMonthCount??0}/12</strong></div><div><span>Meta mensal</span><strong>${income.target>0?fmt(income.target):'—'}</strong></div></div><a class="reports-inline-link" href="#" onclick="go('dividendos');return false">Ver Dividendos</a></article>
-      <article class="reports-panel"><div class="reports-panel-head"><div><h2>Renda Fixa</h2><p>Resumo da avaliação oficial.</p></div><span class="reports-badge">${fixed.assets?.length||0} posições</span></div><div class="reports-stat-list"><div><span>Valor atual</span><strong>${fmt(fixed.totalCurrent)}</strong></div><div><span>Total aplicado</span><strong>${fmt(fixed.totalApplied)}</strong></div><div><span>Resultado</span><strong class="reports-${Number(fixed.totalProfit)||0>=0?'positive':'negative'}">${fmt(fixed.totalProfit)}</strong></div></div><div class="reports-next-maturity">Próximo vencimento <strong>${nextFixed?esc(nextFixed.ticker||'Título RF'):'—'}</strong><small>${nextFixed?.due?nextFixed.due.toLocaleDateString('pt-BR'):'Nenhum vencimento futuro registrado.'}</small></div><a class="reports-inline-link" href="#" onclick="go('renda-fixa');return false">Ver Renda Fixa</a></article>
+      <article class="reports-panel"><div class="reports-panel-head"><div><h2>Renda Fixa</h2><p>Resumo da avaliação oficial.</p></div><span class="reports-badge">${fixed.assets?.length||0} posições</span></div><div class="reports-stat-list"><div><span>Valor atual</span><strong>${fmt(fixed.totalCurrent)}</strong></div><div><span>Total aplicado</span><strong>${fmt(fixed.totalApplied)}</strong></div><div><span>Resultado</span><strong class="reports-${reportsSignedTone(fixed.totalProfit)}">${fmt(fixed.totalProfit)}</strong></div></div><div class="reports-next-maturity">Próximo vencimento <strong>${nextFixed?esc(nextFixed.ticker||'Título RF'):'—'}</strong><small>${nextFixed?.due?nextFixed.due.toLocaleDateString('pt-BR'):'Nenhum vencimento futuro registrado.'}</small></div><a class="reports-inline-link" href="#" onclick="go('renda-fixa');return false">Ver Renda Fixa</a></article>
       <article class="reports-panel reports-audit-panel"><div class="reports-panel-head"><div><h2>Qualidade dos dados</h2><p>Conferência sem alterar registros.</p></div><span class="reports-badge reports-badge-${auditTone}">${data.auditCount?'Atenção':'Tudo certo'}</span></div><div class="reports-audit-count">${data.auditCount}<span>alertas para conferência</span></div><a class="reports-inline-link" href="#" onclick="go('auditoria');return false">Abrir Auditoria</a></article>
     </section>
     ${v228TimelinePanel()}
