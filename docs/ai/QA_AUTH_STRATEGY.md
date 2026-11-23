@@ -221,3 +221,29 @@ local copy with the Firebase Emulator. Deploy only with
 `firebase.json` must not be used for this operation. Vercel SSO remains active.
 Authenticated browser validation remains blocked until a legitimate SSO
 session is available to the browser.
+
+## Estado observado das variáveis Vercel — SM189.58 (2026-11-22)
+
+Leitura somente, por nome (sem valores). Esta seção não altera a estratégia acima.
+
+- `carteira-investimentos` (produção) tem `QA_FIREBASE_API_KEY`, `QA_FIREBASE_AUTH_DOMAIN`, `QA_FIREBASE_PROJECT_ID`, `QA_FIREBASE_STORAGE_BUCKET`, `QA_FIREBASE_MESSAGING_SENDER_ID`, `QA_FIREBASE_APP_ID` e `QA_FIREBASE_PREVIEW_ALLOWED_HOSTS`, com escopo de preview em duas branches `codex/*` antigas. O código de `origin/main` não lê essas variáveis. Elas são inertes e não isolam nada, como este documento já previa.
+- `carteira-homolog-c5785e6` tem variáveis `HOMOLOG_*` (configuração de SDK, modo de build e identidades de QA) com escopo de preview em branches `codex/sm153-*` e `sm173-*`. Nenhum arquivo de `origin/main` as consome. Valores e identidades não são reproduzidos aqui.
+- `sm167-revisao-correcoes` não tem variáveis.
+- Seleção efetiva do Firebase em `origin/main`: por hostname (`isQaPreviewHost` e `activeFirebaseConfig` em `index.html`), com config fixa de `carteira-invest-qa-v316` para o host de homologação e de `carteira-de-investimento-16725` para o host de produção. Hosts desconhecidos não recebem configuração.
+
+Recomendação (não aplicada; exige autorização de configuração remota): remover as variáveis listadas acima de `carteira-investimentos` e as `HOMOLOG_*` de `carteira-homolog-c5785e6`, ou manter apenas as que forem explicitamente usadas por um mecanismo revisado. Antes de remover, confirmar que nenhuma branch ativa depende delas.
+
+Gatilhos de deploy (verificados nos workflows de `origin/main`):
+- Deployments seguem a integração Git, mas um push não garante Preview: cada projeto aplica suas próprias regras, incluindo branch de produção e Ignored Build Step. No projeto QA, a regra inspecionada permite builds somente para branches explicitamente autorizadas; branches fora da lista são ignoradas. Não inferir a regra de um projeto a partir de outro.
+- `.github/workflows/preview.yml` não compila nem implanta. Roda em PR apenas para registrar a política de preview (job `preview`, mantido para preservar o check existente). O build de PR é coberto pelo job de build do CI.
+- `.github/workflows/ci.yml` roda em push e PR para `main`. `release.yml` roda em push para `main`. `sm189-37-emulator-linux.yml` roda manualmente e em push para a branch de preview QA; não publica nem faz deploy.
+
+Limitação conhecida, em dois casos distintos:
+- **Duplicidade de produção (deployments `READY`):** `carteira-investimentos` e `sm167-revisao-correcoes` publicam deployments `READY` de produção a partir do mesmo commit de `main`. Isso duplica a produção. Corrigir exige desconectar ou ajustar projetos na Vercel (ação de configuração remota, não coberta por este documento).
+- **Homologação com deployments `CANCELED`:** `carteira-homolog-c5785e6` recebe deployments com target de produção a partir de `main`, mas eles aparecem como `CANCELED` e não publicam produção. A P6 inspecionou o Ignored Build Step do projeto QA e confirmou sua lista explícita de branches autorizadas; isso não comprova a causa desses deployments de `main`. A causa específica permanece não confirmada sem evidência correspondente do deployment.
+
+## SM189.58 P7 — Exceção de Preview para a PR #599
+
+A configuração do projeto de homologação usa uma lista explícita de branches autorizadas para criar Previews. Branches fora dessa lista são ignoradas pela etapa de build e não geram deployment. A branch desta PR documental e de workflow informativo está fora da lista; portanto, a ausência de Preview hospedado para a PR #599 é esperada na configuração atual.
+
+Esta exceção vale somente para a PR #599. Ela não dispensa CI, nem Preview e homologação QA para alterações funcionais futuras. Um Preview funcional deve usar uma branch autorizada no projeto QA e comprovar o deployment e o ambiente servidos. Nenhuma configuração Vercel ou Firebase foi alterada.
