@@ -107,3 +107,79 @@ test('E2.3 passive income panel stays readable and isolated across required view
     await new Promise(resolve => harness.server.close(resolve));
   }
 });
+
+test('E2.3 renders confirmed PAID, ESTIMATE, configured goal, and valid progress separately', async () => {
+  const executablePath = resolveBrowser();
+  assert.ok(executablePath, 'Chrome/Edge not found');
+  const harness = await startLocalHttpServer(path.join(__dirname, '..'));
+  const browser = await chromium.launch({ executablePath, headless: true });
+  const pageErrors = [];
+  const firebaseRequests = [];
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    page.on('pageerror', error => pageErrors.push(error.message));
+    page.on('request', request => {
+      if (/firestore\.googleapis\.com|firebaseio\.com|identitytoolkit\.googleapis\.com|securetoken\.googleapis\.com|firebaseinstallations\.googleapis\.com/i.test(request.url())) {
+        firebaseRequests.push(request.url());
+      }
+    });
+    await page.goto(harness.url, { waitUntil: 'networkidle' });
+    await applyV289VisualFixture(page, 'baseline');
+    await page.evaluate(() => {
+      const now = new Date();
+      const monthKeys = Array.from({ length: 12 }, (_, index) => {
+        const date = new Date(Date.UTC(now.getFullYear(), now.getMonth() - 11 + index, 1));
+        return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
+      });
+      const currentMonthKey = monthKeys[monthKeys.length - 1];
+      const income = {
+        target: 100,
+        currentMonthKey,
+        currentMonthCoverage: 'COMPLETE',
+        currentMonthTotal: 40,
+        monthlyAverageStatus: 'COMPLETE',
+        monthlyAvg: 40,
+        completeMonthCount: 12,
+        percent: 40,
+        missing: 60,
+        monthKeys,
+      };
+      S.assets = [{ ticker: 'QAAA3', type: 'Ação', qty: 10, current_price: 120, dy: 5 }];
+      S.goals.proventos = { types: ['Ação'], monthly: 100 };
+      const container = document.createElement('div');
+      container.innerHTML = dashboardPassiveIncomePanel({ income });
+      document.body.appendChild(container);
+    });
+
+    const panel = page.locator('[data-testid="dashboard-passive-income"]').last();
+    const result = await panel.evaluate(element => {
+      const card = label => [...element.querySelectorAll('[role="listitem"]')]
+        .find(item => item.querySelector('.premium-metric-label')?.textContent.trim() === label);
+      const value = label => card(label)?.querySelector('.premium-metric-value')?.textContent.trim().replace(/\s+/g, ' ');
+      return {
+        received: { state: card('Recebido no mês')?.dataset.state, value: value('Recebido no mês') },
+        estimate: { state: card('Renda projetada / mês')?.dataset.state, value: value('Renda projetada / mês') },
+        goal: { state: card('Meta mensal')?.dataset.state, value: value('Meta mensal') },
+        progress: { state: card('Progresso da meta')?.dataset.state, value: value('Progresso da meta') },
+        hasCombinedTotal: /Total combinado|combinedIncome/i.test(element.textContent),
+        nonFiniteValues: /\b(?:NaN|Infinity|-Infinity)\b/.test(element.textContent),
+        documentOverflow: document.documentElement.scrollWidth > innerWidth + 1,
+        panelOverflow: element.scrollWidth > element.clientWidth + 1,
+      };
+    });
+
+    assert.deepEqual(result.received, { state: 'PAID', value: 'R$ 40,00' });
+    assert.deepEqual(result.estimate, { state: 'ESTIMATE', value: 'R$ 5,00' });
+    assert.deepEqual(result.goal, { state: 'CONFIGURED', value: 'R$ 100,00' });
+    assert.deepEqual(result.progress, { state: 'AVAILABLE', value: '40,0%' });
+    assert.equal(result.hasCombinedTotal, false);
+    assert.equal(result.nonFiniteValues, false);
+    assert.equal(result.documentOverflow, false);
+    assert.equal(result.panelOverflow, false);
+    assert.deepEqual(pageErrors, []);
+    assert.deepEqual(firebaseRequests, []);
+  } finally {
+    await browser.close();
+    await new Promise(resolve => harness.server.close(resolve));
+  }
+});
