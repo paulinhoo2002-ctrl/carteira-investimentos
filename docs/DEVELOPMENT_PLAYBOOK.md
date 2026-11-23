@@ -301,10 +301,10 @@ sem conferir os viewports/asserts de cada teste.
 
 ### HISTÓRICO
 
-- Em 2026-11-21, logs de execuções de CI e Preview mostraram Node 20.20.2 em
-  alguns jobs, enquanto os arquivos em `origin/main` fixam Node 22. Não
-  reconciliei a diferença; confirmar em nova execução antes de afirmar qual
-  versão roda na CI.
+- Logs de Node 20 em CI vinham de `ci.yml` anterior a `808ef95` (que pinou
+  `node-version: 22`). Runs posteriores (ex.: 44945317991, 44952321750)
+  executam Node `v22.23.5`. A mensagem "Node.js 20 is deprecated" refere-se
+  ao runtime interno das actions (checkout/setup-node), não ao Node do projeto.
 - Totais de testes, vulnerabilidades, cobertura, versões de service worker e
   estados de release em documentos antigos são snapshots. Não os reutilize
   como resultado atual sem executar a verificação na branch/SHA atual.

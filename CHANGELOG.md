@@ -7,6 +7,10 @@ Versionamento baseado em Semantic Versioning.
 
 ### Producao
 - Versao 4483112 publicada na Vercel (PR #536, merged)
+  - Rastreabilidade (nota 2026-11-21): o deployment de producao verificado no
+    Vercel corresponde ao commit `4483112` (PR #537, READY). O PR #536 foi
+    mesclado como `abc8cf4`. O `package.json` de `4483112` declara 1.0.0; a
+    versao 1.4.0 foi declarada em `5aba06b` (PR #545).
 - Regras owner-only Firestore ao vivo
 - Smoke anonimo: gate de login, zero valores financeiros expostos
 - QA autenticado real: Dashboard, Patrimônio, Ativos, Dividendos, Renda Fixa carregando
