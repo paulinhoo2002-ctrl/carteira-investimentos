@@ -29412,7 +29412,8 @@ function reportCardPdfFixedPreview(printMode=false){
   const totalApplied=Number(summary.fixed?.totalApplied)||0;
   const totalCurrent=Number(summary.fixed?.totalCurrent)||0;
   const totalProfit=Number(summary.fixed?.totalProfit)||0;
-  const totalPct=Number(summary.fixed?.totalPct)||0;
+  // Sem base aplicada (totalPct ausente) a rentabilidade é desconhecida: "—", nunca +0,00%.
+  const totalPctText=summary.fixed?.totalPct==null||!Number.isFinite(Number(summary.fixed.totalPct))?'—':fmtP(Number(summary.fixed.totalPct));
   const tableHtml=pdfReportMiniTableCard(
     'Títulos cadastrados',
     'Taxa, indexador, vencimento e observações disponíveis.',
@@ -29447,7 +29448,7 @@ function reportCardPdfFixedPreview(printMode=false){
       {label:'Total aplicado / líquido',value:fmt(totalApplied),sub:'Base usada pela leitura da carteira'},
       {label:'Valor atual / líquido',value:fmt(totalCurrent),sub:'Valor consolidado das posições'},
       {label:'Resultado estimado',value:fmt(totalProfit),sub:'Diferença entre atual e aplicado'},
-      {label:'Rentabilidade',value:fmtP(totalPct),sub:'Retorno sobre o capital aplicado'},
+      {label:'Rentabilidade',value:totalPctText,sub:'Retorno sobre o capital aplicado'},
       {label:'Títulos cadastrados',value:String(summary.fixedCount||rows.length),sub:'Itens analisados no período'}
     ],
     sections:[
@@ -39203,7 +39204,7 @@ function generateOverviewAnalysis(){
   const total=Number(portfolio.tC)||0;
   const invested=Number(portfolio.tI)||0;
   const profit=Number(portfolio.tG)||0;
-  const rentPct=Number(portfolio.tGP)||0;
+  const rentText=reportsPercentText(portfolio);
   if(!analysisRows.length || total<=0){
     return {
       mode:'overview',
@@ -39237,7 +39238,7 @@ function generateOverviewAnalysis(){
   return {
     mode:'overview',
     title:'Visão geral',
-    summary:`Patrimônio atual ${fmt(total)} · Resultado ${fmt(profit)} · Rentabilidade ${fmtP(rentPct)}`,
+    summary:`Patrimônio atual ${fmt(total)} · Resultado ${fmt(profit)} · Rentabilidade ${rentText}`,
     metrics:[
       {label:'Patrimônio aplicado', value:fmt(invested), note:'Base oficial da carteira'},
       {label:'Patrimônio atual', value:fmt(total), note:dominant ? `Maior classe: ${dominant[0]} (${dominantShare.toFixed(1).replace('.',',')}%)` : 'Sem concentração calculável'},
